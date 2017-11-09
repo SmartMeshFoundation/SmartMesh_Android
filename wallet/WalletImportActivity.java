@@ -16,7 +16,7 @@ import java.util.List;
 
 /**
  * Created on 2017/8/21.
- * 导入钱包
+ * 
  * {@link WalletCreateActivity}
  */
 
@@ -25,7 +25,7 @@ public class WalletImportActivity extends BaseActivity {
     TabLayout walletTabs;
     ViewPager mViewPager;
 
-    /*官方钱包导入   私钥导入钱包*/
+    /**/
     WalletOfficalFragment walletOfficalFragment;
     WalletPrivateFragment walletPrivateFragment;
     WalletScanFragment walletScanFragment;
@@ -66,7 +66,7 @@ public class WalletImportActivity extends BaseActivity {
     }
 
     /**
-     * 设置ViewPager内容
+     * 
      * */
     private void setupViewPager() {
         walletOfficalFragment = new WalletOfficalFragment();
