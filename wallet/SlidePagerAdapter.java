@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ViewPager适配器
+ * ViewPager
  */
 public class SlidePagerAdapter extends FragmentPagerAdapter {
 
     private ArrayList<Fragment> list;
-    private List<String> list_Title;     //tab名的列表
+    private List<String> list_Title;    
 
     public SlidePagerAdapter(FragmentManager fm, ArrayList<Fragment> list, List<String> list_Title) {
         super(fm);
@@ -36,7 +36,7 @@ public class SlidePagerAdapter extends FragmentPagerAdapter {
         return POSITION_NONE;
     }
 
-    //此方法用来显示tab上的名字
+   
     @Override
     public CharSequence getPageTitle(int position) {
         return list_Title.get(position % list_Title.size());
