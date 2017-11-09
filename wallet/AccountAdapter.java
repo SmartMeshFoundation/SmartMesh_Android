@@ -65,8 +65,8 @@ public class AccountAdapter extends BaseAdapter {
     }
 
     static class ViewHolder{
-        ImageView walletImg;//钱包密码
-        TextView walletName;//钱包名称
-        LinearLayout walletItemBg;//根布局
+        ImageView walletImg;
+        TextView walletName;
+        LinearLayout walletItemBg;
     }
 }
