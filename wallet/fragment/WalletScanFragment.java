@@ -24,18 +24,15 @@ import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
 /**
  * Created on 2017/8/21.
- * 私钥导入钱包
  */
 
 public class WalletScanFragment extends Fragment implements View.OnClickListener {
 
-    /**
-     * 根view
-     */
+   
     private View view = null;
-    private EditText walletAddress;//钱包地址
-    private TextView importWallet;//导入钱包
-    private ImageView walletQrImg;//二维码
+    private EditText walletAddress;
+    private TextView importWallet;
+    private ImageView walletQrImg;
 
     @Nullable
     @Override
@@ -60,7 +57,7 @@ public class WalletScanFragment extends Fragment implements View.OnClickListener
     private void initData() {
     }
 
-    //导入钱包 如何导入钱包
+    
     @Override
     public void onClick(View v){
         switch (v.getId()){
