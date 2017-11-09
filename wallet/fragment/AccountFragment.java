@@ -59,13 +59,13 @@ import geth.SyncProgress;
 
 /**
  * Created  on 2017/8/23.
- * 账户
+ * 
  */
 
 public class AccountFragment extends BaseFragment implements View.OnClickListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
 
     /**
-     * 根view
+     * 
      */
     private View view = null;
     private boolean isDataFirstLoaded;
@@ -80,33 +80,33 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
 
-    private TextView walletManager;//账户管理
-    private TextView createWallet;//创建钱包
-    private TextView showQuicMark;//扫一扫
-    private ListView walletListView;//钱包列表
+    private TextView walletManager;
+    private TextView createWallet;
+    private TextView showQuicMark;
+    private ListView walletListView;
     private AccountAdapter mAdapter;
 
-    private ImageView walletImg;//钱包头像
-    private TextView walletName;//钱包名称
-    private TextView walletAddress;//钱包地址
-    private TextView qrCode;//二维码
-    private TextView transRecord;//交易记录
-    private TextView copyAddress;//复制地址
+    private ImageView walletImg;
+    private TextView walletName;
+    private TextView walletAddress;
+    private TextView qrCode;
+    private TextView transRecord;
+    private TextView copyAddress;
 
     private SwipeRefreshLayout swipe_refresh;
 
     private StorableWallet storableWallet;
 
-    //eth smt部分
-    private TextView ethBalance,fftBalance;//eth、smt余额
-    private LinearLayout ethTransfer,fftTransfer;//eth、smt转账
-    private LinearLayout ethQrCode,fftQrCode;//eth、smt二维码收款
+   
+    private TextView ethBalance,fftBalance;
+    private LinearLayout ethTransfer,fftTransfer;
+    private LinearLayout ethQrCode,fftQrCode;
 
     private LinearLayout syncblockBg;
     private TextView syncblockText;
     private TextView syncblockBtn;
 
-    private int index = -1;//第几个被选中
+    private int index = -1;
 
 
 
@@ -158,14 +158,14 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         syncblockText = (TextView) view.findViewById(R.id.syncblockText);
         syncblockBtn = (TextView) view.findViewById(R.id.syncblockBtn);
 
-        //侧边栏相关
+        
         mDrawerLayout = (DrawerLayout) view.findViewById(R.id.account_drawerlayout);
         walletListView = (ListView) view.findViewById(R.id.walletList);
         createWallet = (TextView) view.findViewById(R.id.createWallet);
         showQuicMark = (TextView) view.findViewById(R.id.showQuicMark);
         walletManager = (TextView) view.findViewById(R.id.walletManager);
 
-        //主体相关
+        
         walletImg = (ImageView) view.findViewById(R.id.walletImg);
         walletName = (TextView) view.findViewById(R.id.walletName);
         walletAddress = (TextView) view.findViewById(R.id.walletAddress);
@@ -173,7 +173,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         transRecord = (TextView) view.findViewById(R.id.transRecord);
         copyAddress = (TextView) view.findViewById(R.id.copyAddress);
 
-        //eth smt相关
+       
         ethBalance = (TextView) view.findViewById(R.id.ethBalance);
         fftBalance = (TextView) view.findViewById(R.id.fftBalance);
         ethTransfer = (LinearLayout) view.findViewById(R.id.ethTransfer);
@@ -221,9 +221,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         initWalletInfo();
         initSyncBlockState();
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.WALLET_REFRESH_DEL);//刷新页面
-        filter.addAction(Constants.CHANGE_LANGUAGE);//语言更新刷新页面
-        filter.addAction(Constants.SYNC_PROGRESS);//语言更新刷新页面
+        filter.addAction(Constants.WALLET_REFRESH_DEL);
+        filter.addAction(Constants.CHANGE_LANGUAGE);
+        filter.addAction(Constants.SYNC_PROGRESS);
         getActivity().registerReceiver(mBroadcastReceiver, filter);
 
 
@@ -261,25 +261,25 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.app_right://打开侧边栏
+            case R.id.app_right:
                 mDrawerLayout.openDrawer(GravityCompat.END);
                 break;
-            case R.id.walletManager://账户管理
+            case R.id.walletManager:
                 mDrawerLayout.closeDrawer(GravityCompat.END);
                 startActivity(new Intent(getActivity(), ManagerWalletActivity.class));
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.createWallet://创建钱包
+            case R.id.createWallet:
                 mDrawerLayout.closeDrawer(GravityCompat.END);
                 startActivity(new Intent(getActivity(), WalletCreateActivity.class));
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.showQuicMark://扫一扫
+            case R.id.showQuicMark:
                 mDrawerLayout.closeDrawer(GravityCompat.END);
                 startActivity(new Intent(getActivity(), CaptureActivity.class));
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.walletImg://备份钱包
+            case R.id.walletImg:
             case R.id.walletName:
                 if (storableWallet == null){
                     return;
@@ -291,7 +291,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 startActivity(copyIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.qrCode://二维码
+            case R.id.qrCode:
                 if (storableWallet == null){
                     return;
                 }
@@ -301,29 +301,29 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 startActivity(qrCodeIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.transRecord://交易记录
+            case R.id.transRecord:
                 Intent transIntent = new Intent(getActivity(), TransactionRecordsActivity.class);
                 transIntent.putExtra("address",walletAddress.getText().toString());
                 transIntent.putExtra("name",storableWallet.getWalletName());
                 startActivity(transIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.copyAddress://复制地址
+            case R.id.copyAddress:
                 Utils.copyText(getActivity(),walletAddress.getText().toString());
                 break;
-            case R.id.ethTransfer://eth转账
+            case R.id.ethTransfer:
                 Intent ethIntent = new Intent(getActivity(),WalletSendActivity.class);
                 ethIntent.putExtra("sendtype", 0);
                 startActivity(ethIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.fftTransfer://smt转账
+            case R.id.fftTransfer:
                 Intent fftIntent = new Intent(getActivity(),WalletSendActivity.class);
                 fftIntent.putExtra("sendtype", 1);
                 startActivity(fftIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.ethQrCode://eth二维码收款
+            case R.id.ethQrCode:
                 if (storableWallet == null){
                     return;
                 }
@@ -333,7 +333,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 startActivity(qrEthIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.fftQrCode://fft二维码收款
+            case R.id.fftQrCode:
                 if (storableWallet == null){
                     return;
                 }
@@ -373,9 +373,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         }
     }
 
-    /**
-     * 加载或者刷新钱包信息
-     * */
     private void initWalletInfo(){
         ArrayList<StorableWallet> storableWallets = WalletStorage.getInstance(getActivity().getApplicationContext()).get();
         for (int i = 0 ; i < storableWallets.size(); i++){
@@ -427,9 +424,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         }, 500);
     }
 
-    /**
-     * 获取账户余额
-     * */
+ 
     private void loadData(){
         int state = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.AGREE_SYNC_BLOCK);
         if (state != 2){
