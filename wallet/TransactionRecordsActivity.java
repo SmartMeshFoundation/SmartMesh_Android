@@ -38,12 +38,12 @@ import okhttp3.Response;
 
 /**
  * Created on 2017/8/23.
- * 交易记录
+ *
  */
 
 public class TransactionRecordsActivity extends BaseActivity implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
 
-    //选择账户
+    
     private DropTextView walletAccount;
     private DropTextViewAdapter adapter;
 
@@ -51,14 +51,14 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
 
     private TextView walletAddress;
 
-    private TextView transEth,transFft;//eth  smt 记录
+    private TextView transEth,transFft;//eth  smt
     private View transLine, transLine2;
-    private ListView transListView;//记录列表
+    private ListView transListView;
     private ArrayList<TransVo> transEthVos;
     private ArrayList<TransVo> transFftVos;
     private TransAdapter mAdapter;
 
-    private TextView emptyView;//trans为空
+    private TextView emptyView;
     private SwipeRefreshLayout swipe_refresh;
 
     private String mAddress;
@@ -94,8 +94,8 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
     @Override
     protected void initData() {
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.WALLET_REFRESH_DEL);//刷新页面
-        filter.addAction(Constants.CHANGE_LANGUAGE);//修改语言刷新页面
+        filter.addAction(Constants.WALLET_REFRESH_DEL);
+        filter.addAction(Constants.CHANGE_LANGUAGE);
         registerReceiver(mBroadcastReceiver, filter);
 
         appTitle.setText(getString(R.string.transcation_records));
@@ -177,7 +177,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
     }
 
     /**
-     * 获取转账记录接口
+     * 
      * @param type 0 eth 1 smt
      * */
     private void getTransMethod(final int type,final String address) {
