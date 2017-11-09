@@ -21,25 +21,25 @@ import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
 /**
  * Created  on 2017/8/18.
- * 创建钱包
+ * 
  */
 
 public class WalletCreateActivity extends BaseActivity {
 
-    EditText walletName;//钱包名称
-    EditText walletPwd;//钱包密吗
-    EditText walletAgainPwd;//再次输入钱包密吗
-    EditText walletPwdInfo;//密码提示信息
+    EditText walletName;
+    EditText walletPwd;
+    EditText walletAgainPwd;
+    EditText walletPwdInfo;
 
-    private TextView createWallet;//创建钱包
+    private TextView createWallet;
 
-    //清除钱包名称  显示密码
+  
     private ImageView clearWalletName,isShowPass;
 
     private WalletHandler mHandler;
 
     /**
-     * 显示密码
+     *
      */
     boolean isShowPassWorld = false;
 
@@ -78,19 +78,19 @@ public class WalletCreateActivity extends BaseActivity {
         registerReceiver(mBroadcastReceiver, filter);
     }
 
-    //创建钱包  导入钱包
+    //
     @Override
     public void onClick(View v){
         switch (v.getId()){
-            case R.id.clearWalletName://清除名称
+            case R.id.clearWalletName:
                 walletName.setText("");
                 break;
-            case R.id.isShowPass://显示或隐藏密码
+            case R.id.isShowPass:
                 isShowPassWorld = !isShowPassWorld;
-                if (isShowPassWorld) { /* 设定EditText的内容为可见的 */
+                if (isShowPassWorld) { /*  */
                     walletPwd.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
                     isShowPass.setImageResource(R.drawable.eye_open);
-                } else {/* 设定EditText的内容为隐藏*/
+                } else {/* */
                     walletPwd.setTransformationMethod(PasswordTransformationMethod.getInstance());
                     isShowPass.setImageResource(R.drawable.eye_close);
                 }
@@ -153,7 +153,7 @@ public class WalletCreateActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // 注销广播
+        
         if (mBroadcastReceiver != null) {
             unregisterReceiver(mBroadcastReceiver);
         }
