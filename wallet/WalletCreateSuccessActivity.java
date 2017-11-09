@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 /**
  * Created on 2017/8/22.
- * 钱包创建成功页面
+ * 
  */
 
 public class WalletCreateSuccessActivity extends BaseActivity {
