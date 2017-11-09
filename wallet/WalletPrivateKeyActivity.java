@@ -10,7 +10,7 @@ import com.lingtuan.firefly.util.Utils;
 
 /**
  * Created on 2017/8/22.
- * 显示私钥明文
+ * 
  * {@link WalletCopyActivity}
  */
 
@@ -21,7 +21,7 @@ public class WalletPrivateKeyActivity extends BaseActivity{
 
     private String privateKey;
 
-    private boolean hasCopy;//是否已copy
+    private boolean hasCopy;//
 
     @Override
     protected void setContentView() {
