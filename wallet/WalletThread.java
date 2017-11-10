@@ -26,16 +26,16 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
 /**
- * 创建或者导入钱包
+ * 
  * */
 public class WalletThread extends Thread {
 
-	private WalletHandler mHandler;//钱包Handler
-	private String walletName;//钱包名称
-	private String password;//钱包密码
-	private String pwdInfo;//密码提示信息
-	private String source;//type 1是privatekey 2是keyStore
-	private int type;//type 0 创建钱包  1 私钥导入钱包  2 keyStore导入钱包
+	private WalletHandler mHandler;
+	private String walletName;
+	private String password;
+	private String pwdInfo;
+	private String source;
+	private int type;
 	private Context context;
 
 	public WalletThread(WalletHandler mHandler, Context context,String walletName, String password,String pwdInfo,String source,int type){
@@ -63,14 +63,14 @@ public class WalletThread extends Thread {
 		try {
 
 			String walletAddress ;
-			if(type == 0) { // 生成新的地址 0x.........
+			if(type == 0) { 
 				WalletFile walletFile = OwnWalletUtils.generateNewWalletFile(password, false);
 				walletAddress = OwnWalletUtils.getWalletFileName(walletFile);
 				File destination = new File( new File(context.getFilesDir(), SDCardCtrl.WALLERPATH), walletAddress);
 				ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
 				objectMapper.writeValue(destination, walletFile);
 
-			} else if (type == 1){ // 通过私钥导入新地址
+			} else if (type == 1){ 
 				ECKeyPair keys = ECKeyPair.create(new BigInteger(source));
 				WalletFile  walletFile = OwnWalletUtils.generateWalletFile(password, keys, false);
 				walletAddress = OwnWalletUtils.getWalletFileName(walletFile);
@@ -85,7 +85,7 @@ public class WalletThread extends Thread {
 				ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
 				objectMapper.writeValue(destination, walletFile);
 
-			}else{//通过keyStore导入新地址
+			}else{
 				ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
 				WalletFile walletFile = objectMapper.readValue(source, WalletFile.class);
 				Credentials credentials = Credentials.create(Wallet.decrypt(password, walletFile));
@@ -109,7 +109,7 @@ public class WalletThread extends Thread {
 				mHandler.sendEmptyMessage(WalletHandler.
 						WALLET_ERROR);
 			}else{
-				if(TextUtils.isEmpty(walletName))//导入时做操作
+				if(TextUtils.isEmpty(walletName))
 				{
 					walletName = Utils.getWalletName(context);
 				}

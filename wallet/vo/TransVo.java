@@ -4,17 +4,12 @@ import org.json.JSONObject;
 
 /**
  * Created on 2017/8/25.
- * 转账记录
  */
 
 public class TransVo {
-    //地址
     private String address;
-    //金额
     private String value;
-    //时间
     private long time;
-
     private int type;// 0 eth 1 smt;
 
     public int getType() {

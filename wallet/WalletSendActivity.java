@@ -64,8 +64,8 @@ import okhttp3.Response;
 
 public class WalletSendActivity extends BaseActivity implements  TextWatcher {
     private final double FACTOR = 1000000000f;
-    private final String contractAddress = "0x4042698c5f4c7eb64035870feea5c316b913927f";//新合约地址
-    private final String contractFunctionHex = "0xa9059cbb";//合约功能
+    private final String contractAddress = "0x4042698c5f4c7eb64035870feea5c316b913927f";
+    private final String contractFunctionHex = "0xa9059cbb";
     private final int gasLimit = 21000;//gasLimit
     private final int tokenGasLimit = 80000;//gasLimit
     private BigInt gasPrice;
@@ -83,10 +83,10 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
 
     int sendtype  ;// 0  ETH   1 SMT
     private int gastype;// 0  ETH   1 FFP
-    float amount;//扫二维码传递过来的金额
+    float amount;
     String address;
 
-    int walletType;//0普通钱包 1观察钱包
+    int walletType;
 
     double ethBalance,fftBalance;
 
@@ -179,9 +179,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
         curAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     }
 
-    /**
-     * 获取gas
-     * */
+  
     private void getGasMethod() {
         int state = MySharedPrefs.readInt(WalletSendActivity.this,MySharedPrefs.FILE_USER,MySharedPrefs.AGREE_SYNC_BLOCK);
         if (state != 2){
@@ -260,11 +258,11 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    //开始转账
+   
     private void  sendtrans(){
         String address = toAddress.getText().toString();
         double currentGas;
-        if(sendtype == 0)//发送ETH
+        if(sendtype == 0)
         {
             currentGas = new BigDecimal(gasPrice.toString()).multiply(new BigDecimal(gasLimit)).divide(ONE_ETHER,0,BigDecimal.ROUND_DOWN).doubleValue();
         }else{
@@ -287,7 +285,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
             return;
         }
 
-        if(sendtype == 0)//发送ETH
+        if(sendtype == 0)//
         {
             double total = Double.valueOf(toValue.getText().toString())+currentGas;
             if(total>ethBalance)
@@ -296,7 +294,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
                 return;
             }
         }
-        else{//发送SMT
+        else{//
             if(currentGas>ethBalance)
             {
                 showToast(getString(R.string.bloance_not_enough));
@@ -324,7 +322,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
         mdf.show(this.getSupportFragmentManager(), "mdf");
     }
 
-    /*发送代币*/
+
     private void sendtransToken(final String password) {
         new Thread(new Runnable() {
             @Override
@@ -369,7 +367,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
                             toHex = "0"+ toHex;
                         }
                     }
-                    //toHex不齐64位  valueHex补齐64位
+                   
                     String data = contractFunctionHex + toHex + valueHex;
                     byte[] srtbyte = Numeric.hexStringToByteArray(data);
                     Transaction transaction = Geth.newTransaction(nonce, new Address(contractAddress), value, gasLimitB, gasPrice,srtbyte);
@@ -395,7 +393,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
     }
 
 
-    /*发送以太币*/
+
     private void sendtransEth(final String password) {
         new Thread(new Runnable() {
             @Override
@@ -450,7 +448,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
     private Handler mHandler = new Handler(){
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case 0://获取gas
+                case 0://
                     if(sendtype == 1)//SMT
                     {
                         String currentGas = new BigDecimal(gasPrice.toString()).multiply(new BigDecimal(tokenGasLimit)).divide(ONE_ETHER,0,BigDecimal.ROUND_DOWN).toPlainString();
@@ -462,26 +460,26 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
                     }
                     LoadingDialog.close();
                     break;
-                case 1://输入密码错误
+                case 1://
                     LoadingDialog.close();
                     showToast(getString(R.string.wallet_copy_pwd_error));
                     break;
-                case 2://转账成功
+                case 2://
                     LoadingDialog.close();
                     showToast(getString(R.string.trans_success));
                     finish();
                     break;
-                case 3://请求失败
+                case 3://
                     LoadingDialog.close();
                     String errMsg = (String)msg.obj;
                     showToast(errMsg);
                     break;
-                case 4://获取gas失败
+                case 4://
                     LoadingDialog.close();
                     showToast(getString(R.string.get_gas_error));
                     finish();
                     break;
-                case 5://同步中，稍后再试
+                case 5://
                     LoadingDialog.close();
                     showToast(getString(R.string.syning_later));
                     finish();

@@ -26,26 +26,23 @@ import com.lingtuan.firefly.wallet.WalletCreateActivity;
 import com.lingtuan.firefly.wallet.WalletImportActivity;
 
 
-/**
- * 没有钱包时显示
- * */
+
+
 public class NewWalletFragment extends BaseFragment implements View.OnClickListener {
 
-    /**
-     * 根view
-     */
+    
     private View view = null;
     private boolean isDataFirstLoaded;
 
-    private TextView createWallet,importWallet;//创建钱包  导入钱包
+    private TextView createWallet,importWallet;
     private TextView title;
 
-    //同步相关
+    
     private LinearLayout syncblockBg;
     private TextView syncblockText;
     private TextView syncblockBtn;
 
-    //同步蒙版相关
+   
     private LinearLayout syncMaskBg;
     private TextView syncMaskBtn;
     private ImageView syncMaskOk;
@@ -101,10 +98,10 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
     @Override
     public void onClick(View view){
         switch (view.getId()){
-            case R.id.createWallet://创建钱包
+            case R.id.createWallet:
                 startActivityForResult(new Intent(getActivity(),WalletCreateActivity.class),100);
                 break;
-            case R.id.importWallet://导入钱包
+            case R.id.importWallet:
                 startActivityForResult(new Intent(getActivity(),WalletImportActivity.class),100);
                 break;
             case R.id.syncblockBg:
@@ -147,8 +144,8 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
 
     protected void initData() {
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.CHANGE_LANGUAGE);//语言更新刷新页面
-        filter.addAction(Constants.SYNC_PROGRESS);//语言更新刷新页面
+        filter.addAction(Constants.CHANGE_LANGUAGE);
+        filter.addAction(Constants.SYNC_PROGRESS);
         getActivity().registerReceiver(mBroadcastReceiver, filter);
         view.findViewById(R.id.app_back).setVisibility(View.GONE);
         title.setText(getString(R.string.app_name));

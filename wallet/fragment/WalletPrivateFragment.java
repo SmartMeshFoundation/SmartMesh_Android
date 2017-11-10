@@ -28,34 +28,29 @@ import com.lingtuan.firefly.wallet.WalletThread;
 
 /**
  * Created on 2017/8/21.
- * 私钥导入钱包
  */
 
 public class WalletPrivateFragment extends Fragment implements View.OnClickListener {
 
-    /**
-     * 根view
-     */
+  
     private View view = null;
 
 
-    private EditText walletPwd;//钱包密吗
-    private EditText walletAgainPwd;//再次输入钱包密吗
-    private EditText walletPwdInfo;//密码提示信息
+    private EditText walletPwd;
+    private EditText walletAgainPwd;
+    private EditText walletPwdInfo;
 
     private EditText keyStoreInfo;
 
     private WalletHandler mHandler;
 
-    private TextView importWallet;//导入钱包
+    private TextView importWallet;
 
 
-    //清除钱包名称  显示密码
+   
     private ImageView isShowPass;
 
-    /**
-     * 显示密码
-     */
+    
     boolean isShowPassWorld = false;
 
     @Nullable
@@ -91,16 +86,16 @@ public class WalletPrivateFragment extends Fragment implements View.OnClickListe
         getActivity().registerReceiver(mBroadcastReceiver, filter);
     }
 
-    //导入钱包 如何导入钱包
+    
     @Override
     public void onClick(View v){
         switch (v.getId()){
             case R.id.isShowPass:
                 isShowPassWorld = !isShowPassWorld;
-                if (isShowPassWorld) { /* 设定EditText的内容为可见的 */
+                if (isShowPassWorld) { 
                     walletPwd.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
                     isShowPass.setImageResource(R.drawable.eye_open);
-                } else {/* 设定EditText的内容为隐藏*/
+                } else {
                     walletPwd.setTransformationMethod(PasswordTransformationMethod.getInstance());
                     isShowPass.setImageResource(R.drawable.eye_close);
                 }

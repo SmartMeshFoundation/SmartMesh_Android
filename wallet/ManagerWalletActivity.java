@@ -52,8 +52,8 @@ public class ManagerWalletActivity extends BaseActivity implements AdapterView.O
         listView.setAdapter(adapter);
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.WALLET_REFRESH_DEL);//刷新页面
-        filter.addAction(Constants.WALLET_SUCCESS);//刷新页面
+        filter.addAction(Constants.WALLET_REFRESH_DEL);
+        filter.addAction(Constants.WALLET_SUCCESS);
         registerReceiver(mBroadcastReceiver, filter);
     }
 

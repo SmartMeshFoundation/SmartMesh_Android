@@ -33,21 +33,21 @@ import geth.KeyStore;
 
 /**
  * Created on 2017/8/22.
- * 备份账户
+ * 
  */
 
 public class WalletCopyActivity extends BaseActivity {
 
-    TextView walletCopyName;//账户名
-    TextView walletCopyPwdInfo;//密码提示
-    TextView walletCopyKey;//导出私钥
-    TextView walletCopyKeyStore;//导出KeyStore
-    TextView walletDelete;//删除钱包
+    TextView walletCopyName;
+    TextView walletCopyPwdInfo;
+    TextView walletCopyKey;
+    TextView walletCopyKeyStore;
+    TextView walletDelete;
     TextView success,address;
     ImageView icon;
     private StorableWallet storableWallet;
     private int iconId;
-    private int type;//0新创建的 1备份钱包
+    private int type;
     @Override
     protected void setContentView() {
         setContentView(R.layout.wallet_copy_layout);
@@ -107,22 +107,22 @@ public class WalletCopyActivity extends BaseActivity {
             address.setVisibility(View.GONE);
         }
 
-        //观察钱包
+        
         if (storableWallet.getWalletType() == 1){
             walletCopyKey.setEnabled(false);
             walletCopyKeyStore.setEnabled(false);
         }
 
-        //导出私钥
+        
         if (storableWallet.getCanExportPrivateKey() != 1){
             walletCopyKey.setEnabled(false);
         }
     }
 
     /**
-     * 导出私钥
-     * 导出KeyStore
-     * 删除钱包
+     * 
+     * 
+     * 
      * */
     @Override
     public void onClick(View v){
@@ -147,8 +147,7 @@ public class WalletCopyActivity extends BaseActivity {
     }
 
     /**
-     * 密码验证
-     * @param type  0 获取私钥  1 获取keyStore 2 删除钱包
+     * 
      * */
     private void showPwdDialog(final int type){
         MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_INPUT_PWD, new MyViewDialogFragment.EditCallback() {
@@ -172,7 +171,7 @@ public class WalletCopyActivity extends BaseActivity {
     }
 
     /**
-     * 观察钱包删除
+     * 
      * */
     private void showDelSacnWalletDialog(){
         MyViewDialogFragment mdf = new MyViewDialogFragment();
@@ -187,8 +186,8 @@ public class WalletCopyActivity extends BaseActivity {
     }
 
     /**
-     * 获取私钥
-     * @param walletPwd 钱包密码
+     * 
+     * @param walletPwd 
      * */
     private void getWalletPrivateKey(final String walletPwd,final int type){
         LoadingDialog.show(WalletCopyActivity.this,"");
@@ -221,8 +220,8 @@ public class WalletCopyActivity extends BaseActivity {
 
 
     /**
-     * 获取keyStore
-     * @param walletPwd 钱包密码
+     * keyStore
+     * @param walletPwd 
      * */
     private void getWalletKeyStore(final String walletPwd){
         LoadingDialog.show(WalletCopyActivity.this,"");
@@ -256,7 +255,7 @@ public class WalletCopyActivity extends BaseActivity {
     private Handler mHandler = new Handler(){
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case 0://私钥
+                case 0:
                     LoadingDialog.close();
                     BigInteger privateKey = (BigInteger) msg.obj;
                     Intent showPrivateKey = new Intent(WalletCopyActivity.this,WalletPrivateKeyActivity.class);
@@ -280,18 +279,18 @@ public class WalletCopyActivity extends BaseActivity {
                     showKeyStore.putExtra(Constants.KEYSTORE,keyStore);
                     startActivity(showKeyStore);
                     break;
-                case 2://删除钱包
+                case 2:
                     delWallet();
                     break;
-                case 3://密码错误
+                case 3:
                     LoadingDialog.close();
                     showToast(getString(R.string.wallet_copy_pwd_error));
                     break;
-                case 4://操作失败
+                case 4:
                     LoadingDialog.close();
                     showToast(getString(R.string.error));
                     break;
-                case 5://内存不足
+                case 5:
                     LoadingDialog.close();
                     showToast(getString(R.string.notification_wallgen_no_memory));
                     break;
@@ -300,7 +299,7 @@ public class WalletCopyActivity extends BaseActivity {
     };
 
     /**
-     * 删除钱包数据
+     *
      * */
     private void delWallet(){
         WalletStorage.getInstance(getApplicationContext()).removeWallet(storableWallet.getPublicKey(),storableWallet.getWalletType(),WalletCopyActivity.this);
@@ -314,7 +313,7 @@ public class WalletCopyActivity extends BaseActivity {
             else{
                 WalletStorage.getInstance(getApplicationContext()).destroy();
             }
-            //发送刷新首页
+            
             Utils.sendBroadcastReceiver(WalletCopyActivity.this, new Intent(Constants.WALLET_REFRESH_DEL), false);
             finish();
         }
@@ -324,7 +323,7 @@ public class WalletCopyActivity extends BaseActivity {
             {
                 WalletStorage.getInstance(getApplicationContext()).destroy();
             }
-            //发送刷新首页
+            
             Utils.sendBroadcastReceiver(WalletCopyActivity.this, new Intent(Constants.WALLET_REFRESH_DEL), false);
             finish();
         }

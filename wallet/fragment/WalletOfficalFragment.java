@@ -25,20 +25,16 @@ import com.lingtuan.firefly.wallet.WalletThread;
 
 /**
  * Created  on 2017/8/21.
- * 官方钱包导入 KeyStore
  */
 
 public class WalletOfficalFragment extends BaseFragment implements View.OnClickListener {
 
-    /**
-     * 根view
-     */
+  
     private View view = null;
 
 
-    /*keyStore 密码  文本内容*/
+ 
     private EditText keyStorePwd;
-    /*keyStore 文本内容*/
     private EditText keyStoreInfo;
 
     private TextView importWallet;

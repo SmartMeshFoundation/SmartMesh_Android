@@ -8,30 +8,28 @@ import geth.Account;
 
 public class StorableWallet implements Serializable{
 
-//    //钱包地址  公钥
     private String publicKey;
 
-    //钱包名称
     private String walletName;
-    //密码提示信息
+    
     private String pwdInfo;
 
-    //当前选中钱包
+   
     private boolean isSelect;
 
-    // 0不能导出 1能导出
+    
     private int canExportPrivateKey;
 
-    //当前选中钱包头像
+    
     private int imgId;
 
-    //以太坊余额
+   
     private double ethBalance;
 
-    //smt余额
+   
     private double fftBalance;
 
-    // 0 ，默认钱包  1 观察钱包
+    
     private int walletType;
 
     public String getPublicKey() {

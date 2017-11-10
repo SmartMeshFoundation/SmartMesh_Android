@@ -75,8 +75,8 @@ public class TransAdapter extends BaseAdapter {
     }
 
     static class ViewHolder{
-        TextView address;//地址
-        TextView time;//时间
-        TextView value;//转账金额
+        TextView address;
+        TextView time;
+        TextView value;
     }
 }
