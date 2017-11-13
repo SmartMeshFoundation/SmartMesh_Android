@@ -35,7 +35,7 @@ public class RegistUI extends BaseActivity {
     private TextView regist;//register
 
     /**
-     * 显示密码
+     * show password
      */
     private boolean isShowPassWorld = false;
 
