@@ -20,11 +20,9 @@ public class AccountAdapter extends BaseAdapter {
 
     private Context context = null ;
 
-
     public AccountAdapter(Context context){
         this.context = context;
     }
-
 
     @Override
     public int getCount() {
