@@ -93,11 +93,6 @@ public class MainContactFragmentUI extends BaseFragment implements  OnItemClickL
     private PopupWindow homePop;
     private Dialog mDialog;
 
-
-    public MainContactFragmentUI() {
-
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         isDataFirstLoaded = true;
@@ -186,7 +181,6 @@ public class MainContactFragmentUI extends BaseFragment implements  OnItemClickL
 
     public void onDestroyView() {
         super.onDestroyView();
-
     }
 
     @Override
@@ -195,6 +189,7 @@ public class MainContactFragmentUI extends BaseFragment implements  OnItemClickL
         getActivity().unregisterReceiver(mBroadcastReceiver);
     }
 
+    /**load database*/
     class LoadDatabasesThread extends Thread {
         private Handler handler = new Handler() {
             public void handleMessage(android.os.Message msg) {

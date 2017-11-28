@@ -74,13 +74,11 @@ public class RegistUI extends BaseActivity {
     @Override
     protected void initData() {
         setTitle(getString(R.string.regist));
-
         if (type != -1){
             findViewById(R.id.userNameBg).setVisibility(View.GONE);
             findViewById(R.id.userNameLine).setVisibility(View.GONE);
             setTitle(getString(R.string.forgot_password_hint));
         }
-
         loginUtil = LoginUtil.getInstance();
         loginUtil.initContext(RegistUI.this);
     }

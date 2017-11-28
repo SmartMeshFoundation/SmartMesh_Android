@@ -210,7 +210,7 @@ public class NextApplication extends Application implements NewHeadHandler {
 
     private void initImageLoaderConfig() {
         int width = getResources().getDisplayMetrics().widthPixels;
-        int  height = getResources().getDisplayMetrics().heightPixels;
+        int height = getResources().getDisplayMetrics().heightPixels;
 
         /** Use the default configuration*/
         ImageLoaderConfiguration configuration = new ImageLoaderConfiguration.Builder(getApplicationContext())
@@ -241,7 +241,6 @@ public class NextApplication extends Application implements NewHeadHandler {
                 .cacheInMemory(true)
                 .imageScaleType(ImageScaleType.IN_SAMPLE_POWER_OF_2)
                 .build();
-
 
     }
 

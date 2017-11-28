@@ -20,6 +20,7 @@ public class UserInfoVo extends UserBaseVo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	/**user token*/
 	private String token;
 
 	/**The user password*/
@@ -159,7 +160,7 @@ public class UserInfoVo extends UserBaseVo implements Serializable {
 		setPhonenumber(obj.optString("phonenumber"));
 		setDateline(obj.optLong("dateline"));
 		setStrangerMask(TextUtils.equals("1", obj.optString("stranger_mask")));
-		//是否为当前用户的好友
+		//Whether the current user's friends
 		setIs_friend(obj.optInt("is_friend"));
 
 		setMobile(obj.optString("mobile"));

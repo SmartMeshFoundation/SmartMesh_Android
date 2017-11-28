@@ -64,13 +64,13 @@ import okhttp3.Response;
 
 public class WalletSendActivity extends BaseActivity implements  TextWatcher {
     private final double FACTOR = 1000000000f;
-    private final String contractAddress = "0x4042698c5f4c7eb64035870feea5c316b913927f";
+    private final String contractAddress = "0x4042698c5f4c7eb64035870feea5c316b913927f";//contract address
     private final String contractFunctionHex = "0xa9059cbb";
     private final int gasLimit = 21000;//gasLimit
     private final int tokenGasLimit = 80000;//gasLimit
     private BigInt gasPrice;
 
-    BigDecimal ONE_ETHER = new BigDecimal("1000000000000000000");//1个eth
+    BigDecimal ONE_ETHER = new BigDecimal("1000000000000000000");// one eth
     TextView fromName;
     TextView fromAddress;
     EditText toValue;
@@ -180,6 +180,9 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
     }
 
   
+    /**
+    *get gas method
+    */
     private void getGasMethod() {
         int state = MySharedPrefs.readInt(WalletSendActivity.this,MySharedPrefs.FILE_USER,MySharedPrefs.AGREE_SYNC_BLOCK);
         if (state != 2){
@@ -259,6 +262,9 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
     }
 
    
+    /**
+    *send trans 
+    */
     private void  sendtrans(){
         String address = toAddress.getText().toString();
         double currentGas;
@@ -322,7 +328,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
         mdf.show(this.getSupportFragmentManager(), "mdf");
     }
 
-
+    /**send smart token*/
     private void sendtransToken(final String password) {
         new Thread(new Runnable() {
             @Override
@@ -393,7 +399,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
     }
 
 
-
+    /**send eth*/
     private void sendtransEth(final String password) {
         new Thread(new Runnable() {
             @Override

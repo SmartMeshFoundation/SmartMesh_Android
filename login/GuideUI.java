@@ -107,9 +107,8 @@ public class GuideUI extends BaseActivity implements ViewPager.OnPageChangeListe
     };
 
     /**
-     * Set the ViewPager switching speed
-     *
-     * @param duration
+     * Set the ViewPager switching spee
+     * @param duration duration
      */
     private void setViewPagerSpeed(int duration) {
         try {
@@ -155,7 +154,6 @@ public class GuideUI extends BaseActivity implements ViewPager.OnPageChangeListe
                     Utils.openNewActivityAnim(GuideUI.this, false);
                 }
                 break;
-
         }
     }
 

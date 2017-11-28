@@ -28,6 +28,7 @@ import java.util.Map;
 public class FinalUserDataBase {
 
     private static FinalUserDataBase instance;
+    //datavase helper
     private FinalUserDbHelper helper;
     private SQLiteDatabase db;
 
@@ -44,6 +45,7 @@ public class FinalUserDataBase {
         }
     }
 
+    /**database instance*/
     public static synchronized FinalUserDataBase getInstance() {
         if (instance == null) {
             instance = new FinalUserDataBase();
@@ -51,9 +53,6 @@ public class FinalUserDataBase {
         }
         return instance;
     }
-
-
-
 
     /**
      * Modify the recent chat messages
@@ -74,7 +73,6 @@ public class FinalUserDataBase {
 
     /**
      * Message to heavy (ah, the server is not to force The client is trouble Really don't want to write the code)
-     *
      * @param msgId
      * @param msgType
      * @param type
@@ -317,7 +315,8 @@ public class FinalUserDataBase {
 
     /**
      * Whether to show chat time
-     *
+     * @params chatId chat id
+     * @params current time
      * @return
      */
     public boolean isShowTime(String chatId, long currentTime) {
@@ -342,7 +341,7 @@ public class FinalUserDataBase {
 
     /**
      * If there is no net chat show time
-     *
+     * @params chatId chatid
      * @return
      */
     public boolean isOffLineShowTime(String chatId, long currentTime) {
@@ -2862,7 +2861,7 @@ public class FinalUserDataBase {
 
     /**
      * for a single recommendation
-     *Unique identifier * @ param id friends phone number, openI
+     * @ param id  Unique identifier friends phone number, openI
      * @param type
      * @return
      */
