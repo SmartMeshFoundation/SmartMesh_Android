@@ -312,9 +312,9 @@ public class ScanLargePic extends BaseActivity implements ScanPicAdapter.FinishC
 //        hints.put(DecodeHintType.CHARACTER_SET, "UTF8"); //Set the qr code coding content
 //
 //        BitmapFactory.Options options = new BitmapFactory.Options();
-//        options.inJustDecodeBounds = true; // 先获取原大小
+//        options.inJustDecodeBounds = true;
 //        Bitmap scanBitmap = BitmapFactory.decodeFile(path, options);
-//        options.inJustDecodeBounds = false; // 获取新的大小
+//        options.inJustDecodeBounds = false;
 //        int sampleSize = (int) (options.outHeight / (float) 200);
 //        if (sampleSize <= 0)
 //            sampleSize = 1;
