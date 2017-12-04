@@ -15,14 +15,14 @@ public class AtGroupParser {
 	private static AtGroupParser sInstance;
 
 	public static AtGroupParser getInstance() {
-		return sInstance;
+	      return sInstance;
 	}
 
 	public static int select = 0;
 	public String[] ids;
 
 	public static void init(String[] nicknames, String[] ids) {
-		sInstance = new AtGroupParser(nicknames,ids);
+	     sInstance = new AtGroupParser(nicknames,ids);
 	}
 
 	private final Pattern mPattern;
@@ -89,8 +89,7 @@ public class AtGroupParser {
 	private Pattern buildPattern() {
 		// Set the StringBuilder capacity with the assumption that the average
 		// smiley is 3 characters long.
-		StringBuilder patternString = new StringBuilder(
-				nicknames.length * 3);
+		StringBuilder patternString = new StringBuilder(nicknames.length * 3);
 		// Build a regex that looks like (:-)|:-(|...), but escaping the smilies
 		// properly so they will be interpreted literally by the regex matcher.
 		patternString.append('(');
@@ -99,8 +98,7 @@ public class AtGroupParser {
 			patternString.append('|');
 		}
 		// Replace the extra '|' with a ')'
-		patternString.replace(patternString.length() - 1,
-				patternString.length(), ")");
+		patternString.replace(patternString.length() - 1,patternString.length(), ")");
 		return Pattern.compile(patternString.toString());
 	}
 
@@ -108,10 +106,8 @@ public class AtGroupParser {
 	 * Adds ImageSpans to a CharSequence that replace textual emoticons such as
 	 * :-) with a graphical version.
 	 * 
-	 * @param text
-	 *            A CharSequence possibly containing emoticons
-	 * @return A CharSequence annotated with ImageSpans covering any recognized
-	 *         emoticons.
+	 * @param text A CharSequence possibly containing emoticons
+	 * @return A CharSequence annotated with ImageSpans covering any recognized emoticons.
 	 */
 	public String parser(final CharSequence text) {
 		StringBuffer sb = new StringBuffer();
