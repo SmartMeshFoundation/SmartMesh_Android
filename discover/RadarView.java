@@ -228,6 +228,9 @@ public class RadarView extends View {
         this.startScan = true;
     }
 
+    /**
+    * reset data
+    */
     public void resetData(){
         scanAngle = 0;
         currentScanningCount = 0;
