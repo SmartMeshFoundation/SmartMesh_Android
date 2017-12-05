@@ -70,6 +70,8 @@ public final class CaptureActivity extends BaseActivity implements
 	
 	private ImageView photoIcon;
 	
+	private  int type;//   1 forresult 2 watch the purse
+	
 	public ViewfinderView getViewfinderView() {
 		return viewfinderView;
 	}
@@ -82,7 +84,7 @@ public final class CaptureActivity extends BaseActivity implements
 		return cameraManager;
 	}
 
-    private  int type;//   1 forresult 2 watch the purse
+
 	@SuppressWarnings("deprecation")
 	@Override
 	protected void onResume() {
@@ -151,8 +153,7 @@ public final class CaptureActivity extends BaseActivity implements
 				savedResultToShow = result;
 			}
 			if (savedResultToShow != null) {
-				Message message = Message.obtain(handler,
-						R.id.decode_succeeded, savedResultToShow);
+				Message message = Message.obtain(handler,R.id.decode_succeeded, savedResultToShow);
 				handler.sendMessage(message);
 			}
 			savedResultToShow = null;
@@ -173,8 +174,7 @@ public final class CaptureActivity extends BaseActivity implements
 	}
 
 	@Override
-	public void surfaceChanged(SurfaceHolder holder, int format, int width,
-							   int height) {
+	public void surfaceChanged(SurfaceHolder holder, int format, int width,int height) {
 
 	}
 
@@ -183,10 +183,8 @@ public final class CaptureActivity extends BaseActivity implements
 		beepManager.playBeepSoundAndVibrate();
 
 		String msg = rawResult.getText();
-		if(!TextUtils.isEmpty(msg) && msg.startsWith("0x"))
-		{
-			if(msg.length() == 42)
-			{
+		if(!TextUtils.isEmpty(msg) && msg.startsWith("0x")){
+			if(msg.length() == 42){
 				if(type == 1)
 				{
 					Intent i = new Intent();
