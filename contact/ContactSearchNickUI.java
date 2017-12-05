@@ -103,7 +103,7 @@ public class ContactSearchNickUI extends BaseActivity implements OnItemClickList
 						}
 					}, 500);
 						
-					}
+				}
 				return false;
 			}
 		});
@@ -186,6 +186,7 @@ public class ContactSearchNickUI extends BaseActivity implements OnItemClickList
 	public void onRefresh() {
 		searchNick(mInputSearch.getText().toString());
 	}
+	
 	/**
 	 * To test whether the current list is empty
 	 */
