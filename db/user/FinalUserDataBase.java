@@ -402,7 +402,6 @@ public class FinalUserDataBase {
 
     /**
      * Modify the chat information in the file transfer
-     *
      * @param messageId
      * @param state
      */
@@ -424,7 +423,6 @@ public class FinalUserDataBase {
 
     /**
      * Modify the chat message file collection status
-     *
      * @param messageId
      * @param state     0: no collection 1: already collected
      */
@@ -458,8 +456,7 @@ public class FinalUserDataBase {
         values.put(TableField.FIELD_RESERVED_DATA2, vo.getThirdGender());
         values.put(TableField.FIELD_CHAT_THIRDID, vo.getThirdId());
         values.put(TableField.FIELD_RESERVED_DATA5, vo.getInviteType());
-        if(vo.getCreateTime()>0)
-        {
+        if(vo.getCreateTime()>0){
             values.put(TableField.FIELD_RESERVED_DATA15, vo.getCreateTime());
         }
         if (vo.getType() == 7)
