@@ -91,11 +91,6 @@ public class ThreadPoolManager extends HandlerThread {
 		pool.execute(command);
 	}
 	
-//	public void open() {		
-//	}
-//	public void close() {		
-//	}
-	
 	public void destory() {
 		setServiceRun(false);
 		shutdownAndAwaitTermination();
