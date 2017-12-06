@@ -66,7 +66,6 @@ public class XmppUtils implements ConnectionListener {
 	public static boolean isOnline;//Whether online
 	
 	public static XmppUtils getInstance(){
-		
 		if(instance == null){
 			instance = new XmppUtils();
 		}
@@ -75,7 +74,6 @@ public class XmppUtils implements ConnectionListener {
 	
 	/**
 	 * Create a XMPP connection instance
-	 * 
 	 * @return
 	 * @throws org.jivesoftware.smack.XMPPException
 	 */
@@ -125,9 +123,7 @@ public class XmppUtils implements ConnectionListener {
 //			XmppUtils.SERVER_HOST = NextApplication.myInfo.getHost();
 //			XmppUtils.RESOURCE = NextApplication.myInfo.getToken();
 			mBundle.putStringArray(XmppAction.ACTION_LOGIN, new String[]{username,NextApplication.myInfo.getToken()});
-			
-			Utils.intentService(mContext, XmppService.class, XmppAction.ACTION_LOGIN,
-					XmppAction.ACTION_LOGIN,mBundle);
+			Utils.intentService(mContext, XmppService.class, XmppAction.ACTION_LOGIN,XmppAction.ACTION_LOGIN,mBundle);
 		}
 	}
 	
@@ -168,13 +164,11 @@ public class XmppUtils implements ConnectionListener {
 	 */
 	private void configureConnection(ProviderManager pm) {
 		// Private Data Storage
-		pm.addIQProvider("query", "jabber:iq:private",
-				new PrivateDataManager.PrivateDataIQProvider());
+		pm.addIQProvider("query", "jabber:iq:private",new PrivateDataManager.PrivateDataIQProvider());
 
 		// Time
 		try {
-			pm.addIQProvider("query", "jabber:iq:time",
-					Class.forName("org.jivesoftware.smackx.packet.Time"));
+			pm.addIQProvider("query", "jabber:iq:time",Class.forName("org.jivesoftware.smackx.packet.Time"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			// Logger.v(TAG,
