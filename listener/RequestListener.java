@@ -11,7 +11,7 @@ public interface RequestListener {
     /** Start the request data */
     void start();
 
-    /** * Data request is successful*/
+    /** * Data request successful*/
     void success(JSONObject response);
 
     /*** Data request failed*/
