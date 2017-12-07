@@ -105,6 +105,9 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         }
     }
 
+    /**
+    *show toast
+    */
     protected void showToast(String msg){
         MyToast.showToast(this, msg);
     }
@@ -150,6 +153,9 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         }).start();
     }
 
+    /**
+    * exit
+    */
     public static void exit() {
         if (activitys != null && !activitys.isEmpty()) {
             for (Activity act : activitys) {
@@ -161,6 +167,9 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         }
     }
 
+    /**
+    *finish chatting history
+    */
     private void finishChattingUIHistory(){
         if (this instanceof ChattingUI && activitys != null && !activitys.isEmpty()) {
             for (Activity act : activitys) {
