@@ -18,7 +18,6 @@ public class UpdateVersionBroadcastReceiver extends BroadcastReceiver {
 				String version = i.getExtras().getString("version");
 				String describe = i.getExtras().getString("describe");
 				String url = i.getExtras().getString("url");
-
 				Intent intent = new Intent(context, AlertActivity.class);
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				intent.putExtra("type", type);
