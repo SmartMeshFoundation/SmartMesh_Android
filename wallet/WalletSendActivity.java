@@ -86,7 +86,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
     float amount;
     String address;
 
-    int walletType;
+    int walletType;//wallet type scan or true
 
     double ethBalance,fftBalance;
 
@@ -138,8 +138,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
             setTitle(getString(R.string.send_blance_title,"ETH"));
         }
 
-        if(amount>0)
-        {
+        if(amount>0){
             toValue.setText(amount+"");
         }
 
@@ -299,15 +298,12 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
                 showToast(getString(R.string.bloance_not_enough));
                 return;
             }
-        }
-        else{//
-            if(currentGas>ethBalance)
-            {
+        }else{
+            if(currentGas>ethBalance){
                 showToast(getString(R.string.bloance_not_enough));
                 return;
             }
-            if(Double.valueOf(toValue.getText().toString())>fftBalance)
-            {
+            if(Double.valueOf(toValue.getText().toString())>fftBalance){
                 showToast(getString(R.string.bloance_not_enough));
                 return;
             }
@@ -316,8 +312,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
             @Override
             public void getEditText(String editText) {
                 LoadingDialog.show(WalletSendActivity.this,"");
-                if(sendtype == 0)
-                {
+                if(sendtype == 0){
                     sendtransEth(editText);
                 }else{
                     sendtransToken(editText);
@@ -344,8 +339,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher {
                             break;
                         }
                     }
-                    if(account ==null)
-                    {
+                    if(account ==null){
                         Message message = Message.obtain();
                         message.obj = "Error";
                         message.what = 3;
