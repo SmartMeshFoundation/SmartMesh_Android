@@ -28,6 +28,7 @@ import java.util.UUID;
 
 public class RegistUI extends BaseActivity {
 
+    //login util
     private LoginUtil loginUtil;
 
     private EditText userName,password,againPwd;//The user name, password, enter the password, the password prompt again
@@ -35,7 +36,7 @@ public class RegistUI extends BaseActivity {
     private TextView regist;//register
 
     /**
-     * show password
+     * show password true or false
      */
     private boolean isShowPassWorld = false;
 
