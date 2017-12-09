@@ -184,6 +184,7 @@ public class XmppService extends Service {
         }
     }
 
+    
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
@@ -219,6 +220,9 @@ public class XmppService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
+    /**
+    * message listener
+    */
     class NextPacketListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
