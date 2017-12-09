@@ -237,6 +237,9 @@ public class UserBaseVo  extends ImageResizer implements Serializable {
 		return this;
 	}
 	
+	/**
+	* parse vo
+	*/
 	public UserBaseVo parse(JSONObject obj){
 		
 		if (obj == null){
