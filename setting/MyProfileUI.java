@@ -69,8 +69,10 @@ public class MyProfileUI extends BaseActivity {
      */
     private Uri photoUri;
 
+    /**image*/
     private String imgPath;
 
+    /**gender*/
     private String gender;
 
     private UserInfoSettingReceiver infoSettingReceiver;
