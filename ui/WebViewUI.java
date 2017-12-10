@@ -86,10 +86,6 @@ public class WebViewUI extends BaseActivity {
         public void setValue(String a, String b, String c, String d) {
 
         }
-//		@JavascriptInterface
-//		public String getValue(){
-//			return "eos";
-//		}
     }
 
     @SuppressLint("SetJavaScriptEnabled")
