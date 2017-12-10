@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.view.Window;
 
 import com.lingtuan.firefly.NextApplication;
@@ -24,7 +25,6 @@ public class AlertActivity extends BaseActivity{
 
 	@Override
 	protected void setContentView() {
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.alert_null_layout);
 	}
 
@@ -67,6 +67,9 @@ public class AlertActivity extends BaseActivity{
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.dismiss();
+								if (TextUtils.isEmpty(url)){
+									return;
+								}
 								showToast(getString(R.string.chatting_start_download));
 								int index = url.lastIndexOf("/")+1;
 								String apkName = url.substring(index,url.length());
@@ -107,6 +110,9 @@ public class AlertActivity extends BaseActivity{
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.dismiss();
+								if (TextUtils.isEmpty(url)){
+									return;
+								}
 								showToast(getString(R.string.chatting_start_download));
 								int index = url.lastIndexOf("/")+1;
 								String apkName = url.substring(index,url.length());
