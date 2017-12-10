@@ -84,27 +84,20 @@ public class UpdateVersionService extends Service {
 				if(!TextUtils.isEmpty(response.optString("coerce"))){
 					coerce = Integer.parseInt(response.optString("coerce"));
 				}
-				if (coerce == 0)// Don't force
-				{
-					Bundle data = new Bundle();
+				
+				Bundle data = new Bundle();
+				if (coerce == 0){// Don't force
 					data.putInt("type", 0);
-					data.putString("version", version);
-					data.putString("describe", describe);
-					data.putString("url", url);
-					Intent intent = new Intent();
-					intent.setAction(Constants.ACTION_UPDATE_VERSION);
-					intent.putExtras(data);
-					sendBroadcast(intent);
-				} else {// Forced to upgrade
-					Bundle data = new Bundle();
+				}else{
 					data.putInt("type", 1);
-					data.putString("version", version);
-					data.putString("describe", describe);
-					data.putString("url", url);
-					Intent intent = new Intent(Constants.ACTION_UPDATE_VERSION);
-					intent.putExtras(data);
-					sendBroadcast(intent);
 				}
+				data.putString("version", version);
+				data.putString("describe", describe);
+				data.putString("url", url);
+				Intent intent = new Intent();
+				intent.setAction(Constants.ACTION_UPDATE_VERSION);
+				intent.putExtras(data);
+				sendBroadcast(intent);
 			}
 
 			@Override
