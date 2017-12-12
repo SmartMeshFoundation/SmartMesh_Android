@@ -32,12 +32,12 @@ public final class BeepManager {
 		updatePrefs();
 	}
 
+	//update prefs
 	public void updatePrefs() {
-		/* �����޸� */
 		SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(activity);
 		playBeep = shouldBeep(prefs, activity);
-		vibrate = false;// ����
+		vibrate = false;
 		// vibrate = prefs.getBoolean(PreferencesActivity.KEY_VIBRATE, false);
 		if (playBeep && mediaPlayer == null) {
 			// The volume on STREAM_SYSTEM is not adjustable, and users found it
@@ -60,8 +60,7 @@ public final class BeepManager {
 	}
 
 	private static boolean shouldBeep(SharedPreferences prefs, Context activity) {
-		/* �����޸� */
-		boolean shouldPlayBeep = true;// ����
+		boolean shouldPlayBeep = true;
 		// boolean shouldPlayBeep = prefs.getBoolean(
 		// PreferencesActivity.KEY_PLAY_BEEP, true);
 
@@ -80,8 +79,7 @@ public final class BeepManager {
 		MediaPlayer mediaPlayer = new MediaPlayer();
 		mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 		// When the beep has finished playing, rewind to queue up another one.
-		mediaPlayer
-				.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+		mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 					@Override
 					public void onCompletion(MediaPlayer player) {
 						player.seekTo(0);
