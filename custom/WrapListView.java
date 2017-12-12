@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 import android.widget.ListView;
 
 public class WrapListView extends ListView {
-	private int mWidth = 0;
+	private int mWidth = 0;//width
 	
 	public WrapListView(Context context, AttributeSet attrs) {
 		this(context, attrs, 0);
@@ -26,7 +26,6 @@ public class WrapListView extends ListView {
 			int childWidth = getChildAt(i).getMeasuredWidth();
 			mWidth = Math.max(mWidth, childWidth);
 		}
-		
 		setMeasuredDimension(mWidth - 50, height);
 	}
 	
