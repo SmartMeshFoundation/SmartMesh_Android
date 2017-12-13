@@ -101,16 +101,6 @@ public class FinalUserDbHelper extends SQLiteOpenHelper {
 				+ TableField.FIELD_RESERVED_DATA12 + " text,"
 				+ TableField.FIELD_RESERVED_DATA13 + " text)"
 				;
-//		//Friends group table
-//		String sql_group = "CREATE TABLE IF NOT EXISTS "
-//				+ TableField.TABLE_GROUP  + "("
-//				+ TableField._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-//				+ TableField.FIELD_GROUP_GID + " integer,"
-//				+ TableField.FIELD_GROUP_NAME + " text,"
-//				+ TableField.FIELD_RESERVED_DATA1 + " text,"
-//				+ TableField.FIELD_RESERVED_DATA2 + " text,"
-//				+ TableField.FIELD_RESERVED_DATA3 + " text)"
-//				;
 		//Chat table
 		String sql_chat = "CREATE TABLE IF NOT EXISTS "
 				+ TableField.TABLE_CHAT				 + "("
@@ -421,7 +411,6 @@ public class FinalUserDbHelper extends SQLiteOpenHelper {
 
 		
 		db.execSQL(sql_user_info);
-//		db.execSQL(sql_group);
 		db.execSQL(sql_friend);
 		db.execSQL(sql_chat);
 		db.execSQL(sql_chat_event);
