@@ -36,6 +36,7 @@ public class MessageEventAdapter extends BaseAdapter {
         }
     }
 
+    //update ui list
     public void updateList(List<ChatMsg> mList) {
         this.mList = mList;
         notifyDataSetChanged();
@@ -49,6 +50,7 @@ public class MessageEventAdapter extends BaseAdapter {
         return mList.size();
     }
 
+    //add message
     public void addChatMsg(ChatMsg msg) {
         if (msg == null) {
             return;
@@ -209,6 +211,7 @@ public class MessageEventAdapter extends BaseAdapter {
         return convertView;
     }
 
+    //get content
     private String getContent(ChatMsg msg, String content) {
         switch (msg.getType()) {
             case 1:
