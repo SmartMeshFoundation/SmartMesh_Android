@@ -156,6 +156,7 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
         public void onReceive(Context context, Intent intent) {
             if (intent != null && (Constants.CHANGE_LANGUAGE.equals(intent.getAction()))) {
                 mTitle.setText(R.string.main_contact);
+                checkListEmpty();
             }else if (intent != null && (Constants.OFFLINE_MEMBER_LIST.equals(intent.getAction()))){
                 mDatas = (ArrayList<WifiPeopleVO>) intent.getSerializableExtra("onLineMember");
                 new Handler().postDelayed(new Runnable() {
