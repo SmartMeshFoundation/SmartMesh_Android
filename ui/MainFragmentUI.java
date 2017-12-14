@@ -166,14 +166,12 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    //get unread count
     private void getUnreadCount() {
         Map<String, Integer> map = FinalUserDataBase.getInstance().getUnreadMap();
         totalUnreadCount = map.get("totalunread");
         Utils.formatUnreadCount(mMsgUnread, totalUnreadCount);
     }
-
-
-
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override

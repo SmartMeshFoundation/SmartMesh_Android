@@ -198,8 +198,7 @@ public class NextApplication extends Application implements NewHeadHandler {
             Node node = Geth.newNode(getFilesDir() + SDCardCtrl.ETHEREUM ,nodeConfig);
             node.start();
             ec = node.getEthereumClient();
-            if(state ==1)
-            {
+            if(state ==1){
                 ec.subscribeNewHead(new geth.Context(),this,16);
             }
         } catch (Exception e) {

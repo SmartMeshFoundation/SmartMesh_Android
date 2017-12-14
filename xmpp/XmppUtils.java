@@ -46,7 +46,7 @@ import org.jivesoftware.smackx.search.UserSearch;
 
 public class XmppUtils implements ConnectionListener {
 
-	/**openfire服务器所在的ip */
+	/**openfire server ip */
 	public static String SERVER_HOST = Constants.GLOBAL_SWITCH_OPEN ? "xmpp.yueni.cc" : "118.89.56.218" ;
 	
 	public static String SERVER_NAME = "firefly.com";//Set the openfire server name
