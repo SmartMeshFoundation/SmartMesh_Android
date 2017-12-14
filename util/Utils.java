@@ -217,7 +217,7 @@ public class Utils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "1.2.0";
+        return "1.0.0";
     }
 
     /**
@@ -447,13 +447,6 @@ public class Utils {
         return (int) (dpValue * scale + 0.5f);
     }
 
-    /**
-     * According to the resolution of the mobile phone from the px unit into dp (pixels)
-     */
-    public static int px2dip(Context context, float pxValue) {
-        final float scale = context.getResources().getDisplayMetrics().density;
-        return (int) (pxValue / scale + 0.5f);
-    }
 
     public static void notifySystemUpdateFolder(Context context, File file) {
         //Comrade system update photo album
@@ -630,40 +623,7 @@ public class Utils {
         return value.replace("\\n", "").replace("\\r", "");
     }
 
-    public static void openResource(Context c, int resourceId, View v) {
-        try {
-            InputStream is = c.getResources().openRawResource(resourceId);
-            Bitmap bitmap = BitmapFactory.decodeStream(is);
-            BitmapDrawable drawable = new BitmapDrawable(bitmap);
-            v.setBackgroundDrawable(drawable);
-            is.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } catch (Error e) {
-            e.printStackTrace();
-        }
-    }
 
-
-    /**
-     * Recycling each guide page memory
-     *
-     * @param iv
-     */
-    public static void recycleImageResource(ImageView iv) {
-        try {
-            BitmapDrawable bd = (BitmapDrawable) iv.getDrawable();
-            if (bd.getBitmap() != null) {
-                Bitmap bm = bd.getBitmap();
-                if (bm != null && !bm.isRecycled()) {
-                    bm.recycle();
-                    bm = null;
-                    iv.setImageResource(0);
-                }
-            }
-        } catch (Exception e) {
-        }
-    }
 
     /**
      * copy the text to the clipboard
@@ -686,7 +646,12 @@ public class Utils {
         String language = MySharedPrefs.readString(context,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_LANGUAFE);
         if (TextUtils.isEmpty(language)){
             // Local language setting
-            Locale locale = new Locale(Locale.getDefault().getLanguage());
+            Locale locale;
+            if (Build.VERSION.SDK_INT >= 24 && TextUtils.equals(Locale.getDefault().toString(),"en")){
+                locale = new Locale(Locale.getDefault().toString());
+            }else{
+                locale = new Locale(Locale.getDefault().getLanguage());
+            }
             Resources res = context.getResources();
             DisplayMetrics dm = res.getDisplayMetrics();
             Configuration conf = res.getConfiguration();
@@ -699,10 +664,6 @@ public class Utils {
             return;
         }
 
-        Locale defaultLocale = Locale.getDefault();
-        if (TextUtils.equals(language,defaultLocale.getLanguage())){
-            return;
-        }
         // Local language setting
         Locale locale = new Locale(language);
         Resources res = context.getResources();
@@ -1023,20 +984,4 @@ public class Utils {
         return ids;
     }
 
-
-    /**
-     * @ param loginUserUid currently logged in user's uid
-     * @ param offLineChatUid chatting uid
-     * @ return no network chat SharedPreferences key
-     * @ TODO splicing no network chat chat single key
-     */
-    public static String buildOffLinePreferencesKey(String loginUserUid, String offLineChatUid) {
-        StringBuilder sb = new StringBuilder();
-        String prefix = "OffLine_";
-        sb.append(prefix);
-        sb.append(loginUserUid);
-        sb.append("_");
-        sb.append(offLineChatUid);
-        return sb.toString();
-    }
 }
