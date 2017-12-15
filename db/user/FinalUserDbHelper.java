@@ -46,23 +46,7 @@ public class FinalUserDbHelper extends SQLiteOpenHelper {
 		db.execSQL(sql4);
 		db.execSQL(sql5);
 	}
-	/**
-	 * abandoned
-	 * @param db
-	 */
-	@Deprecated
-	private void dropTable(SQLiteDatabase db) {
-		String sql_friend = "DROP TABLE IF EXISTS " + TableField.TABLE_FRIEND;
-//		String sql_group = "DROP TABLE IF EXISTS " + TableField.TABLE_GROUP;
-		String sql_chat = "DROP TABLE IF EXISTS " + TableField.TABLE_CHAT;
-		String sql_chat_event = "DROP TABLE IF EXISTS " + TableField.TABLE_CHAT_EVENT;
-		String sql_dynamic = "DROP TABLE IF EXISTS " + TableField.TABLE_DYNAMIC_NOTIF;
-		db.execSQL(sql_friend);
-//		db.execSQL(sql_group);
-		db.execSQL(sql_chat);
-		db.execSQL(sql_chat_event);
-		db.execSQL(sql_dynamic);
-	}
+
 
 	private void createTable(SQLiteDatabase db) {
 		//The contact

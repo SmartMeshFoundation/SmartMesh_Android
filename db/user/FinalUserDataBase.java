@@ -6,17 +6,16 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import com.lingtuan.firefly.NextApplication;
-import com.lingtuan.firefly.db.TableField;
-import com.lingtuan.firefly.util.MySharedPrefs;
-import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.vo.ChatMsg;
 import com.lingtuan.firefly.contact.vo.FriendRecommentVo;
 import com.lingtuan.firefly.contact.vo.GroupMemberAvatarVo;
 import com.lingtuan.firefly.contact.vo.PhoneContactGroupVo;
 import com.lingtuan.firefly.contact.vo.PhoneContactVo;
+import com.lingtuan.firefly.db.TableField;
+import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
+import com.lingtuan.firefly.util.MySharedPrefs;
+import com.lingtuan.firefly.vo.ChatMsg;
 import com.lingtuan.firefly.vo.UserBaseVo;
 import com.lingtuan.firefly.vo.UserInfoVo;
-import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
 
 import org.jivesoftware.smack.packet.Message.MsgType;
 
@@ -28,7 +27,6 @@ import java.util.Map;
 public class FinalUserDataBase {
 
     private static FinalUserDataBase instance;
-    //datavase helper
     private FinalUserDbHelper helper;
     private SQLiteDatabase db;
 
@@ -45,7 +43,6 @@ public class FinalUserDataBase {
         }
     }
 
-    /**database instance*/
     public static synchronized FinalUserDataBase getInstance() {
         if (instance == null) {
             instance = new FinalUserDataBase();
@@ -53,6 +50,9 @@ public class FinalUserDataBase {
         }
         return instance;
     }
+
+
+
 
     /**
      * Modify the recent chat messages
@@ -73,6 +73,7 @@ public class FinalUserDataBase {
 
     /**
      * Message to heavy (ah, the server is not to force The client is trouble Really don't want to write the code)
+     *
      * @param msgId
      * @param msgType
      * @param type
@@ -315,8 +316,7 @@ public class FinalUserDataBase {
 
     /**
      * Whether to show chat time
-     * @params chatId chat id
-     * @params current time
+     *
      * @return
      */
     public boolean isShowTime(String chatId, long currentTime) {
@@ -341,7 +341,7 @@ public class FinalUserDataBase {
 
     /**
      * If there is no net chat show time
-     * @params chatId chatid
+     *
      * @return
      */
     public boolean isOffLineShowTime(String chatId, long currentTime) {
@@ -402,6 +402,7 @@ public class FinalUserDataBase {
 
     /**
      * Modify the chat information in the file transfer
+     *
      * @param messageId
      * @param state
      */
@@ -423,6 +424,7 @@ public class FinalUserDataBase {
 
     /**
      * Modify the chat message file collection status
+     *
      * @param messageId
      * @param state     0: no collection 1: already collected
      */
@@ -456,7 +458,8 @@ public class FinalUserDataBase {
         values.put(TableField.FIELD_RESERVED_DATA2, vo.getThirdGender());
         values.put(TableField.FIELD_CHAT_THIRDID, vo.getThirdId());
         values.put(TableField.FIELD_RESERVED_DATA5, vo.getInviteType());
-        if(vo.getCreateTime()>0){
+        if(vo.getCreateTime()>0)
+        {
             values.put(TableField.FIELD_RESERVED_DATA15, vo.getCreateTime());
         }
         if (vo.getType() == 7)
@@ -482,30 +485,6 @@ public class FinalUserDataBase {
         db.execSQL(sql, new String[]{chatId});
     }
 
-    /**
-     * Modify the chat has read the information
-     *
-     * @param chatId
-     */
-    public void updateUnreadEventChat(String chatId, int num) {
-
-        String sql = "select " + TableField.FIELD_CHAT_UNREAD + " from " + TableField.TABLE_CHAT_EVENT
-                + " where " + TableField.FIELD_CHAT_ID + "=? and " + TableField.FIELD_CHAT_HIDDEN + " = 0";
-        Cursor cursor = db.rawQuery(sql, new String[]{chatId});
-
-        int unread = 0;
-        if (cursor.moveToNext()) {
-            unread = cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD));
-        }
-        cursor.close();
-        unread = unread - num < 0 ? 0 : unread - num;
-
-        String unreadNum = unread + "";
-        sql = "update " + TableField.TABLE_CHAT_EVENT
-                + " set " + TableField.FIELD_CHAT_UNREAD + "=?"
-                + " where " + TableField.FIELD_CHAT_ID + "=? ";
-        db.execSQL(sql, new String[]{unreadNum, chatId});
-    }
 
     /**
      * Modify the group chat Someone @ I have read
@@ -518,22 +497,6 @@ public class FinalUserDataBase {
                 + " where " + TableField.FIELD_CHAT_ID + "=?  and "
                 + TableField.FIELD_RESERVED_DATA8 + "!=0";
         db.execSQL(sql, new String[]{chatId});
-    }
-
-    /**
-     * Modify the mesh free chat read information
-     *
-     * @param chatId
-     */
-    public void updateOffLineUnreadChat(String chatId) {
-        String sql = "update " + TableField.TABLE_CHAT
-                + " set " + TableField.FIELD_CHAT_UNREAD + "=0"
-                + " where " + TableField.FIELD_CHAT_ID + "=? and "
-                + TableField.FIELD_RESERVED_DATA7 + "=1";
-
-        if (db != null && !TextUtils.isEmpty(chatId)) { // add by : KNothing ,for  : http://www.umeng.com/apps/e440309727b042654561d335/error_types/55e14515498ebeba07251800
-            db.execSQL(sql, new String[]{chatId});
-        }
     }
 
     /**
@@ -606,70 +569,6 @@ public class FinalUserDataBase {
             msg.setUserfrom(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA17)));
             list.add(msg);
         }
-
-        cursor.close();
-        return list;
-    }
-
-    /**
-     * Get no network chat record
-     *
-     * @param chatId Chat with who
-     * @param limit  From which to take
-     * @param count  Article take how much
-     * @return
-     */
-    public List<ChatMsg> getChatMsgOffLineListByChatId(String chatId, int limit, int count) {
-
-        String sql = "select * from " + TableField.TABLE_CHAT
-                + " where " + TableField.FIELD_CHAT_ID + "=? and " + TableField.FIELD_RESERVED_DATA7 + "=1 order by " + TableField._ID + " desc "
-                + " limit " + limit + "," + count;
-        String sql1 = "select * from (" + sql + ") order by " + TableField._ID;
-        Cursor cursor = db.rawQuery(sql1, new String[]{chatId});
-        List<ChatMsg> list = new ArrayList<ChatMsg>();
-        ChatMsg msg;
-
-        while (cursor.moveToNext()) {
-
-            msg = new ChatMsg();
-            msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
-            msg.setContent(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_BODY)));
-            msg.setGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_FRIEND_GENDER)));
-            msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
-            msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
-            msg.setUserId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
-            msg.setUserImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
-            msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
-            msg.setSend(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_ISSEND)));
-
-            msg.setCover(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_COVER)));
-            msg.setSecond(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_SECOND)));
-            msg.setLon(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_LON)));
-            msg.setLat(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_LAT)));
-            msg.setThirdName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_THIRDNAME)));
-            msg.setThirdImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_THIRDIMAGE)));
-            msg.setThirdId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_THIRDID)));
-            msg.setShopAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_SHOPADDRESS)));
-            msg.setCardSign(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CARDSIGN)));
-
-            msg.setLocalUrl(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_LOCALURL)));
-            msg.setShowTime(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SHOWTIME)) == 1 ? true : false);
-
-            msg.setGroupImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_GROUP_IMAGE)));
-            msg.setMsgTypeInt(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_OBJECT)));
-
-            msg.setMessageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
-            msg.setThirdGender(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA2)));
-            msg.setDatingSOSId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
-            msg.setFriendLog(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
-            msg.setInviteType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
-            msg.setNumber(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
-            msg.setOffLineMsg(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)) == 1 ? true : false);
-            msg.setShareTitle(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
-            list.add(msg);
-        }
-
         cursor.close();
         return list;
     }
@@ -788,61 +687,6 @@ public class FinalUserDataBase {
         return list;
     }
 
-    /**
-     * Get no network chat my message history record
-     *
-     * @return
-     */
-    public List<ChatMsg> getChatMsgOffLineEventList() {
-
-        String sql = "select * from " + TableField.TABLE_CHAT_EVENT
-                + " where "
-                + TableField.FIELD_CHAT_HIDDEN + "=0 and "
-//				+ TableField.FIELD_CHAT_ID + "!='offline' and "
-                + TableField.FIELD_RESERVED_DATA7 + "=1 order by "
-                + TableField.FIELD_CHAT_MSGTIME + " desc ";
-        Cursor cursor = db.rawQuery(sql, null);
-        List<ChatMsg> list = new ArrayList<ChatMsg>();
-        ChatMsg msg;
-        while (cursor.moveToNext()) {
-
-            msg = new ChatMsg();
-            msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
-            msg.setContent(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_BODY)));
-            msg.setGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_FRIEND_GENDER)));
-            msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
-            msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
-            msg.setUserId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
-            msg.setUserImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
-            msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
-            msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
-            msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1 ? true : false);
-            msg.setDismissGroup(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_DISMISSGROUP)) == 1 ? true : false);
-            msg.setKickGroup(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_KICKGROUP)) == 1 ? true : false);
-            msg.setMessageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
-            msg.setShareFriendName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA2)));
-            msg.setFriendLog(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
-            String switchKey = Utils.buildOffLineRoomPreferencesKey(NextApplication.myInfo.getLocalId());
-            boolean isOpen = MySharedPrefs.readBooleanNormal(NextApplication.mContext, MySharedPrefs.FILE_USER, switchKey);
-            msg.setGroupMask(isOpen);
-            msg.setOffLineMsg(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)) == 1 ? true : false);
-            list.add(msg);
-        }
-        try {
-            Map<String, Integer> map = getOffLineUnreadMap();
-            for (int i = 0; i < list.size(); i++) {
-                list.get(i).setUnread(map.get(list.get(i).getChatId()) == null ? 0 : map.get(list.get(i).getChatId()));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        cursor.close();
-        return list;
-    }
-
-
-
 
     /**
      * Get my message history chat records only chat records (forward) used in the
@@ -946,9 +790,6 @@ public class FinalUserDataBase {
         return list;
     }
 
-
-
-
     /**
      * Get unread item number
      *
@@ -959,89 +800,6 @@ public class FinalUserDataBase {
             map.put("totalunread", 0);
 
         }
-        return map;
-    }
-
-    /**
-     * To obtain a single number of unread items
-     *
-     * @param chatId
-     * @param isOffLine
-     * @return
-     */
-    public int getUnreadByChatId(String chatId, boolean isOffLine) {
-        String sqlChat = " select "
-                + " sum(" + TableField.FIELD_CHAT_UNREAD
-                + ") from "
-                + TableField.TABLE_CHAT
-                + " where  " + TableField.FIELD_CHAT_ID + "=? "
-                + " and " + TableField.FIELD_RESERVED_DATA3 + "=?"
-                + " group by " + TableField.FIELD_CHAT_ID;
-        Cursor cursorChat = db.rawQuery(sqlChat, new String[]{chatId, isOffLine ? "1" : "0"});
-        int total = 0;
-        if (cursorChat.moveToNext()) {
-            total = cursorChat.getInt(0);
-        }
-        cursorChat.close();
-
-        if (total > 0) {
-            return total;
-        }
-
-        String sqlEventChat = " select "
-                + " sum(" + TableField.FIELD_CHAT_UNREAD
-                + ")"
-                + " from "
-                + TableField.TABLE_CHAT_EVENT
-                + " where " + TableField.FIELD_CHAT_ID + "=? "
-                + " group by " + TableField.FIELD_CHAT_ID;
-
-        Cursor cursorEventChat = db.rawQuery(sqlEventChat, null);
-        if (cursorEventChat.moveToNext()) {//To get my table of information system information or strangers unread records
-            total = cursorEventChat.getInt(0);
-        }
-        cursorEventChat.close();
-
-        return total;
-    }
-
-    /**
-     * Obtain the net number of unread items
-     *
-     * @return
-     */
-    public Map<String, Integer> getOffLineUnreadMap() {
-        Map<String, Integer> map = new HashMap<String, Integer>();
-        Map<String, Integer> mapUnread = new HashMap<String, Integer>();
-
-        String sqlChat = " select "
-                + TableField.FIELD_CHAT_ID
-                + "," +
-                TableField.FIELD_RESERVED_DATA4
-                + ",sum(" + TableField.FIELD_CHAT_UNREAD
-                + ") from "
-                + TableField.TABLE_CHAT
-                + " where "
-                + TableField.FIELD_RESERVED_DATA7 + "=1 "
-                + " group by " + TableField.FIELD_CHAT_ID;
-        Cursor cursorChat = db.rawQuery(sqlChat, null);
-        int total = 0;
-        int unFriendTotle = 0;
-        while (cursorChat.moveToNext()) {
-            String chatId = cursorChat.getString(0);
-            if (chatId == null) {
-                continue;
-            }
-
-            int unread = cursorChat.getInt(2);
-            map.put(chatId, unread);
-            total += unread;
-        }
-        cursorChat.close();
-
-        total = total - unFriendTotle;//Strangers don't remind
-        map.put("totalunread", total);
-
         return map;
     }
 
@@ -1090,336 +848,6 @@ public class FinalUserDataBase {
 
 
     /**
-     * Get paid news about you
-     */
-    public List<ChatMsg> getChatMsgMoneyList() {
-
-        String sql = "select * from " + TableField.TABLE_CHAT_EVENT + " where "
-                + TableField.FIELD_CHAT_SYSTEM + "=1 and ("
-                + TableField.FIELD_CHAT_TYPE + ">199 and "
-                + TableField.FIELD_CHAT_TYPE + "<211 ) and "
-                + TableField.FIELD_CHAT_HIDDEN + "=1 "
-                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc ";
-        Cursor cursor = db.rawQuery(sql, null);
-        List<ChatMsg> list = new ArrayList<ChatMsg>();
-        ChatMsg msg;
-
-        while (cursor.moveToNext()) {
-
-            msg = new ChatMsg();
-            msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
-            msg.setContent(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_BODY)));
-            msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
-            msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
-            msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1);
-            msg.setCreateTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATETIME)));
-            msg.setSort(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SORT)));
-            msg.setMessageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
-            msg.setMoney(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
-            msg.setNumber(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)));
-            msg.setMode(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
-            list.add(msg);
-
-        }
-
-        cursor.close();
-        return list;
-    }
-
-    /**
-     * Invite request information list
-     */
-    public List<ChatMsg> getChatMsgInviteList() {
-
-        String sql = "select * from " + TableField.TABLE_CHAT_EVENT + " where "
-                + TableField.FIELD_CHAT_SYSTEM + "=1 and (("
-                + TableField.FIELD_CHAT_TYPE + ">2 and "
-                + TableField.FIELD_CHAT_TYPE + "<12 ) or "
-                + TableField.FIELD_CHAT_TYPE + "=21) and  "
-                + TableField.FIELD_CHAT_HIDDEN + "=1 "
-                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc ";
-        Cursor cursor = db.rawQuery(sql, null);
-        List<ChatMsg> list = new ArrayList<ChatMsg>();
-        ChatMsg msg;
-
-        while (cursor.moveToNext()) {
-
-            msg = new ChatMsg();
-            msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
-            msg.setContent(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_BODY)));
-            msg.setGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_FRIEND_GENDER)));
-            msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
-            msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
-            msg.setUserId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
-            msg.setUserImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
-            msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
-            msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
-            msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1 );
-            msg.setAgree(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_AGREE)) == 1);
-
-            msg.setCreateId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEID)));
-            msg.setCreateName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATENAME)));
-            msg.setCreateImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEIMAGE)));
-            msg.setCreateAge(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEAGE)));
-            msg.setCreateGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEGENDER)));
-            msg.setCreategSign(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEGSIGN)));
-            msg.setSort(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SORT)));
-            msg.setGuest(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_GUEST)));
-            msg.setInviteMsg(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_INVITEMSG)));
-            msg.setCreateTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATETIME)));
-            msg.setInviteId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_INVITEID)));
-            msg.setShopAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_SHOPADDRESS)));
-            msg.setMessageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
-            msg.setModifyType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
-            msg.setSceneType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
-            msg.setGroupMask(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)) == 1);
-
-            list.add(msg);
-
-        }
-
-        cursor.close();
-        return list;
-    }
-
-    /**
-     * To obtain a list group system information
-     */
-    public List<ChatMsg> getChatMsgSystemGroupList() {
-
-        String sql = "select * from " + TableField.TABLE_CHAT_EVENT + " where "
-                + TableField.FIELD_CHAT_SYSTEM + "=1 and ("
-                + TableField.FIELD_CHAT_TYPE + ">99 and "
-                + TableField.FIELD_CHAT_TYPE + "<129 ) and "
-                + TableField.FIELD_CHAT_HIDDEN + "=1 "
-                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc ";
-        Cursor cursor = db.rawQuery(sql, null);
-        List<ChatMsg> list = new ArrayList<ChatMsg>();
-        ChatMsg msg;
-
-        while (cursor.moveToNext()) {
-
-            msg = new ChatMsg();
-            msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
-            msg.setContent(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_BODY)));
-            msg.setGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_FRIEND_GENDER)));
-            msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
-            msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
-            msg.setUserId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
-            msg.setUserImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
-            msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
-            msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
-            msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1);
-            msg.setAgree(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_AGREE)) == 1);
-            msg.setCover(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_COVER)));
-            msg.setGroupImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_GROUP_IMAGE)));
-            msg.setMsgTypeInt(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_OBJECT)));
-
-            msg.setCreateId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEID)));
-            msg.setCreateName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATENAME)));
-
-
-            msg.setCreateImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEIMAGE)));
-            msg.setCreateAge(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEAGE)));
-            msg.setCreateGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEGENDER)));
-            msg.setCreategSign(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEGSIGN)));
-            msg.setSort(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SORT)));
-            msg.setGuest(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_GUEST)));
-            msg.setInviteMsg(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_INVITEMSG)));
-            msg.setCreateTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATETIME)));
-            msg.setInviteId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_INVITEID)));
-            msg.setShopAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_SHOPADDRESS)));
-            msg.setMessageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
-            msg.setModifyType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
-            msg.setSceneType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
-            msg.setRemoteSource(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA18)));
-            msg.setInviteSource(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA20)));
-            list.add(msg);
-
-        }
-
-        cursor.close();
-        return list;
-    }
-
-
-    public List<ChatMsg> getChatMsgSystemGroupUnreadList104(int count) {
-
-        String sql = "select * from " + TableField.TABLE_CHAT_EVENT + " where "
-                + TableField.FIELD_CHAT_SYSTEM + "=1 and "
-                + TableField.FIELD_CHAT_TYPE + "=104 and "
-                + TableField.FIELD_CHAT_HIDDEN + "=1 "
-                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc limit 0,"
-                + count;
-        ;
-        Cursor cursor = db.rawQuery(sql, null);
-        List<ChatMsg> list = new ArrayList<ChatMsg>();
-        ChatMsg msg;
-
-        while (cursor.moveToNext()) {
-
-            msg = new ChatMsg();
-            msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
-            msg.setContent(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_BODY)));
-            msg.setGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_FRIEND_GENDER)));
-            msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
-            msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
-            msg.setUserId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
-            msg.setUserImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
-            msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
-            msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
-            msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1 );
-            msg.setAgree(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_AGREE)) == 1 );
-            msg.setCover(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_COVER)));
-            msg.setGroupImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_GROUP_IMAGE)));
-            msg.setMsgTypeInt(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_OBJECT)));
-
-            msg.setCreateId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEID)));
-            msg.setCreateName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATENAME)));
-
-
-            msg.setCreateImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEIMAGE)));
-            msg.setCreateAge(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEAGE)));
-            msg.setCreateGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEGENDER)));
-            msg.setCreategSign(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEGSIGN)));
-            msg.setSort(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SORT)));
-            msg.setGuest(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_GUEST)));
-            msg.setInviteMsg(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_INVITEMSG)));
-            msg.setCreateTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATETIME)));
-            msg.setInviteId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_INVITEID)));
-            msg.setShopAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_SHOPADDRESS)));
-            msg.setMessageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
-            msg.setModifyType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
-            msg.setSceneType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
-            list.add(msg);
-
-        }
-
-        cursor.close();
-        return list;
-    }
-
-    /**
-     * To obtain a list group system information
-     */
-    public List<ChatMsg> getChatMsgSystemGroupList104(String gid) {
-
-        String sql = "select * from " + TableField.TABLE_CHAT_EVENT + " where "
-                + TableField.FIELD_CHAT_SYSTEM + "=1 and "
-                + TableField.FIELD_CHAT_TYPE + "=104 and "
-                + TableField.FIELD_CHAT_HIDDEN + "=1 and "
-                + TableField.FIELD_FRIEND_UID + "=? "
-                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc ";
-        Cursor cursor = db.rawQuery(sql, new String[]{gid});
-        List<ChatMsg> list = new ArrayList<ChatMsg>();
-        ChatMsg msg;
-
-        while (cursor.moveToNext()) {
-
-            msg = new ChatMsg();
-            msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
-            msg.setContent(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_BODY)));
-            msg.setGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_FRIEND_GENDER)));
-            msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
-            msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
-            msg.setUserId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
-            msg.setUserImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
-            msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
-            msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
-            msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1);
-            msg.setAgree(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_AGREE)) == 1 );
-            msg.setCover(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_COVER)));
-            msg.setGroupImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_GROUP_IMAGE)));
-            msg.setMsgTypeInt(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_OBJECT)));
-
-            msg.setCreateId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEID)));
-            msg.setCreateName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATENAME)));
-            msg.setCreateImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEIMAGE)));
-            msg.setCreateAge(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEAGE)));
-            msg.setCreateGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEGENDER)));
-            msg.setCreategSign(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEGSIGN)));
-            msg.setSort(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SORT)));
-            msg.setGuest(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_GUEST)));
-            msg.setInviteMsg(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_INVITEMSG)));
-            msg.setCreateTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATETIME)));
-            msg.setInviteId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_INVITEID)));
-            msg.setShopAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_SHOPADDRESS)));
-            msg.setMessageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
-            msg.setModifyType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
-            msg.setSceneType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
-            msg.setInviteImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA17)));
-//            //用昵称显示
-//            if (msg.getInviteId() > 0 && NextApplication.myInfo != null) {
-//                String note = MySharedPrefs.readString(NextApplication.mContext, MySharedPrefs.KEY_FRIEND_NOTE + NextApplication.myInfo.getUid(), msg.getInviteId() + "");
-//                if (!TextUtils.isEmpty(note)) {
-//                    msg.setCreateName(note);
-//                }
-//            }
-            list.add(msg);
-
-        }
-
-        cursor.close();
-        return list;
-    }
-
-    /**
-     * Obtain invitation request information after the new one
-     */
-    public ChatMsg getChatMsgInvite() {
-
-        String sql = "select * from " + TableField.TABLE_CHAT_EVENT + " where "
-                + TableField.FIELD_CHAT_SYSTEM + "=1 and "
-                + TableField.FIELD_CHAT_TYPE + ">2 and "
-                + TableField.FIELD_CHAT_TYPE + "<12 and "
-                + TableField.FIELD_CHAT_HIDDEN + "=1 "
-                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc "
-                + " limit " + 0 + "," + 1;
-        Cursor cursor = db.rawQuery(sql, null);
-        ChatMsg msg = null;
-
-        if (cursor.moveToNext()) {
-
-            msg = new ChatMsg();
-            msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
-            msg.setContent(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_BODY)));
-            msg.setGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_FRIEND_GENDER)));
-            msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
-            msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
-            msg.setUserId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
-            msg.setUserImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
-            msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
-            msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
-            msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1 );
-            msg.setAgree(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_AGREE)) == 1 );
-
-            msg.setCreateId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEID)));
-            msg.setCreateName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATENAME)));
-            msg.setCreateImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEIMAGE)));
-            msg.setCreateAge(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEAGE)));
-            msg.setCreateGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEGENDER)));
-            msg.setCreategSign(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEGSIGN)));
-            msg.setSort(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SORT)));
-            msg.setGuest(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_GUEST)));
-            msg.setInviteMsg(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_INVITEMSG)));
-            msg.setCreateTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATETIME)));
-            msg.setInviteId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_INVITEID)));
-            msg.setShopAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_SHOPADDRESS)));
-            msg.setMessageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
-
-
-        }
-
-        cursor.close();
-        return msg;
-    }
-
-    /**
      * Add buddy request information after the new one
      */
     public ChatMsg getChatMsgAddContact() {
@@ -1454,100 +882,6 @@ public class FinalUserDataBase {
 
             msg.setGroupImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_GROUP_IMAGE)));
             msg.setMsgTypeInt(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_OBJECT)));
-        }
-
-        cursor.close();
-        return msg;
-    }
-
-    /**
-     * Group request information after the new one
-     */
-    public ChatMsg getChatMsgSystemGroup() {
-
-
-        String sql = "select * from " + TableField.TABLE_CHAT_EVENT + " where "
-                + TableField.FIELD_CHAT_SYSTEM + "=1 and ("
-                + TableField.FIELD_CHAT_TYPE + ">99 and "
-                + TableField.FIELD_CHAT_TYPE + "<129 ) and "
-                + TableField.FIELD_CHAT_HIDDEN + "=1 "
-                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc "
-                + " limit " + 0 + "," + 1;
-        Cursor cursor = db.rawQuery(sql, null);
-        ChatMsg msg = null;
-
-        if (cursor.moveToNext()) {
-
-            msg = new ChatMsg();
-            msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
-            msg.setContent(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_BODY)));
-            msg.setGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_FRIEND_GENDER)));
-            msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
-            msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
-            msg.setUserId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
-            msg.setUserImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
-            msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
-            msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
-            msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1 );
-            msg.setAgree(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_AGREE)) == 1);
-            msg.setCover(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_COVER)));
-            msg.setGroupImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_GROUP_IMAGE)));
-            msg.setMsgTypeInt(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_OBJECT)));
-
-            msg.setCreateId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEID)));
-            msg.setCreateName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATENAME)));
-            msg.setCreateImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEIMAGE)));
-            msg.setCreateAge(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEAGE)));
-            msg.setCreateGender(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEGENDER)));
-            msg.setCreategSign(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATEGSIGN)));
-            msg.setSort(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SORT)));
-            msg.setGuest(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_GUEST)));
-            msg.setInviteMsg(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_INVITEMSG)));
-            msg.setCreateTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATETIME)));
-            msg.setInviteId(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_INVITEID)));
-            msg.setShopAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_SHOPADDRESS)));
-            msg.setMessageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
-            msg.setModifyType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
-            msg.setSceneType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
-        }
-
-        cursor.close();
-        return msg;
-    }
-
-
-    /**
-     * About your payment information after get the new one
-     */
-    public ChatMsg getChatMsgMoney() {
-
-
-        String sql = "select * from " + TableField.TABLE_CHAT_EVENT + " where "
-                + TableField.FIELD_CHAT_SYSTEM + "=1 and ("
-                + TableField.FIELD_CHAT_TYPE + ">199 and "
-                + TableField.FIELD_CHAT_TYPE + "<300 ) and "
-                + TableField.FIELD_CHAT_HIDDEN + "=1 "
-                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc "
-                + " limit " + 0 + "," + 1;
-        Cursor cursor = db.rawQuery(sql, null);
-        ChatMsg msg = null;
-
-        if (cursor.moveToNext()) {
-
-            msg = new ChatMsg();
-            msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
-            msg.setContent(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_BODY)));
-            msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
-            msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
-            msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
-            msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1);
-            msg.setCreateTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATETIME)));
-            msg.setMessageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
-            msg.setMoney(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
-            msg.setNumber(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)));
-            msg.setMode(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
-
         }
 
         cursor.close();
@@ -1675,23 +1009,6 @@ public class FinalUserDataBase {
 
     }
 
-    /**
-     * Get reference number of unread items
-     *
-     * @return
-     */
-    public int getFriendsRecommentUnreadCount() {
-        int count = 0;
-        if (db != null) {
-            String sql = "select sum(" + TableField.FIELD_CHAT_UNREAD + ") from " + TableField.TABLE_FRIENDS_RECOMMENT;
-            Cursor cursor = db.rawQuery(sql, null);
-            if (cursor.moveToNext()) {
-                count = cursor.getInt(0);
-            }
-            cursor.close();
-        }
-        return count;
-    }
 
     /**
      * Friend recommended number of unread item was read
@@ -1782,14 +1099,14 @@ public class FinalUserDataBase {
 
         String[] selectionArgs = null;
 
-        if (!isSystem && !isHidden) {//正常聊天
+        if (!isSystem && !isHidden) {//normal chat
             sql = "select " + TableField.FIELD_CHAT_ID
                     + " from " + TableField.TABLE_CHAT_EVENT
                     + " where "
                     + TableField.FIELD_CHAT_ID + "=? and "
                     + TableField.FIELD_CHAT_SYSTEM + "=0 "/*and "
                     + TableField.FIELD_RESERVED_DATA7 + "=" + (vo.isOffLineMsg() ? 1 : 0)*/;
-        } else if (!isSystem && isHidden) {//陌生人聊天
+        } else if (!isSystem && isHidden) {
             sql = "select " + TableField.FIELD_CHAT_ID
                     + " from " + TableField.TABLE_CHAT_EVENT
                     + " where "
@@ -1918,33 +1235,6 @@ public class FinalUserDataBase {
     }
 
     /**
-     * Modify the recent chat group chat
-     */
-    public void updateChatEventGroupName(String groupName, String chatId) {
-        ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_FRIEND_UNAME, groupName);
-        String whereClause = TableField.FIELD_CHAT_ID + "=? and "
-                + TableField.FIELD_CHAT_SYSTEM + "=0 and "
-                + TableField.FIELD_CHAT_HIDDEN + "=0";
-        String[] whereArgs = null;
-        whereArgs = new String[]{String.valueOf(chatId)};
-
-        db.update(TableField.TABLE_CHAT_EVENT,
-                values,
-                whereClause,
-                whereArgs);
-    }
-
-    /**
-     * Modify the chat record of note
-     */
-    public void updateChatEventNameByUid(String chatId, String name) {
-        ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_FRIEND_UNAME, name);
-        db.update(TableField.TABLE_CHAT_EVENT, values, TableField.FIELD_CHAT_ID + "=?", new String[]{chatId});
-    }
-
-    /**
      * Modify the recent chat last one
      *
      * @param msg2
@@ -1999,17 +1289,6 @@ public class FinalUserDataBase {
     }
 
     /**
-     * Modify reference
-     */
-    public void updateRecommentContactAgree(String uid, boolean agree) {
-        ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_CHAT_AGREE, agree ? 1 : 0);
-        db.update(TableField.TABLE_FRIENDS_RECOMMENT, values,
-                TableField.FIELD_FRIEND_UID + "=?"
-                , new String[]{uid});
-    }
-
-    /**
      * Modify the recent chat messages
      *
      * @param uid
@@ -2028,50 +1307,6 @@ public class FinalUserDataBase {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Modify the recent chat messages
-     *
-     * @param agree   Whether or not to approve
-     * @param msgTime time
-     */
-    public void updateChatEventAgree(boolean agree, long msgTime) {
-        ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_CHAT_AGREE, agree ? 1 : 0);
-        db.update(TableField.TABLE_CHAT_EVENT, values,
-                TableField.FIELD_CHAT_MSGTIME + "=?",
-                new String[]{String.valueOf(msgTime)});
-    }
-
-    /**
-     * Modify the chat messages
-     * @param msgId
-     */
-    public void updateChatMsgAgree(boolean agree, String msgId) {
-        if (TextUtils.isEmpty(msgId)) {
-            return;
-        }
-        ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_CHAT_COVER, agree ? 1 : 0);
-        db.update(TableField.TABLE_CHAT, values,
-                TableField.FIELD_RESERVED_DATA1 + "=?",
-                new String[]{String.valueOf(msgId)});
-    }
-
-    /**
-     * Modify the group information
-     * @param msgId
-     */
-    public void updateChatEventMsgAgree(boolean agree, String msgId) {
-        if (TextUtils.isEmpty(msgId)) {
-            return;
-        }
-        ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_CHAT_COVER, agree ? 1 : 0);
-        db.update(TableField.TABLE_CHAT_EVENT, values,
-                TableField.FIELD_RESERVED_DATA1 + "=?",
-                new String[]{String.valueOf(msgId)});
     }
 
     /**
@@ -2118,49 +1353,6 @@ public class FinalUserDataBase {
         }
     }
 
-
-    /**
-     * Delete my information the payment information
-     */
-    public void deleteChatEventInviteByChatId(String tid, long times) {
-        db.delete(TableField.TABLE_CHAT_EVENT,
-                TableField.FIELD_CHAT_INVITEID + "=? and "
-                        + TableField.FIELD_CHAT_MSGTIME + "=? and "
-                        + TableField.FIELD_CHAT_HIDDEN + "=1", new String[]{tid, String.valueOf(times)});
-        ChatMsg msg = getChatMsgInvite();
-        if (msg != null) {
-            updateChatEventMsg(msg, true, false);
-        } else {
-            db.delete(TableField.TABLE_CHAT_EVENT,
-                    TableField.FIELD_CHAT_INVITEID + "=? and "
-                            + TableField.FIELD_CHAT_MSGTIME + "=? and "
-                            + TableField.FIELD_CHAT_HIDDEN + "=0", new String[]{tid, String.valueOf(times)});
-        }
-    }
-
-    /**
-     * Delete my information the payment information
-     *
-     * @param messageid
-     */
-    public void deleteChatEventSystemMoneyByMessageId(String messageid) {
-
-        db.delete(TableField.TABLE_CHAT_EVENT,
-                TableField.FIELD_CHAT_ID + "='system-4' and "
-                        + TableField.FIELD_CHAT_HIDDEN + "=1 and "
-                        + TableField.FIELD_CHAT_SYSTEM + "=1 and "
-                        + TableField.FIELD_RESERVED_DATA1 + "=?", new String[]{messageid});
-        ChatMsg msg = getChatMsgMoney();
-        if (msg != null) {
-            updateChatEventMsg(msg, true, false);
-        } else {
-            db.delete(TableField.TABLE_CHAT_EVENT,
-                    TableField.FIELD_CHAT_ID + "=? and "
-                            + TableField.FIELD_CHAT_HIDDEN + "=0 and "
-                            + TableField.FIELD_CHAT_SYSTEM + "=1", new String[]{"system-4"});
-        }
-    }
-
     /**
      * Delete my information add buddy
      *
@@ -2186,38 +1378,6 @@ public class FinalUserDataBase {
     }
 
     /**
-     * Delete my information group messaging
-     *
-     * @param messageid
-     */
-    public void deleteChatEventSystemGroupByMessageId(String messageid) {
-
-        db.delete(TableField.TABLE_CHAT_EVENT,
-                TableField.FIELD_CHAT_ID + "='system-3' and "
-                        + TableField.FIELD_CHAT_HIDDEN + "=1 and "
-                        + TableField.FIELD_CHAT_SYSTEM + "=1 and "
-                        + TableField.FIELD_RESERVED_DATA1 + "=?", new String[]{messageid});
-        ChatMsg msg = getChatMsgSystemGroup();
-        if (msg != null) {
-            updateChatEventMsg(msg, true, false);
-        } else {
-            db.delete(TableField.TABLE_CHAT_EVENT,
-                    TableField.FIELD_CHAT_ID + "=? and "
-                            + TableField.FIELD_CHAT_HIDDEN + "=0 and "
-                            + TableField.FIELD_CHAT_SYSTEM + "=1", new String[]{"system-3"});
-        }
-    }
-
-    /**
-     * Empty chat information list
-     */
-    public void clearChatMsg() {
-        db.delete(TableField.TABLE_CHAT, null, null);
-        db.delete(TableField.TABLE_CHAT_EVENT, null, null);
-    }
-
-
-    /**
      * Delete the chat messages
      *
      * @param chatId
@@ -2237,15 +1397,6 @@ public class FinalUserDataBase {
         updateChatEventContent(chatId, msg);
     }
 
-    /**
-     * Delete no network chat messages
-     *
-     * @param chatId
-     */
-    public void deleteOffLineChatMsgByChatId(String chatId) {
-        db.delete(TableField.TABLE_CHAT, TableField.FIELD_CHAT_ID + "=? and " + TableField.FIELD_RESERVED_DATA7 + "=1", new String[]{chatId});
-        deleteChatEventByChatId(chatId, false);
-    }
 
     /**
      * Delete the chat messages with messageId delete information
@@ -2276,24 +1427,6 @@ public class FinalUserDataBase {
 
 
     /**
-     * To save the contact information
-     *
-     * @param uid
-     * @param json
-     */
-    public void saveUserBaseInfo(String uid, String json) {
-        if (TextUtils.isEmpty(uid)) {
-            return;
-        }
-        boolean result = hasUser(uid);
-        if (result) {
-            updateUserBase(uid, json);
-        } else {
-            insertUserBase(uid, json);
-        }
-    }
-
-    /**
      * Save the friend information
      *
      * @param vo
@@ -2310,18 +1443,6 @@ public class FinalUserDataBase {
         }
     }
 
-    /**
-     * To save the contact information
-     *
-     * @param uid
-     * @param json
-     */
-    private void insertUserBase(String uid, String json) {
-        ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_FRIEND_UID, uid);
-        values.put(TableField.FIELD_USER_INFO, json);
-        db.insert(TableField.TABLE_USER_INFO, TableField._ID, values);
-    }
 
     /**
      * Save the friend information
@@ -2344,74 +1465,6 @@ public class FinalUserDataBase {
         values.put(TableField.FIELD_RESERVED_DATA7, vo.getAddress());
         db.insert(TableField.TABLE_FRIEND, TableField._ID, values);
     }
-
-    /**
-     * Save the friend information
-     *
-     * @param vo
-     * @param gid Group ID
-     */
-    private void insertFriendUserBase(WifiPeopleVO vo, int gid) {
-        ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_FRIEND_AGE, vo.getAge());
-        values.put(TableField.FIELD_FRIEND_DISTANCE, vo.getDistance());
-        values.put(TableField.FIELD_FRIEND_GENDER, vo.getGender());
-        values.put(TableField.FIELD_FRIEND_LOGINTIME, vo.getLogintime());
-        values.put(TableField.FIELD_FRIEND_NOTE, vo.getNote());
-        values.put(TableField.FIELD_FRIEND_PIC, vo.getPic());
-        values.put(TableField.FIELD_FRIEND_SIGHTML, vo.getSightml());
-        values.put(TableField.FIELD_FRIEND_THUMB, vo.getThumb());
-        values.put(TableField.FIELD_FRIEND_UID, vo.getLocalId());
-        values.put(TableField.FIELD_FRIEND_UNAME, vo.getUserName());
-        values.put(TableField.FIELD_GROUP_GID, gid);
-        values.put(TableField.FIELD_RESERVED_DATA3, 1);
-        values.put(TableField.FIELD_RESERVED_DATA4, 1);
-        values.put(TableField.FIELD_RESERVED_DATA7, vo.getAddress());
-        db.insert(TableField.TABLE_FRIEND, TableField._ID, values);
-    }
-
-    /**
-     * Update the contact information
-     *
-     * @param uid
-     * @param json
-     */
-    public void updateUserBase(String uid, String json) {
-        if (TextUtils.isEmpty(uid)) {
-            return;
-        }
-        ContentValues values = new ContentValues();
-
-        values.put(TableField.FIELD_FRIEND_UID, uid);
-        values.put(TableField.FIELD_USER_INFO, json);
-        db.update(TableField.TABLE_USER_INFO, values, TableField.FIELD_FRIEND_UID + "=?", new String[]{uid});
-    }
-
-    /**
-     * Update the friend information
-     */
-    public void updateFriendUserBase(WifiPeopleVO vo, int gid) {
-        if (vo == null || TextUtils.isEmpty(vo.getLocalId())) {
-            return;
-        }
-        ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_FRIEND_AGE, vo.getAge());
-        values.put(TableField.FIELD_FRIEND_DISTANCE, vo.getDistance());
-        values.put(TableField.FIELD_FRIEND_GENDER, vo.getGender());
-        values.put(TableField.FIELD_FRIEND_LOGINTIME, vo.getLogintime());
-        values.put(TableField.FIELD_FRIEND_NOTE, vo.getNote());
-        values.put(TableField.FIELD_FRIEND_PIC, vo.getPic());
-        values.put(TableField.FIELD_FRIEND_SIGHTML, vo.getSightml());
-        values.put(TableField.FIELD_FRIEND_THUMB, vo.getThumb());
-        values.put(TableField.FIELD_FRIEND_UID, vo.getLocalId());
-        values.put(TableField.FIELD_FRIEND_UNAME, vo.getUserName());
-        values.put(TableField.FIELD_GROUP_GID, gid);
-        values.put(TableField.FIELD_RESERVED_DATA3, 1);
-        values.put(TableField.FIELD_RESERVED_DATA4, vo.getMeetNum() + 1);
-        values.put(TableField.FIELD_RESERVED_DATA7, vo.getAddress());
-        db.update(TableField.TABLE_FRIEND, values, TableField.FIELD_FRIEND_UID + "=? and " + TableField.FIELD_RESERVED_DATA3 + "=?", new String[]{vo.getLocalId(), vo.isOffLine() ? "1" : "0"});
-    }
-
     /**
      * Update the friend information
      *
@@ -2435,54 +1488,6 @@ public class FinalUserDataBase {
         values.put(TableField.FIELD_RESERVED_DATA3, vo.isOffLine()?1:0);
         values.put(TableField.FIELD_RESERVED_DATA7, vo.getAddress());
         db.update(TableField.TABLE_FRIEND, values, TableField.FIELD_FRIEND_UID + "=? and " + TableField.FIELD_RESERVED_DATA3 + "=0", new String[]{vo.getLocalId()});
-    }
-
-    /**
-     * Get information are passing without a net
-     *
-     * @return
-     */
-    public List<WifiPeopleVO> getOffLineInfo(int limit, int count) {
-        List<WifiPeopleVO> list = new ArrayList<>();
-        String sql;
-        if (count == 0) {
-            sql = "select * from " + TableField.TABLE_FRIEND + " where " + TableField.FIELD_RESERVED_DATA3 + "=?" + " order by " + TableField.FIELD_FRIEND_UID;
-        } else {
-            sql = "select * from " + TableField.TABLE_FRIEND + " where " + TableField.FIELD_RESERVED_DATA3 + "=?" + " order by " + TableField.FIELD_FRIEND_UID + " limit " + limit + "," + count;
-        }
-        Cursor cursor = db.rawQuery(sql, new String[]{"1"});
-        WifiPeopleVO vo;
-        while (cursor.moveToNext()) {
-            vo = new WifiPeopleVO();
-            vo.setAge(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_AGE)));
-            vo.setDistance(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_DISTANCE)));
-            vo.setGender(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_GENDER)));
-            vo.setLogintime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_FRIEND_LOGINTIME)));
-            vo.setNote(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_NOTE)));
-            vo.setPic(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-            vo.setSightml(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_SIGHTML)));
-            vo.setThumb(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_THUMB)));
-            vo.setLocalId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
-            vo.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
-            vo.setOffLine(true);
-            vo.setMeetNum(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
-            vo.setAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
-            list.add(vo);
-        }
-        cursor.close();
-        return list;
-    }
-
-    /**
-     * Mobile group
-     *
-     * @return
-     */
-    public void moveFriendUserBaseByGid(int gid, String uid) {
-
-        ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_GROUP_GID, gid);
-        db.update(TableField.TABLE_FRIEND, values, TableField.FIELD_FRIEND_UID + "=?", new String[]{uid});
     }
 
 
@@ -2517,23 +1522,6 @@ public class FinalUserDataBase {
     }
 
     /**
-     * To obtain a single contact information
-     *
-     * @return
-     */
-    public String getUserInfoByUid(String uid) {
-        String sql = "select * from " + TableField.TABLE_USER_INFO + " where " + TableField.FIELD_FRIEND_UID + "=?"
-                + " order by " + TableField.FIELD_FRIEND_UID;
-        Cursor cursor = db.rawQuery(sql, new String[]{uid});
-        String json = null;
-        if (cursor.moveToNext()) {
-            json = cursor.getString(cursor.getColumnIndex(TableField.FIELD_USER_INFO));
-        }
-        cursor.close();
-        return json;
-    }
-
-    /**
      * To obtain a single friend
      *
      * @return
@@ -2560,24 +1548,6 @@ public class FinalUserDataBase {
         }
         cursor.close();
         return vo;
-    }
-
-    /**
-     * Whether the contact information
-     *
-     * @param uid
-     */
-    private boolean hasUser(String uid) {
-        String sql = "select " + TableField.FIELD_FRIEND_UID
-                + " from " + TableField.TABLE_USER_INFO
-                + " where "
-                + TableField.FIELD_FRIEND_UID + "=?";
-        Cursor cursor = db.rawQuery(sql, new String[]{uid});
-        boolean result = cursor.moveToNext();
-
-        cursor.close();
-
-        return result;
     }
 
     /**
@@ -2635,31 +1605,6 @@ public class FinalUserDataBase {
         cursor.close();
         return vo;
 
-    }
-    /**
-     * Set permissions's social circle of friends
-     *
-     * @param uid
-     * @param isHiCanSee       Visible to Ta
-     * @param isHiFriendCanSee Friends is to Ta
-     */
-    public void updateSocialCirclePermissions(String uid, boolean isHiCanSee, boolean isHiFriendCanSee) {
-        ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_RESERVED_DATA1, isHiCanSee ? 0 : 1);
-        values.put(TableField.FIELD_RESERVED_DATA2, isHiFriendCanSee ? 0 : 1);
-        db.update(TableField.TABLE_FRIEND, values, TableField.FIELD_FRIEND_UID + "=?", new String[]{uid});
-    }
-
-    /**
-     * Modify the friends note
-     *
-     * @param uid
-     * @param note
-     */
-    public void updateFriendNoteByUid(String uid, String note) {
-        ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_FRIEND_NOTE, note);
-        db.update(TableField.TABLE_FRIEND, values, TableField.FIELD_FRIEND_UID + "=?", new String[]{uid});
     }
 
 
@@ -2840,7 +1785,7 @@ public class FinalUserDataBase {
                 gVo.setType(relation);
                 mGList.add(gVo);
                 relation = vo.getRelation();
-                mCList = new ArrayList<PhoneContactVo>();
+                mCList = new ArrayList<>();
                 mCList.add(vo);
             } else {
                 mCList.add(vo);
@@ -2858,7 +1803,7 @@ public class FinalUserDataBase {
 
     /**
      * for a single recommendation
-     * @ param id  Unique identifier friends phone number, openI
+     *Unique identifier * @ param id friends phone number, openI
      * @param type
      * @return
      */
