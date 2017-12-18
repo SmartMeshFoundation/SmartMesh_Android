@@ -219,7 +219,7 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             if(foundPeople)//With no net with no net send messages
             {
                 ChatMsg msg = new ChatMsg();
-                msg.setType(1);
+                msg.setType(2);
                 msg.setContent(SDCardCtrl.getAudioPath() + File.separator + audioName);
                 msg.setLocalUrl(SDCardCtrl.getAudioPath() + File.separator + audioName);
                 msg.setSecond(second + "");
