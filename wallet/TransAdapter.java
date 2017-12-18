@@ -66,7 +66,7 @@ public class TransAdapter extends BaseAdapter {
         TransVo transVo = transVos.get(position);
         holder.address.setText(transVo.getAddress());
         holder.time.setText(Utils.formatTime(transVo.getTime()));
-        if (transVo.getType() == 0){//eth
+        if (transVo.getType() == 1){//eth
             holder.value.setText(context.getString(R.string.eth_er,transVo.getValue()));
         }else{//smt
             holder.value.setText(context.getString(R.string.smt_er,transVo.getValue()));
@@ -75,8 +75,8 @@ public class TransAdapter extends BaseAdapter {
     }
 
     static class ViewHolder{
-        TextView address;
-        TextView time;
-        TextView value;
+        TextView address;//address
+        TextView time;//time
+        TextView value;//Transfer amount
     }
 }
