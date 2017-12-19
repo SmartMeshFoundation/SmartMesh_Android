@@ -14,7 +14,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +23,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseFragment;
 import com.lingtuan.firefly.login.LoginUtil;
@@ -32,7 +30,9 @@ import com.lingtuan.firefly.quickmark.CaptureActivity;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
+import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.Utils;
+import com.lingtuan.firefly.util.netutil.NetRequestUtils;
 import com.lingtuan.firefly.wallet.AccountAdapter;
 import com.lingtuan.firefly.wallet.ManagerWalletActivity;
 import com.lingtuan.firefly.wallet.TransactionRecordsActivity;
@@ -42,71 +42,58 @@ import com.lingtuan.firefly.wallet.WalletSendActivity;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-import geth.Address;
-import geth.BigInt;
-import geth.BoundContract;
-import geth.CallOpts;
-import geth.Geth;
-import geth.Header;
-import geth.Interface;
-import geth.Interfaces;
-import geth.NewHeadHandler;
-import geth.SyncProgress;
-
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 /**
  * Created  on 2017/8/23.
- * 
+ * account
  */
 
 public class AccountFragment extends BaseFragment implements View.OnClickListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
 
     /**
-     * 
+     * root view
      */
     private View view = null;
     private boolean isDataFirstLoaded;
-
-    private static final String CONTACT_ADDRESS = "0x4042698c5f4c7eb64035870feea5c316b913927f";
-    private static final String CONTACT_ABI = "[{\"constant\":true,\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_spender\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_from\",\"type\":\"address\"},{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"getNonce\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"decimals\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"founder\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"allocateEndBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"name\":\"balance\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_from\",\"type\":\"address\"},{\"name\":\"_spender\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"},{\"name\":\"_v\",\"type\":\"uint8\"},{\"name\":\"_r\",\"type\":\"bytes32\"},{\"name\":\"_s\",\"type\":\"bytes32\"}],\"name\":\"approveProxy\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_owners\",\"type\":\"address[]\"},{\"name\":\"_values\",\"type\":\"uint256[]\"}],\"name\":\"allocateTokens\",\"outputs\":[],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_spender\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"},{\"name\":\"_extraData\",\"type\":\"bytes\"}],\"name\":\"approveAndCallcode\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_spender\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"},{\"name\":\"_extraData\",\"type\":\"bytes\"}],\"name\":\"approveAndCall\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_owner\",\"type\":\"address\"},{\"name\":\"_spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"name\":\"remaining\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"allocateStartBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_from\",\"type\":\"address\"},{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"},{\"name\":\"_feeFft\",\"type\":\"uint256\"},{\"name\":\"_v\",\"type\":\"uint8\"},{\"name\":\"_r\",\"type\":\"bytes32\"},{\"name\":\"_s\",\"type\":\"bytes32\"}],\"name\":\"transferProxy\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"inputs\":[],\"payable\":false,\"type\":\"constructor\"},{\"payable\":false,\"type\":\"fallback\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_from\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_to\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_owner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_spender\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"}]";
-    private BigDecimal ONE_ETHER = new BigDecimal("1000000000000000000");//1个eth
-
     private TextView accountTitle;
     private ImageView accountInfo;
 
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
 
-    private TextView walletManager;
-    private TextView createWallet;
-    private TextView showQuicMark;
-    private ListView walletListView;
+    private TextView walletManager;//Account management
+    private TextView createWallet;//Create a wallet
+    private TextView showQuicMark;//Flicking a
+    private ListView walletListView;//The wallet list
     private AccountAdapter mAdapter;
 
-    private ImageView walletImg;
-    private TextView walletName;
-    private TextView walletAddress;
-    private TextView qrCode;
-    private TextView transRecord;
-    private TextView copyAddress;
+    private ImageView walletImg;//The wallet picture
+    private TextView walletName;//Name of the wallet
+    private TextView walletAddress;//The wallet address
+    private TextView qrCode;//Qr code
+    private TextView transRecord;//Transaction records
+    private TextView copyAddress;//Copy the address
 
     private SwipeRefreshLayout swipe_refresh;
 
     private StorableWallet storableWallet;
 
-   
-    private TextView ethBalance,fftBalance;
-    private LinearLayout ethTransfer,fftTransfer;
-    private LinearLayout ethQrCode,fftQrCode;
+    //ETH SMT parts
+    private TextView ethBalance,fftBalance;//eth、smt balance
+    private LinearLayout ethTransfer,fftTransfer;//eth、smt transfer
+    private LinearLayout ethQrCode,fftQrCode;//eth、smt Qr code collection
 
-    private LinearLayout syncblockBg;
-    private TextView syncblockText;
-    private TextView syncblockBtn;
-
-    private int index = -1;
+    private int index = -1;//Which one is selected
 
 
 
@@ -132,9 +119,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         findViewById();
         setListener();
         initData();
-
-
-
         return view;
     }
 
@@ -154,18 +138,14 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
         swipe_refresh = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh);
 
-        syncblockBg = (LinearLayout) view.findViewById(R.id.syncblockBg);
-        syncblockText = (TextView) view.findViewById(R.id.syncblockText);
-        syncblockBtn = (TextView) view.findViewById(R.id.syncblockBtn);
-
-        
+        //The sidebar related
         mDrawerLayout = (DrawerLayout) view.findViewById(R.id.account_drawerlayout);
         walletListView = (ListView) view.findViewById(R.id.walletList);
         createWallet = (TextView) view.findViewById(R.id.createWallet);
         showQuicMark = (TextView) view.findViewById(R.id.showQuicMark);
         walletManager = (TextView) view.findViewById(R.id.walletManager);
 
-        
+        //The main related
         walletImg = (ImageView) view.findViewById(R.id.walletImg);
         walletName = (TextView) view.findViewById(R.id.walletName);
         walletAddress = (TextView) view.findViewById(R.id.walletAddress);
@@ -173,7 +153,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         transRecord = (TextView) view.findViewById(R.id.transRecord);
         copyAddress = (TextView) view.findViewById(R.id.copyAddress);
 
-       
+        //eth smt related
         ethBalance = (TextView) view.findViewById(R.id.ethBalance);
         fftBalance = (TextView) view.findViewById(R.id.fftBalance);
         ethTransfer = (LinearLayout) view.findViewById(R.id.ethTransfer);
@@ -201,8 +181,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         fftQrCode.setOnClickListener(this);
 
         swipe_refresh.setOnRefreshListener(this);
-
-        syncblockBg.setOnClickListener(this);
     }
 
     private void initData() {
@@ -219,11 +197,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
         initWalletInfo();
-        initSyncBlockState();
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.WALLET_REFRESH_DEL);
-        filter.addAction(Constants.CHANGE_LANGUAGE);
-        filter.addAction(Constants.SYNC_PROGRESS);
+        filter.addAction(Constants.WALLET_REFRESH_DEL);//Refresh the page
+        filter.addAction(Constants.CHANGE_LANGUAGE);//Update language refresh the page
         getActivity().registerReceiver(mBroadcastReceiver, filter);
 
 
@@ -238,14 +214,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             }else if (intent != null && (Constants.CHANGE_LANGUAGE.equals(intent.getAction()))) {
                 accountTitle.setText(getString(R.string.app_name));
                 Utils.updateViewLanguage(view.findViewById(R.id.account_drawerlayout));
-            }else if (intent != null && (Constants.SYNC_PROGRESS.equals(intent.getAction()))) {
-                long number = intent.getLongExtra("currentNumber",0);
-                long totalNumber = intent.getLongExtra("totalNumber",0);
-                syncblockText.setText(getString(R.string.wallet_sync_ing,number,totalNumber));
-                if(number == 0 ||  number >= totalNumber){
-                    syncblockBg.setVisibility(View.GONE);
-                    loadData();
-                }
             }
         }
     };
@@ -261,25 +229,25 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.app_right:
+            case R.id.app_right://Open the sidebar
                 mDrawerLayout.openDrawer(GravityCompat.END);
                 break;
-            case R.id.walletManager:
+            case R.id.walletManager://Account management
                 mDrawerLayout.closeDrawer(GravityCompat.END);
                 startActivity(new Intent(getActivity(), ManagerWalletActivity.class));
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.createWallet:
+            case R.id.createWallet://Create a wallet
                 mDrawerLayout.closeDrawer(GravityCompat.END);
                 startActivity(new Intent(getActivity(), WalletCreateActivity.class));
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.showQuicMark:
+            case R.id.showQuicMark://Flicking a
                 mDrawerLayout.closeDrawer(GravityCompat.END);
                 startActivity(new Intent(getActivity(), CaptureActivity.class));
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.walletImg:
+            case R.id.walletImg://Backup the purse
             case R.id.walletName:
                 if (storableWallet == null){
                     return;
@@ -291,7 +259,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 startActivity(copyIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.qrCode:
+            case R.id.qrCode://Qr code
                 if (storableWallet == null){
                     return;
                 }
@@ -301,29 +269,29 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 startActivity(qrCodeIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.transRecord:
+            case R.id.transRecord://Transaction records
                 Intent transIntent = new Intent(getActivity(), TransactionRecordsActivity.class);
                 transIntent.putExtra("address",walletAddress.getText().toString());
                 transIntent.putExtra("name",storableWallet.getWalletName());
                 startActivity(transIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.copyAddress:
+            case R.id.copyAddress://Copy the address
                 Utils.copyText(getActivity(),walletAddress.getText().toString());
                 break;
-            case R.id.ethTransfer:
+            case R.id.ethTransfer://The eth transfer
                 Intent ethIntent = new Intent(getActivity(),WalletSendActivity.class);
                 ethIntent.putExtra("sendtype", 0);
                 startActivity(ethIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.fftTransfer:
+            case R.id.fftTransfer://SMT transfer
                 Intent fftIntent = new Intent(getActivity(),WalletSendActivity.class);
                 fftIntent.putExtra("sendtype", 1);
                 startActivity(fftIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.ethQrCode:
+            case R.id.ethQrCode://The eth qr code collection
                 if (storableWallet == null){
                     return;
                 }
@@ -333,7 +301,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 startActivity(qrEthIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.fftQrCode:
+            case R.id.fftQrCode://SMT qr code collection
                 if (storableWallet == null){
                     return;
                 }
@@ -342,17 +310,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 fftEthIntent.putExtra("address", storableWallet.getPublicKey());
                 startActivity(fftEthIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.syncblockBg:
-                int state = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.AGREE_SYNC_BLOCK);
-                if(state == 0){
-                    state = 1;
-                    MySharedPrefs.writeInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.AGREE_SYNC_BLOCK,state);
-                    syncblockText.setText(getString(R.string.wallet_sync_ing,0,0));
-                    syncblockBtn.setVisibility(View.GONE);
-                    NextApplication application = (NextApplication) getActivity().getApplication();
-                    application.startSync(state);
-                }
                 break;
         }
     }
@@ -373,6 +330,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         }
     }
 
+    /**
+     * Load or refresh the wallet information
+     * */
     private void initWalletInfo(){
         ArrayList<StorableWallet> storableWallets = WalletStorage.getInstance(getActivity().getApplicationContext()).get();
         for (int i = 0 ; i < storableWallets.size(); i++){
@@ -424,68 +384,27 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         }, 500);
     }
 
- 
+    /**
+     * Access to the account balance
+     * */
     private void loadData(){
-        int state = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.AGREE_SYNC_BLOCK);
-        if (state != 2){
-            swipe_refresh.setRefreshing(false);
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Address address = new Address(walletAddress.getText().toString());
-                    BigInt ethBalanceB = NextApplication.ec.getBalanceAt(new geth.Context(),address,-1);
-                    BigDecimal ethbalanceD = new BigDecimal(ethBalanceB.toString());
-                    double ethBalanceValue = ethbalanceD.divide(ONE_ETHER).setScale(10,BigDecimal.ROUND_DOWN).doubleValue();
-
-                    BigInt fftBalanceB = getTokenBalance();
-                    BigDecimal fftbalanceD = new BigDecimal(fftBalanceB.toString());
-                    double fftBalanceValue = fftbalanceD.divide(ONE_ETHER).setScale(10,BigDecimal.ROUND_DOWN).doubleValue();
-
-                    if (ethBalanceValue > 0){
-                        storableWallet.setEthBalance(ethBalanceValue);
-                    }
-
-                    if (fftBalanceValue > 0){
-                        storableWallet.setFftBalance(fftBalanceValue);
-                    }
-                    mHandler.sendEmptyMessage(1);
-                } catch (Exception e) {
-                    e.printStackTrace();
+        try {
+            NetRequestUtils.getInstance().getBalance(getActivity(),walletAddress.getText().toString(), new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
                     mHandler.sendEmptyMessage(0);
                 }
-            }
-        }).start();
 
-    }
-
-    private BigInt getTokenBalance(){
-        geth.Context context = new geth.Context();
-        Address address = new Address(CONTACT_ADDRESS);
-         try {
-            CallOpts opts = Geth.newCallOpts();
-            opts.setContext(context);
-            BoundContract contract = Geth.bindContract(address,CONTACT_ABI,NextApplication.ec);
-
-            Interfaces results = Geth.newInterfaces(1);
-            Interface result = Geth.newInterface();
-            result.setDefaultBigInt();
-            results.set(0, result);
-
-
-            Interfaces params = Geth.newInterfaces(1);
-            Interface anInterface = Geth.newInterface();
-            anInterface.setAddress(new Address(walletAddress.getText().toString()));
-            params.set(0,anInterface);
-
-            contract.call(opts,results,"balanceOf",params);
-            Interface fft = results.get(0);
-            return fft.getBigInt();
-        } catch (Exception e) {
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    Message message = Message.obtain();
+                    message.what = 1;
+                    message.obj = response.body().string();
+                    mHandler.sendMessage(message);
+                }
+            });
+        } catch (IOException e) {
             e.printStackTrace();
-            return new BigInt(0);
         }
     }
 
@@ -499,29 +418,49 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                     break;
                 case 1:
                     swipe_refresh.setRefreshing(false);
-                    ethBalance.setText(storableWallet.getEthBalance() + "");
-                    fftBalance.setText(storableWallet.getFftBalance() + "");
-                    break;
-                case 2:
-                    showToast(getString(R.string.syning_later));
-                    swipe_refresh.setRefreshing(false);
+                    parseJson((String)msg.obj);
                     break;
             }
         }
     };
 
-    private void  initSyncBlockState(){
-        int state = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.AGREE_SYNC_BLOCK);
-        if(state == 0){
-            syncblockBtn.setVisibility(View.VISIBLE);
-            syncblockBg.setVisibility(View.VISIBLE);
-            syncblockText.setText(getString(R.string.wallet_sync_start));
-        }else if (state == 1){
-            syncblockBtn.setVisibility(View.GONE);
-            syncblockBg.setVisibility(View.VISIBLE);
-            syncblockText.setText(getString(R.string.wallet_sync_ing,0,0));
-        }else{
-            syncblockBg.setVisibility(View.GONE);
+    /**
+     * parse json
+     * */
+    private void parseJson(String jsonString){
+        if (TextUtils.isEmpty(jsonString)){
+            return;
+        }
+        try {
+            JSONObject object = new JSONObject(jsonString);
+            int errcod = object.optInt("errcod");
+            if (errcod == 0){
+                double ethBalance1 = object.optJSONObject("data").optDouble("eth");
+                double fftBalance1 = object.optJSONObject("data").optDouble("smt");
+                if (ethBalance1 > 0){
+                    BigDecimal ethDecimal = new BigDecimal(ethBalance1).setScale(10,BigDecimal.ROUND_DOWN);
+                    ethBalance.setText(ethDecimal.toString());
+                }else{
+                    ethBalance.setText(ethBalance1 +"");
+                }
+                if (fftBalance1 > 0){
+                    BigDecimal fftDecimal = new BigDecimal(fftBalance1).setScale(5,BigDecimal.ROUND_DOWN);
+                    fftBalance.setText(fftDecimal.toString());
+                }else{
+                    fftBalance.setText(fftBalance1 + "");
+                }
+                storableWallet.setEthBalance(ethBalance1);
+                storableWallet.setFftBalance(fftBalance1);
+            }else{
+                if(errcod == -2){
+                    long difftime = object.optJSONObject("data").optLong("difftime");
+                    long tempTime =  MySharedPrefs.readLong(getActivity(),MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_REQTIME);
+                    MySharedPrefs.writeLong(getActivity(),MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_REQTIME,difftime + tempTime);
+                }
+                MyToast.showToast(getActivity(),object.optString("msg"));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 }
