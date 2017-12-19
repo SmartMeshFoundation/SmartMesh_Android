@@ -26,16 +26,16 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
 /**
- * 
+ * Create or import the wallet
  * */
 public class WalletThread extends Thread {
 
-	private WalletHandler mHandler;
-	private String walletName;
-	private String password;
-	private String pwdInfo;
-	private String source;
-	private int type;
+	private WalletHandler mHandler;//The wallet Handler
+	private String walletName;//Name of the wallet
+	private String password;//The wallet password
+	private String pwdInfo;//Password prompt information
+	private String source;//Type 1 is a privatekey 2 is a keyStore
+	private int type;//Type 0 create wallets, 1 private key import wallet, 2 keyStore into the purse
 	private Context context;
 
 	public WalletThread(WalletHandler mHandler, Context context,String walletName, String password,String pwdInfo,String source,int type){
@@ -47,30 +47,20 @@ public class WalletThread extends Thread {
 		this.source = source;
 		this.type = type;
 	}
-	
-	public void startThread(WalletHandler mHandler, Context context, String walletName, String password,String source,int type){
-		this.mHandler = mHandler;
-		this.context = context;
-		this.walletName = walletName;
-		this.password = password;
-		this.pwdInfo = pwdInfo;
-		this.source = source;
-		this.type = type;
-		this.start();
-	}
+
 	@Override
 	public void run() {
 		try {
 
 			String walletAddress ;
-			if(type == 0) { 
+			if(type == 0) { // Generate a new address 0 x...
 				WalletFile walletFile = OwnWalletUtils.generateNewWalletFile(password, false);
 				walletAddress = OwnWalletUtils.getWalletFileName(walletFile);
 				File destination = new File( new File(context.getFilesDir(), SDCardCtrl.WALLERPATH), walletAddress);
 				ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
 				objectMapper.writeValue(destination, walletFile);
 
-			} else if (type == 1){ 
+			} else if (type == 1){ // By private key into the new address
 				ECKeyPair keys = ECKeyPair.create(new BigInteger(source));
 				WalletFile  walletFile = OwnWalletUtils.generateWalletFile(password, keys, false);
 				walletAddress = OwnWalletUtils.getWalletFileName(walletFile);
@@ -85,7 +75,7 @@ public class WalletThread extends Thread {
 				ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
 				objectMapper.writeValue(destination, walletFile);
 
-			}else{
+			}else{//Through the keyStore import new address
 				ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
 				WalletFile walletFile = objectMapper.readValue(source, WalletFile.class);
 				Credentials credentials = Credentials.create(Wallet.decrypt(password, walletFile));
@@ -106,14 +96,11 @@ public class WalletThread extends Thread {
 				objectMapper.writeValue(destination, walletFile);
 	    	}
 			if (TextUtils.isEmpty(walletAddress)){
-				mHandler.sendEmptyMessage(WalletHandler.
-						WALLET_ERROR);
+				mHandler.sendEmptyMessage(WalletHandler.WALLET_ERROR);
 			}else{
-				if(TextUtils.isEmpty(walletName))
-				{
+				if(TextUtils.isEmpty(walletName)){//When import operation
 					walletName = Utils.getWalletName(context);
 				}
-
 				StorableWallet storableWallet = new StorableWallet();
 				storableWallet.setPublicKey(walletAddress);
 				storableWallet.setWalletName(walletName);

@@ -66,7 +66,7 @@ public class TransAdapter extends BaseAdapter {
         TransVo transVo = transVos.get(position);
         holder.address.setText(transVo.getAddress());
         holder.time.setText(Utils.formatTime(transVo.getTime()));
-        if (transVo.getType() == 1){//eth
+        if (transVo.getType() == 0){//eth
             holder.value.setText(context.getString(R.string.eth_er,transVo.getValue()));
         }else{//smt
             holder.value.setText(context.getString(R.string.smt_er,transVo.getValue()));

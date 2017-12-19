@@ -8,13 +8,11 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.quickmark.CaptureActivity;
@@ -23,67 +21,56 @@ import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
-import com.lingtuan.firefly.util.SDCardCtrl;
-import com.lingtuan.firefly.util.netutil.VolleyUtils;
+import com.lingtuan.firefly.util.netutil.NetRequestUtils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
+import com.lingtuan.firefly.wallet.vo.GasVo;
 
-import org.web3j.utils.Numeric;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.spongycastle.util.encoders.Hex;
+import org.web3j.crypto.CipherException;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.TransactionEncoder;
+import org.web3j.protocol.core.methods.request.RawTransaction;
 
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.math.BigInteger;
 
-import geth.Account;
-import geth.Accounts;
-import geth.Address;
-import geth.BigInt;
-import geth.Context;
-import geth.Geth;
-import geth.Hash;
-import geth.KeyStore;
-import geth.Transaction;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 /**
+ * send token
  * Created on 2017/8/22.
  */
 
-public class WalletSendActivity extends BaseActivity implements  TextWatcher, SeekBar.OnSeekBarChangeListener {
+public class WalletSendActivity extends BaseActivity implements SeekBar.OnSeekBarChangeListener, TextWatcher {
     private final double FACTOR = 1000000000f;
-    private final String contractFunctionHex = "0xa9059cbb";//Contract function
-    private final int minEthGasLimit = 21000;//min eth gasLimit
-    private final int defaultEthGasLimit = 24625;//current eth gasLimit
-    private final int maxEthGasLimit = 50000;//max eth gasLimit
-    private final int minTokenGasLimit = 60000;//min token gasLimit
-    private final int defaultTokenGasLimit = 63750;//current token gasLimit
-    private final int maxTokenGasLimit = 90000;//max token gasLimit
-
-    private int currentGasLimit;//current gasLimit
-
-    BigDecimal ONE_ETHER = new BigDecimal("1000000000000000000");//1个eth
-
-    private BigInt gasPrice;
+    private final String contractFunctionHex = "0xa9059cbb";//
+    BigDecimal ONE_ETHER = new BigDecimal("1000000000000000000");//one eth
     private TextView fromName;
     private TextView fromAddress;
     private EditText toValue;
     private EditText toAddress;
     private TextView send;
+    private SeekBar seekbar;
     private TextView gas;
     private TextView blance_eth;
     private TextView blance_fft;
     private ImageView app_right;
-    private  SeekBar seekbar;
-
+    private double currentGas;//gas
+    private int currentLimit;//limit
     private int sendtype  ;// 0  ETH   1 SMT
-    private float amount;//The sum of the scanning qr code passed
+    private float amount;//Scan QR code passed over the amount
     private String address;
-    private int walletType;//0 ordinary purse, 1 observe the purse
+    private int walletType;//0 ordinary wallets 1 observation wallet
     private double ethBalance,fftBalance;
-
+    private GasVo ethVo,fftVo;
     @Override
     protected void setContentView() {
-       setContentView(R.layout.wallet_send_layout);
+        setContentView(R.layout.wallet_send_layout);
     }
 
     @Override
@@ -94,25 +81,23 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher, Se
         toAddress = (EditText) findViewById(R.id.toAddress);
         send =  (TextView) findViewById(R.id.send);
         gas =  (TextView) findViewById(R.id.gas);
+        seekbar  =  (SeekBar) findViewById(R.id.seekbar);
         blance_eth =  (TextView) findViewById(R.id.blance_eth);
         blance_fft =  (TextView) findViewById(R.id.blance_fft);
         app_right =  (ImageView) findViewById(R.id.app_right);
-        seekbar  =  (SeekBar) findViewById(R.id.seekbar);
     }
 
     @Override
     protected void setListener() {
         send.setOnClickListener(this);
+        seekbar.setOnSeekBarChangeListener(this);
         app_right.setOnClickListener(this);
         toValue.addTextChangedListener(this);
-        seekbar.setOnSeekBarChangeListener(this);
     }
 
     @Override
     protected void initData() {
-
         getGasMethod();
-
         sendtype  = getIntent().getIntExtra("sendtype",0);
         amount = getIntent().getFloatExtra("amount",0);
         address = getIntent().getStringExtra("address");
@@ -123,9 +108,9 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher, Se
 
         if(sendtype == 1){//SMT
             blance_fft.setVisibility(View.VISIBLE);
-            setTitle(getString(R.string.send_blance_title,"SMT"));
-        }
-        else{
+            setTitle(getString(R.string.send_blance_title,getString(R.string.smt)));
+        }else{
+            blance_fft.setVisibility(View.GONE);
             setTitle(getString(R.string.send_blance_title,"ETH"));
         }
 
@@ -141,15 +126,26 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher, Se
                 String address = WalletStorage.getInstance(getApplicationContext()).get().get(i).getPublicKey();
                 walletType = WalletStorage.getInstance(getApplicationContext()).get().get(i).getWalletType();
 
-                if(!TextUtils.isEmpty(address) && !address.startsWith("0x")){
+                if(!TextUtils.isEmpty(address) && !address.startsWith("0x")) {
                     address= "0x"+ address;
                 }
                 fromAddress.setText(address);
 
                 ethBalance = WalletStorage.getInstance(getApplicationContext()).get().get(i).getEthBalance();
                 fftBalance = WalletStorage.getInstance(getApplicationContext()).get().get(i).getFftBalance();
-                blance_eth.setText(ethBalance + "  ETH");
-                blance_fft.setText(fftBalance + "  SMT");
+
+                if (ethBalance > 0){
+                    BigDecimal ethDecimal = new BigDecimal(ethBalance).setScale(10,BigDecimal.ROUND_DOWN);
+                    blance_eth.setText(getString(R.string.eth_balance,ethDecimal.toString()));
+                }else{
+                    blance_eth.setText(getString(R.string.eth_balance,ethBalance + ""));
+                }
+                if (fftBalance > 0){
+                    BigDecimal fftDecimal = new BigDecimal(fftBalance).setScale(5,BigDecimal.ROUND_DOWN);
+                    blance_fft.setText(getString(R.string.smt_balance,fftDecimal.toString()));
+                }else{
+                    blance_fft.setText(getString(R.string.smt_balance,fftBalance + ""));
+                }
                 break;
             }
         }
@@ -164,39 +160,54 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher, Se
             toValue.setFocusableInTouchMode(true);
             toValue.requestFocus();
         }
-
-        List<String> currencyList = new ArrayList<>();
-        currencyList.add(getString(R.string.eth));
-        currencyList.add(getString(R.string.smt));
-        ArrayAdapter<String> curAdapter = new ArrayAdapter<>(WalletSendActivity.this, android.R.layout.simple_spinner_item, currencyList);
-        curAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     }
 
     /**
-     * To get gas
+     * get gas
      * */
     private void getGasMethod() {
-        int state = MySharedPrefs.readInt(WalletSendActivity.this,MySharedPrefs.FILE_USER,MySharedPrefs.AGREE_SYNC_BLOCK);
-        if (state != 2){
-            mHandler.sendEmptyMessage(5);
-            return;
-        }
-
         LoadingDialog.show(WalletSendActivity.this,null);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    gasPrice =  NextApplication.ec.suggestGasPrice(new Context());
-                    mHandler.sendEmptyMessage(0);
-                    LoadingDialog.close();
-                } catch (Exception e) {
+        try {
+            NetRequestUtils.getInstance().getGas(WalletSendActivity.this,new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
                     mHandler.sendEmptyMessage(4);
-                    e.printStackTrace();
                 }
-            }
-        }).start();
 
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+
+                    try {
+                        String jsonString = response.body().string();
+                        JSONObject object = new JSONObject(jsonString);
+                        int errcod = object.optInt("errcod");
+                        if (errcod == 0){
+                            JSONObject obj = object.optJSONObject("data");
+                            JSONObject ethObj = obj.optJSONObject("eth");
+                            JSONObject fftObj = obj.optJSONObject("smt");
+                            ethVo = new GasVo().parse(ethObj);//eth  gas
+                            fftVo = new GasVo().parse(fftObj);//smt gas
+                            if (ethVo == null || fftVo == null){
+                                mHandler.sendEmptyMessage(4);
+                            }else{
+                                mHandler.sendEmptyMessage(5);
+                            }
+                        }else{
+                            if(errcod == -2){
+                                long difftime = object.optJSONObject("data").optLong("difftime");
+                                long tempTime =  MySharedPrefs.readLong(WalletSendActivity.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_REQTIME);
+                                MySharedPrefs.writeLong(WalletSendActivity.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_REQTIME,difftime + tempTime);
+                            }
+                            mHandler.sendEmptyMessage(4);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -208,7 +219,7 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher, Se
                 startActivityForResult(i,100);
                 break;
             case R.id.send:
-                sendTrans();
+                sendtrans();
                 break;
             default:
                 super.onClick(v);
@@ -217,14 +228,13 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher, Se
 
     }
 
-    //Begin to transfer
-    private void  sendTrans(){
+    //send trans
+    private void  sendtrans(){
         String address = toAddress.getText().toString();
-        double currentGas = new BigDecimal(gasPrice.toString()).multiply(new BigDecimal(currentGasLimit)).divide(ONE_ETHER,6,BigDecimal.ROUND_DOWN).doubleValue();
         if(TextUtils.isEmpty(address)){
             showToast(getString(R.string.empty_address));
             return;
-        } else if(!address.startsWith("0x") ||  address.length()!=42){
+        }else if(!address.startsWith("0x") ||  address.length()!=42){
             showToast(getString(R.string.error_address));
             return;
         }
@@ -234,13 +244,13 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher, Se
             return;
         }
 
-        if(sendtype == 0){//Send the ETH
-            double total = Double.valueOf(toValue.getText().toString()) + currentGas;
+        if(sendtype == 0){//send ETH
+            double total = Double.valueOf(toValue.getText().toString())+currentGas;
             if(total>ethBalance){
                 showToast(getString(R.string.bloance_not_enough));
                 return;
             }
-        } else{//Send the SMT
+        }else{//send SMT
             if(currentGas>ethBalance){
                 showToast(getString(R.string.bloance_not_enough));
                 return;
@@ -253,115 +263,235 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher, Se
         MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_INPUT_PWD, new MyViewDialogFragment.EditCallback() {
             @Override
             public void getEditText(String editText) {
-                LoadingDialog.show(WalletSendActivity.this,"");
-                if(sendtype == 0){
-                    sendTokenMethod(editText,true);
-                }else{
-                    sendTokenMethod(editText,false);
-                }
-
+                getWalletPrivateKey(editText);
             }
         });
         mdf.show(this.getSupportFragmentManager(), "mdf");
     }
 
-    private Timer timer;
-    private TimerTask task;
-    private Hash transactionHash;
 
     /**
-     * send token
-     * @param isSendEth Is eth transfer ,true send ETH , false send SMT
-     * @param password account password
+     * send SMT
+     * @param keys Credentials
      * */
-    private void sendTokenMethod(final String password,final boolean isSendEth){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String root =  getFilesDir() + SDCardCtrl.WALLERPATH;
-                    KeyStore keyStore = new KeyStore(root,Geth.StandardScryptN, Geth.StandardScryptP);
-                    Accounts accounts = keyStore.getAccounts();
-                    Account account = null;
-                    for (int i= 0 ; i < accounts.size(); i++){
-                        if (accounts.get(i).getAddress().getHex().toLowerCase().equals(fromAddress.getText().toString().toLowerCase())){
-                            account = accounts.get(i);
-                            break;
-                        }
-                    }
-                    if(account ==null){
-                        Message message = Message.obtain();
-                        message.obj = "Error";
-                        message.what = 3;
-                        mHandler.sendMessage(message);
-                        return;
-                    }
-                    Context ctx = new Context();
-                    BigInt gasLimitB = Geth.newBigInt(currentGasLimit);
-                    Transaction transaction;
-                    long nonce =  NextApplication.ec.getNonceAt(new Context(),new Address(fromAddress.getText().toString()),-1);
-                    if (isSendEth){
-                        BigInt value = Geth.newBigInt(new BigDecimal(toValue.getText().toString()).multiply(ONE_ETHER).longValue());
-                        transaction = Geth.newTransaction(nonce, new Address(toAddress.getText().toString()), value, gasLimitB, gasPrice, null);
-                    }else{
-                        BigInt value = Geth.newBigInt(0);
-                        String valueOld =  new BigDecimal(toValue.getText().toString()).multiply(ONE_ETHER).setScale(0,BigDecimal.ROUND_DOWN).toPlainString();//multiply on ether
-                        String valueHex  =  new BigDecimal(valueOld).toBigInteger().toString(16);//Converted to hexadecimal
-                        for(int i=0;i<64;i++){
-                            if(valueHex.length()>=64){
-                                break;
-                            }else{
-                                valueHex = "0"+ valueHex;
-                            }
-                        }
-                        String toHex  = toAddress.getText().toString().substring(2);
-                        for(int i=0;i<64;i++){
-                            if(toHex.length()>=64){
-                                break;
-                            }else{
-                                toHex = "0"+ toHex;
-                            }
-                        }
-                        //ToHex not neat 64 valueHex supplement 64
-                        String data = contractFunctionHex + toHex + valueHex;
-                        byte[] srtbyte = Numeric.hexStringToByteArray(data);
-                        transaction = Geth.newTransaction(nonce, new Address(Constants.CONTACT_ADDRESS), value, gasLimitB, gasPrice,srtbyte);
-                    }
-                    keyStore.unlock(account, password);
-                    transaction = keyStore.signTx(account, transaction, new BigInt(Constants.GLOBAL_SWITCH_OPEN ? 1 : 3));
-                    NextApplication.ec.sendTransaction(ctx,transaction);
-                    transactionHash = transaction.getHash();
-//                    getTransactionReceipt();
-
+    private void sendtransToken(final Credentials keys) {
+        try {
+            NetRequestUtils.getInstance().getEthNonce(WalletSendActivity.this,fromAddress.getText().toString(), new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
                     Message message = Message.obtain();
-                    message.obj = transaction.getHash().getHex();
-                    message.what = 2;
+                    message.obj = "Error";
+                    message.what = 3;
                     mHandler.sendMessage(message);
-                } catch (Exception e) {
-                    if(!TextUtils.isEmpty(e.getMessage()) && e.getMessage().contains("could not decrypt key with given passphrase")){
-                        mHandler.sendEmptyMessage(1);
-                    }else{
-                        Message message = Message.obtain();
-                        message.obj = "Error";
-                        message.what = 3;
-                        mHandler.sendMessage(message);
-                    }
-                    e.printStackTrace();
                 }
-            }
-        }).start();
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    try {
+                        String body = response.body().string();
+                        JSONObject object = new JSONObject(body);
+                        int errcod = object.optInt("errcod");
+                        String msg = object.optString("msg");
+                        if (errcod != 0){//error
+                            Message message = Message.obtain();
+                            message.obj = msg;
+                            message.what = 3;
+                            mHandler.sendMessage(message);
+                        }else{
+                            String valueOld =  new BigDecimal(toValue.getText().toString()).multiply(ONE_ETHER).setScale(0,BigDecimal.ROUND_DOWN).toPlainString();//乘以一个以太坊
+                            String valueHex  =  new BigDecimal(valueOld).toBigInteger().toString(16);//Into hexadecimal
+                            for(int i=0;i<64;i++){
+                                if(valueHex.length()>=64){
+                                    break;
+                                }else{
+                                    valueHex = "0"+ valueHex;
+                                }
+                            }
+                            String toHex  = toAddress.getText().toString().substring(2);
+                            for(int i=0;i<64;i++){
+                                if(toHex.length()>=64){
+                                    break;
+                                }else{
+                                    toHex = "0"+ toHex;
+                                }
+                            }
+                            //toHex missing 64-bit valueHex padded 64-bit
+                            String data = contractFunctionHex + toHex + valueHex;
+                            BigInteger nonce = new BigInteger(object.optJSONObject("data").optString("nonce"), 10);
+                            String address = Constants.CONTACT_ADDRESS;
+                            String gasPrice = new BigDecimal(currentGas+"").multiply(ONE_ETHER).divide(new BigDecimal(currentLimit),0,BigDecimal.ROUND_DOWN).toPlainString();
+                            RawTransaction tx = RawTransaction.createTransaction(
+                                    nonce,
+                                    new BigInteger(gasPrice),//gasPrice
+                                    new BigInteger(currentLimit+""),
+                                    address,
+                                    new BigDecimal(0).toBigInteger(),
+                                    data
+                            );
+                            byte[] signed = TransactionEncoder.signMessage(tx,keys);
+
+
+                            String hexValue = Hex.toHexString(signed);
+
+                            NetRequestUtils.getInstance().sendRawTransaction(WalletSendActivity.this,"0x" +hexValue, new Callback() {
+                                @Override
+                                public void onFailure(Call call, IOException e) {
+                                    Message message = Message.obtain();
+                                    message.obj = "Error";
+                                    message.what = 3;
+                                    mHandler.sendMessage(message);
+                                }
+
+                                @Override
+                                public void onResponse(Call call, Response response) throws IOException {
+                                    try {
+                                        String body = response.body().string();
+                                        JSONObject object = new JSONObject(body);
+                                        int errcod = object.optInt("errcod");
+                                        String msg = object.optString("msg");
+                                        String txurl = object.optJSONObject("data").optString("txurl");
+                                        if (errcod != 0){//error
+                                            Message message = Message.obtain();
+                                            message.obj = msg;
+                                            message.what = 3;
+                                            mHandler.sendMessage(message);
+                                        }else{
+                                            Message message = Message.obtain();
+                                            message.obj = txurl;
+                                            message.what = 2;
+                                            mHandler.sendMessage(message);
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
-//    private void getTransactionReceipt(){
+
+    /**
+     * send eth
+     * @param keys Credentials
+     * */
+    private void sendtransEth(final Credentials keys) {
+        try {
+            NetRequestUtils.getInstance().getEthNonce(WalletSendActivity.this,fromAddress.getText().toString(), new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Message message = Message.obtain();
+                    message.obj = "Error";
+                    message.what = 3;
+                    mHandler.sendMessage(message);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    try {
+                        String body = response.body().string();
+                        JSONObject object = new JSONObject(body);
+                        int errcod = object.optInt("errcod");
+                        String msg = object.optString("msg");
+                        if (errcod != 0){//error
+                            Message message = Message.obtain();
+                            message.obj = msg;
+                            message.what = 3;
+                            mHandler.sendMessage(message);
+                        }else{
+                            BigInteger nonce = new BigInteger(object.optJSONObject("data").optString("nonce"), 10);
+                            String address = toAddress.getText().toString();
+                            String gasPrice = new BigDecimal(currentGas+"").multiply(ONE_ETHER).divide(new BigDecimal(currentLimit),0,BigDecimal.ROUND_DOWN).toPlainString();
+                            RawTransaction tx = RawTransaction.createTransaction(
+                                    nonce,
+                                    new BigInteger(gasPrice),//gasPrice
+                                    new BigInteger(currentLimit+""),
+                                    address,
+                                    new BigDecimal(toValue.getText().toString()).multiply(ONE_ETHER).toBigInteger(),
+                                    ""
+                            );
+                            byte[] signed = TransactionEncoder.signMessage(tx,keys);
+
+
+                            String hexValue = Hex.toHexString(signed);
+
+                            NetRequestUtils.getInstance().sendRawTransaction(WalletSendActivity.this,"0x" +hexValue, new Callback() {
+                                @Override
+                                public void onFailure(Call call, IOException e) {
+                                    Message message = Message.obtain();
+                                    message.obj = "Error";
+                                    message.what = 3;
+                                    mHandler.sendMessage(message);
+                                }
+
+                                @Override
+                                public void onResponse(Call call, Response response) throws IOException {
+                                    try {
+                                        String body = response.body().string();
+                                        JSONObject object = new JSONObject(body);
+                                        int errcod = object.optInt("errcod");
+                                        String msg = object.optString("msg");
+                                        String txurl = object.optJSONObject("data").optString("txurl");
+//                                        String url[] = txurl.split("tx/");
+//                                        String hashUrl = url[1];
+//                                        getTest(hashUrl);
+                                        if (errcod != 0){//error
+                                            Message message = Message.obtain();
+                                            message.obj = msg;
+                                            message.what = 3;
+                                            mHandler.sendMessage(message);
+                                        }else{
+                                            Message message = Message.obtain();
+                                            message.obj = txurl;
+                                            message.what = 2;
+                                            mHandler.sendMessage(message);
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+//    Timer timer;
+//    TimerTask task;
+//    private void getTest(final String url){
 //        if(timer == null){
 //            timer = new Timer();
 //            task = new TimerTask() {
 //                @Override
 //                public void run() {
 //                    try {
-//                        Receipt receipt = NextApplication.ec.getTransactionReceipt(new Context(),transactionHash);
-//                        Log.e("*****Receipt",receipt.string());
-//                    } catch (Exception e) {
+//                        NetRequestUtils.getInstance().getTest(url,new Callback() {
+//                            @Override
+//                            public void onFailure(Call call, IOException e) {
+//                                Log.e("******************",e.toString());
+//                            }
+//
+//                            @Override
+//                            public void onResponse(Call call, Response response) throws IOException {
+//                                Log.e("******************",response.body().string());
+//                            }
+//                        });
+//                    } catch (IOException e) {
 //                        e.printStackTrace();
 //                    }
 //                }
@@ -370,38 +500,99 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher, Se
 //        }
 //    }
 
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        int realprogress;
+        if (sendtype == 0){//eth gas
+            realprogress = progress + ethVo.getMinPrice();
+            BigDecimal b1 = new BigDecimal(Double.toString(realprogress - ethVo.getMinPrice()));
+            BigDecimal b2 = new BigDecimal(Double.toString(ethVo.getMaxPrice() - ethVo.getMinPrice()));
+            double percent = b1.divide(b2,6, BigDecimal.ROUND_HALF_UP).doubleValue();
+            currentLimit = (int)(percent * (ethVo.getMaxLimit() - ethVo.getMinLimit()) + ethVo.getMinLimit());
+            currentGas = realprogress * currentLimit/FACTOR;
+        }else{//smt gas
+            realprogress = progress + fftVo.getMinPrice();
+            BigDecimal b1 = new BigDecimal(Double.toString(realprogress - fftVo.getMinPrice()));
+            BigDecimal b2 = new BigDecimal(Double.toString(fftVo.getMaxPrice() - fftVo.getMinPrice()));
+            double percent = b1.divide(b2,6, BigDecimal.ROUND_HALF_UP).doubleValue();
+            currentLimit = (int)(percent * (fftVo.getMaxLimit() - fftVo.getMinLimit()) + fftVo.getMinLimit());
+            currentGas = realprogress * currentLimit/FACTOR;
+        }
+
+        BigDecimal b = new BigDecimal(currentGas);
+        currentGas = b.setScale(6,BigDecimal.ROUND_HALF_UP).doubleValue();
+        String showprogress = String.format("%f",currentGas);
+        gas.setText(getString(R.string.eth_er,showprogress));
+
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    /**
+     * Get private key
+     * @param walletPwd wallet password
+     * */
+    private void getWalletPrivateKey(final String walletPwd){
+        LoadingDialog.show(WalletSendActivity.this,"");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Credentials keys = WalletStorage.getInstance(getApplicationContext()).getFullWallet(WalletSendActivity.this,walletPwd,fromAddress.getText().toString());
+                    Message message = Message.obtain();
+                    message.what = 0;
+                    message.obj = keys;
+                    mHandler.sendMessage(message);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (CipherException e) {
+                    e.printStackTrace();
+                    mHandler.sendEmptyMessage(1);
+                }
+            }
+        }).start();
+    }
+
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler(){
-        public void handleMessage(Message msg) {
+        public void handleMessage(android.os.Message msg) {
             switch (msg.what) {
-                case 0://To get gas
-                    if(sendtype == 1){//SMT
-                        seekbar.setMax(maxTokenGasLimit - minTokenGasLimit);
-                        seekbar.setProgress(defaultTokenGasLimit - minTokenGasLimit);
-                    }else{
-                        seekbar.setMax(maxEthGasLimit - minEthGasLimit);
-                        seekbar.setProgress(defaultEthGasLimit - minEthGasLimit);
+                case 0://Get the success of the next step
+                    Credentials keys = (Credentials)msg.obj;
+                    if (sendtype == 0){//send eth
+                        sendtransEth(keys);
+                    }else{//send SMT
+                        sendtransToken(keys);
                     }
-                    LoadingDialog.close();
                     break;
-                case 1://Enter the password error
+                case 1://Enter the wrong password
                     LoadingDialog.close();
                     showToast(getString(R.string.wallet_copy_pwd_error));
                     break;
-                case 2://Transfer success
+                case 2://Transfer successful
                     LoadingDialog.close();
                     showToast(getString(R.string.trans_success));
                     String url = (String) msg.obj;
                     if (!TextUtils.isEmpty(url)){
                         Intent intent = new Intent(WalletSendActivity.this, WebViewUI.class);
-                        intent.putExtra("loadUrl", VolleyUtils.TRANS_DETAIL_URL + url);
+                        intent.putExtra("loadUrl", url);
                         intent.putExtra("needRefresh", true);
                         intent.putExtra("title", getString(R.string.transcation_detail));
                         startActivity(intent);
                     }
                     finish();
                     break;
-                case 3://The request failed
+                case 3://Request failed
                     LoadingDialog.close();
                     String errMsg = (String)msg.obj;
                     showToast(errMsg);
@@ -411,10 +602,15 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher, Se
                     showToast(getString(R.string.get_gas_error));
                     finish();
                     break;
-                case 5://Synchronization, try again later
+                case 5://eth gas
                     LoadingDialog.close();
-                    showToast(getString(R.string.syning_later));
-                    finish();
+                    if (sendtype == 0){//eth gas
+                        seekbar.setMax(ethVo.getMaxPrice() - ethVo.getMinPrice());
+                        seekbar.setProgress(ethVo.getDefaultPrice() - ethVo.getMinPrice());
+                    }else{//smt gas
+                        seekbar.setMax(fftVo.getMaxPrice() - fftVo.getMinPrice());
+                        seekbar.setProgress(fftVo.getDefaultPrice() - fftVo.getMinPrice());
+                    }
                     break;
             }
         }
@@ -443,69 +639,53 @@ public class WalletSendActivity extends BaseActivity implements  TextWatcher, Se
     }
 
     @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        if (sendtype == 0){//eth gas
-            currentGasLimit = progress + minEthGasLimit;
-            String currentGas = new BigDecimal(gasPrice.toString()).multiply(new BigDecimal(currentGasLimit)).divide(ONE_ETHER,6,BigDecimal.ROUND_DOWN).toPlainString();
-            gas.setText(getString(R.string.eth_er,currentGas));
-        }else{//smt gas
-            currentGasLimit = progress + minTokenGasLimit;
-            String currentGas = new BigDecimal(gasPrice.toString()).multiply(new BigDecimal(currentGasLimit)).divide(ONE_ETHER,6,BigDecimal.ROUND_DOWN).toPlainString();
-            gas.setText(getString(R.string.eth_er,currentGas));
-        }
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-
-    }
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == RESULT_OK){
             address = data.getStringExtra("address");
             sendtype  = data.getIntExtra("sendtype",0);
             amount = data.getFloatExtra("amount",0);
-            if(sendtype == 1){//SMT
+
+            if(sendtype == 1){//smt
                 blance_fft.setVisibility(View.VISIBLE);
                 setTitle(getString(R.string.send_blance_title,getString(R.string.smt)));
-                getGasLimit(maxTokenGasLimit,defaultTokenGasLimit,minTokenGasLimit);
+                getGasMethod(fftVo);
             }else{
+                blance_fft.setVisibility(View.GONE);
                 setTitle(getString(R.string.send_blance_title,getString(R.string.eth)));
-                getGasLimit(maxEthGasLimit,defaultEthGasLimit,minEthGasLimit);
-            }
-
-            if(amount>0){
-                toValue.setText(amount+"");
-            }
-
-            if(!TextUtils.isEmpty(address)){
-                toAddress.setText(address);
+                getGasMethod(ethVo);
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
     /**
-     * get current gasLimit
-     * @param defaultGasLimit defaultGasLimit
-     * @param maxGasLimit maxGasLimit
-     * @param minGasLimit minGasLimit
+     * get gas method
+     * @param gasVo gasVo
      * */
-    private void getGasLimit(int maxGasLimit,int defaultGasLimit,int minGasLimit){
-        String currentGas;
-        seekbar.setMax(maxGasLimit - minGasLimit);
-        seekbar.setProgress(defaultGasLimit - minGasLimit);
-        BigDecimal b1 = new BigDecimal(Double.toString(defaultGasLimit - minGasLimit));
-        BigDecimal b2 = new BigDecimal(Double.toString(maxGasLimit - minGasLimit));
+    private void getGasMethod(GasVo gasVo){
+        seekbar.setMax(gasVo.getMaxPrice() - gasVo.getMinPrice());
+        seekbar.setProgress(gasVo.getDefaultPrice() - gasVo.getMinPrice());
+        BigDecimal b1 = new BigDecimal(Double.toString(gasVo.getDefaultPrice() - gasVo.getMinPrice()));
+        BigDecimal b2 = new BigDecimal(Double.toString(gasVo.getMaxPrice() - gasVo.getMinPrice()));
         double percent = b1.divide(b2,6, BigDecimal.ROUND_HALF_UP).doubleValue();
-        currentGasLimit = (int)(percent* (maxGasLimit - minGasLimit) + minGasLimit);
-        currentGas = new BigDecimal(gasPrice.toString()).multiply(new BigDecimal(currentGasLimit)).divide(ONE_ETHER,6,BigDecimal.ROUND_DOWN).toPlainString();
-        gas.setText(getString(R.string.eth_er,currentGas));
+        currentLimit = (int)(percent* (gasVo.getMaxLimit() - gasVo.getMinLimit()) + gasVo.getMinLimit());
+        currentGas = (seekbar.getProgress() + gasVo.getMinPrice()) * currentLimit/FACTOR;
+
+        BigDecimal b = new BigDecimal(currentGas);
+        currentGas = b.setScale(6,BigDecimal.ROUND_HALF_UP).doubleValue();
+        String showprogress = String.format("%f",currentGas);
+        gas.setText(getString(R.string.eth_er,showprogress));
+        if(amount>0){
+            toValue.setText(amount+"");
+        }
+
+        if(!TextUtils.isEmpty(address)){
+            toAddress.setText(address);
+        }
+        if (!TextUtils.isEmpty(toAddress.getText().toString())){
+            toValue.setFocusable(true);
+            toValue.setFocusableInTouchMode(true);
+            toValue.requestFocus();
+        }
     }
 }

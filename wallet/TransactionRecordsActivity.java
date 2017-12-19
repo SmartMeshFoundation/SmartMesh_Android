@@ -1,38 +1,46 @@
 package com.lingtuan.firefly.wallet;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.adapter.DropTextViewAdapter;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.DropTextView;
-import com.lingtuan.firefly.custom.LoadMoreListView;
-import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.util.Constants;
+import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
+import com.lingtuan.firefly.util.netutil.NetRequestUtils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.TransVo;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 /**
  * Created on 2017/8/23.
  * Transaction records
  */
 
-public class TransactionRecordsActivity extends BaseActivity implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener, LoadMoreListView.RefreshListener {
+public class TransactionRecordsActivity extends BaseActivity implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
 
     //Select the account
     private DropTextView walletAccount;
@@ -44,14 +52,10 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
 
     private TextView transEth,transFft;//eth  smt record
     private View transLine, transLine2;
-    private LoadMoreListView transListView;//Record list
+    private ListView transListView;//Record list
     private ArrayList<TransVo> transEthVos;
     private ArrayList<TransVo> transFftVos;
     private TransAdapter mAdapter;
-
-    private boolean isLoadingData = false;
-    private int currentPage = 1 ;
-    private int oldPage=1;
 
     private TextView emptyView;//Trans is empty
     private SwipeRefreshLayout swipe_refresh;
@@ -83,7 +87,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
         transFft = (TextView) findViewById(R.id.transFft);
         transLine = findViewById(R.id.transLine);
         transLine2 = findViewById(R.id.transLine2);
-        transListView = (LoadMoreListView) findViewById(R.id.transListView);
+        transListView = (ListView) findViewById(R.id.transListView);
     }
 
     @Override
@@ -114,13 +118,10 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
             walletAccount.setText(mWalletName);
             walletAddress.setText(mAddress);
         }
-
-        emptyView.setVisibility(View.GONE);
-
         new Handler().postDelayed(new Runnable(){
             public void run() {
+                getTransMethod(0,walletAddress.getText().toString());
                 swipe_refresh.setRefreshing(true);
-                getTransMethod(1,1,walletAddress.getText().toString());
             }
         }, 200);
 
@@ -130,7 +131,6 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
     protected void setListener() {
         transEth.setOnClickListener(this);
         transFft.setOnClickListener(this);
-        transListView.setOnRefreshListener(this);
         walletAccount.setOnItemListener(new DropTextView.OnItemListener() {
             @Override
             public void onItemListener(int position) {
@@ -143,8 +143,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
                 transFftVos.clear();
                 mAdapter.resetSource(transEthVos);
                 emptyView.setVisibility(View.GONE);
-                transListView.resetFooterState(false);
-                getTransMethod(1,1,walletAddress.getText().toString());
+                getTransMethod(0,walletAddress.getText().toString());
                 swipe_refresh.setRefreshing(true);
             }
         });
@@ -160,8 +159,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
                 transLine2.setVisibility(View.INVISIBLE);
                 mAdapter.resetSource(transEthVos);
                 emptyView.setVisibility(View.GONE);
-                transListView.resetFooterState(false);
-                getTransMethod(1,1,walletAddress.getText().toString());
+                getTransMethod(0,walletAddress.getText().toString());
                 swipe_refresh.setRefreshing(true);
                 break;
             case R.id.transFft:
@@ -171,8 +169,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
                 transLine2.setVisibility(View.VISIBLE);
                 mAdapter.resetSource(transFftVos);
                 emptyView.setVisibility(View.GONE);
-                transListView.resetFooterState(false);
-                getTransMethod(1,0,walletAddress.getText().toString());
+                getTransMethod(1,walletAddress.getText().toString());
                 swipe_refresh.setRefreshing(true);
                 break;
             default:
@@ -183,91 +180,112 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
 
     /**
      * To obtain transfer record interface
-     * @param type 0 smt 1 eth
+     * @param type 0 eth 1 smt
      * */
-    private void getTransMethod(final int page,final int type,final String address) {
-        if(isLoadingData){
-            return;
-        }
-        isLoadingData=true;
-        oldPage = page;
-        NetRequestImpl.getInstance().getTxlist(page, type, address, new RequestListener() {
-            @Override
-            public void start() {
-
-            }
-
-            @Override
-            public void success(JSONObject response) {
-                currentPage = oldPage;
-                parseJson(response,type,address);
-            }
-
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                checkEmpty(type);
-                swipe_refresh.setRefreshing(false);
-                if (!TextUtils.isEmpty(errorMsg)){
-                    showToast(errorMsg);
+    private void getTransMethod(final int type,final String address) {
+        try {
+            NetRequestUtils.getInstance().getTxlist(TransactionRecordsActivity.this,type,address, new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    mHandler.sendEmptyMessage(2);
+                    checkEmpty(type);
                 }
-            }
-        });
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String jsonString = response.body().string();
+                    parseJson(jsonString,type,address);
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void parseJson(JSONObject object,final int type,final String address) {
-
-        swipe_refresh.setRefreshing(false);
-
+    private void parseJson(String jsonString,final int type,final String address) {
         if (!TextUtils.equals(address,walletAddress.getText().toString())){
             return;
         }
-
-        if (object == null){
+        if (TextUtils.isEmpty(jsonString)){
+            mHandler.sendEmptyMessage(2);
             checkEmpty(type);
             return;
         }
-        if (currentPage == 1){
-            if (type == 0){
-                transFftVos.clear();
+        try {
+            JSONObject object = new JSONObject(jsonString);
+            int errcod = object.optInt("errcod");
+            if (errcod == 0){
+                if (type == 0){
+                    transEthVos.clear();
+                }else{
+                    transFftVos.clear();
+                }
+                JSONArray array = object.optJSONArray("data");
+                if (array == null){
+                    mHandler.sendEmptyMessage(type);
+                    return;
+                }
+                for (int i = 0 ; i < array.length() ; i++){
+                    TransVo transVo = new TransVo().parse(array.optJSONObject(i));
+                    if (type == 0){
+                        transVo.setType(0);
+                        transEthVos.add(transVo);
+                    }else{
+                        transVo.setType(1);
+                        transFftVos.add(transVo);
+                    }
+                }
+                mHandler.sendEmptyMessage(type);
             }else{
-                transEthVos.clear();
+                if (errcod == -2){
+                    long difftime = object.optJSONObject("data").optLong("difftime");
+                    long tempTime =  MySharedPrefs.readLong(TransactionRecordsActivity.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_REQTIME);
+                    MySharedPrefs.writeLong(TransactionRecordsActivity.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_REQTIME,difftime + tempTime);
+                }
+                Message message = Message.obtain();
+                message.obj = object.optString("msg");
+                message.what = 2;
+                mHandler.sendMessage(message);
             }
-        }
-
-        JSONArray array = object.optJSONArray("data");
-        if (array == null){
-            return;
-        }
-        isLoadingData=false;
-        if (array!=null&&array.length()>=10) {
-            transListView.resetFooterState(true);
-        } else {
-            transListView.resetFooterState(false);
-        }
-
-        for (int i = 0 ; i < array.length() ; i++){
-            TransVo transVo = new TransVo().parse(array.optJSONObject(i));
-            if (type == 0){
-                transVo.setType(0);
-                transFftVos.add(transVo);
-            }else{
-                transVo.setType(1);
-                transEthVos.add(transVo);
-            }
-        }
-        if (type == 0 && transFft.isSelected()){
-            checkEmpty(0);
-            mAdapter.resetSource(transFftVos);
-        }else if (type == 1 && transEth.isSelected()){
-            checkEmpty(1);
-            mAdapter.resetSource(transEthVos);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            mHandler.sendEmptyMessage(type);
         }
     }
 
+    @SuppressLint("HandlerLeak")
+    private Handler mHandler = new Handler(){
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0:
+                    if (transEth.isSelected()){
+                        checkEmpty(0);
+                        swipe_refresh.setRefreshing(false);
+                        mAdapter.resetSource(transEthVos);
+                    }
+                    break;
+                case 1:
+                    if (transFft.isSelected()){
+                        checkEmpty(1);
+                        swipe_refresh.setRefreshing(false);
+                        mAdapter.resetSource(transFftVos);
+                    }
+                    break;
+                case 2:
+                    swipe_refresh.setRefreshing(false);
+                    String errorMsg = (String) msg.obj;
+                    if (!TextUtils.isEmpty(errorMsg)){
+                        showToast(errorMsg);
+                    }
+                    break;
+            }
+        }
+    };
+
     private void checkEmpty(int type){
-        if (type == 0 && transFftVos.size() <= 0){
+        if (type == 0 && transEthVos.size() <= 0){
             emptyView.setVisibility(View.VISIBLE);
-        }else if (type == 1 && transEthVos.size() <= 0){
+        }else if (type == 1 && transFftVos.size() <= 0){
             emptyView.setVisibility(View.VISIBLE);
         }else{
             emptyView.setVisibility(View.GONE);
@@ -309,15 +327,10 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
     public void onRefresh() {
         if (transEth.isSelected()){
             mAdapter.resetSource(transEthVos);
-            getTransMethod(1,1,walletAddress.getText().toString());
+            getTransMethod(0,walletAddress.getText().toString());
         }else{
             mAdapter.resetSource(transFftVos);
-            getTransMethod(1,0,walletAddress.getText().toString());
+            getTransMethod(1,walletAddress.getText().toString());
         }
-    }
-
-    @Override
-    public void loadMore() {
-        getTransMethod(currentPage + 1,0,walletAddress.getText().toString());
     }
 }
