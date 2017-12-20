@@ -141,6 +141,8 @@ public class FriendInfoDataSet extends BaseActivity implements CompoundButton.On
                     FinalUserDataBase.getInstance().deleteFriendByUid(info.getLocalId());
                 }
                 isInBlack = !isInBlack;
+                info.setInblack(isInBlack ? "1" : "0");
+
             }
 
             @Override
@@ -151,5 +153,13 @@ public class FriendInfoDataSet extends BaseActivity implements CompoundButton.On
                 joinBlackSb.setOnCheckedChangeListener(FriendInfoDataSet.this);
             }
         });
+    }
+
+    @Override
+    public void finish() {
+        Intent intent = new Intent();
+        intent.putExtra("isInBlack",isInBlack);
+        setResult(RESULT_OK,intent);
+        super.finish();
     }
 }

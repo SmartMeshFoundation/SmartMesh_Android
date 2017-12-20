@@ -47,6 +47,8 @@ public class FriendInfoUI extends BaseActivity {
 
     private AppNetService appNetService;
 
+    private boolean dataHasLoad;
+
     UserInfoVo info = null;
 
     @Override
@@ -73,7 +75,11 @@ public class FriendInfoUI extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadFriendInfo();
+        if (!dataHasLoad){
+            loadFriendInfo();
+            dataHasLoad = true;
+        }
+
     }
 
     @Override
@@ -133,10 +139,12 @@ public class FriendInfoUI extends BaseActivity {
     private void loadData() {
         if (info != null){
             UserBaseVo vo = FinalUserDataBase.getInstance().getUserBaseVoByUid(info.getLocalId());
-            if(vo!=null)
-            {
+            if(vo!=null){
                 info.setFriendLog(1);
+            }else if(TextUtils.equals(NextApplication.myInfo.getLocalId(),info.getLocalId())){
+                info.setFriendLog(-1);
             }
+
             setTitle(info.getUsername());
             if (!info.getThumb().startsWith("http:")){
                 NextApplication.displayCircleImage(friendImg,"file://".concat(info.getThumb()));
@@ -220,7 +228,7 @@ public class FriendInfoUI extends BaseActivity {
             case R.id.app_right:
                 Intent intent = new Intent(FriendInfoUI.this,FriendInfoDataSet.class);
                 intent.putExtra("info",info);
-                startActivity(intent);
+                startActivityForResult(intent,100);
                 Utils.openNewActivityAnim(FriendInfoUI.this,false);
                 break;
             case R.id.addFriends:
@@ -230,6 +238,15 @@ public class FriendInfoUI extends BaseActivity {
             case R.id.sendMsg:
                 Utils.intentChattingUI(FriendInfoUI.this,info.getLocalId(),info.getThumb(),info.getUsername(),info.getGender(),info.getFriendLog(),false,false,false,0,true);
                 break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == 100){
+            boolean isInBlack = data.getBooleanExtra("isInBlack",false);
+            info.setInblack(isInBlack ? "1" : "0");
         }
     }
 
