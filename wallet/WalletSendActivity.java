@@ -2,6 +2,7 @@ package com.lingtuan.firefly.wallet;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
@@ -24,6 +25,7 @@ import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.netutil.NetRequestUtils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.GasVo;
+import com.lingtuan.firefly.wallet.vo.TransVo;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -350,6 +352,7 @@ public class WalletSendActivity extends BaseActivity implements SeekBar.OnSeekBa
                                         int errcod = object.optInt("errcod");
                                         String msg = object.optString("msg");
                                         String txurl = object.optJSONObject("data").optString("txurl");
+                                        String tx = object.optJSONObject("data").optString("tx");
                                         if (errcod != 0){//error
                                             Message message = Message.obtain();
                                             message.obj = msg;
@@ -357,7 +360,10 @@ public class WalletSendActivity extends BaseActivity implements SeekBar.OnSeekBa
                                             mHandler.sendMessage(message);
                                         }else{
                                             Message message = Message.obtain();
-                                            message.obj = txurl;
+                                            Bundle bundle = new Bundle();
+                                            bundle.putString("tx",tx);
+                                            bundle.putString("txurl",txurl);
+                                            message.setData(bundle);
                                             message.what = 2;
                                             mHandler.sendMessage(message);
                                         }
@@ -421,7 +427,6 @@ public class WalletSendActivity extends BaseActivity implements SeekBar.OnSeekBa
                             );
                             byte[] signed = TransactionEncoder.signMessage(tx,keys);
 
-
                             String hexValue = Hex.toHexString(signed);
 
                             NetRequestUtils.getInstance().sendRawTransaction(WalletSendActivity.this,"0x" +hexValue, new Callback() {
@@ -441,9 +446,7 @@ public class WalletSendActivity extends BaseActivity implements SeekBar.OnSeekBa
                                         int errcod = object.optInt("errcod");
                                         String msg = object.optString("msg");
                                         String txurl = object.optJSONObject("data").optString("txurl");
-//                                        String url[] = txurl.split("tx/");
-//                                        String hashUrl = url[1];
-//                                        getTest(hashUrl);
+                                        String tx = object.optJSONObject("data").optString("tx");
                                         if (errcod != 0){//error
                                             Message message = Message.obtain();
                                             message.obj = msg;
@@ -451,7 +454,10 @@ public class WalletSendActivity extends BaseActivity implements SeekBar.OnSeekBa
                                             mHandler.sendMessage(message);
                                         }else{
                                             Message message = Message.obtain();
-                                            message.obj = txurl;
+                                            Bundle bundle = new Bundle();
+                                            bundle.putString("tx",tx);
+                                            bundle.putString("txurl",txurl);
+                                            message.setData(bundle);
                                             message.what = 2;
                                             mHandler.sendMessage(message);
                                         }
@@ -471,34 +477,6 @@ public class WalletSendActivity extends BaseActivity implements SeekBar.OnSeekBa
             e.printStackTrace();
         }
     }
-//    Timer timer;
-//    TimerTask task;
-//    private void getTest(final String url){
-//        if(timer == null){
-//            timer = new Timer();
-//            task = new TimerTask() {
-//                @Override
-//                public void run() {
-//                    try {
-//                        NetRequestUtils.getInstance().getTest(url,new Callback() {
-//                            @Override
-//                            public void onFailure(Call call, IOException e) {
-//                                Log.e("******************",e.toString());
-//                            }
-//
-//                            @Override
-//                            public void onResponse(Call call, Response response) throws IOException {
-//                                Log.e("******************",response.body().string());
-//                            }
-//                        });
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            };
-//            timer.schedule(task,0,2000);
-//        }
-//    }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -581,15 +559,24 @@ public class WalletSendActivity extends BaseActivity implements SeekBar.OnSeekBa
                     break;
                 case 2://Transfer successful
                     LoadingDialog.close();
-                    showToast(getString(R.string.trans_success));
-                    String url = (String) msg.obj;
-                    if (!TextUtils.isEmpty(url)){
-                        Intent intent = new Intent(WalletSendActivity.this, WebViewUI.class);
-                        intent.putExtra("loadUrl", url);
-                        intent.putExtra("needRefresh", true);
-                        intent.putExtra("title", getString(R.string.transcation_detail));
-                        startActivity(intent);
-                    }
+                    Bundle bundle = msg.getData();
+                    String txurl = bundle.getString("txurl");
+                    String tx = bundle.getString("tx");
+                    TransVo transVo = new TransVo();
+                    transVo.setTx(tx);
+                    transVo.setTxurl(txurl);
+                    transVo.setState(-1);
+                    transVo.setFee(String.format("%f",currentGas));
+                    transVo.setAddress(toAddress.getText().toString());
+                    transVo.setValue(toValue.getText().toString());
+                    transVo.setTime(System.currentTimeMillis()/1000);
+                    transVo.setType(sendtype);
+
+                    Intent intent = new Intent(WalletSendActivity.this,TransactionDetailActivity.class);
+                    intent.putExtra("transVo",transVo);
+                    intent.putExtra("fromAddress",fromAddress.getText().toString());
+                    intent.putExtra("recordType",sendtype);
+                    startActivity(intent);
                     finish();
                     break;
                 case 3://Request failed

@@ -10,6 +10,7 @@ import android.os.Message;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -40,7 +41,7 @@ import okhttp3.Response;
  * Transaction records
  */
 
-public class TransactionRecordsActivity extends BaseActivity implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
+public class TransactionRecordsActivity extends BaseActivity implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener, AdapterView.OnItemClickListener {
 
     //Select the account
     private DropTextView walletAccount;
@@ -62,6 +63,8 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
 
     private String mAddress;
     private String mWalletName;
+
+    private int recordType;//smt or eth
 
 
     @Override
@@ -131,6 +134,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
     protected void setListener() {
         transEth.setOnClickListener(this);
         transFft.setOnClickListener(this);
+        transListView.setOnItemClickListener(this);
         walletAccount.setOnItemListener(new DropTextView.OnItemListener() {
             @Override
             public void onItemListener(int position) {
@@ -183,12 +187,15 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
      * @param type 0 eth 1 smt
      * */
     private void getTransMethod(final int type,final String address) {
+        recordType = type;
         try {
             NetRequestUtils.getInstance().getTxlist(TransactionRecordsActivity.this,type,address, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    mHandler.sendEmptyMessage(2);
-                    checkEmpty(type);
+                    Message message = Message.obtain();
+                    message.what = 2;
+                    message.arg1 = type;
+                    mHandler.sendMessage(message);
                 }
 
                 @Override
@@ -207,8 +214,10 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
             return;
         }
         if (TextUtils.isEmpty(jsonString)){
-            mHandler.sendEmptyMessage(2);
-            checkEmpty(type);
+            Message message = Message.obtain();
+            message.what = 2;
+            message.arg1 = type;
+            mHandler.sendMessage(message);
             return;
         }
         try {
@@ -274,6 +283,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
                 case 2:
                     swipe_refresh.setRefreshing(false);
                     String errorMsg = (String) msg.obj;
+                    checkEmpty(msg.arg1);
                     if (!TextUtils.isEmpty(errorMsg)){
                         showToast(errorMsg);
                     }
@@ -332,5 +342,18 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
             mAdapter.resetSource(transFftVos);
             getTransMethod(1,walletAddress.getText().toString());
         }
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Intent intent = new Intent(TransactionRecordsActivity.this,TransactionDetailActivity.class);
+        if (recordType == 0 && transEthVos.size() > 0){//eth record
+            intent.putExtra("transVo",transEthVos.get(position));
+        }else if (recordType == 1 && transFftVos.size() > 0){
+            intent.putExtra("transVo",transFftVos.get(position));
+        }
+        intent.putExtra("fromAddress",walletAddress.getText().toString());
+        intent.putExtra("recordType",recordType);
+        startActivity(intent);
     }
 }
