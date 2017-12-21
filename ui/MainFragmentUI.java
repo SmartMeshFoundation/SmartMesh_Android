@@ -1,5 +1,6 @@
 package com.lingtuan.firefly.ui;
 
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,18 +17,24 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
+import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.base.BaseFragment;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.fragment.MainContactFragmentUI;
 import com.lingtuan.firefly.fragment.MainFoundFragmentUI;
 import com.lingtuan.firefly.fragment.MainMessageFragmentUI;
 import com.lingtuan.firefly.fragment.MySelfFragment;
+import com.lingtuan.firefly.login.LoginUI;
 import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.service.LoadDataService;
+import com.lingtuan.firefly.service.XmppService;
 import com.lingtuan.firefly.util.Constants;
+import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.Utils;
+import com.lingtuan.firefly.util.netutil.NetRequestImpl;
+import com.lingtuan.firefly.util.netutil.NetRequestUtils;
 import com.lingtuan.firefly.vo.ChatMsg;
 import com.lingtuan.firefly.vo.UserInfoVo;
 import com.lingtuan.firefly.wallet.fragment.AccountFragment;
@@ -66,9 +73,26 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //清除通知
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
+
         findViewById();
         setListener();
         initData();
+
+        //新打开应用
+        if (getIntent() != null && getIntent().getExtras() != null && getIntent().getExtras().getBoolean("isNewMsg")) {
+            if (getIntent().getExtras().getBoolean("isOfflineMsg", false))//强制下线消息，跳转到首页
+            {
+                onClick(main_tab_chats);
+                showOfflineAlert(getIntent().getExtras().getString("offlineContent"));
+            }else if (getIntent().getExtras().getBoolean("isNewMsg", false)) {//推送{//通知栏打开，直接跳转到消息页面
+                ChatMsg msg = (ChatMsg) getIntent().getExtras().getSerializable("msg");
+                onClick(main_tab_chats);
+            }
+        }
     }
 
     	@Override
@@ -81,6 +105,48 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
         super.onNewIntent(intent);
         Utils.settingLanguage(MainFragmentUI.this);
         Utils.updateViewLanguage(findViewById(android.R.id.content));
+
+        if (intent.getBooleanExtra("isOfflineMsg", false)){
+            showOfflineAlert(intent.getStringExtra("offlineContent"));
+            return;
+        }
+
+        if (intent.getBooleanExtra("isNewMsg", false)) {
+            onClick(main_tab_chats);
+        }
+
+    }
+
+    /**
+     * 强制下线
+     */
+    private void showOfflineAlert(String msg) {
+        try {
+            MySharedPrefs.clearUserInfo(NextApplication.mContext);
+            FinalUserDataBase.getInstance().close();
+
+            //Exit the XMPP service
+            XmppUtils.getInstance().destroy();
+            NetRequestUtils.getInstance().destory();
+            NetRequestImpl.getInstance().destory();
+            Intent xmppservice = new Intent(NextApplication.mContext, XmppService.class);
+            stopService(xmppservice);
+            //Exit without social network service
+            int version =android.os.Build.VERSION.SDK_INT;
+            if(version >= 16){
+                Intent offlineservice = new Intent(NextApplication.mContext, AppNetService.class);
+                stopService(offlineservice);
+            }
+
+            Intent intent = new Intent(this, AlertActivity.class);
+            intent.putExtra("type", 2);
+            intent.putExtra("msg", msg);
+            startActivity(intent);
+            overridePendingTransition(0, 0);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void findViewById() {
@@ -104,6 +170,7 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
         IntentFilter filter = new IntentFilter();
         filter.addAction(LoadDataService.ACTION_START_CONTACT_LISTENER);
         filter.addAction(XmppAction.ACTION_MAIN_UNREADMSG_UPDATE_LISTENER);
+        filter.addAction(XmppAction.ACTION_MAIN_OFFLINE_LISTENER);
         filter.addAction(Constants.CHANGE_LANGUAGE);//Refresh the page
         filter.addAction(Constants.ACTION_CLOSE_MAIN);//Shut down
         filter.addAction(Constants.ACTION_NETWORK_RECEIVER);//Network monitoring
@@ -143,9 +210,7 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
                         if (TextUtils.equals("system-0", msg.getChatId()) && msg.getUnread() == 0)//已有的添加好友消息
                         {
                             return;
-                        } else if (msg.getGroupMask() && !TextUtils.equals("system-0", msg.getChatId()) && !TextUtils.equals("system-1", msg.getChatId()) && !TextUtils.equals("system-3", msg.getChatId()) && !TextUtils.equals("system-4", msg.getChatId())) {//屏蔽的信息不与管理
-                            return;
-                        } else if ("system-2".equals(msg.getChatId())) {
+                        } else if (msg.getGroupMask() && !TextUtils.equals("system-0", msg.getChatId()) && !TextUtils.equals("system-1", msg.getChatId()) && !TextUtils.equals("system-3", msg.getChatId()) && !TextUtils.equals("system-4", msg.getChatId()) && !TextUtils.equals("system-5", msg.getChatId())) {//屏蔽的信息不与管理
                             return;
                         }
                     }
@@ -166,12 +231,14 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    //get unread count
     private void getUnreadCount() {
         Map<String, Integer> map = FinalUserDataBase.getInstance().getUnreadMap();
         totalUnreadCount = map.get("totalunread");
         Utils.formatUnreadCount(mMsgUnread, totalUnreadCount);
     }
+
+
+
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -182,7 +249,10 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
                 getContentResolver().registerContentObserver( ContactsContract.Contacts.CONTENT_URI, true, mObserver);
             } else if (intent != null && XmppAction.ACTION_MAIN_UNREADMSG_UPDATE_LISTENER.equals(intent.getAction())) {
                 getUnreadCount();
-            }else if (intent != null && Constants.ACTION_CLOSE_MAIN.equals(intent.getAction())) {
+            }else if (intent != null && XmppAction.ACTION_MAIN_OFFLINE_LISTENER.equals(intent.getAction())) {
+                Bundle bundle = intent.getBundleExtra(XmppAction.ACTION_MAIN_OFFLINE_LISTENER);
+                showOfflineAlert(bundle.getString("offlineContent"));
+            } else if (intent != null && Constants.ACTION_CLOSE_MAIN.equals(intent.getAction())) {
                 finish();
             }else if (intent != null && Constants.ACTION_NETWORK_RECEIVER.equals(intent.getAction())) {
                 if (Constants.isConnectNet){
