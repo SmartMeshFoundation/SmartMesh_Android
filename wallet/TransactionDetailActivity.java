@@ -57,7 +57,6 @@ public class TransactionDetailActivity extends BaseActivity{
     private TextView transDetailCopy;//transfer copy qrcode
 
     private TransVo transVo;
-    private String fromAddress;
     private int recordType;//0 eth 1 smt
 
     private Timer timer;
@@ -71,7 +70,6 @@ public class TransactionDetailActivity extends BaseActivity{
 
     private void getPassData() {
         transVo = (TransVo) getIntent().getSerializableExtra("transVo");
-        fromAddress = getIntent().getStringExtra("fromAddress");
         recordType = getIntent().getIntExtra("recordType",0);
 
     }
@@ -112,7 +110,9 @@ public class TransactionDetailActivity extends BaseActivity{
 
             transDetailNumber.setText(transVo.getTx());
             transDetailTime.setText(Utils.transDetailTime(transVo.getTime()));
-            transDetailQuickMark.setImageBitmap(createQRCodeBitmap(transVo.getTxurl(),Utils.dip2px(TransactionDetailActivity.this,120)));
+            if (!TextUtils.isEmpty(transVo.getTxurl())){
+                transDetailQuickMark.setImageBitmap(createQRCodeBitmap(transVo.getTxurl(),Utils.dip2px(TransactionDetailActivity.this,120)));
+            }
             transDetailFee.setText(getString(R.string.eth_er_lower,transVo.getFee()));
 
             if (transVo.getTxBlockNumber() <= 0){
@@ -121,21 +121,21 @@ public class TransactionDetailActivity extends BaseActivity{
                 transDetailBlockNumber.setText(transVo.getTxBlockNumber() + "");
             }
 
-            if (recordType == 0){
+            if (transVo.getType() == 0){
                 transDetailMoneyType.setText(getString(R.string.eth_er_lower_1));
             }else{
                 transDetailMoneyType.setText(getString(R.string.smt_er_lower_1));
             }
 
             if (transVo.getValue().contains("+")){
-                transDetailFrom.setText(transVo.getAddress());
-                if (!TextUtils.isEmpty(fromAddress)){
-                    transDetailTo.setText(fromAddress);
+                transDetailFrom.setText(transVo.getToAddress());
+                if (!TextUtils.isEmpty(transVo.getFromAddress())){
+                    transDetailTo.setText(transVo.getFromAddress());
                 }
             }else{
-                transDetailTo.setText(transVo.getAddress());
-                if (!TextUtils.isEmpty(fromAddress)){
-                    transDetailFrom.setText(fromAddress);
+                transDetailTo.setText(transVo.getToAddress());
+                if (!TextUtils.isEmpty(transVo.getFromAddress())){
+                    transDetailFrom.setText(transVo.getFromAddress());
                 }
             }
 
@@ -331,10 +331,10 @@ public class TransactionDetailActivity extends BaseActivity{
                     }
                     break;
                 case 1:
-                    transDetailBlockNumber.setText(transVo.getTxBlockNumber());
+                    transDetailBlockNumber.setText(transVo.getTxBlockNumber() + "");
                     break;
                 case 2:
-                    transDetailBlockNumber.setText(transVo.getTxBlockNumber());
+                    transDetailBlockNumber.setText(transVo.getTxBlockNumber() + "");
                     transDetailImg.setImageResource(R.drawable.trans_detail_failed);
                     transDetailType.setVisibility(View.GONE);
                     if (timer  != null){

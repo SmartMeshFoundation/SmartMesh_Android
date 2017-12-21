@@ -5,12 +5,15 @@ import android.os.Message;
 import android.text.TextUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.util.SDCardCtrl;
 import com.lingtuan.firefly.util.Utils;
+import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.util.OwnWalletUtils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
+import org.json.JSONObject;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
@@ -113,6 +116,7 @@ public class WalletThread extends Thread {
 				}
 				WalletStorage.getInstance(context).add(storableWallet,context);
 				mHandler.sendEmptyMessage(WalletHandler.WALLET_SUCCESS);
+				addAddressMethod(walletAddress);
 			}
 			return;
 		} catch (CipherException e) {
@@ -138,5 +142,33 @@ public class WalletThread extends Thread {
 			e.printStackTrace();
 		}
 		mHandler.sendEmptyMessage(WalletHandler.WALLET_ERROR);
+	}
+
+	/**
+	 * add wallet address
+	 * @param address address
+	 * */
+	private void addAddressMethod(String address){
+
+		if (!address.startsWith("0x")){
+			address = "0x" + address;
+		}
+
+		NetRequestImpl.getInstance().addAddress(address, new RequestListener() {
+			@Override
+			public void start() {
+
+			}
+
+			@Override
+			public void success(JSONObject response) {
+
+			}
+
+			@Override
+			public void error(int errorCode, String errorMsg) {
+
+			}
+		});
 	}
 }

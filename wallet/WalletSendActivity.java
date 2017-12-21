@@ -567,15 +567,14 @@ public class WalletSendActivity extends BaseActivity implements SeekBar.OnSeekBa
                     transVo.setTxurl(txurl);
                     transVo.setState(-1);
                     transVo.setFee(String.format("%f",currentGas));
-                    transVo.setAddress(toAddress.getText().toString());
+                    transVo.setToAddress(toAddress.getText().toString());
+                    transVo.setFromAddress(fromAddress.getText().toString());
                     transVo.setValue(toValue.getText().toString());
                     transVo.setTime(System.currentTimeMillis()/1000);
                     transVo.setType(sendtype);
 
                     Intent intent = new Intent(WalletSendActivity.this,TransactionDetailActivity.class);
                     intent.putExtra("transVo",transVo);
-                    intent.putExtra("fromAddress",fromAddress.getText().toString());
-                    intent.putExtra("recordType",sendtype);
                     startActivity(intent);
                     finish();
                     break;

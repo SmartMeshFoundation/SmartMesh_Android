@@ -1,6 +1,5 @@
 package com.lingtuan.firefly.wallet;
 
-import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Handler;
@@ -12,15 +11,17 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
-import com.lingtuan.firefly.util.SDCardCtrl;
 import com.lingtuan.firefly.util.Utils;
+import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
 
@@ -28,26 +29,23 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import geth.Geth;
-import geth.KeyStore;
-
 /**
  * Created on 2017/8/22.
- * 
+ * Backup account
  */
 
 public class WalletCopyActivity extends BaseActivity {
 
-    TextView walletCopyName;
-    TextView walletCopyPwdInfo;
-    TextView walletCopyKey;
-    TextView walletCopyKeyStore;
-    TextView walletDelete;
+    TextView walletCopyName;//Account name
+    TextView walletCopyPwdInfo;//Password prompt
+    TextView walletCopyKey;//Export the private key
+    TextView walletCopyKeyStore;//Export the KeyStore
+    TextView walletDelete;//To delete the wallet
     TextView success,address;
     ImageView icon;
     private StorableWallet storableWallet;
     private int iconId;
-    private int type;
+    private int type;//0 the newly created, 1 backup wallet
     @Override
     protected void setContentView() {
         setContentView(R.layout.wallet_copy_layout);
@@ -107,22 +105,22 @@ public class WalletCopyActivity extends BaseActivity {
             address.setVisibility(View.GONE);
         }
 
-        
+        //Observe the purse
         if (storableWallet.getWalletType() == 1){
             walletCopyKey.setEnabled(false);
             walletCopyKeyStore.setEnabled(false);
         }
 
-        
+        //Export the private key
         if (storableWallet.getCanExportPrivateKey() != 1){
             walletCopyKey.setEnabled(false);
         }
     }
 
     /**
-     * 
-     * 
-     * 
+     * to export the private key
+     * export KeyStore
+     * to delete the wallet
      * */
     @Override
     public void onClick(View v){
@@ -147,7 +145,8 @@ public class WalletCopyActivity extends BaseActivity {
     }
 
     /**
-     * 
+     * password authentication
+     * @ param type 0 for the private key, 1 for keyStore, 2 to delete the wallet
      * */
     private void showPwdDialog(final int type){
         MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_INPUT_PWD, new MyViewDialogFragment.EditCallback() {
@@ -171,7 +170,7 @@ public class WalletCopyActivity extends BaseActivity {
     }
 
     /**
-     * 
+     * Observe purse to delete
      * */
     private void showDelSacnWalletDialog(){
         MyViewDialogFragment mdf = new MyViewDialogFragment();
@@ -186,8 +185,8 @@ public class WalletCopyActivity extends BaseActivity {
     }
 
     /**
-     * 
-     * @param walletPwd 
+     * access to the private key
+     * Password @ param walletPwd purse
      * */
     private void getWalletPrivateKey(final String walletPwd,final int type){
         LoadingDialog.show(WalletCopyActivity.this,"");
@@ -220,8 +219,8 @@ public class WalletCopyActivity extends BaseActivity {
 
 
     /**
-     * keyStore
-     * @param walletPwd 
+     * get the keyStore
+     * Password @ param walletPwd purse
      * */
     private void getWalletKeyStore(final String walletPwd){
         LoadingDialog.show(WalletCopyActivity.this,"");
@@ -255,7 +254,7 @@ public class WalletCopyActivity extends BaseActivity {
     private Handler mHandler = new Handler(){
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case 0:
+                case 0://The private key
                     LoadingDialog.close();
                     BigInteger privateKey = (BigInteger) msg.obj;
                     Intent showPrivateKey = new Intent(WalletCopyActivity.this,WalletPrivateKeyActivity.class);
@@ -279,18 +278,18 @@ public class WalletCopyActivity extends BaseActivity {
                     showKeyStore.putExtra(Constants.KEYSTORE,keyStore);
                     startActivity(showKeyStore);
                     break;
-                case 2:
+                case 2://To delete the wallet
                     delWallet();
                     break;
-                case 3:
+                case 3://Password mistake
                     LoadingDialog.close();
                     showToast(getString(R.string.wallet_copy_pwd_error));
                     break;
-                case 4:
+                case 4://The operation failure
                     LoadingDialog.close();
                     showToast(getString(R.string.error));
                     break;
-                case 5:
+                case 5://Out of memory
                     LoadingDialog.close();
                     showToast(getString(R.string.notification_wallgen_no_memory));
                     break;
@@ -299,12 +298,12 @@ public class WalletCopyActivity extends BaseActivity {
     };
 
     /**
-     *
+     * Delete the wallet data
      * */
     private void delWallet(){
         WalletStorage.getInstance(getApplicationContext()).removeWallet(storableWallet.getPublicKey(),storableWallet.getWalletType(),WalletCopyActivity.this);
-        if(storableWallet.isSelect())
-        {
+        delAddressMethod(storableWallet.getPublicKey());
+        if(storableWallet.isSelect()){
             WalletStorage.getInstance(getApplicationContext()).get().remove(storableWallet);
             if(WalletStorage.getInstance(getApplicationContext()).get().size()>0)
             {
@@ -313,19 +312,46 @@ public class WalletCopyActivity extends BaseActivity {
             else{
                 WalletStorage.getInstance(getApplicationContext()).destroy();
             }
-            
+            //Send to refresh the page
             Utils.sendBroadcastReceiver(WalletCopyActivity.this, new Intent(Constants.WALLET_REFRESH_DEL), false);
             finish();
-        }
-        else{
+        }else{
             WalletStorage.getInstance(getApplicationContext()).get().remove(storableWallet);
             if(WalletStorage.getInstance(getApplicationContext()).get().size()<=0)
             {
                 WalletStorage.getInstance(getApplicationContext()).destroy();
             }
-            
+            //Send to refresh the page
             Utils.sendBroadcastReceiver(WalletCopyActivity.this, new Intent(Constants.WALLET_REFRESH_DEL), false);
             finish();
         }
+    }
+
+    /**
+     * delete wallet address
+     * @param address address
+     * */
+    private void delAddressMethod(String address){
+
+        if (!address.startsWith("0x")){
+            address = "0x" + address;
+        }
+
+        NetRequestImpl.getInstance().delAddress(address, new RequestListener() {
+            @Override
+            public void start() {
+
+            }
+
+            @Override
+            public void success(JSONObject response) {
+
+            }
+
+            @Override
+            public void error(int errorCode, String errorMsg) {
+
+            }
+        });
     }
 }

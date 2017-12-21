@@ -18,6 +18,7 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.adapter.DropTextViewAdapter;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.DropTextView;
+import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -111,7 +113,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
 
         transEthVos = new ArrayList<>();
         transFftVos = new ArrayList<>();
-        mAdapter = new TransAdapter(TransactionRecordsActivity.this,transEthVos);
+        mAdapter = new TransAdapter(TransactionRecordsActivity.this,transEthVos,walletAddress.getText().toString());
         transListView.setAdapter(mAdapter);
 
         if (!TextUtils.isEmpty(mAddress)){
@@ -145,7 +147,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
                 transLine2.setVisibility(View.INVISIBLE);
                 transEthVos.clear();
                 transFftVos.clear();
-                mAdapter.resetSource(transEthVos);
+                mAdapter.resetSource(transEthVos,walletAddress.getText().toString());
                 emptyView.setVisibility(View.GONE);
                 getTransMethod(0,walletAddress.getText().toString());
                 swipe_refresh.setRefreshing(true);
@@ -161,7 +163,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
                 transFft.setSelected(false);
                 transLine.setVisibility(View.VISIBLE);
                 transLine2.setVisibility(View.INVISIBLE);
-                mAdapter.resetSource(transEthVos);
+                mAdapter.resetSource(transEthVos,walletAddress.getText().toString());
                 emptyView.setVisibility(View.GONE);
                 getTransMethod(0,walletAddress.getText().toString());
                 swipe_refresh.setRefreshing(true);
@@ -171,7 +173,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
                 transFft.setSelected(true);
                 transLine.setVisibility(View.INVISIBLE);
                 transLine2.setVisibility(View.VISIBLE);
-                mAdapter.resetSource(transFftVos);
+                mAdapter.resetSource(transFftVos,walletAddress.getText().toString());
                 emptyView.setVisibility(View.GONE);
                 getTransMethod(1,walletAddress.getText().toString());
                 swipe_refresh.setRefreshing(true);
@@ -187,80 +189,27 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
      * @param type 0 eth 1 smt
      * */
     private void getTransMethod(final int type,final String address) {
-        recordType = type;
-        try {
-            NetRequestUtils.getInstance().getTxlist(TransactionRecordsActivity.this,type,address, new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    Message message = Message.obtain();
-                    message.what = 2;
-                    message.arg1 = type;
-                    mHandler.sendMessage(message);
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String jsonString = response.body().string();
-                    parseJson(jsonString,type,address);
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void parseJson(String jsonString,final int type,final String address) {
-        if (!TextUtils.equals(address,walletAddress.getText().toString())){
-            return;
-        }
-        if (TextUtils.isEmpty(jsonString)){
-            Message message = Message.obtain();
-            message.what = 2;
-            message.arg1 = type;
-            mHandler.sendMessage(message);
-            return;
-        }
-        try {
-            JSONObject object = new JSONObject(jsonString);
-            int errcod = object.optInt("errcod");
-            if (errcod == 0){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                recordType = type;
+                List<TransVo> mlist =   FinalUserDataBase.getInstance().getTransList(type,address);
                 if (type == 0){
                     transEthVos.clear();
+                    transEthVos.addAll(mlist);
                 }else{
                     transFftVos.clear();
-                }
-                JSONArray array = object.optJSONArray("data");
-                if (array == null){
-                    mHandler.sendEmptyMessage(type);
-                    return;
-                }
-                for (int i = 0 ; i < array.length() ; i++){
-                    TransVo transVo = new TransVo().parse(array.optJSONObject(i));
-                    if (type == 0){
-                        transVo.setType(0);
-                        transEthVos.add(transVo);
-                    }else{
-                        transVo.setType(1);
-                        transFftVos.add(transVo);
-                    }
+                    transFftVos.addAll(mlist);
                 }
                 mHandler.sendEmptyMessage(type);
-            }else{
-                if (errcod == -2){
-                    long difftime = object.optJSONObject("data").optLong("difftime");
-                    long tempTime =  MySharedPrefs.readLong(TransactionRecordsActivity.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_REQTIME);
-                    MySharedPrefs.writeLong(TransactionRecordsActivity.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_REQTIME,difftime + tempTime);
-                }
-                Message message = Message.obtain();
-                message.obj = object.optString("msg");
-                message.what = 2;
-                mHandler.sendMessage(message);
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
-            mHandler.sendEmptyMessage(type);
-        }
+        }).start();
+
+
+
+
     }
+
 
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler(){
@@ -270,22 +219,14 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
                     if (transEth.isSelected()){
                         checkEmpty(0);
                         swipe_refresh.setRefreshing(false);
-                        mAdapter.resetSource(transEthVos);
+                        mAdapter.resetSource(transEthVos,walletAddress.getText().toString());
                     }
                     break;
                 case 1:
                     if (transFft.isSelected()){
                         checkEmpty(1);
                         swipe_refresh.setRefreshing(false);
-                        mAdapter.resetSource(transFftVos);
-                    }
-                    break;
-                case 2:
-                    swipe_refresh.setRefreshing(false);
-                    String errorMsg = (String) msg.obj;
-                    checkEmpty(msg.arg1);
-                    if (!TextUtils.isEmpty(errorMsg)){
-                        showToast(errorMsg);
+                        mAdapter.resetSource(transFftVos,walletAddress.getText().toString());
                     }
                     break;
             }
@@ -336,10 +277,10 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
     @Override
     public void onRefresh() {
         if (transEth.isSelected()){
-            mAdapter.resetSource(transEthVos);
+            mAdapter.resetSource(transEthVos,walletAddress.getText().toString());
             getTransMethod(0,walletAddress.getText().toString());
         }else{
-            mAdapter.resetSource(transFftVos);
+            mAdapter.resetSource(transFftVos,walletAddress.getText().toString());
             getTransMethod(1,walletAddress.getText().toString());
         }
     }
@@ -348,12 +289,14 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent(TransactionRecordsActivity.this,TransactionDetailActivity.class);
         if (recordType == 0 && transEthVos.size() > 0){//eth record
+            transEthVos.get(position).setFromAddress(walletAddress.getText().toString());
+            transEthVos.get(position).setType(recordType);
             intent.putExtra("transVo",transEthVos.get(position));
         }else if (recordType == 1 && transFftVos.size() > 0){
+            transFftVos.get(position).setFromAddress(walletAddress.getText().toString());
+            transFftVos.get(position).setType(recordType);
             intent.putExtra("transVo",transFftVos.get(position));
         }
-        intent.putExtra("fromAddress",walletAddress.getText().toString());
-        intent.putExtra("recordType",recordType);
         startActivity(intent);
     }
 }

@@ -1,6 +1,7 @@
 package com.lingtuan.firefly.wallet;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -20,15 +21,17 @@ public class TransAdapter extends BaseAdapter {
 
     private Context context = null ;
     private ArrayList<TransVo> transVos;
+    private String selectedAddress;
 
-
-    public TransAdapter(Context context,ArrayList<TransVo> transVos){
+    public TransAdapter(Context context,ArrayList<TransVo> transVos,String selectedAddress){
         this.context = context;
         this.transVos = transVos;
+        this.selectedAddress = selectedAddress;
     }
 
-    public void resetSource(ArrayList<TransVo> transVos){
+    public void resetSource(ArrayList<TransVo> transVos,String selectedAddress){
         this.transVos = transVos;
+        this.selectedAddress = selectedAddress;
         notifyDataSetChanged();
     }
 
@@ -64,13 +67,23 @@ public class TransAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         TransVo transVo = transVos.get(position);
-        holder.address.setText(transVo.getAddress());
-        holder.time.setText(Utils.formatTime(transVo.getTime()));
-        if (transVo.getType() == 0){//eth
-            holder.value.setText(context.getString(R.string.eth_er,transVo.getValue()));
-        }else{//smt
-            holder.value.setText(context.getString(R.string.smt_er,transVo.getValue()));
+        if (TextUtils.equals(selectedAddress,transVo.getFromAddress())){
+            holder.address.setText(transVo.getToAddress());
+            if (transVo.getType() == 0){//eth
+                holder.value.setText("-" + context.getString(R.string.eth_er,transVo.getValue()));
+            }else{//smt
+                holder.value.setText("-" + context.getString(R.string.smt_er,transVo.getValue()));
+            }
+        }else{
+            holder.address.setText(transVo.getFromAddress());
+            if (transVo.getType() == 0){//eth
+                holder.value.setText("+" + context.getString(R.string.eth_er,transVo.getValue()));
+            }else{//smt
+                holder.value.setText("+" + context.getString(R.string.smt_er,transVo.getValue()));
+            }
         }
+
+        holder.time.setText(Utils.formatTime(transVo.getTime()));
         return convertView;
     }
 
