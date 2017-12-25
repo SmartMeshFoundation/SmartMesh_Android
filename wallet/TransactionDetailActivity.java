@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.zxing.BarcodeFormat;
@@ -19,6 +20,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.custom.MonIndicator;
 import com.lingtuan.firefly.ui.WebViewUI;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestUtils;
@@ -57,10 +59,12 @@ public class TransactionDetailActivity extends BaseActivity{
     private TextView transDetailCopy;//transfer copy qrcode
 
     private TransVo transVo;
-    private int recordType;//0 eth 1 smt
 
     private Timer timer;
     private TimerTask timerTask;
+
+    private MonIndicator monindIcator;
+    private LinearLayout transTypeBody;
 
     @Override
     protected void setContentView() {
@@ -70,7 +74,6 @@ public class TransactionDetailActivity extends BaseActivity{
 
     private void getPassData() {
         transVo = (TransVo) getIntent().getSerializableExtra("transVo");
-        recordType = getIntent().getIntExtra("recordType",0);
 
     }
 
@@ -88,6 +91,8 @@ public class TransactionDetailActivity extends BaseActivity{
         transDetailTime = (TextView) findViewById(R.id.trans_detail_time);
         transDetailCopy = (TextView) findViewById(R.id.trans_detail_copy);
         transDetailQuickMark = (ImageView) findViewById(R.id.trans_detail_quick_mark);
+        monindIcator = (MonIndicator) findViewById(R.id.monindIcator);
+        transTypeBody = (LinearLayout) findViewById(R.id.transTypeBody);
     }
 
     @Override
@@ -110,9 +115,7 @@ public class TransactionDetailActivity extends BaseActivity{
 
             transDetailNumber.setText(transVo.getTx());
             transDetailTime.setText(Utils.transDetailTime(transVo.getTime()));
-            if (!TextUtils.isEmpty(transVo.getTxurl())){
-                transDetailQuickMark.setImageBitmap(createQRCodeBitmap(transVo.getTxurl(),Utils.dip2px(TransactionDetailActivity.this,120)));
-            }
+            transDetailQuickMark.setImageBitmap(createQRCodeBitmap(transVo.getTxurl(),Utils.dip2px(TransactionDetailActivity.this,120)));
             transDetailFee.setText(getString(R.string.eth_er_lower,transVo.getFee()));
 
             if (transVo.getTxBlockNumber() <= 0){
@@ -127,45 +130,44 @@ public class TransactionDetailActivity extends BaseActivity{
                 transDetailMoneyType.setText(getString(R.string.smt_er_lower_1));
             }
 
-            if (transVo.getValue().contains("+")){
-                transDetailFrom.setText(transVo.getToAddress());
-                if (!TextUtils.isEmpty(transVo.getFromAddress())){
-                    transDetailTo.setText(transVo.getFromAddress());
-                }
-            }else{
-                transDetailTo.setText(transVo.getToAddress());
-                if (!TextUtils.isEmpty(transVo.getFromAddress())){
-                    transDetailFrom.setText(transVo.getFromAddress());
-                }
+            transDetailTo.setText(transVo.getToAddress());
+            if (!TextUtils.isEmpty(transVo.getFromAddress())){
+                transDetailFrom.setText(transVo.getFromAddress());
             }
-
 
             switch (transVo.getState()){
                 case -1:
-                    transDetailImg.setImageResource(R.drawable.trans_detail_wait);
+                    transTypeBody.setVisibility(View.VISIBLE);
                     transDetailType.setVisibility(View.VISIBLE);
+                    monindIcator.setVisibility(View.VISIBLE);
                     transDetailType.setText(getString(R.string.wallet_trans_detail_type_0));
+                    transDetailImg.setImageResource(R.drawable.trans_detail_wait);
                     transDetailState();
                     break;
                 case 0:
-                    transDetailImg.setImageResource(R.drawable.trans_detail_wait);
+                    transTypeBody.setVisibility(View.VISIBLE);
+                    monindIcator.setVisibility(View.GONE);
                     transDetailType.setVisibility(View.VISIBLE);
                     transDetailType.setText(getString(R.string.wallet_trans_detail_type_1,transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1));
+                    transDetailImg.setImageResource(R.drawable.trans_detail_wait);
                     transDetailState();
                     break;
                 case 1:
                     transDetailImg.setImageResource(R.drawable.trans_detail_success);
-                    transDetailType.setVisibility(View.GONE);
+                    transTypeBody.setVisibility(View.GONE);
                     break;
                 case 2:
                     transDetailImg.setImageResource(R.drawable.trans_detail_failed);
-                    transDetailType.setVisibility(View.GONE);
+                    transTypeBody.setVisibility(View.GONE);
                     break;
             }
         }
     }
 
     private Bitmap createQRCodeBitmap(String content , int widthAndHeight) {
+        if (TextUtils.isEmpty(content)){
+            content = " ";
+        }
         Hashtable<EncodeHintType, Object> qrParam = new Hashtable<>();
         qrParam.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
         qrParam.put(EncodeHintType.CHARACTER_SET, "utf-8");
@@ -313,9 +315,11 @@ public class TransactionDetailActivity extends BaseActivity{
             switch (msg.what) {
                 case 0:
                     int blockNumber = msg.arg1;
+                    transTypeBody.setVisibility(View.VISIBLE);
+                    monindIcator.setVisibility(View.GONE);
                     if (blockNumber >= 11){
+                        transTypeBody.setVisibility(View.GONE);
                         transDetailImg.setImageResource(R.drawable.trans_detail_success);
-                        transDetailType.setVisibility(View.GONE);
                         transVo.setState(1);
                         if (timer  != null){
                             timer.cancel();
@@ -326,17 +330,30 @@ public class TransactionDetailActivity extends BaseActivity{
                             timerTask = null;
                         }
                     }else{
+                        transTypeBody.setVisibility(View.VISIBLE);
                         transDetailType.setVisibility(View.VISIBLE);
                         transDetailType.setText(getString(R.string.wallet_trans_detail_type_1,blockNumber + 1));
                     }
                     break;
                 case 1:
-                    transDetailBlockNumber.setText(transVo.getTxBlockNumber() + "");
+                    transTypeBody.setVisibility(View.VISIBLE);
+                    transDetailType.setVisibility(View.VISIBLE);
+                    monindIcator.setVisibility(View.GONE);
+                    transDetailType.setText(getString(R.string.wallet_trans_detail_type_1,1));
+                    if (transVo.getTxBlockNumber() <= 0){
+                        transDetailBlockNumber.setText(getString(R.string.wallet_trans_detail_block_none));
+                    }else{
+                        transDetailBlockNumber.setText(transVo.getTxBlockNumber() + "");
+                    }
                     break;
                 case 2:
-                    transDetailBlockNumber.setText(transVo.getTxBlockNumber() + "");
                     transDetailImg.setImageResource(R.drawable.trans_detail_failed);
-                    transDetailType.setVisibility(View.GONE);
+                    transTypeBody.setVisibility(View.GONE);
+                    if (transVo.getTxBlockNumber() <= 0){
+                        transDetailBlockNumber.setText(getString(R.string.wallet_trans_detail_block_none));
+                    }else{
+                        transDetailBlockNumber.setText(transVo.getTxBlockNumber() + "");
+                    }
                     if (timer  != null){
                         timer.cancel();
                         timer = null;
