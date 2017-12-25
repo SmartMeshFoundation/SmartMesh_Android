@@ -62,12 +62,13 @@ public class TransAdapter extends BaseAdapter {
             holder.address = (TextView) convertView.findViewById(R.id.address);
             holder.time = (TextView) convertView.findViewById(R.id.time);
             holder.value = (TextView) convertView.findViewById(R.id.value);
+            holder.transFailed = (TextView) convertView.findViewById(R.id.transFailed);
             convertView.setTag(holder);
         }else{
             holder = (ViewHolder) convertView.getTag();
         }
         TransVo transVo = transVos.get(position);
-        if (TextUtils.equals(selectedAddress,transVo.getFromAddress())){
+        if (transVo.getNoticeType() == 0){
             holder.address.setText(transVo.getToAddress());
             if (transVo.getType() == 0){//eth
                 holder.value.setText("-" + context.getString(R.string.eth_er,transVo.getValue()));
@@ -83,6 +84,12 @@ public class TransAdapter extends BaseAdapter {
             }
         }
 
+        if (transVo.getState() == 2){
+            holder.transFailed.setVisibility(View.VISIBLE);
+        }else{
+            holder.transFailed.setVisibility(View.GONE);
+        }
+
         holder.time.setText(Utils.formatTime(transVo.getTime()));
         return convertView;
     }
@@ -91,5 +98,6 @@ public class TransAdapter extends BaseAdapter {
         TextView address;//address
         TextView time;//time
         TextView value;//Transfer amount
+        TextView transFailed;//Transaction failed
     }
 }
