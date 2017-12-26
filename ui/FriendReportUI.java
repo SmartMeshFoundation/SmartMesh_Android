@@ -9,6 +9,7 @@ import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
+import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
 import org.json.JSONObject;
@@ -139,6 +140,12 @@ public class FriendReportUI extends BaseActivity {
         MyViewDialogFragment mdf = new MyViewDialogFragment();
         mdf.setTitleAndContentText(getString(R.string.report_sent), getString(R.string.info_shield_user));
         mdf.setSubmitNamContentText(getString(R.string.info_block));
+        mdf.setCancelCallback(new MyViewDialogFragment.CancelCallback() {
+            @Override
+            public void cancelBtn() {
+                finish();
+            }
+        });
         mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
             @Override
             public void okBtn() {
@@ -163,6 +170,7 @@ public class FriendReportUI extends BaseActivity {
                 LoadingDialog.close();
                 FinalUserDataBase.getInstance().deleteFriendByUid(localid);
                 showToast(response.optString("msg"));
+                finish();
             }
 
             @Override

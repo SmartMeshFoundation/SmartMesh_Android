@@ -51,7 +51,6 @@ public class AlertActivity extends BaseActivity{
 	}
 
 	private void showVersionDialog1(String version, String describe, final String url){
-
 		final SubmitDialog.Builder builder = new SubmitDialog.Builder(this);
 		builder.setTitle(getString(R.string.new_version,version))
 				.setMessage(describe.replace("\\n", "\n"))
@@ -68,6 +67,7 @@ public class AlertActivity extends BaseActivity{
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.dismiss();
 								if (TextUtils.isEmpty(url)){
+									finish();
 									return;
 								}
 								showToast(getString(R.string.chatting_start_download));
@@ -90,8 +90,6 @@ public class AlertActivity extends BaseActivity{
 								SharedPreferences sPreferences = getSharedPreferences("downloadplato", 0);
 								sPreferences.edit().putLong("plato", refernece).commit();
 								finish();
-
-
 							}
 						});
 		builder.show();
@@ -99,18 +97,17 @@ public class AlertActivity extends BaseActivity{
 	}
 
 
-	private void showVersionDialog2(String version, String describe, final String url)
-	{
+	private void showVersionDialog2(String version, String describe, final String url){
 
-		SubmitDialog.Builder builder = new
-				SubmitDialog.Builder(this);
+		SubmitDialog.Builder builder = new SubmitDialog.Builder(this);
 		builder.setTitle(getString(R.string.new_version,version))
 				.setMessage(describe.replace("\\n", "\n"))
-				.setPositiveButton(getString(R.string.updatenow),
+				.setNegativeButton(getString(R.string.updatenow),
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.dismiss();
 								if (TextUtils.isEmpty(url)){
+									finish();
 									return;
 								}
 								showToast(getString(R.string.chatting_start_download));
@@ -138,13 +135,12 @@ public class AlertActivity extends BaseActivity{
 		builder.show();
 		builder.setCancelable(false);
 	}
-	private void showOfflineDialog(String msg)
-	{
-		SubmitDialog.Builder builder = new
-				SubmitDialog.Builder(this);
+	private void showOfflineDialog(String msg){
+		SubmitDialog.Builder builder = new SubmitDialog.Builder(this);
+		builder.setIsOffline(true);
 		builder.setTitle(getString(R.string.notif))
 				.setMessage(msg)
-				.setPositiveButton(getString(R.string.submit),
+				.setNegativeButton(getString(R.string.submit),
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.dismiss();
