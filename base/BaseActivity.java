@@ -22,12 +22,14 @@ import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.service.LoadDataService;
 import com.lingtuan.firefly.service.XmppService;
+import com.lingtuan.firefly.ui.MainFragmentUI;
 import com.lingtuan.firefly.ui.SplashActivity;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
+import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.xmpp.XmppUtils;
 
 import java.util.ArrayList;
@@ -105,9 +107,6 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         }
     }
 
-    /**
-    *show toast
-    */
     protected void showToast(String msg){
         MyToast.showToast(this, msg);
     }
@@ -129,7 +128,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
                     FinalUserDataBase.getInstance().close();
                     NetRequestImpl.getInstance().destory();
                     LoginUtil.getInstance().destory();
-
+                    WalletStorage.getInstance(NextApplication.mContext).destroy();
                     NextApplication.myInfo = null ;
 
                     //Exit the XMPP service
@@ -148,14 +147,10 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
                 startActivity(new Intent(BaseActivity.this, SplashActivity.class));
                 Utils.openNewActivityAnim(BaseActivity.this, true);
 
-                Utils.sendBroadcastReceiver(BaseActivity.this,new Intent(Constants.ACTION_CLOSE_MAIN),false);
             }
         }).start();
     }
 
-    /**
-    * exit
-    */
     public static void exit() {
         if (activitys != null && !activitys.isEmpty()) {
             for (Activity act : activitys) {
@@ -167,9 +162,6 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         }
     }
 
-    /**
-    *finish chatting history
-    */
     private void finishChattingUIHistory(){
         if (this instanceof ChattingUI && activitys != null && !activitys.isEmpty()) {
             for (Activity act : activitys) {
@@ -194,7 +186,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         if (tempActivitys != null && !tempActivitys.isEmpty()) {
             for (int i=0;i<tempActivitys.size();i++) {
                 Activity act = tempActivitys.get(i);
-                if (!act.isFinishing()) {
+                if (!act.isFinishing() && ! (act instanceof MainFragmentUI)) {
                     act.finish();
                     tempActivitys.remove(i);
                     i--;
