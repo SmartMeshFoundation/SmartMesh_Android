@@ -81,28 +81,46 @@ public class LoginUI extends BaseActivity {
             case R.id.login:
                 String mName = userName.getText().toString();
                 String mPwd = password.getText().toString();
+                String tempName;
+                String tempPwd;
+                String mid = "";
                 MySharedPrefs.write(this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_LOGIN_NAME, mName);
                 if (loginUtil.checkUser(mName,mPwd)){
                     if (Utils.isConnectNet(LoginUI.this)){
                         ArrayList<UserInfoVo> infoList = JsonUtil.readLocalInfo(LoginUI.this);
+                        boolean isFoundName = false;//has username but not password
+                        boolean isFound = false;//username and password is right
                         for (int i = 0 ; i < infoList.size() ; i++){//Whether the local user id
                             try {
-                                String username = infoList.get(i).getUsername();
-                                String password = infoList.get(i).getPassword();
-                                String mid = infoList.get(i).getMid();
-                                if (TextUtils.equals(mName,username) && !TextUtils.equals(mName,mid) && TextUtils.equals(mPwd,password)){
-                                    if (!TextUtils.isEmpty(mid)){
-                                        loginUtil.login(mid,mPwd,true);
-                                    }else{
-                                        LoginUtil.getInstance().intoMainUI(LoginUI.this,mName,mPwd);
+                                tempName = infoList.get(i).getUsername();
+                                if (TextUtils.equals(mName,tempName)){
+                                    isFoundName = true;
+                                    tempPwd = infoList.get(i).getPassword();
+                                    mid = infoList.get(i).getMid();
+                                    if (TextUtils.equals(mPwd,tempPwd)){
+                                        isFound = true;
+                                        break;
                                     }
-                                    return;
                                 }
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
                         }
-                        loginUtil.login(mName,mPwd,true);
+                        if (isFound){//username and password is right
+                            if (TextUtils.isEmpty(mid)){
+                                LoginUtil.getInstance().intoMainUI(LoginUI.this,mName,mPwd);
+                            }else{
+                                loginUtil.login(mid,mPwd,true);
+                            }
+                        }else if (isFoundName){//only has username
+                            if (TextUtils.isEmpty(mid)){
+                                showToast(getString(R.string.login_pwd_error));
+                            }else{
+                                loginUtil.login(mid,mPwd,true);
+                            }
+                        }else{//no all
+                            loginUtil.login(mName,mPwd,true);
+                        }
                     }else{
                        LoginUtil.getInstance().intoMainUI(LoginUI.this,mName,mPwd);
                     }
