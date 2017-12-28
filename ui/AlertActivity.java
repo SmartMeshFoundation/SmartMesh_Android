@@ -15,7 +15,9 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.SubmitDialog;
 import com.lingtuan.firefly.login.LoginUI;
+import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.service.UpdateVersionService;
+import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
 
 import java.io.File;
@@ -47,11 +49,14 @@ public class AlertActivity extends BaseActivity{
 			showVersionDialog2(getIntent().getStringExtra("version"),getIntent().getStringExtra("describe"),getIntent().getStringExtra("url"));
 		}else if(type==2){
 			showOfflineDialog(getIntent().getStringExtra("msg"));
+		}else if(type==3){
+			showSmartMeshDialog();
 		}
 	}
 
 	private void showVersionDialog1(String version, String describe, final String url){
 		final SubmitDialog.Builder builder = new SubmitDialog.Builder(this);
+		builder.setDialogType(0);
 		builder.setTitle(getString(R.string.new_version,version))
 				.setMessage(describe.replace("\\n", "\n"))
 				.setPositiveButton(getString(R.string.updatelater), new DialogInterface.OnClickListener() {
@@ -100,6 +105,7 @@ public class AlertActivity extends BaseActivity{
 	private void showVersionDialog2(String version, String describe, final String url){
 
 		SubmitDialog.Builder builder = new SubmitDialog.Builder(this);
+		builder.setDialogType(0);
 		builder.setTitle(getString(R.string.new_version,version))
 				.setMessage(describe.replace("\\n", "\n"))
 				.setNegativeButton(getString(R.string.updatenow),
@@ -137,7 +143,7 @@ public class AlertActivity extends BaseActivity{
 	}
 	private void showOfflineDialog(String msg){
 		SubmitDialog.Builder builder = new SubmitDialog.Builder(this);
-		builder.setIsOffline(true);
+		builder.setDialogType(1);
 		builder.setTitle(getString(R.string.notif))
 				.setMessage(msg)
 				.setNegativeButton(getString(R.string.submit),
@@ -159,6 +165,33 @@ public class AlertActivity extends BaseActivity{
 		builder.setCancelable(false);
 	}
 
+	private void showSmartMeshDialog(){
+		SubmitDialog.Builder builder = new SubmitDialog.Builder(this);
+		builder.setDialogType(2);
+		builder.setTitle(getString(R.string.smartmesh_communication_open))
+				.setMessage(getString(R.string.smartmesh_communication_hint))
+				.setNegativeButton(getString(R.string.smartmesh_open),
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.dismiss();
+								MySharedPrefs.writeInt(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(),1);
+								//Exit without social network service
+								startService(new Intent(AlertActivity.this, AppNetService.class));
+								finish();
+							}
+						})
+				.setPositiveButton(getString(R.string.smartmesh_later),
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.dismiss();
+								MySharedPrefs.writeInt(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(),0);
+								finish();
+							}
+						});
+		builder.show();
+		builder.setCancelable(false);
+	}
 
 	@Override
 	public void onBackPressed() {

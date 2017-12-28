@@ -30,8 +30,12 @@ import com.lingtuan.firefly.discover.RadarViewGroup;
 import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
+import com.lingtuan.firefly.ui.AlertActivity;
+import com.lingtuan.firefly.ui.MainFragmentUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MyDialogFragment;
+import com.lingtuan.firefly.util.MySharedPrefs;
+import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.vo.UserBaseVo;
 
@@ -123,11 +127,20 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
     }
 
     private void initData() {
-        getActivity().bindService(new Intent(getActivity(), AppNetService.class), serviceConn,Activity.BIND_AUTO_CREATE);
+
+        shoSmartMeshDialog();
+
+        // -1 default  0 close  1 open
+        int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+        if (openSmartMesh == -1){
+            getActivity().bindService(new Intent(getActivity(), AppNetService.class), serviceConn,Activity.BIND_AUTO_CREATE);
+        }
 
         IntentFilter filter = new IntentFilter(Constants.OFFLINE_MEMBER_LIST);//message Session record distribution
         filter.addAction(Constants.CHANGE_LANGUAGE);//Update language refresh the page
         filter.addAction(Constants.ACTION_NETWORK_RECEIVER);//Network monitoring
+        filter.addAction(Constants.OPEN_SMARTMESH_NETWORE);//bind service
+        filter.addAction(Constants.CLOSE_SMARTMESH_NETWORE);//unbind service
         getActivity().registerReceiver(mBroadcastReceiver, filter);
 
         mBack.setVisibility(View.GONE);
@@ -151,12 +164,35 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
 
     }
 
+    private void shoSmartMeshDialog() {
+
+        if (NextApplication.myInfo == null){
+            return;
+        }
+        int version =android.os.Build.VERSION.SDK_INT;
+        if(version < 16){
+            return;
+        }
+        // -1 default  0 close  1 open
+        int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+        if (openSmartMesh == -1){
+            Intent intent = new Intent(getActivity(), AlertActivity.class);
+            intent.putExtra("type", 3);
+            startActivity(intent);
+            getActivity().overridePendingTransition(0, 0);
+        }
+
+    }
+
+
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent != null && (Constants.CHANGE_LANGUAGE.equals(intent.getAction()))) {
                 mTitle.setText(R.string.main_contact);
-                checkListEmpty();
+                if (isShowList){
+                    checkListEmpty();
+                }
             }else if (intent != null && (Constants.OFFLINE_MEMBER_LIST.equals(intent.getAction()))){
                 mDatas = (ArrayList<WifiPeopleVO>) intent.getSerializableExtra("onLineMember");
                 new Handler().postDelayed(new Runnable() {
@@ -167,6 +203,16 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
                 }, 500);
             }else if (intent != null && Constants.ACTION_NETWORK_RECEIVER.equals(intent.getAction())) {
                 Utils.updateViewMethod(uploadRegisterInfo,getActivity());
+            }else if (intent != null && Constants.OPEN_SMARTMESH_NETWORE.equals(intent.getAction())) {
+                int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+                if (openSmartMesh == -1){
+                    getActivity().bindService(new Intent(getActivity(), AppNetService.class), serviceConn,Activity.BIND_AUTO_CREATE);
+                }
+            }else if (intent != null && Constants.CLOSE_SMARTMESH_NETWORE.equals(intent.getAction())) {
+                int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+                if (openSmartMesh == 1 && serviceConn != null){
+                    getActivity().unbindService(serviceConn);
+                }
             }
         }
     };
@@ -188,7 +234,10 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
     public void onDestroy() {
         super.onDestroy();
         getActivity().unregisterReceiver(mBroadcastReceiver);
-        getActivity().unbindService(serviceConn);
+        int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+        if (openSmartMesh == 1 && serviceConn != null){
+            getActivity().unbindService(serviceConn);
+        }
     }
 
 

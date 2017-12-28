@@ -5,18 +5,23 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.SwitchButton;
 import com.lingtuan.firefly.fragment.MySelfFragment;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.offline.AppNetService;
+import com.lingtuan.firefly.ui.WebViewUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
+import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
@@ -24,6 +29,7 @@ import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * Created on 2017/9/13.
@@ -35,9 +41,11 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
 
     //语言选择
     private RelativeLayout languageSelectionBody;//Language selection
-    private RelativeLayout blackListBody,versionBody;//The blacklist version detection
+    private RelativeLayout useAgree;//use agree
+    private RelativeLayout blackListBody;//The blacklist version detection
     private TextView exit;//exit
-    private SwitchButton stealthButton;//stealth
+    private SwitchButton startSmartMeshWorkButton;//stealth  、no net work
+    private RelativeLayout startSmartMeshWorkBody;
 
     private TextView versionCheck;//The version number
 
@@ -49,20 +57,29 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
     @Override
     protected void findViewById() {
         languageSelectionBody = (RelativeLayout) findViewById(R.id.languageSelectionBody);
+        useAgree = (RelativeLayout) findViewById(R.id.useAgree);
         blackListBody = (RelativeLayout) findViewById(R.id.blackListBody);
-        versionBody = (RelativeLayout) findViewById(R.id.versionBody);
         versionCheck = (TextView) findViewById(R.id.versionCheck);
         exit = (TextView) findViewById(R.id.exit);
-        stealthButton = (SwitchButton) findViewById(R.id.stealthButton);
+        startSmartMeshWorkButton = (SwitchButton) findViewById(R.id.startSmartMeshWorkButton);
+        startSmartMeshWorkBody = (RelativeLayout) findViewById(R.id.startSmartMeshWorkBody);
     }
 
     @Override
     protected void setListener() {
         languageSelectionBody.setOnClickListener(this);
+        useAgree.setOnClickListener(this);
         blackListBody.setOnClickListener(this);
-//        versionBody.setOnClickListener(this);
         exit.setOnClickListener(this);
-        stealthButton.setOnCheckedChangeListener(this);
+        // -1 default , 0 close , 1 open
+        int noNetWork = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+        startSmartMeshWorkButton.setOnCheckedChangeListener(null);
+        if (noNetWork == 1){//is open
+            startSmartMeshWorkButton.setChecked(true);
+        }else{
+            startSmartMeshWorkButton.setChecked(false);
+        }
+        startSmartMeshWorkButton.setOnCheckedChangeListener(this);
     }
 
     @Override
@@ -72,6 +89,12 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
         registerReceiver(mBroadcastReceiver, filter);
         setTitle(getString(R.string.setting));
         versionCheck.setText(Utils.getVersionName(SettingUI.this));
+        int version =android.os.Build.VERSION.SDK_INT;
+        if(version < 16){
+            startSmartMeshWorkBody.setVisibility(View.GONE);
+        }else{
+            startSmartMeshWorkBody.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -79,6 +102,29 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
         switch (v.getId()){
             case R.id.languageSelectionBody:
                 startActivity(new Intent(SettingUI.this, LanguageSelectionUI.class));
+                Utils.openNewActivityAnim(SettingUI.this,false);
+                break;
+            case R.id.useAgree:
+                String result = "";
+                String language = MySharedPrefs.readString(SettingUI.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_LANGUAFE);
+                if (TextUtils.isEmpty(language)){
+                    Locale locale = new Locale(Locale.getDefault().getLanguage());
+                    if (TextUtils.equals(locale.getLanguage(),"zh")){
+                        result = Constants.USE_AGREE_ZH;
+                    }else{
+                        result = Constants.USE_AGREE_EN;
+                    }
+                }else{
+                    if (TextUtils.equals(language,"zh")){
+                        result = Constants.USE_AGREE_ZH;
+                    }else{
+                        result = Constants.USE_AGREE_EN;
+                    }
+                }
+                Intent intent = new Intent(SettingUI.this, WebViewUI.class);
+                intent.putExtra("loadUrl", result);
+                intent.putExtra("title", getString(R.string.use_agreement));
+                startActivity(intent);
                 Utils.openNewActivityAnim(SettingUI.this,false);
                 break;
             case R.id.blackListBody:
@@ -91,7 +137,12 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
                 mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
                     @Override
                     public void okBtn() {
-                        logOutMethod();
+                        if (TextUtils.isEmpty(NextApplication.myInfo.getToken())){
+                            exitApp();
+                        }else{
+                            logOutMethod();
+                        }
+
                     }
                 });
                 mdf.show(getSupportFragmentManager(), "mdf");
@@ -148,6 +199,18 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
+        MySharedPrefs.writeInt(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(),isChecked ? 1 : 0);
+        if (isChecked){
+            //Start without social network service
+            startService(new Intent(this, AppNetService.class));
+            Utils.sendBroadcastReceiver(SettingUI.this,new Intent(Constants.OPEN_SMARTMESH_NETWORE), false);
+        }else{
+            int version =android.os.Build.VERSION.SDK_INT;
+            if(version >= 16){
+                Utils.sendBroadcastReceiver(SettingUI.this,new Intent(Constants.CLOSE_SMARTMESH_NETWORE), false);
+                Intent offlineservice = new Intent(NextApplication.mContext, AppNetService.class);
+                stopService(offlineservice);
+            }
+        }
     }
 }
