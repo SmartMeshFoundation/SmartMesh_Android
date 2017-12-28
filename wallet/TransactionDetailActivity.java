@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.zxing.BarcodeFormat;
@@ -21,6 +22,7 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.MonIndicator;
+import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.ui.WebViewUI;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestUtils;
@@ -59,12 +61,13 @@ public class TransactionDetailActivity extends BaseActivity{
     private TextView transDetailCopy;//transfer copy qrcode
 
     private TransVo transVo;
+    private boolean isSendTrans;//is from sendTrans
 
     private Timer timer;
     private TimerTask timerTask;
 
     private MonIndicator monindIcator;
-    private LinearLayout transTypeBody;
+    private RelativeLayout transTypeBody;
 
     @Override
     protected void setContentView() {
@@ -74,7 +77,7 @@ public class TransactionDetailActivity extends BaseActivity{
 
     private void getPassData() {
         transVo = (TransVo) getIntent().getSerializableExtra("transVo");
-
+        isSendTrans = getIntent().getBooleanExtra("isSendTrans",false);
     }
 
     @Override
@@ -92,7 +95,7 @@ public class TransactionDetailActivity extends BaseActivity{
         transDetailCopy = (TextView) findViewById(R.id.trans_detail_copy);
         transDetailQuickMark = (ImageView) findViewById(R.id.trans_detail_quick_mark);
         monindIcator = (MonIndicator) findViewById(R.id.monindIcator);
-        transTypeBody = (LinearLayout) findViewById(R.id.transTypeBody);
+        transTypeBody = (RelativeLayout) findViewById(R.id.transTypeBody);
     }
 
     @Override
@@ -148,7 +151,11 @@ public class TransactionDetailActivity extends BaseActivity{
                     transTypeBody.setVisibility(View.VISIBLE);
                     monindIcator.setVisibility(View.GONE);
                     transDetailType.setVisibility(View.VISIBLE);
-                    transDetailType.setText(getString(R.string.wallet_trans_detail_type_1,transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1));
+                    if (transVo.getBlockNumber() - transVo.getTxBlockNumber() < 0){
+                        transDetailType.setText(getString(R.string.wallet_trans_detail_type_1,1));
+                    }else{
+                        transDetailType.setText(getString(R.string.wallet_trans_detail_type_1,transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1));
+                    }
                     transDetailImg.setImageResource(R.drawable.trans_detail_wait);
                     transDetailState();
                     break;
@@ -377,6 +384,13 @@ public class TransactionDetailActivity extends BaseActivity{
         if (timerTask != null){
             timerTask.cancel();
             timerTask = null;
+        }
+
+        if (isSendTrans){
+             FinalUserDataBase.getInstance().insertTrans(transVo,true);
+        }
+        else{
+             FinalUserDataBase.getInstance().updateTransTemp(transVo);
         }
     }
 }

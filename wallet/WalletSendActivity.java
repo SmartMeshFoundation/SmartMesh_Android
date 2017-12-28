@@ -575,6 +575,7 @@ public class WalletSendActivity extends BaseActivity implements SeekBar.OnSeekBa
 
                     Intent intent = new Intent(WalletSendActivity.this,TransactionDetailActivity.class);
                     intent.putExtra("transVo",transVo);
+                    intent.putExtra("isSendTrans",true);
                     startActivity(intent);
                     finish();
                     break;
