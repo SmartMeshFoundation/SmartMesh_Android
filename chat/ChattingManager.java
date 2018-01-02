@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
+import android.text.Editable;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -106,8 +107,20 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
     private long maxRecordTime = DEFAULT_MAX_RECORD_TIME;
     private long minRecordTime = DEFAULT_MIN_RECORD_TIME;
 
+    private EditText mInputContent;
+
+    private int groupAtSelectIndex = 0;
+
     private ChattingManager(Context mContext) {
         this.mContext = mContext;
+    }
+
+    public void setmInputContent(EditText mInputContent) {
+        this.mInputContent = mInputContent;
+    }
+
+    public void setGroupAtSelectIndex(int groupAtSelectIndex) {
+        this.groupAtSelectIndex = groupAtSelectIndex;
     }
 
     public void setAppNetService(AppNetService appNetService) {
@@ -230,7 +243,9 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                 msg.setMessageId(UUID.randomUUID().toString());
                 msg.setMsgTime(System.currentTimeMillis() / 1000);
                 msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
-                successed = appNetService.handleSendVoice(second,SDCardCtrl.getAudioPath() + File.separator + audioName, false, uid, msg.getMessageId());
+                if (appNetService != null){
+                    successed = appNetService.handleSendVoice(second,SDCardCtrl.getAudioPath() + File.separator + audioName, false, uid, msg.getMessageId());
+                }
                 if(!successed)
                 {
                     msg.setSend(0);
@@ -442,6 +457,31 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                     new SendImageThread(photos);
                 }
             }
+        } else if (requestCode == Constants.REQUEST_SELECT_GROUP_MEMBER && resultCode == Activity.RESULT_OK && null != data) {
+//            //@group member
+//            boolean isMultipleChoice = data.getBooleanExtra("isMultipleChoice", false);
+//            if (isMultipleChoice) {
+//                ArrayList<GroupMemberVo> source = (ArrayList<GroupMemberVo>) data.getSerializableExtra("data");
+//                if (source != null) {
+//                    for (int i = 0; i < source.size(); i++) {
+//
+//                        UserBaseVo vo = source.get(i);
+//                        if (vo.getUid().equals(NextApplication.myInfo.getUid())) {
+//                            continue;
+//                        }
+//                        sbAtGroupSelectIds.add(vo.getUid());
+//                    }
+//                    Editable editable = mInputContent.getText();
+//                    editable.insert(groupAtSelectIndex, mContext.getString(R.string.chat_at_all_three));
+//                }
+//
+//            } else {
+                UserBaseVo vo = (UserBaseVo) data.getSerializableExtra("data");
+                Editable editable = mInputContent.getText();
+                editable.insert(groupAtSelectIndex, vo.getUserName() + " ");
+                sbAtGroupSelectIds.add(vo.getLocalId());
+//            }
+            Utils.showKeyBoard(mInputContent);
         }
 
     }
