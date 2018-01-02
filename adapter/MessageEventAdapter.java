@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
+import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.custom.ChatMsgComparable;
 import com.lingtuan.firefly.custom.DiscussGroupImageView;
 import com.lingtuan.firefly.util.Utils;
@@ -36,7 +37,6 @@ public class MessageEventAdapter extends BaseAdapter {
         }
     }
 
-    //update ui list
     public void updateList(List<ChatMsg> mList) {
         this.mList = mList;
         notifyDataSetChanged();
@@ -50,7 +50,6 @@ public class MessageEventAdapter extends BaseAdapter {
         return mList.size();
     }
 
-    //add message
     public void addChatMsg(ChatMsg msg) {
         if (msg == null) {
             return;
@@ -115,7 +114,7 @@ public class MessageEventAdapter extends BaseAdapter {
             h = new Holder();
             convertView = View.inflate(mContext, R.layout.item_msg_evnet, null);
             h.bg = (LinearLayout) convertView.findViewById(R.id.item_bg);
-            h.avatarShape = (ImageView) convertView.findViewById(R.id.item_avatar);
+            h.avatarShape = (CharAvatarView) convertView.findViewById(R.id.item_avatar);
             h.listenerIcon = (ImageView) convertView.findViewById(R.id.item_msg_event_listener);
             h.content = (TextView) convertView.findViewById(R.id.item_content);
             h.time = (TextView) convertView.findViewById(R.id.item_times);
@@ -159,6 +158,41 @@ public class MessageEventAdapter extends BaseAdapter {
                 nickname = mContext.getString(R.string.chat_friend_notify);
                 content = mContext.getResources().getString(R.string.contact_add_content, msg.getUsername());
             }
+            else if (type == 300) {//A traqns
+                url = "drawable://" + R.drawable.icon_msg_trans;
+                resId = R.drawable.icon_msg_trans;
+                nickname = mContext.getString(R.string.chat_token_notify);
+                if (msg.getNoticeType() == 0){
+                    if (TextUtils.equals("0",msg.getMode())){//eth
+                        if (msg.getInviteType() == 0){
+                            content = mContext.getString(R.string.wallet_trans_msg_eth,msg.getMoney());
+                        }else{
+                            content = mContext.getString(R.string.wallet_trans_msg_eth_failed,msg.getMoney());
+                        }
+
+                    }else{
+                        if (msg.getInviteType() == 0){
+                            content = mContext.getString(R.string.wallet_trans_msg_smt,msg.getMoney());
+                        }else{
+                            content = mContext.getString(R.string.wallet_trans_msg_smt_failed,msg.getMoney());
+                        }
+                    }
+                }else{
+                    if (TextUtils.equals("0",msg.getMode())){//eth
+                        if (msg.getInviteType() == 0){
+                            content = mContext.getString(R.string.wallet_trans_collect_eth,msg.getMoney());
+                        }else{
+                            content = mContext.getString(R.string.wallet_trans_collect_eth_failed,msg.getMoney());
+                        }
+                    }else{
+                        if (msg.getInviteType() == 0){
+                            content = mContext.getString(R.string.wallet_trans_collect_smt,msg.getMoney());
+                        }else{
+                            content = mContext.getString(R.string.wallet_trans_collect_smt_failed,msg.getMoney());
+                        }
+                    }
+                }
+            }
         } else {
             if ("everyone".equals(msg.getChatId()))
             {
@@ -173,7 +207,7 @@ public class MessageEventAdapter extends BaseAdapter {
         h.listenerIcon.setVisibility(View.GONE);
         h.unread.setVisibility(msg.getUnread() > 0 ? View.VISIBLE : View.GONE);
         if (msg.getGroupMask()) {
-            if ("everyone".equals(msg.getChatId()) || "system-0".equals(msg.getChatId()) || "system-1".equals(msg.getChatId()) || "system-3".equals(msg.getChatId()) || "system-4".equals(msg.getChatId())) {
+            if ("everyone".equals(msg.getChatId()) || "system-0".equals(msg.getChatId()) || "system-1".equals(msg.getChatId()) || "system-3".equals(msg.getChatId()) || "system-4".equals(msg.getChatId()) || "system-5".equals(msg.getChatId())) {
                 //If is the invitation message or group system, there is no shielding function
             } else {
                 h.listenerIcon.setVisibility(View.VISIBLE);
@@ -191,15 +225,16 @@ public class MessageEventAdapter extends BaseAdapter {
                 h.groupImageView.setMember(msg.getMemberAvatarUserBaseList());
             }
         } else {
+
             if (!TextUtils.isEmpty(url)) {
                 if (url.startsWith("drawable://")) {
                     NextApplication.displayCircleImage(h.avatarShape, null);
                     h.avatarShape.setImageResource(resId);
                 } else {
-                    NextApplication.displayCircleImage(h.avatarShape, url);
+                    h.avatarShape.setText(msg.getUsername(),h.avatarShape,url);
                 }
             }else{
-                h.avatarShape.setImageResource(R.drawable.icon_default_avater);
+                h.avatarShape.setText(msg.getUsername(),h.avatarShape,url);
             }
         }
         h.nickname.setText(nickname);
@@ -211,7 +246,6 @@ public class MessageEventAdapter extends BaseAdapter {
         return convertView;
     }
 
-    //get content
     private String getContent(ChatMsg msg, String content) {
         switch (msg.getType()) {
             case 1:
@@ -262,7 +296,8 @@ public class MessageEventAdapter extends BaseAdapter {
 
     static class Holder {
         LinearLayout bg;
-        ImageView avatarShape, y_m_d, vipLevel;
+        CharAvatarView avatarShape;
+        ImageView y_m_d, vipLevel;
         ImageView listenerIcon;
         TextView time;
         TextView content;

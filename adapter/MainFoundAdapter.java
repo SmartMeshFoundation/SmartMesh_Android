@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
+import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
 import com.lingtuan.firefly.vo.UserInfoVo;
 
@@ -56,7 +57,7 @@ public class MainFoundAdapter extends BaseAdapter {
 		if(convertView == null){
 			holder = new BlackHolder();
 			convertView = View.inflate(c, R.layout.black_list_item, null);
-			holder.avatar = (ImageView)convertView.findViewById(R.id.invite_avatar);
+			holder.avatar = (CharAvatarView)convertView.findViewById(R.id.invite_avatar);
 			holder.nickName = (TextView)convertView.findViewById(R.id.name);
 			convertView.setTag(holder);
 		}else{
@@ -64,14 +65,14 @@ public class MainFoundAdapter extends BaseAdapter {
 		}
 
 		WifiPeopleVO vo = source.get(position);
-		NextApplication.displayCircleImage(holder.avatar, "file://".concat(vo.getThumb()));
+		holder.avatar.setText(vo.getUsername(),holder.avatar,"file://".concat(vo.getThumb()));
 		holder.nickName.setText(vo.getShowName());
 
 		return convertView;
 	}
 	
 	static class BlackHolder{
-		ImageView avatar = null ;
+		CharAvatarView avatar = null ;
 		TextView nickName = null ;
 	}
 
