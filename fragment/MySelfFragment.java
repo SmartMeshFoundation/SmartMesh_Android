@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +17,15 @@ import android.widget.TextView;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseFragment;
+import com.lingtuan.firefly.chat.adapter.ChatAdapter;
+import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.login.JsonUtil;
 import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.setting.MyProfileUI;
 import com.lingtuan.firefly.setting.SecurityUI;
 import com.lingtuan.firefly.setting.SettingUI;
+import com.lingtuan.firefly.setting.SubmitFeedBackUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
@@ -43,12 +47,14 @@ public class MySelfFragment extends BaseFragment implements View.OnClickListener
      */
     private View view = null;
     private boolean isDataFirstLoaded;
-    private ImageView userImg;//Account management
+    private CharAvatarView userImg;//Account management
     private TextView userName,signTv;//name  signature
     private RelativeLayout settingBody;//Setting
     private RelativeLayout securityBody;//security
 
     private TextView uploadRegisterInfo;
+
+    private RelativeLayout feedbackBody;
 
     public MySelfFragment(){
 
@@ -139,11 +145,12 @@ public class MySelfFragment extends BaseFragment implements View.OnClickListener
     }
 
     private void findViewById() {
-        userImg = (ImageView) view.findViewById(R.id.userImg);
+        userImg = (CharAvatarView) view.findViewById(R.id.userImg);
         userName = (TextView) view.findViewById(R.id.userName);
         signTv = (TextView) view.findViewById(R.id.signTv);
         settingBody = (RelativeLayout) view.findViewById(R.id.settingBody);
         securityBody = (RelativeLayout) view.findViewById(R.id.securityBody);
+        feedbackBody = (RelativeLayout) view.findViewById(R.id.feedbackBody);
 
         uploadRegisterInfo = (TextView) view.findViewById(R.id.uploadRegisterInfo);
     }
@@ -153,6 +160,7 @@ public class MySelfFragment extends BaseFragment implements View.OnClickListener
         userName.setOnClickListener(this);
         settingBody.setOnClickListener(this);
         securityBody.setOnClickListener(this);
+        feedbackBody.setOnClickListener(this);
         uploadRegisterInfo.setOnClickListener(this);
     }
 
@@ -170,6 +178,7 @@ public class MySelfFragment extends BaseFragment implements View.OnClickListener
         if (NextApplication.myInfo != null){
             userName.setText(NextApplication.myInfo.getUsername());
             NextApplication.displayCircleImage(userImg,NextApplication.myInfo.getThumb());
+            userImg.setText(NextApplication.myInfo.getUsername(),userImg,NextApplication.myInfo.getThumb());
             signTv.setText(NextApplication.myInfo.getSightml());
         }
     }
@@ -189,6 +198,10 @@ public class MySelfFragment extends BaseFragment implements View.OnClickListener
                 break;
             case R.id.securityBody:
                 startActivity(new Intent(getActivity(), SecurityUI.class));
+                Utils.openNewActivityAnim(getActivity(),false);
+                break;
+            case R.id.feedbackBody:
+                startActivity(new Intent(getActivity(), SubmitFeedBackUI.class));
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
             case R.id.uploadRegisterInfo:

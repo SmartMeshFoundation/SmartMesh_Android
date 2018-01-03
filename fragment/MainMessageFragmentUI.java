@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,9 +37,9 @@ import com.lingtuan.firefly.custom.ChatMsgComparable;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.login.LoginUtil;
+import com.lingtuan.firefly.message.MsgTransListUI;
 import com.lingtuan.firefly.quickmark.CaptureActivity;
 import com.lingtuan.firefly.message.MsgAddContactListUI;
-import com.lingtuan.firefly.ui.MainFragmentUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyDialogFragment;
@@ -286,6 +285,22 @@ public class MainMessageFragmentUI extends BaseFragment implements OnItemClickLi
                         TextView unread = (TextView) childView.findViewById(R.id.item_unread);
                         unread.setVisibility(View.GONE);
                     }
+                }else  if (msg.getType() == 300) {//Trans request
+                    Intent intent = new Intent(getActivity(), MsgTransListUI.class);
+                    intent.putExtra("chatid", msg.getChatId());
+                    startActivity(intent);
+                    Utils.openNewActivityAnim(getActivity(), false);
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("unread", -msg.getUnread());
+                    Utils.intentAction(getActivity(), XmppAction.ACTION_MESSAGE_EVENT_LISTENER, bundle);
+                    int firstPosition = mListView.getFirstVisiblePosition();
+                    int lastPosition = mListView.getLastVisiblePosition();
+                    if (position >= firstPosition && position <= lastPosition) {
+                        int currentPostion = position - firstPosition;
+                        View childView = mListView.getChildAt(currentPostion);
+                        TextView unread = (TextView) childView.findViewById(R.id.item_unread);
+                        unread.setVisibility(View.GONE);
+                    }
                 }
             }
 
@@ -299,9 +314,7 @@ public class MainMessageFragmentUI extends BaseFragment implements OnItemClickLi
                 boolean foundNextUnreadMsg = false;
                 for (int i = mListView.getFirstVisiblePosition() + 1; i < mList.size(); i++) {
                     ChatMsg msg = mList.get(i);
-                    if (msg.getChatId().equals("system-2")) {
-                        continue;
-                    } else if ("system-0".equals(msg.getChatId()) || "system-1".equals(msg.getChatId()) || "system-3".equals(msg.getChatId()) || "system-4".equals(msg.getChatId())) {
+                     if ("system-0".equals(msg.getChatId()) || "system-1".equals(msg.getChatId()) || "system-3".equals(msg.getChatId()) || "system-4".equals(msg.getChatId())  || "system-5".equals(msg.getChatId())) {
                         if (msg.getUnread() > 0 && mListView.getLastVisiblePosition() < mList.size() - 1) {
                             foundNextUnreadMsg = true;
                             mListView.setSelection(i);
@@ -325,9 +338,7 @@ public class MainMessageFragmentUI extends BaseFragment implements OnItemClickLi
                 if (!foundNextUnreadMsg) {
                     for (int i = 0; i < mListView.getFirstVisiblePosition() - 1; i++) {
                         ChatMsg msg = mList.get(i);
-                        if (msg.getChatId().equals("system-2")) {
-                            continue;
-                        } else if ("system-0".equals(msg.getChatId()) || "system-1".equals(msg.getChatId()) || "system-3".equals(msg.getChatId()) || "system-4".equals(msg.getChatId())) {
+                         if ("system-0".equals(msg.getChatId()) || "system-1".equals(msg.getChatId()) || "system-3".equals(msg.getChatId()) || "system-4".equals(msg.getChatId())  || "system-5".equals(msg.getChatId())) {
                             if (msg.getUnread() > 0) {
                                 mListView.setSelection(i);
                                 break;
@@ -365,7 +376,6 @@ public class MainMessageFragmentUI extends BaseFragment implements OnItemClickLi
                         }
                     }
                     mAdapter.addChatMsg(msg);
-                    checkListEmpty();
                 }
             } else if (intent != null && XmppAction.ACTION_OFFLINE_MESSAGE_LIST_EVENT_LISTENER.equals(intent.getAction())) {
                 ChatMsg msg = (ChatMsg) intent.getSerializableExtra("chat");
@@ -381,7 +391,6 @@ public class MainMessageFragmentUI extends BaseFragment implements OnItemClickLi
                         }
                     }
                     mAdapter.addChatMsg(msg);
-                    checkListEmpty();
                 }
             }else if (intent != null && Constants.ACTION_NETWORK_RECEIVER.equals(intent.getAction())) {
                 Utils.updateViewMethod(uploadRegisterInfo,getActivity());
@@ -399,7 +408,6 @@ public class MainMessageFragmentUI extends BaseFragment implements OnItemClickLi
             public void handleMessage(android.os.Message msg) {
                 mList = (List<ChatMsg>) msg.obj;
                 mAdapter.updateList(mList);
-                checkListEmpty();
                 Utils.intentAction(getActivity(), XmppAction.ACTION_MAIN_UNREADMSG_UPDATE_LISTENER, null);// message Number of unread updates
             }
         };
@@ -474,10 +482,14 @@ public class MainMessageFragmentUI extends BaseFragment implements OnItemClickLi
                     }
                     break;
                     case 1: {
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("unread", -msg.getUnread());
+                        Utils.intentAction(getActivity(), XmppAction.ACTION_MESSAGE_EVENT_LISTENER, bundle);
                         if(msg.getChatId().equals("everyone"))
                         {
                             FinalUserDataBase.getInstance().clearChatMsgByChatId(msg.getChatId(),msg);
                             msg.setContent("");
+                            msg.setUnread(0);
                             mAdapter.updateList(mList);
                         }
                         else{
@@ -485,10 +497,7 @@ public class MainMessageFragmentUI extends BaseFragment implements OnItemClickLi
                             mList.remove(position);
                             mAdapter.updateList(mList);
                         }
-                        checkListEmpty();
-                        Bundle bundle = new Bundle();
-                        bundle.putInt("unread", -msg.getUnread());
-                        Utils.intentAction(getActivity(), XmppAction.ACTION_MESSAGE_EVENT_LISTENER, bundle);
+
                     }
                     break;
                 }
@@ -558,7 +567,7 @@ public class MainMessageFragmentUI extends BaseFragment implements OnItemClickLi
         homePop.setFocusable(true);
         view.findViewById(R.id.txt_home_pop_1).setOnClickListener(this);
         view.findViewById(R.id.txt_home_pop_2).setOnClickListener(this);
-//        view.findViewById(R.id.txt_home_pop_3).setOnClickListener(this);
+        view.findViewById(R.id.txt_home_pop_3).setOnClickListener(this);
         if (homePop.isShowing()) {
             homePop.dismiss();
         } else {
@@ -577,17 +586,17 @@ public class MainMessageFragmentUI extends BaseFragment implements OnItemClickLi
     /**
      * To test whether the current list is empty
      */
-    private void checkListEmpty() {
-        if (mList == null || mList.size() == 0) {
-            emptyRela.setVisibility(View.VISIBLE);
-            emptyIcon.setImageResource(R.drawable.empty_msg);
-            emptyTextView.setText(R.string.contact_empty_msg);
-            mListView.setVisibility(View.GONE);
-        } else {
-            emptyRela.setVisibility(View.GONE);
-            mListView.setVisibility(View.VISIBLE);
-        }
-    }
+//    private void checkListEmpty() {
+//        if (mList == null || mList.size() == 0) {
+//            emptyRela.setVisibility(View.VISIBLE);
+//            emptyIcon.setImageResource(R.drawable.empty_msg);
+//            emptyTextView.setText(R.string.contact_empty_msg);
+//            mListView.setVisibility(View.GONE);
+//        } else {
+//            emptyRela.setVisibility(View.GONE);
+//            mListView.setVisibility(View.VISIBLE);
+//        }
+//    }
 
     private void showDialog() {
         dismissDialog();
