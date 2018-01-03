@@ -79,6 +79,7 @@ public class DiscussGroupJoinUI extends BaseActivity {
 
 	@Override
 	protected void initData() {
+		setTitle(getString(R.string.join_group));
 		if(TextUtils.isEmpty(cid)){
 			cid=getIntent().getStringExtra("groupid");
 		}

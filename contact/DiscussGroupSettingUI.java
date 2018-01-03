@@ -29,6 +29,7 @@ import com.lingtuan.firefly.custom.GridViewWithHeaderAndFooter.OnTouchBlankPosit
 import com.lingtuan.firefly.custom.SwitchButton;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.quickmark.GroupQuickMarkUI;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
@@ -57,7 +58,6 @@ public class DiscussGroupSettingUI extends BaseActivity implements GroupMemberIm
 	private View footerView;
 	private TextView nameEdit;
 	private RelativeLayout eidtNameBg;
-	private TextView numTextView;
 	private SwitchButton switchBtn;
 	private TextView dissmissBtn;
 
@@ -69,12 +69,11 @@ public class DiscussGroupSettingUI extends BaseActivity implements GroupMemberIm
 	private Dialog mProgressDialog;
 
 	private RelativeLayout mQuickMarkRela;
-
-	private int maxGroupNum;
 	
 	private ImageView notifyClock = null ; // by :KNothing
 	private boolean hasMove=false;
 	private LinearLayout allMember;
+	private TextView allNum;
 	private List<UserBaseVo> data  = new ArrayList<>();
 	private List<UserBaseVo> showdata = new ArrayList<>();
 	@Override
@@ -89,13 +88,13 @@ public class DiscussGroupSettingUI extends BaseActivity implements GroupMemberIm
 		
 		nameEdit = (TextView) footerView.findViewById(R.id.discuss_group_setting_name);
 		eidtNameBg = (RelativeLayout) footerView.findViewById(R.id.discuss_group_setting_edit);
-		numTextView = (TextView) footerView.findViewById(R.id.discuss_group_setting_num);
 		switchBtn = (SwitchButton) footerView.findViewById(R.id.discuss_group_setting_switch);
 		dissmissBtn = (TextView) footerView.findViewById(R.id.discuss_group_setting_dissmiss);
 
 		mQuickMarkRela = (RelativeLayout) footerView.findViewById(R.id.discuss_group_setting_quickmark);
 		notifyClock = (ImageView) footerView.findViewById(R.id.notifyClock);
 		allMember = (LinearLayout) footerView.findViewById(R.id.discuss_group_all_member);
+		allNum = (TextView) footerView.findViewById(R.id.discuss_group_all_num);
 	}
 
 	@Override
@@ -145,6 +144,7 @@ public class DiscussGroupSettingUI extends BaseActivity implements GroupMemberIm
 	@Override
 	protected void initData() {
 		setTitle(getString(R.string.setting));
+		allNum.setText(getString(R.string.discuss_all,0));
 		grid.addFooterView(footerView);
 		cid = getIntent().getIntExtra("cid", 0);
 		String response= Utils.readFromFile("conversation-get_mumbers"+cid+".json");//First loads the local cache of json
@@ -184,10 +184,11 @@ public class DiscussGroupSettingUI extends BaseActivity implements GroupMemberIm
 		}
 			break;
 		case R.id.discuss_group_setting_quickmark: {
-			Intent intent = new Intent(this,QuickMarkShowUI.class);
+			Intent intent = new Intent(this,GroupQuickMarkUI.class);
 			intent.putExtra("id", cid + "");
 			intent.putExtra("nickname", nameEdit.getText().toString());
 			intent.putExtra("avatarurl", avatarurl);
+			intent.putExtra("number", data.size());
 			intent.putExtra("type", 1);
 			startActivity(intent);
 			Utils.openNewActivityAnim(this, false);
@@ -428,10 +429,6 @@ public class DiscussGroupSettingUI extends BaseActivity implements GroupMemberIm
 			showdata.add(new UserBaseVo());
 		}
 		adapter.notifyDataSetChanged();
-
-		int num = data.size();
-//		numTextView.setText(getString(R.string.discuss_group_member,num,maxGroupNum));
-//		allMember.setText(getString(R.string.discuss_group_all_member_num,num));
 	}
 
 	/**
@@ -526,7 +523,6 @@ public class DiscussGroupSettingUI extends BaseActivity implements GroupMemberIm
 		mProgressDialog = LoadingDialog.showDialog(this, null, null);
 		mProgressDialog.setCancelable(false);
 
-		Map<String, String> params = new HashMap<String, String>();
 		StringBuffer touids = new StringBuffer();
 		final StringBuffer tonames = new StringBuffer();
 		for (int i = 0; i < continueList.size(); i++) {
@@ -564,7 +560,7 @@ public class DiscussGroupSettingUI extends BaseActivity implements GroupMemberIm
 				inviteOthersChatMsg(tonames.toString());
 				resetlist();
 
-				new Handler().postDelayed(new Runnable() {// 临时方案
+				new Handler().postDelayed(new Runnable() {
 					@Override
 					public void run() {
 						adapter.notifyDataSetChanged();
@@ -615,9 +611,7 @@ public class DiscussGroupSettingUI extends BaseActivity implements GroupMemberIm
 			eidtNameBg.setClickable(false);
 			dissmissBtn.setText(getResources().getString(R.string.group_out_discussion));
 		}
-		maxGroupNum=vo.getMaxNum();
-//		numTextView.setText(getString(R.string.discuss_group_member,vo.getMembers().size(),maxGroupNum));
-//		allMember.setText(getString(R.string.discuss_group_all_member_num,vo.getMembers().size()));
+		allNum.setText(getString(R.string.discuss_all,vo.getMembers().size()));
 		switchBtn.setOnCheckedChangeListener(null);
 		if (0 == vo.getMask()) {
 			switchBtn.setChecked(false);
