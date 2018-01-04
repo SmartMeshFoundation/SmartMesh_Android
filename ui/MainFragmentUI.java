@@ -6,12 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.ContentObserver;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
 
@@ -19,6 +21,7 @@ import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.base.BaseFragment;
+import com.lingtuan.firefly.contact.DiscussGroupJoinUI;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.fragment.MainContactFragmentUI;
 import com.lingtuan.firefly.fragment.MainFoundFragmentUI;
@@ -32,6 +35,7 @@ import com.lingtuan.firefly.service.XmppService;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyToast;
+import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.util.netutil.NetRequestUtils;
@@ -51,7 +55,7 @@ import java.util.Stack;
  * Created on 2017/8/23.
  */
 
-public class MainFragmentUI extends AppCompatActivity implements View.OnClickListener {
+public class MainFragmentUI extends BaseActivity implements View.OnClickListener {
 
     private TextView main_tab_chats;//The message
     private TextView main_tab_contact; //The address book
@@ -65,37 +69,20 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
     private Stack<String> mStack = new Stack<>();
     private Map<String, BaseFragment> map = new HashMap<>();
 
-    private long firstTime;
     private int totalUnreadCount = 0;
     private TextView mMsgUnread;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void setContentView() {
         setContentView(R.layout.activity_main);
 
         //清除通知
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
 
-        findViewById();
-        setListener();
-        initData();
-
-        //新打开应用
-        if (getIntent() != null && getIntent().getExtras() != null && getIntent().getExtras().getBoolean("isNewMsg")) {
-            if (getIntent().getExtras().getBoolean("isOfflineMsg", false))//强制下线消息，跳转到首页
-            {
-                onClick(main_tab_chats);
-                showOfflineAlert(getIntent().getExtras().getString("offlineContent"));
-            }else if (getIntent().getExtras().getBoolean("isNewMsg", false)) {//推送{//通知栏打开，直接跳转到消息页面
-                ChatMsg msg = (ChatMsg) getIntent().getExtras().getSerializable("msg");
-                onClick(main_tab_chats);
-            }
-        }
     }
 
-    	@Override
+    @Override
 	protected void onSaveInstanceState(Bundle outState) {
 
 	}
@@ -103,22 +90,47 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Utils.settingLanguage(MainFragmentUI.this);
-        Utils.updateViewLanguage(findViewById(android.R.id.content));
 
-        if (intent.getBooleanExtra("isOfflineMsg", false)){
-            showOfflineAlert(intent.getStringExtra("offlineContent"));
+        if (intent == null) {
             return;
         }
 
-        if (intent.getBooleanExtra("isNewMsg", false)) {
-            onClick(main_tab_chats);
+        try {
+            Utils.settingLanguage(MainFragmentUI.this);
+            Utils.updateViewLanguage(findViewById(android.R.id.content));
+            if (intent.getBooleanExtra("isOfflineMsg", false)){
+                showOfflineAlert(intent.getStringExtra("offlineContent"));
+                return;
+            }
+            if (intent.getBooleanExtra("isNewMsg", false)) {
+                onClick(main_tab_chats);
+            }
+            setIntent(intent);
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
+        try {
+            Uri parse = intent.getData();
+
+            String gid = parse.getQueryParameter("gid");
+            String scheme = parse.getScheme();
+
+            if (!TextUtils.isEmpty(scheme) && "joingroup".equals(scheme))//join group
+            {
+                Intent joinGroup = new Intent(this, DiscussGroupJoinUI.class);
+                joinGroup.putExtra("groupid", gid);
+                startActivity(joinGroup);
+                Utils.openNewActivityAnim(this, false);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
-     * 强制下线
+     * show offline alert
      */
     private void showOfflineAlert(String msg) {
         try {
@@ -129,6 +141,7 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
             XmppUtils.getInstance().destroy();
             NetRequestUtils.getInstance().destory();
             NetRequestImpl.getInstance().destory();
+            WalletStorage.getInstance(NextApplication.mContext).destroy();
             Intent xmppservice = new Intent(NextApplication.mContext, XmppService.class);
             stopService(xmppservice);
             //Exit without social network service
@@ -149,7 +162,8 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    private void findViewById() {
+    @Override
+    protected void findViewById() {
         main_tab_chats = (TextView) findViewById(R.id.main_tab_chats);
         main_tab_contact = (TextView) findViewById(R.id.main_tab_contact);
         main_tab_account = (TextView) findViewById(R.id.main_tab_account);
@@ -157,7 +171,9 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
         main_tab_setting = (TextView) findViewById(R.id.main_tab_setting);
         mMsgUnread = (TextView) findViewById(R.id.main_unread);
     }
-    private void setListener() {
+
+    @Override
+    protected void setListener() {
         main_tab_chats.setOnClickListener(this);
         main_tab_contact.setOnClickListener(this);
         main_tab_account.setOnClickListener(this);
@@ -165,14 +181,41 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
         main_tab_setting.setOnClickListener(this);
     }
 
-    private void initData() {
+    @Override
+    protected void initData() {
+
+        //open new app
+        if (getIntent() != null && getIntent().getExtras() != null && getIntent().getExtras().getBoolean("isNewMsg")) {
+            if (getIntent().getExtras().getBoolean("isOfflineMsg", false))//jump main
+            {
+                onClick(main_tab_chats);
+                showOfflineAlert(getIntent().getExtras().getString("offlineContent"));
+            }else if (getIntent().getExtras().getBoolean("isNewMsg", false)) {//jump message
+                onClick(main_tab_chats);
+            }
+        }
+
+        try {
+            Uri parse = getIntent().getData();
+            String gid = parse.getQueryParameter("gid");
+            String scheme = parse.getScheme();
+
+            if (!TextUtils.isEmpty(scheme) && "joingroup".equals(scheme))//join group
+            {
+                Intent joinGroup = new Intent(this, DiscussGroupJoinUI.class);
+                joinGroup.putExtra("groupid", gid);
+                startActivity(joinGroup);
+                Utils.openNewActivityAnim(this, false);
+            }
+        } catch (Exception e) {
+
+        }
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(LoadDataService.ACTION_START_CONTACT_LISTENER);
         filter.addAction(XmppAction.ACTION_MAIN_UNREADMSG_UPDATE_LISTENER);
         filter.addAction(XmppAction.ACTION_MAIN_OFFLINE_LISTENER);
         filter.addAction(Constants.CHANGE_LANGUAGE);//Refresh the page
-        filter.addAction(Constants.ACTION_CLOSE_MAIN);//Shut down
         filter.addAction(Constants.ACTION_NETWORK_RECEIVER);//Network monitoring
         filter.addAction(Constants.WALLET_SUCCESS);//Refresh the page
         filter.addAction(Constants.WALLET_REFRESH_DEL);//Refresh the page
@@ -182,14 +225,17 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
 
         showFragment(MainMessageFragmentUI.class);
 
-        //Start without social network service
-        startService(new Intent(this, AppNetService.class));
-
-        if (Utils.isConnectNet(MainFragmentUI.this) && NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getToken()) && TextUtils.isEmpty(NextApplication.myInfo.getMid())){
+        if (Utils.isConnectNet(MainFragmentUI.this) && NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getToken()) && TextUtils.isEmpty(NextApplication.myInfo.getMid())&& TextUtils.isEmpty(NextApplication.myInfo.getMobile())&& TextUtils.isEmpty(NextApplication.myInfo.getEmail())){
             LoginUtil.getInstance().initContext(MainFragmentUI.this);
             LoginUtil.getInstance().register(NextApplication.myInfo.getUsername(),NextApplication.myInfo.getPassword(),null,NextApplication.myInfo.getLocalId(),null);
         }
 
+        int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+        int version =android.os.Build.VERSION.SDK_INT;
+        if (openSmartMesh == 1 && version >= 16){
+            //Start without social network service
+           startService(new Intent(MainFragmentUI.this, AppNetService.class));
+        }
     }
 
     private void registerReceive() {
@@ -252,17 +298,25 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
             }else if (intent != null && XmppAction.ACTION_MAIN_OFFLINE_LISTENER.equals(intent.getAction())) {
                 Bundle bundle = intent.getBundleExtra(XmppAction.ACTION_MAIN_OFFLINE_LISTENER);
                 showOfflineAlert(bundle.getString("offlineContent"));
-            } else if (intent != null && Constants.ACTION_CLOSE_MAIN.equals(intent.getAction())) {
-                finish();
             }else if (intent != null && Constants.ACTION_NETWORK_RECEIVER.equals(intent.getAction())) {
-                if (Constants.isConnectNet){
-                    if (NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getToken()) && !TextUtils.isEmpty(NextApplication.myInfo.getMid())){
+                if (Constants.isConnectNet && NextApplication.myInfo != null){
+                    String mobile = NextApplication.myInfo.getMobile();
+                    String email = NextApplication.myInfo.getEmail();
+                    String mid = NextApplication.myInfo.getMid();
+                    String token = NextApplication.myInfo.getToken();
+                    if (TextUtils.isEmpty(token)){
                         LoginUtil.getInstance().initContext(MainFragmentUI.this);
-                        LoginUtil.getInstance().login(NextApplication.myInfo.getMid(),NextApplication.myInfo.getPassword(),false);
-                    }else if (NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getToken()) && TextUtils.isEmpty(NextApplication.myInfo.getMid())){
-                        LoginUtil.getInstance().initContext(MainFragmentUI.this);
-                        LoginUtil.getInstance().register(NextApplication.myInfo.getUsername(),NextApplication.myInfo.getPassword(),null,NextApplication.myInfo.getLocalId(),null);
+                        if (!TextUtils.isEmpty(mid)){
+                            LoginUtil.getInstance().login(mid,NextApplication.myInfo.getPassword(),false);
+                        }else if (!TextUtils.isEmpty(mobile)){
+                            LoginUtil.getInstance().login(mobile,NextApplication.myInfo.getPassword(),false);
+                        }else if (!TextUtils.isEmpty(email)){
+                            LoginUtil.getInstance().login(email,NextApplication.myInfo.getPassword(),false);
+                        }else {
+                            LoginUtil.getInstance().register(NextApplication.myInfo.getUsername(),NextApplication.myInfo.getPassword(),null,NextApplication.myInfo.getLocalId(),null);
+                        }
                     }
+
                 }
             }else if (intent != null && (Constants.WALLET_SUCCESS.equals(intent.getAction()))){
                 if(WalletStorage.getInstance(getApplicationContext()).get().size()>0){
@@ -295,7 +349,6 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View v){
         switch (v.getId()){
-
             case R.id.main_tab_chats:
                 showFragment(MainMessageFragmentUI.class);
                 break;
@@ -380,16 +433,6 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
     }
 
 
-    @Override
-    public void onBackPressed() {
-        if (System.currentTimeMillis() - firstTime > 2000){
-            MyToast.showToast(MainFragmentUI.this,getString(R.string.exit_app));
-            firstTime = System.currentTimeMillis();
-        }else{
-            finish();
-            System.exit(0);
-        }
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -427,5 +470,18 @@ public class MainFragmentUI extends AppCompatActivity implements View.OnClickLis
         unregisterReceiver(mBroadcastReceiver);
         LoginUtil.getInstance().destory();
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            Intent intent = new Intent();
+            intent.setAction("android.intent.action.MAIN");
+            intent.addCategory("android.intent.category.HOME");
+            startActivity(intent);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
 
 }
