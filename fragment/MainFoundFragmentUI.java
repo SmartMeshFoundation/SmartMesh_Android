@@ -132,7 +132,7 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
 
         // -1 default  0 close  1 open
         int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
-        if (openSmartMesh == -1){
+        if (openSmartMesh == 1){
             getActivity().bindService(new Intent(getActivity(), AppNetService.class), serviceConn,Activity.BIND_AUTO_CREATE);
         }
 
@@ -205,7 +205,7 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
                 Utils.updateViewMethod(uploadRegisterInfo,getActivity());
             }else if (intent != null && Constants.OPEN_SMARTMESH_NETWORE.equals(intent.getAction())) {
                 int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
-                if (openSmartMesh == -1){
+                if (openSmartMesh == 1){
                     getActivity().bindService(new Intent(getActivity(), AppNetService.class), serviceConn,Activity.BIND_AUTO_CREATE);
                 }
             }else if (intent != null && Constants.CLOSE_SMARTMESH_NETWORE.equals(intent.getAction())) {
@@ -234,9 +234,11 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
     public void onDestroy() {
         super.onDestroy();
         getActivity().unregisterReceiver(mBroadcastReceiver);
-        int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
-        if (openSmartMesh == 1 && serviceConn != null){
-            getActivity().unbindService(serviceConn);
+        if (NextApplication.myInfo != null){
+            int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+            if (openSmartMesh == 1 && serviceConn != null){
+                getActivity().unbindService(serviceConn);
+            }
         }
     }
 
@@ -328,7 +330,9 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
                 } else if (which == 1) { // female
                     updateDatas("2");
                 }else{ // all
-                    mAdapter.resetSource(mDatas);
+                    if (mDatas != null){
+                        mAdapter.resetSource(mDatas);
+                    }
                 }
             }
         });
@@ -340,13 +344,15 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
      * Screening of gender method
      * */
     private void updateDatas(String gender){
-        ArrayList<WifiPeopleVO> selectDatas = new ArrayList<>();
-        for (int i = 0 ; i < mDatas.size() ; i++){
-            if (TextUtils.equals(gender,mDatas.get(i).getGender())){
-                selectDatas.add(mDatas.get(i));
+        if (mDatas != null ){
+            ArrayList<WifiPeopleVO> selectDatas = new ArrayList<>();
+            for (int i = 0 ; i < mDatas.size() ; i++){
+                if (TextUtils.equals(gender,mDatas.get(i).getGender())){
+                    selectDatas.add(mDatas.get(i));
+                }
             }
+            mAdapter.resetSource(selectDatas);
         }
-        mAdapter.resetSource(selectDatas);
     }
 
 
