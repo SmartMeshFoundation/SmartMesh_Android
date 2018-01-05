@@ -3,6 +3,8 @@ package com.lingtuan.firefly.imagescan;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -17,21 +19,37 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.ChecksumException;
+import com.google.zxing.DecodeHintType;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.FormatException;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeReader;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.contact.ContactSelectedUI;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.quickmark.GroupQuickMarkUI;
 import com.lingtuan.firefly.quickmark.QuickMarkUI;
 import com.lingtuan.firefly.util.BitmapUtils;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
+import com.lingtuan.firefly.vo.ChatMsg;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 /**
  * A larger preview public class
@@ -44,7 +62,7 @@ public class ScanLargePic extends BaseActivity implements ScanPicAdapter.FinishC
     private ArrayList<String> picId = null;
     private String uid = null;  //Receive the uid
     private ImageView deleteTV = null;
-    private RelativeLayout rela1, rela2;
+    private RelativeLayout sendToFriend,saveToSD, identifyQr;
     private RelativeLayout titleBar = null;
 
     /**
@@ -63,8 +81,8 @@ public class ScanLargePic extends BaseActivity implements ScanPicAdapter.FinishC
                     if (vo == null || vo.dialog == null || vo.currentIndex != vpPhotos.getCurrentItem()) {
                         return;
                     }
-                    rela2.setVisibility(View.VISIBLE);
-                    rela2.setOnClickListener(new OnClickListener() {
+                    identifyQr.setVisibility(View.VISIBLE);
+                    identifyQr.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             vo.dialog.dismiss();
@@ -260,16 +278,17 @@ public class ScanLargePic extends BaseActivity implements ScanPicAdapter.FinishC
     public void onLongClickCallback(final String oldPath) {
         LayoutInflater factory = LayoutInflater.from(this);
         final View view = factory.inflate(R.layout.large_pic_diaog, null);
-        rela1 = (RelativeLayout) view.findViewById(R.id.save_to_phone_rela);
-        rela2 = (RelativeLayout) view.findViewById(R.id.zxing_rela);
-        rela2.setVisibility(View.GONE);
+        saveToSD = (RelativeLayout) view.findViewById(R.id.save_to_phone_rela);
+        identifyQr = (RelativeLayout) view.findViewById(R.id.zxing_rela);
+        sendToFriend = (RelativeLayout) view.findViewById(R.id.send_to_friend);
+        identifyQr.setVisibility(View.GONE);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(ScanLargePic.this);
         builder.setView(view);
         final AlertDialog dialog = builder.create();
         dialog.show();
         dialog.setCanceledOnTouchOutside(true);//Set other area for Dialog click screen disappeared
-        rela1.setOnClickListener(new OnClickListener() {
+        saveToSD.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 String qrPath = BitmapUtils.saveBitmapFile(getApplicationContext(), oldPath);
@@ -277,6 +296,24 @@ public class ScanLargePic extends BaseActivity implements ScanPicAdapter.FinishC
                     showToast(getString(R.string.photo_save_dir,qrPath));
                     dialog.dismiss();
                 }
+            }
+        });
+
+        sendToFriend.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ArrayList<ChatMsg> list = new ArrayList<>();
+                ChatMsg msg = new ChatMsg();
+                msg.setType(1);
+                msg.setContent(oldPath);
+                msg.setLocalUrl(oldPath);
+                msg.parseUserBaseVo(NextApplication.myInfo);
+                list.add(msg);
+                Intent intent = new Intent(ScanLargePic.this, ContactSelectedUI.class);
+                intent.putExtra("msglist", list);
+                startActivity(intent);
+                Utils.openNewActivityAnim(ScanLargePic.this, false);
+                dialog.dismiss();
             }
         });
         /*If open thread scanning images is qr code*/
@@ -301,38 +338,42 @@ public class ScanLargePic extends BaseActivity implements ScanPicAdapter.FinishC
     }
 
     public Result scanningImage(String path) {
-//        if (TextUtils.isEmpty(path)) {
-//            return null;
-//        }
-//        File file = new File(path);
-//        if (!file.exists()) {
-//            return null;
-//        }
-//        Hashtable<DecodeHintType, String> hints = new Hashtable<DecodeHintType, String>();
-//        hints.put(DecodeHintType.CHARACTER_SET, "UTF8"); //Set the qr code coding content
-//
-//        BitmapFactory.Options options = new BitmapFactory.Options();
-//        options.inJustDecodeBounds = true;
-//        Bitmap scanBitmap = BitmapFactory.decodeFile(path, options);
-//        options.inJustDecodeBounds = false;
-//        int sampleSize = (int) (options.outHeight / (float) 200);
-//        if (sampleSize <= 0)
-//            sampleSize = 1;
-//        options.inSampleSize = sampleSize;
-//        scanBitmap = BitmapFactory.decodeFile(path, options);
-//        RGBLuminanceSource source = new RGBLuminanceSource(scanBitmap);
-//        BinaryBitmap bitmap1 = new BinaryBitmap(new HybridBinarizer(source));
-//        QRCodeReader reader = new QRCodeReader();
-//        try {
-//            return reader.decode(bitmap1, hints);
-//
-//        } catch (NotFoundException e) {
-//            e.printStackTrace();
-//        } catch (ChecksumException e) {
-//            e.printStackTrace();
-//        } catch (FormatException e) {
-//            e.printStackTrace();
-//        }
+        if (TextUtils.isEmpty(path)) {
+            return null;
+        }
+        File file = new File(path);
+        if (!file.exists()) {
+            return null;
+        }
+        Hashtable<DecodeHintType, Object> hints = new Hashtable<>();
+        hints.put(DecodeHintType.CHARACTER_SET, "UTF8");
+        hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+        hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        Bitmap scanBitmap = BitmapFactory.decodeFile(path, options);
+        options.inJustDecodeBounds = false;
+        int sampleSize = (int) (options.outHeight / (float) 512);
+        if (sampleSize <= 0)
+            sampleSize = 1;
+        options.inSampleSize = sampleSize;
+        scanBitmap = BitmapFactory.decodeFile(path, options);
+        int width = scanBitmap.getWidth();
+        int height = scanBitmap.getHeight();
+        int[] pixels = new int[width * height];
+        scanBitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+        RGBLuminanceSource source = new RGBLuminanceSource(width,height,pixels);
+        BinaryBitmap bitmap1 = new BinaryBitmap(new HybridBinarizer(source));
+        QRCodeReader reader = new QRCodeReader();
+        try {
+            return reader.decode(bitmap1, hints);
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+        } catch (ChecksumException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 }
