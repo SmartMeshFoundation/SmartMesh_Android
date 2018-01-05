@@ -28,6 +28,7 @@ import com.lingtuan.firefly.base.BaseFragment;
 import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.quickmark.CaptureActivity;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
+import com.lingtuan.firefly.service.XmppService;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyToast;
@@ -41,12 +42,14 @@ import com.lingtuan.firefly.wallet.WalletCreateActivity;
 import com.lingtuan.firefly.wallet.WalletSendActivity;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
+import com.lingtuan.firefly.xmpp.XmppAction;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import okhttp3.Call;
@@ -200,6 +203,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.WALLET_REFRESH_DEL);//Refresh the page
         filter.addAction(Constants.CHANGE_LANGUAGE);//Update language refresh the page
+        filter.addAction(XmppAction.ACTION_TRANS);//trans
         getActivity().registerReceiver(mBroadcastReceiver, filter);
 
 
@@ -214,6 +218,8 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             }else if (intent != null && (Constants.CHANGE_LANGUAGE.equals(intent.getAction()))) {
                 accountTitle.setText(getString(R.string.app_name));
                 Utils.updateViewLanguage(view.findViewById(R.id.account_drawerlayout));
+            }else if (intent != null && (XmppAction.ACTION_TRANS.equals(intent.getAction()))) {
+                loadData(false);
             }
         }
     };
@@ -348,8 +354,19 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                     address = "0x"+address;
                 }
                 walletAddress.setText(address);
-                ethBalance.setText(storableWallet.getEthBalance() +"");
-                fftBalance.setText(storableWallet.getFftBalance() +"");
+                if (storableWallet.getEthBalance() > 0){
+                    BigDecimal ethDecimal = new BigDecimal(storableWallet.getEthBalance()).setScale(10,BigDecimal.ROUND_DOWN);
+                    ethBalance.setText(ethDecimal.toPlainString());
+                }else{
+                    ethBalance.setText(storableWallet.getEthBalance() +"");
+                }
+                if (storableWallet.getFftBalance() > 0){
+                    BigDecimal fftDecimal = new BigDecimal(storableWallet.getFftBalance()).setScale(5,BigDecimal.ROUND_DOWN);
+                    fftBalance.setText(fftDecimal.toPlainString());
+                }else{
+                    fftBalance.setText(storableWallet.getFftBalance() +"");
+                }
+                break;
             }
         }
         if (index == -1 && storableWallets.size() > 0){
@@ -364,14 +381,25 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 address = "0x"+address;
             }
             walletAddress.setText(address);
-            ethBalance.setText(storableWallet.getEthBalance() +"");
-            fftBalance.setText(storableWallet.getFftBalance() +"");
+
+            if (storableWallet.getEthBalance() > 0){
+                BigDecimal ethDecimal = new BigDecimal(storableWallet.getEthBalance()).setScale(10,BigDecimal.ROUND_DOWN);
+                ethBalance.setText(ethDecimal.toPlainString());
+            }else{
+                ethBalance.setText(storableWallet.getEthBalance() +"");
+            }
+            if (storableWallet.getFftBalance() > 0){
+                BigDecimal fftDecimal = new BigDecimal(storableWallet.getFftBalance()).setScale(5,BigDecimal.ROUND_DOWN);
+                fftBalance.setText(fftDecimal.toPlainString());
+            }else{
+                fftBalance.setText(storableWallet.getFftBalance() +"");
+            }
         }
 
         new Handler().postDelayed(new Runnable(){
             public void run() {
                 swipe_refresh.setRefreshing(true);
-                loadData();
+                loadData(true);
             }
         }, 500);
     }
@@ -379,7 +407,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     public void onRefresh() {
         new Handler().postDelayed(new Runnable(){
             public void run() {
-                loadData();
+                loadData(true);
             }
         }, 500);
     }
@@ -387,12 +415,14 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     /**
      * Access to the account balance
      * */
-    private void loadData(){
+    private void loadData(final boolean isShowToast){
         try {
             NetRequestUtils.getInstance().getBalance(getActivity(),walletAddress.getText().toString(), new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    mHandler.sendEmptyMessage(0);
+                    if (isShowToast){
+                        mHandler.sendEmptyMessage(0);
+                    }
                 }
 
                 @Override
@@ -439,13 +469,13 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 double fftBalance1 = object.optJSONObject("data").optDouble("smt");
                 if (ethBalance1 > 0){
                     BigDecimal ethDecimal = new BigDecimal(ethBalance1).setScale(10,BigDecimal.ROUND_DOWN);
-                    ethBalance.setText(ethDecimal.toString());
+                    ethBalance.setText(ethDecimal.toPlainString());
                 }else{
                     ethBalance.setText(ethBalance1 +"");
                 }
                 if (fftBalance1 > 0){
                     BigDecimal fftDecimal = new BigDecimal(fftBalance1).setScale(5,BigDecimal.ROUND_DOWN);
-                    fftBalance.setText(fftDecimal.toString());
+                    fftBalance.setText(fftDecimal.toPlainString());
                 }else{
                     fftBalance.setText(fftBalance1 + "");
                 }
