@@ -9,8 +9,11 @@ import android.widget.TextView;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
+import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
 import org.json.JSONObject;
@@ -89,7 +92,16 @@ public class FriendNoteUI extends BaseActivity{
             @Override
             public void success(JSONObject response) {
                 LoadingDialog.close();
-                NextApplication.myInfo.updateJsonNote(note,FriendNoteUI.this);
+                FinalUserDataBase.getInstance().updateFriendNote(localId,note);
+                Intent intentBrocad = new Intent(Constants.ACTION_CHATTING_FRIEND_NOTE);
+                intentBrocad.putExtra("showuid", localId);
+                intentBrocad.putExtra("showname",note);
+                sendBroadcast(intentBrocad);
+
+                if (!TextUtils.isEmpty(note)) {
+                    MySharedPrefs.write(FriendNoteUI.this, MySharedPrefs.KEY_FRIEND_NOTE + NextApplication.myInfo.getLocalId(), localId, note);
+                }
+
                 showToast(response.optString("msg"));
                 Intent intent = new Intent();
                 intent.putExtra("note",note);

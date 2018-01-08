@@ -16,16 +16,20 @@ import android.widget.TextView;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.chat.ChattingUI;
+import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
+import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.vo.UserBaseVo;
 import com.lingtuan.firefly.vo.UserInfoVo;
+import com.lingtuan.firefly.xmpp.XmppAction;
 
 import org.json.JSONObject;
 
@@ -39,7 +43,7 @@ import java.util.List;
 
 public class FriendInfoUI extends BaseActivity {
 
-    private ImageView friendImg;
+    private CharAvatarView friendImg;
     private TextView addFriends,sendMsg,friendNote,friendAddress;
     private TextView friendSignature;//The signature
 
@@ -48,6 +52,9 @@ public class FriendInfoUI extends BaseActivity {
     private AppNetService appNetService;
 
     private boolean dataHasLoad;
+
+    //Radio chat page
+    private NoteReceiverListener noteReceiverListener;
 
     UserInfoVo info = null;
 
@@ -84,7 +91,7 @@ public class FriendInfoUI extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        friendImg = (ImageView) findViewById(R.id.friendImg);
+        friendImg = (CharAvatarView) findViewById(R.id.friendImg);
         addFriends = (TextView) findViewById(R.id.addFriends);
         sendMsg = (TextView) findViewById(R.id.sendMsg);
         friendNote = (TextView) findViewById(R.id.friendNote);
@@ -102,20 +109,43 @@ public class FriendInfoUI extends BaseActivity {
 
     @Override
     protected void initData() {
-        bindService(new Intent(this, AppNetService.class), serviceConn,BIND_AUTO_CREATE);
+
+        int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+        if (openSmartMesh == 1){
+            bindService(new Intent(this, AppNetService.class), serviceConn,BIND_AUTO_CREATE);
+        }
 
         IntentFilter filter = new IntentFilter(Constants.ACTION_SELECT_CONTACT_REFRESH);
         LocalBroadcastManager.getInstance(FriendInfoUI.this).registerReceiver(mBroadcastReceiver,filter);
+
+        IntentFilter filter1 = new IntentFilter(Constants.ACTION_CHATTING_FRIEND_NOTE);//friend note
+        noteReceiverListener = new NoteReceiverListener();
+        registerReceiver(noteReceiverListener, filter1);
 
         app_right.setImageResource(R.drawable.icon_menu);
         loadData();
     }
 
+    class NoteReceiverListener extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null && Constants.ACTION_CHATTING_FRIEND_NOTE.equals(intent.getAction())) {
+                String showname = intent.getExtras().getString("showname");
+                if (!TextUtils.isEmpty(showname)){
+                    friendNote.setVisibility(View.VISIBLE);
+                    friendNote.setText(showname);
+                }
+            }
+        }
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(FriendInfoUI.this).unregisterReceiver(mBroadcastReceiver);
-        unbindService(serviceConn);
+        int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+        if (openSmartMesh == 1 && serviceConn != null){
+            unbindService(serviceConn);
+        }
     }
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -147,9 +177,9 @@ public class FriendInfoUI extends BaseActivity {
 
             setTitle(info.getUsername());
             if (!info.getThumb().startsWith("http:")){
-                NextApplication.displayCircleImage(friendImg,"file://".concat(info.getThumb()));
+                friendImg.setText(info.getUsername(),friendImg,"file://".concat(info.getThumb()));
             }else{
-                NextApplication.displayCircleImage(friendImg,info.getThumb());
+                friendImg.setText(info.getUsername(),friendImg,info.getThumb());
             }
 
             if (TextUtils.isEmpty(info.getNote())){
@@ -260,12 +290,14 @@ public class FriendInfoUI extends BaseActivity {
             startActivity(addFriend);
             Utils.openNewActivityAnim(FriendInfoUI.this,false);
         }else{
-            List<WifiPeopleVO > wifiPeopleVOs = appNetService.getwifiPeopleList();
             boolean isFound = false;
-            for (int i = 0 ; i < wifiPeopleVOs.size() ; i++){
-                if (info.getLocalId().equals(wifiPeopleVOs.get(i).getLocalId())){
-                    isFound = true;
-                    break;
+            if (appNetService != null){
+                List<WifiPeopleVO > wifiPeopleVOs = appNetService.getwifiPeopleList();
+                for (int i = 0 ; i < wifiPeopleVOs.size() ; i++){
+                    if (info.getLocalId().equals(wifiPeopleVOs.get(i).getLocalId())){
+                        isFound = true;
+                        break;
+                    }
                 }
             }
             if (isFound){
