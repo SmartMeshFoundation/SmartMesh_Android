@@ -19,19 +19,27 @@ import java.util.ArrayList;
  * Radar control
  */
 public class RadarViewGroup extends ViewGroup implements RadarView.IScanningListener {
-    private int mWidth, mHeight;//The viewgroup wide high
-    private SparseArray<Float> scanAngleList = new SparseArray<>();//Records show the item of scan Angle position
-    private ArrayList<WifiPeopleVO> mDatas;//The data source
-    private int dataLength;//The length of the data source
-    private int minItemPosition;//The positions of the minimum distance of the item in the data source
-    private CircleView currentShowChild;//The current display of the item
-    private CircleView minShowChild;//The minimum distance of the item
-    private IRadarClickListener iRadarClickListener;//In the radar map click callback interface to monitor CircleView dots
+    //The viewgroup wide high
+    private int mWidth, mHeight;
+    //Records show the item of scan Angle position
+    private SparseArray<Float> scanAngleList = new SparseArray<>();
+    //The data source
+    private ArrayList<WifiPeopleVO> mDatas;
+    //The length of the data source
+    private int dataLength;
+    //The positions of the minimum distance of the item in the data source
+    private int minItemPosition;
+    //The current display of the item
+    private CircleView currentShowChild;
+    //The minimum distance of the item
+    private CircleView minShowChild;
+    //In the radar map click callback interface to monitor CircleView dots
+    private IRadarClickListener iRadarClickListener;
 
     //The percentage of each circle
     private static float[] circleProportion = {1 / 13f, 2 / 13f, 3 / 13f, 4 / 13f, 5 / 13f, 6 / 13f};
-
-    private boolean resetData;//Whether to reload the data
+    //Whether to reload the data
+    private boolean resetData;
 
     public void setiRadarClickListener(IRadarClickListener iRadarClickListener) {
         this.iRadarClickListener = iRadarClickListener;
@@ -92,7 +100,6 @@ public class RadarViewGroup extends ViewGroup implements RadarView.IScanningList
                 if (resetData){
                     if (mDatas != null && mDatas.size() > 0) {
                         ((RadarView) child).setMaxScanItemCount(mDatas.size());
-                        //According to the data source information dynamically add CircleView
                     }
                     ((RadarView) child).resetData();
                 }
@@ -208,7 +215,7 @@ public class RadarViewGroup extends ViewGroup implements RadarView.IScanningList
         //According to the data source information dynamically add CircleView
         for (int i = 0; i < dataLength; i++) {
             CircleView circleView = new CircleView(getContext());
-            circleView.setPortraitIcon(mDatas.get(i).getThumb());
+            circleView.setPortraitIcon(mDatas.get(i).getThumb(),mDatas.get(i).getUsername());
             if (minItemPosition == i) {
                 minShowChild = circleView;
             }

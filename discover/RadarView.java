@@ -34,6 +34,8 @@ public class RadarView extends View {
     private int scanAngle;//The scan Angle rotation
     private Shader scanShader;//Scanning rendering shader
 
+    private boolean isFirstMatrix = true;
+
 
     //The percentage of each circle
     private static float[] circleProportion = {1 / 13f, 2 / 13f, 3 / 13f, 4 / 13f, 5 / 13f, 6 / 13f};
@@ -55,7 +57,7 @@ public class RadarView extends View {
             scanAngle = (scanAngle + scanSpeed) % 360;
             matrix.postRotate(scanSpeed, mWidth / 2, mHeight / 2);
             invalidate();
-            postDelayed(run, 130);
+            postDelayed(run, 10);
             //Start scanning display signs to true and only scan a circle
             if (startScan && currentScanningCount <= (360 / scanSpeed)) {
                 if (iScanningListener != null && currentScanningCount % scanSpeed == 0 && currentScanningItem < maxScanItemCount) {
@@ -118,7 +120,7 @@ public class RadarView extends View {
         mHeight = getMeasuredHeight();
         mWidth = mHeight = Math.min(mWidth, mHeight);
         //Set the scan rendering of the shader
-        scanShader = new SweepGradient(mWidth / 2, mHeight / 2,new int[]{Color.TRANSPARENT, getResources().getColor(R.color.yellowPrimary)}, null);
+        scanShader = new SweepGradient(mWidth / 2, mHeight / 2,new int[]{getResources().getColor(R.color.yellow_trans), getResources().getColor(R.color.yellowPrimary)}, null);
     }
 
     private int measureSize(int measureSpec) {
@@ -202,11 +204,15 @@ public class RadarView extends View {
     private void drawScan(Canvas canvas) {
         canvas.save();
         mPaintScan.setShader(scanShader);
+        if (isFirstMatrix){
+            Matrix matrix1 = new Matrix();
+            matrix.set(matrix1);
+            isFirstMatrix = false;
+        }
         canvas.concat(matrix);
         canvas.drawCircle(mWidth / 2, mHeight / 2, mWidth * circleProportion[5], mPaintScan);
         canvas.restore();
     }
-
 
 
     public interface IScanningListener {
@@ -228,9 +234,6 @@ public class RadarView extends View {
         this.startScan = true;
     }
 
-    /**
-    * reset data
-    */
     public void resetData(){
         scanAngle = 0;
         currentScanningCount = 0;
