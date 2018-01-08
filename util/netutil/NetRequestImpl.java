@@ -21,9 +21,6 @@ public class NetRequestImpl {
     //Interface implementation class
     private static NetRequestImpl instance;
 
-//    //Interface wrapper classes
-//    private static NetRequestUtils requestUtils;
-
     //Interface wrapper classes
     private static VolleyUtils requestUtils;
 
@@ -187,6 +184,46 @@ public class NetRequestImpl {
 
 
     /**
+     * add wallet address
+     * @param address  Account address
+     */
+    public void addAddress(String address,RequestListener listener){
+        Map<String, String> params = new HashMap<>();
+        params.put("address", address);
+        JSONObject jsonRequest = requestUtils.getJsonRequest("user", "add_address", true,params);
+        requestUtils.requestJsonObject(jsonRequest,listener);
+    }
+
+    /**
+     * delete wallet address
+     * @param address  Account address
+     */
+    public void delAddress(String address,RequestListener listener){
+        Map<String, String> params = new HashMap<>();
+        params.put("address", address);
+        JSONObject jsonRequest = requestUtils.getJsonRequest("user", "del_address", true,params);
+        requestUtils.requestJsonObject(jsonRequest,listener);
+    }
+
+
+
+    /**
+     * Get the transaction record interface
+     * @param page page
+     * @param type  0 SMT Account Trading   1 ETH Account Trading
+     * @param address  Account address
+     */
+    public void getTxlist(int page,int type,String address,RequestListener listener){
+        Map<String, String> params = new HashMap<>();
+        params.put("page", page + "");
+        params.put("address", address);
+        params.put("type", type + "");
+        JSONObject jsonRequest = requestUtils.getJsonRequest("user", "transaction_list", true,params);
+        requestUtils.requestJsonObject(jsonRequest,listener);
+    }
+
+
+    /**
      *Get the blacklist list
      * @ param page page
      * */
@@ -215,7 +252,7 @@ public class NetRequestImpl {
     /**
      * report users to join blacklist the same interface
      * @ param blocalid report to the user id
-     * Report * @ param type type shielding does not need to pass the parameters (just);
+     * @ param type type shielding does not need to pass the parameters (just);
      * */
     public void reportFriend(int type,String blocalid,RequestListener listener){
         Map<String, String> params = new HashMap<>();
@@ -339,8 +376,9 @@ public class NetRequestImpl {
      * search friends
      * @ param text keywords
      */
-    public void friendSearch(final String text, RequestListener listener){
+    public void friendSearch(int page,String text, RequestListener listener){
         Map<String, String> params = new HashMap<>();
+        params.put("page", page + "");
         params.put("keyword", text);
         JSONObject jsonRequest = requestUtils.getJsonRequest("discover", "search",true,params);
         requestUtils.requestJsonObject(jsonRequest,listener);
@@ -579,8 +617,29 @@ public class NetRequestImpl {
     public void versionUpdate(RequestListener listener){
         Map<String,String> params = new HashMap<>();
         params.put("currentversion", Utils.getVersionName(NextApplication.mContext));
-        JSONObject jsonRequest = requestUtils.getJsonRequest("system", "version",true,params);
+        JSONObject jsonRequest = requestUtils.getJsonRequest("system", "version",false,params);
         requestUtils.requestJsonObject(jsonRequest, listener);
     }
+
+    /**
+     * Node information
+     */
+    public void getSyncNode(RequestListener listener){
+        JSONObject jsonRequest = requestUtils.getJsonRequest("system", "nodeinfo",false,null);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
+
+    /**
+     * feedBack
+     */
+    public void feedBack(String content,String email,int type,RequestListener listener){
+        Map<String,String> params = new HashMap<>();
+        params.put("content",content);
+        params.put("email",email);
+        params.put("type",type + "");
+        JSONObject jsonRequest = requestUtils.getJsonRequest("system", "feedback",true,params);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
+
 
 }
