@@ -84,7 +84,6 @@ public class RadarViewGroup extends ViewGroup implements RadarView.IScanningList
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         int childCount = getChildCount();
-
         //First place radar scan
         View view = findViewById(R.id.id_scan_circle);
         if (view != null) {
@@ -307,4 +306,27 @@ public class RadarViewGroup extends ViewGroup implements RadarView.IScanningList
         currentShowChild = child;
         startAnim(currentShowChild, position);
     }
+
+
+    public void onResume() {
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child.getId() == R.id.id_scan_circle) {
+                ((RadarView) child).resetMatrix(true);
+                break;
+            }
+        }
+    }
+
+
+    public void onPause() {
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child.getId() == R.id.id_scan_circle) {
+                ((RadarView) child).resetMatrix(false);
+                break;
+            }
+        }
+    }
+
 }

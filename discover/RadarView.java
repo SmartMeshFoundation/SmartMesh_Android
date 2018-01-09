@@ -34,9 +34,6 @@ public class RadarView extends View {
     private int scanAngle;//The scan Angle rotation
     private Shader scanShader;//Scanning rendering shader
 
-    private boolean isFirstMatrix = true;
-
-
     //The percentage of each circle
     private static float[] circleProportion = {1 / 13f, 2 / 13f, 3 / 13f, 4 / 13f, 5 / 13f, 6 / 13f};
     private int scanSpeed = 5;
@@ -47,6 +44,8 @@ public class RadarView extends View {
     private boolean startScan = false;//Only set up after the data will start scanning
     private IScanningListener iScanningListener;//When scanning to monitor callback interface
 
+    private boolean isFirstMatrix = true;
+
     public void setScanningListener(IScanningListener iScanningListener) {
         this.iScanningListener = iScanningListener;
     }
@@ -54,7 +53,9 @@ public class RadarView extends View {
     private Runnable run = new Runnable() {
         @Override
         public void run() {
-            scanAngle = (scanAngle + scanSpeed) % 360;
+            if (startScan){
+                scanAngle = (scanAngle + scanSpeed) % 360;
+            }
             matrix.postRotate(scanSpeed, mWidth / 2, mHeight / 2);
             invalidate();
             postDelayed(run, 10);
@@ -202,16 +203,18 @@ public class RadarView extends View {
      * @param canvas
      */
     private void drawScan(Canvas canvas) {
-        canvas.save();
-        mPaintScan.setShader(scanShader);
-        if (isFirstMatrix){
-            Matrix matrix1 = new Matrix();
-            matrix.set(matrix1);
-            isFirstMatrix = false;
+        if (startScan){
+            canvas.save();
+            mPaintScan.setShader(scanShader);
+            if (isFirstMatrix){
+                isFirstMatrix = false;
+                Matrix matrix1 = new Matrix();
+                matrix.set(matrix1);
+            }
+            canvas.concat(matrix);
+            canvas.drawCircle(mWidth / 2, mHeight / 2, mWidth * circleProportion[5], mPaintScan);
+            canvas.restore();
         }
-        canvas.concat(matrix);
-        canvas.drawCircle(mWidth / 2, mHeight / 2, mWidth * circleProportion[5], mPaintScan);
-        canvas.restore();
     }
 
 
@@ -232,6 +235,21 @@ public class RadarView extends View {
      */
     public void startScan() {
         this.startScan = true;
+    }
+
+    /**
+     * Reset Matrix
+     */
+    public void resetMatrix(boolean setStartScan) {
+        if (startScan  == setStartScan) {
+            return;
+        }
+        this.startScan = setStartScan;
+        if (startScan){
+            Matrix matrix1 = new Matrix();
+            matrix.set(matrix1);
+            matrix1 = null;
+        }
     }
 
     public void resetData(){
