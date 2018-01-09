@@ -64,6 +64,7 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
 
     private RadarViewGroup radarViewGroup;
 
+
     private ArrayList<WifiPeopleVO> mDatas;
 
     private MainFoundAdapter mAdapter;
@@ -79,6 +80,7 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
     private TextView uploadRegisterInfo;//Synchronous registration information
 
     public MainFoundFragmentUI() {
+
     }
 
     @Override
@@ -210,7 +212,7 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
                 }
             }else if (intent != null && Constants.CLOSE_SMARTMESH_NETWORE.equals(intent.getAction())) {
                 int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
-                if (openSmartMesh == 1 && serviceConn != null){
+                if (openSmartMesh == 0 && serviceConn != null){
                     getActivity().unbindService(serviceConn);
                 }
             }
@@ -229,6 +231,21 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
         }
     };
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (radarViewGroup != null){
+            radarViewGroup.onResume();
+        }
+    }
+
+//    @Override
+//    public void onPause() {
+//        super.onResume();
+//        if (radarViewGroup != null){
+//            radarViewGroup.onPause();
+//        }
+//    }
 
     @Override
     public void onDestroy() {
@@ -243,12 +260,18 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
     }
 
 
-
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
         if (!hidden){
             Utils.updateViewMethod(uploadRegisterInfo,getActivity());
+            if (radarViewGroup != null){
+                radarViewGroup.onResume();
+            }
+        }else{
+            if (radarViewGroup != null){
+                radarViewGroup.onPause();
+            }
         }
     }
 
@@ -291,6 +314,9 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
                     selectImg.setVisibility(View.VISIBLE);
                     foundBg.setBackgroundResource(0);
                     radarViewGroup.setVisibility(View.INVISIBLE);
+                    if (radarViewGroup != null){
+                        radarViewGroup.onPause();
+                    }
                     offlineList.setVisibility(View.VISIBLE);
                     mAdapter.resetSource(mDatas);
                     checkListEmpty();
@@ -303,6 +329,9 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
                     selectImg.setVisibility(View.GONE);
                     foundBg.setBackgroundResource(R.drawable.found_bg);
                     radarViewGroup.setVisibility(View.VISIBLE);
+                    if (radarViewGroup != null){
+                        radarViewGroup.onResume();
+                    }
                     offlineList.setVisibility(View.GONE);
                     emptyRela.setVisibility(View.GONE);
                 }
