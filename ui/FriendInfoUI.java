@@ -141,7 +141,14 @@ public class FriendInfoUI extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        LocalBroadcastManager.getInstance(FriendInfoUI.this).unregisterReceiver(mBroadcastReceiver);
+        if (mBroadcastReceiver != null){
+            LocalBroadcastManager.getInstance(FriendInfoUI.this).unregisterReceiver(mBroadcastReceiver);
+        }
+
+        if (noteReceiverListener != null){
+           unregisterReceiver(noteReceiverListener);
+        }
+
         int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
         if (openSmartMesh == 1 && serviceConn != null){
             unbindService(serviceConn);
