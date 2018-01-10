@@ -193,7 +193,11 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         mSendBtn.setOnClickListener(this);
         unreadNum.setOnClickListener(this);
         swipeLayout.setOnRefreshListener(this);
-        listView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+        try {
+            listView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         mInputContent.addTextChangedListener(this);
 
         mInputContent.setOnTouchListener(new OnTouchListener() {
@@ -266,8 +270,12 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         notificationManager.cancelAll();
         ChattingManager.getInstance(this).destory();
         chattingManager = ChattingManager.getInstance(this);
-
-        bindService(new Intent(this, AppNetService.class), serviceConn,BIND_AUTO_CREATE);
+        if (NextApplication.myInfo != null){
+            int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+            if (openSmartMesh == 1){
+                bindService(new Intent(this, AppNetService.class), serviceConn,BIND_AUTO_CREATE);
+            }
+        }
         IntentFilter filter = new IntentFilter(XmppAction.ACTION_MESSAGE_LISTENER);//message broadcast distribution
         filter.addAction(XmppAction.ACTION_OFFLINE_MESSAGE_LIST_LISTENER);//message list broadcast distribution
         filter.addAction(XmppAction.ACTION_MESSAGE_UPDATE_LISTENER);//message update broadcast distribution
@@ -293,7 +301,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
 
         chattingManager.setGroup(isGroup);
         chattingManager.setSend(!(isDismissGroup || isKickGroup));
-
+        chattingManager.setmInputContent(mInputContent);
         List<ChatMsg> mList = FinalUserDataBase.getInstance().getChatMsgListByChatId(uid, 0, 20);
         for (int i = 0; i < mList.size(); i++) {
             ChatMsg vo = mList.get(i);
@@ -342,7 +350,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             public void run() {
                 finishTempActivity();
             }
-        }, 1000);
+        }, 100);
 
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -415,24 +423,26 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(serviceConn);
-        if(uid.equals("everyone"))
-        {
-            XmppMessageUtil.getInstance().sendEnterLeaveEveryOne(0,true);
-        }
         try {
+            int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+            if (openSmartMesh == 1 && serviceConn != null){
+                unbindService(serviceConn);
+            }
+            if(uid.equals("everyone")){
+                XmppMessageUtil.getInstance().sendEnterLeaveEveryOne(0,true);
+            }
             unregisterReceiver(msgReceiverListener);
             LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
             mAdapter.destory();
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+                listView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+            } else {
+                listView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            listView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-        } else {
-            listView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-        }
-
 
     }
 
@@ -791,7 +801,9 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         boolean successed = true;
         if(uid.equals("everyone")){
             ChatMsg msg = XmppMessageUtil.getInstance().sendText(uid, content, isAtAll, atIds, userName, avatarUrl, isGroup, !(isDismissGroup || isKickGroup));
-            successed = appNetService.handleSendString(content, true, "", msg.getMessageId());
+            if (appNetService != null){
+                successed = appNetService.handleSendString(content, true, "", msg.getMessageId());
+            }
             if(msg.getSend() ==0 && !successed)
             {
                 msg.setSend(0);
@@ -825,7 +837,9 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                 msg.setContent(content);
                 msg.setOffLineMsg(true);
                 msg.setMessageId(UUID.randomUUID().toString());
-                successed = appNetService.handleSendString(content, false, uid, msg.getMessageId());
+                if (appNetService != null){
+                    successed = appNetService.handleSendString(content, false, uid, msg.getMessageId());
+                }
                 if(!successed)
                 {
                     msg.setSend(0);
@@ -857,6 +871,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                         String ids = AtGroupParser.getInstance().parser(s);
                         chattingManager.updateAtGroupIds(ids);
                     }
+                    chattingManager.setGroupAtSelectIndex(start + 1);
                     Intent intent = new Intent(this, SelectGroupMemberListUI.class);
                     intent.putExtra("cid", Integer.parseInt(uid.replace("group-", "")));
                     startActivityForResult(intent, Constants.REQUEST_SELECT_GROUP_MEMBER);
@@ -867,7 +882,6 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             }
         } else if (before != 0 && AtGroupParser.getInstance() != null) {
             //Delete the word Data have been generated and @ function
-
             Editable mEditable = mInputContent.getText();
             if (before == 1) {//Delete one character at a time
                 int selectIndex = mInputContent.getSelectionStart();
@@ -953,8 +967,12 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                 Bundle bundle = intent.getBundleExtra(XmppAction.ACTION_MESSAGE_LISTENER);
 
                 ChatMsg chatMsg = (ChatMsg) bundle.getSerializable(XmppAction.ACTION_MESSAGE_LISTENER);
-
-
+                if (mAdapter != null){
+                    int count = mAdapter.getList().size();
+                    if (TextUtils.equals(mAdapter.getList().get(count -1).getMessageId(),chatMsg.getMessageId())){
+                        return;
+                    }
+                }
                 if (chatMsg != null && uid.equals(chatMsg.getChatId())) {//I chat with the friends
                     if (chatMsg.getType() == 1010 && chatMsg.getUnread() == 1) {
                         chatMsg.setUnread(0);
@@ -973,12 +991,12 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                             chatMsg.setUsername(note);
                         }
                     }
-
-
-                    mAdapter.addChatMsg(chatMsg, true);
-                    if (listView.getLastVisiblePosition() >= mAdapter.getCount() - 2)//Only in the bottom, to the new message to scroll to the bottom
-                    {
-                        listView.setSelection(mAdapter.getCount());
+                    if (mAdapter != null){
+                        mAdapter.addChatMsg(chatMsg, true);
+                        if (listView.getLastVisiblePosition() >= mAdapter.getCount() - 2)//Only in the bottom, to the new message to scroll to the bottom
+                        {
+                            listView.setSelection(mAdapter.getCount());
+                        }
                     }
                 }
             }
@@ -1001,13 +1019,14 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                                     chatMsg.setUsername(note);
                                 }
                             }
+                            if (mAdapter != null){
+                                mAdapter.addChatMsg(chatMsg, i == list.size() - 1);
 
-                            mAdapter.addChatMsg(chatMsg, i == list.size() - 1);
-
-                            if (i == list.size() - 1) {
-                                if (listView.getLastVisiblePosition() >= mAdapter.getCount() - 1 - list.size())//Only in the bottom, to the new message to scroll to the bottom
-                                {
-                                    listView.setSelection(mAdapter.getCount());
+                                if (i == list.size() - 1) {
+                                    if (listView.getLastVisiblePosition() >= mAdapter.getCount() - 1 - list.size())//Only in the bottom, to the new message to scroll to the bottom
+                                    {
+                                        listView.setSelection(mAdapter.getCount());
+                                    }
                                 }
                             }
                         }
@@ -1059,14 +1078,14 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             }else if (intent != null && Constants.ACTION_CHATTING_FRIEND_NOTE.equals(intent.getAction())) {    //Choose image correction
                 String showname = intent.getExtras().getString("showname");
                 String showuid = intent.getExtras().getString("showuid");
-                if (!isGroup) {
+                if (!isGroup && !TextUtils.equals("everyone",uid)) {
                     //With a nickname
                     if (showuid.equals(uid)) {
                         setTitle(showname);
                     }
                 } else {
                     for (int i = 0; i < mAdapter.getList().size(); i++) {
-                        if (mAdapter.getList().get(i).getUserId().equals(showuid)) {
+                        if (TextUtils.equals(showuid,mAdapter.getList().get(i).getUserId())) {
                             mAdapter.getList().get(i).setUsername(showname);
                         }
                     }
@@ -1123,7 +1142,9 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             {
                 int  commend = intent.getExtras().getInt("commend");
                 String msgId = intent.getExtras().getString("msgid");
-                appNetService.handleSendFileCommend(uid,msgId,commend);
+                if (appNetService != null){
+                    appNetService.handleSendFileCommend(uid,msgId,commend);
+                }
                 mAdapter.updateOfflineSendStatus(true, 5,msgId);
                 FinalUserDataBase.getInstance().updateOfflineChatMsgState(msgId,5,1);
             }
@@ -1131,7 +1152,9 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             {
                 int  commend = intent.getExtras().getInt("commend");
                 String msgId = intent.getExtras().getString("msgid");
-                appNetService.handleSendFileCommend(uid,msgId,commend);
+                if (appNetService != null){
+                    appNetService.handleSendFileCommend(uid,msgId,commend);
+                }
                 mAdapter.updateOfflineSendStatus(true, 3,msgId);
                 FinalUserDataBase.getInstance().updateOfflineChatMsgState(msgId, 3, 1);
 
@@ -1140,7 +1163,9 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             {
                 int  commend = intent.getExtras().getInt("commend");
                 String msgId = intent.getExtras().getString("msgid");
-                appNetService.handleSendFileCommend(uid, msgId, commend);
+                if (appNetService != null){
+                    appNetService.handleSendFileCommend(uid, msgId, commend);
+                }
                 mAdapter.updateOfflineSendStatus(true, 8,msgId);
                 FinalUserDataBase.getInstance().updateOfflineChatMsgState(msgId, 8, 1);
             }
@@ -1219,9 +1244,13 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
 
     @Override
     public void onGlobalLayout() {
-        if (listViewHeight != listView.getHeight()) {
-            listViewHeight = listView.getHeight();
-            listView.setSelection(mAdapter.getCount());
+        try {
+            if (listViewHeight != listView.getHeight()) {
+                listViewHeight = listView.getHeight();
+                listView.setSelection(mAdapter.getCount());
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 }
