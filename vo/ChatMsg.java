@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.contact.vo.GroupMemberAvatarVo;
 import com.lingtuan.firefly.util.ChatMsgIdComparable;
+import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.xmpp.XmppUtils;
 
 import org.json.JSONArray;
@@ -178,6 +179,54 @@ public class ChatMsg implements Serializable {
 
 	private int videotype;
 	private String livingUrl;//Url/live webcam live or vr
+
+
+	private String fee;
+	private String fromAddress;
+	private String toAddress;
+	private String txBlockNumber;
+	private int noticeType;//0 sender  1 receiver
+
+	public int getNoticeType() {
+		return noticeType;
+	}
+
+	public void setNoticeType(int noticeType) {
+		this.noticeType = noticeType;
+	}
+
+	public String getFee() {
+		return fee;
+	}
+
+	public void setFee(String fee) {
+		this.fee = fee;
+	}
+
+	public String getFromAddress() {
+		return fromAddress;
+	}
+
+	public void setFromAddress(String fromAddress) {
+		this.fromAddress = fromAddress;
+	}
+
+	public String getToAddress() {
+		return toAddress;
+	}
+
+	public void setToAddress(String toAddress) {
+		this.toAddress = toAddress;
+	}
+
+	public String getTxBlockNumber() {
+		return txBlockNumber;
+	}
+
+	public void setTxBlockNumber(String txBlockNumber) {
+		this.txBlockNumber = txBlockNumber;
+	}
+
 	public int getVideotype() {
 		return videotype;
 	}
@@ -905,7 +954,7 @@ public class ChatMsg implements Serializable {
 
 	public boolean isMe() {
 		try {
-			return userId.equals(NextApplication.myInfo.getLocalId());
+			return TextUtils.equals(userId,NextApplication.myInfo.getLocalId());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1256,6 +1305,12 @@ public class ChatMsg implements Serializable {
 		setNum(obj.optInt("num"));
 		setText(obj.optString("text"));
 		setLink(obj.optString("link"));
+
+		setFee(obj.optString("fee"));
+		setFromAddress(obj.optString("fromaddress"));
+		setToAddress(obj.optString("toaddress"));
+		setTxBlockNumber(obj.optString("txblocknumber"));
+		setNoticeType(obj.optInt("noticetype"));
 		return this;
 	}
 
@@ -1389,6 +1444,11 @@ public class ChatMsg implements Serializable {
 
 		setPropId(obj.optString("propid"));
 
+		setFee(obj.optString("fee"));
+		setFromAddress(obj.optString("fromaddress"));
+		setToAddress(obj.optString("toaddress"));
+		setTxBlockNumber(obj.optString("txblocknumber"));
+		setNoticeType(obj.optInt("noticetype"));
 		return this;
 	}
 
