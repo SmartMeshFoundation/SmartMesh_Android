@@ -14,7 +14,8 @@ import android.widget.TextView;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
-import com.lingtuan.firefly.custom.SwitchButton;
+import com.lingtuan.firefly.custom.gesturelock.ACache;
+import com.lingtuan.firefly.custom.switchbutton.SwitchButton;
 import com.lingtuan.firefly.fragment.MySelfFragment;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.offline.AppNetService;
@@ -28,7 +29,6 @@ import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
 import org.json.JSONObject;
 
-import java.util.HashMap;
 import java.util.Locale;
 
 /**
@@ -44,7 +44,7 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
     private RelativeLayout useAgree;//use agree
     private RelativeLayout blackListBody;//The blacklist version detection
     private TextView exit;//exit
-    private SwitchButton startSmartMeshWorkButton;//stealth  、no net work
+    private SwitchButton startSmartMeshWorkButton,gestureButton;//stealth  、no net work.  gesture
     private RelativeLayout startSmartMeshWorkBody;
 
     private TextView versionCheck;//The version number
@@ -62,6 +62,7 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
         versionCheck = (TextView) findViewById(R.id.versionCheck);
         exit = (TextView) findViewById(R.id.exit);
         startSmartMeshWorkButton = (SwitchButton) findViewById(R.id.startSmartMeshWorkButton);
+        gestureButton = (SwitchButton) findViewById(R.id.gestureButton);
         startSmartMeshWorkBody = (RelativeLayout) findViewById(R.id.startSmartMeshWorkBody);
     }
 
@@ -76,8 +77,10 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
         startSmartMeshWorkButton.setOnCheckedChangeListener(null);
         if (noNetWork == 1){//is open
             startSmartMeshWorkButton.setChecked(true);
+            startSmartMeshWorkButton.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
         }else{
             startSmartMeshWorkButton.setChecked(false);
+            startSmartMeshWorkButton.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
         }
         startSmartMeshWorkButton.setOnCheckedChangeListener(this);
     }
@@ -95,6 +98,21 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
         }else{
             startSmartMeshWorkBody.setVisibility(View.VISIBLE);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        gestureButton.setOnCheckedChangeListener(null);
+        byte[] gestureByte  = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
+        if (gestureByte != null && gestureByte.length > 0){
+            gestureButton.setChecked(true);
+            gestureButton.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+        }else{
+            gestureButton.setChecked(false);
+            gestureButton.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
+        }
+        gestureButton.setOnCheckedChangeListener(this);
     }
 
     @Override
@@ -132,27 +150,79 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
                 Utils.openNewActivityAnim(SettingUI.this,false);
                 break;
             case R.id.exit:
-                MyViewDialogFragment mdf = new MyViewDialogFragment();
-                mdf.setTitleAndContentText(getString(R.string.account_logout_warn), getString(R.string.account_logout_hint));
-                mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
-                    @Override
-                    public void okBtn() {
-                        if (TextUtils.isEmpty(NextApplication.myInfo.getToken())){
-                            exitApp();
-                        }else{
-                            logOutMethod();
-                        }
-
-                    }
-                });
-                mdf.show(getSupportFragmentManager(), "mdf");
-
+                checkLogOut();
                 break;
             default:
                 super.onClick(v);
                 break;
 
         }
+    }
+
+    /**
+     * check logout
+     * */
+    private void checkLogOut(){
+        if (NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getMid())&& TextUtils.isEmpty(NextApplication.myInfo.getMobile())&& TextUtils.isEmpty(NextApplication.myInfo.getEmail())) {
+            MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_CHECK_LOGOUT);
+            mdf.setTitleAndContentText(getString(R.string.account_logout_mid_warn), getString(R.string.account_logout_mid_hint));
+            mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
+                @Override
+                public void okBtn() {
+                    checkLogOutAgain();
+                }
+            });
+            mdf.setCancelCallback(new MyViewDialogFragment.CancelCallback() {
+                @Override
+                public void cancelBtn() {
+                    startActivity(new Intent(SettingUI.this, SecurityUI.class));
+                    Utils.openNewActivityAnim(SettingUI.this,false);
+                }
+            });
+            mdf.show(getSupportFragmentManager(), "mdf");
+        }else{
+            MyViewDialogFragment mdf = new MyViewDialogFragment();
+            mdf.setTitleAndContentText(getString(R.string.account_logout_warn), getString(R.string.account_logout_hint));
+            mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
+                @Override
+                public void okBtn() {
+                    if (TextUtils.isEmpty(NextApplication.myInfo.getToken())){
+                        exitApp();
+                    }else{
+                        logOutMethod();
+                    }
+
+                }
+            });
+            mdf.show(getSupportFragmentManager(), "mdf");
+        }
+
+    }
+
+    /**
+     * check logout again
+     * */
+    private void checkLogOutAgain() {
+        MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_CHECK_LOGOUT_AGAIBN);
+        mdf.setTitleAndContentText(getString(R.string.account_logout_mid_warn), getString(R.string.account_logout_mid_hint_again));
+        mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
+            @Override
+            public void okBtn() {
+                if (TextUtils.isEmpty(NextApplication.myInfo.getToken())){
+                    exitApp();
+                }else{
+                    logOutMethod();
+                }
+
+            }
+        });
+        mdf.setCancelCallback(new MyViewDialogFragment.CancelCallback() {
+            @Override
+            public void cancelBtn() {
+                finish();
+            }
+        });
+        mdf.show(getSupportFragmentManager(), "mdf");
     }
 
     /**
@@ -199,18 +269,41 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        MySharedPrefs.writeInt(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(),isChecked ? 1 : 0);
-        if (isChecked){
-            //Start without social network service
-            startService(new Intent(this, AppNetService.class));
-            Utils.sendBroadcastReceiver(SettingUI.this,new Intent(Constants.OPEN_SMARTMESH_NETWORE), false);
-        }else{
-            int version =android.os.Build.VERSION.SDK_INT;
-            if(version >= 16){
-                Utils.sendBroadcastReceiver(SettingUI.this,new Intent(Constants.CLOSE_SMARTMESH_NETWORE), false);
-                Intent offlineservice = new Intent(NextApplication.mContext, AppNetService.class);
-                stopService(offlineservice);
-            }
+        switch (buttonView.getId()){
+            case R.id.startSmartMeshWorkButton:
+                MySharedPrefs.writeInt(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(),isChecked ? 1 : 0);
+                if (isChecked){
+                    startSmartMeshWorkButton.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+                    //Start without social network service
+                    startService(new Intent(this, AppNetService.class));
+                    Utils.sendBroadcastReceiver(SettingUI.this,new Intent(Constants.OPEN_SMARTMESH_NETWORE), false);
+                }else{
+                    startSmartMeshWorkButton.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
+                    int version =android.os.Build.VERSION.SDK_INT;
+                    if(version >= 16){
+                        Utils.sendBroadcastReceiver(SettingUI.this,new Intent(Constants.CLOSE_SMARTMESH_NETWORE), false);
+                        Intent offlineservice = new Intent(NextApplication.mContext, AppNetService.class);
+                        stopService(offlineservice);
+                    }
+                }
+                break;
+            case R.id.gestureButton:
+                if (isChecked){
+                    gestureButton.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+                }else{
+                    gestureButton.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
+                }
+                byte[] gestureByte  = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
+                if (gestureByte != null && gestureByte.length > 0){
+                    Intent intent = new Intent(SettingUI.this,GestureLoginActivity.class);
+                    intent.putExtra("type",isChecked ? 1 : 2);
+                    startActivity(intent);
+                }else{
+                    Intent intent = new Intent(SettingUI.this,CreateGestureActivity.class);
+                    startActivity(intent);
+                }
+                break;
         }
+
     }
 }
