@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.view.GravityCompat;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -13,10 +14,13 @@ import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.gesturelock.ACache;
+import com.lingtuan.firefly.custom.picker.OptionPicker;
+import com.lingtuan.firefly.custom.picker.WheelView;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
+import com.lingtuan.firefly.wallet.WalletCopyActivity;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
@@ -27,6 +31,7 @@ import org.web3j.crypto.Credentials;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Created on 2018/1/11.
@@ -70,14 +75,18 @@ public class GesturePasswordLoginActivity extends BaseActivity{
     protected void setListener() {
         pwdConfirm.setOnClickListener(this);
         gestureLogin.setOnClickListener(this);
+        walletAddress.setOnClickListener(this);
     }
 
     @Override
     protected void initData() {
+        setTitle(getString(R.string.gesture_forget_gesture));
         if (type == 2){
             gestureLogin.setText(getString(R.string.gesture_close));
+            setTitle(getString(R.string.gesture_pwd_close));
         }else{
             gestureLogin.setText(getString(R.string.gesture_login));
+            setTitle(getString(R.string.gesture_forget_gesture));
         }
         initWalletInfo();
     }
@@ -91,6 +100,9 @@ public class GesturePasswordLoginActivity extends BaseActivity{
                 break;
             case R.id.gestureLogin:
                 Utils.exitActivityAndBackAnim(GesturePasswordLoginActivity.this,true);
+                break;
+            case R.id.walletAddress:
+                onConstellationPicker();
                 break;
         }
     }
@@ -195,4 +207,60 @@ public class GesturePasswordLoginActivity extends BaseActivity{
             }
         }
     };
+
+
+    public void onConstellationPicker() {
+        ArrayList<StorableWallet> storableWallets = WalletStorage.getInstance(NextApplication.mContext).get();
+        if (storableWallets.size() <= 0){
+            return;
+        }
+        int index = -1;
+        String nameArray[] = new String[storableWallets.size()];
+        for (int i = 0 ; i < storableWallets.size(); i++){
+            String address = storableWallets.get(i).getPublicKey();
+            if (storableWallets.get(i).isSelect()){
+                index = i;
+            }
+            if(!address.startsWith("0x")){
+                address = "0x"+address;
+            }
+            nameArray[i] =  address.replace(address.substring(12,30),"...");
+        }
+        OptionPicker picker = new OptionPicker(this,nameArray);
+        picker.setCycleDisable(false);//Do not disable loops
+        picker.setTopBackgroundColor(0xFFEEEEEE);
+        picker.setTopHeight(40);
+        picker.setTextSize(14);
+        picker.setOffset(3);
+        picker.setTopLineColor(getResources().getColor(R.color.textColorCard));
+        picker.setTopLineHeight(1);
+        picker.setCancelTextColor(getResources().getColor(R.color.textColorCard));
+        picker.setCancelTextSize(13);
+        picker.setSubmitTextColor(getResources().getColor(R.color.gesture_lock_select));
+        picker.setSubmitTextSize(13);
+        picker.setTextColor(getResources().getColor(R.color.black), getResources().getColor(R.color.textColorCard));
+        WheelView.DividerConfig config = new WheelView.DividerConfig();
+        config.setColor(getResources().getColor(R.color.tab_sep_line));//Line color
+        config.setAlpha(140);//Line transparency
+        config.setRatio(1);//Line ratio
+        picker.setDividerConfig(config);
+        picker.setBackgroundColor(0xFFE1E1E1);
+        picker.setSelectedIndex(index);
+        picker.setCanceledOnTouchOutside(true);
+        picker.setOnOptionPickListener(new OptionPicker.OnOptionPickListener() {
+            @Override
+            public void onOptionPicked(int index, String item) {
+                for (int i = 0 ; i < WalletStorage.getInstance(getApplicationContext()).get().size(); i++){
+                    if (i != index){
+                        WalletStorage.getInstance(getApplicationContext()).get().get(i).setSelect(false);
+                    }else{
+                        WalletStorage.getInstance(getApplicationContext()).get().get(i).setSelect(true);
+                    }
+                }
+                initWalletInfo();
+                Utils.sendBroadcastReceiver(GesturePasswordLoginActivity.this, new Intent(Constants.WALLET_REFRESH_GESTURE), false);
+            }
+        });
+        picker.show();
+    }
 }
