@@ -21,6 +21,8 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.base.BaseFragment;
 import com.lingtuan.firefly.login.LoginUtil;
+import com.lingtuan.firefly.setting.SecurityUI;
+import com.lingtuan.firefly.ui.MainFragmentUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
@@ -83,10 +85,20 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
     public void onClick(View view){
         switch (view.getId()){
             case R.id.createWallet://Create a wallet
-                startActivityForResult(new Intent(getActivity(),WalletCreateActivity.class),100);
+                if (NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getMid())&& TextUtils.isEmpty(NextApplication.myInfo.getMobile())&& TextUtils.isEmpty(NextApplication.myInfo.getEmail())) {
+                    startActivity(new Intent(getActivity(), SecurityUI.class));
+                    Utils.openNewActivityAnim(getActivity(),false);
+                }else{
+                    startActivityForResult(new Intent(getActivity(),WalletCreateActivity.class),100);
+                }
                 break;
             case R.id.importWallet://Import the wallet
-                startActivityForResult(new Intent(getActivity(),WalletImportActivity.class),100);
+                if (NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getMid())&& TextUtils.isEmpty(NextApplication.myInfo.getMobile())&& TextUtils.isEmpty(NextApplication.myInfo.getEmail())) {
+                    startActivity(new Intent(getActivity(), SecurityUI.class));
+                    Utils.openNewActivityAnim(getActivity(),false);
+                }else{
+                    startActivityForResult(new Intent(getActivity(),WalletImportActivity.class),100);
+                }
                 break;
         }
     }
