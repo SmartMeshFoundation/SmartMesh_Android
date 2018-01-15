@@ -111,10 +111,10 @@ public class WalletCopyActivity extends BaseActivity {
             walletCopyKeyStore.setEnabled(false);
         }
 
-        //Export the private key
-        if (storableWallet.getCanExportPrivateKey() != 1){
-            walletCopyKey.setEnabled(false);
-        }
+//        //Export the private key
+//        if (storableWallet.getCanExportPrivateKey() != 1){
+//            walletCopyKey.setEnabled(false);
+//        }
     }
 
     /**
@@ -261,7 +261,7 @@ public class WalletCopyActivity extends BaseActivity {
                     showPrivateKey.putExtra(Constants.PRIVATE_KEY,privateKey.toString());
                     startActivity(showPrivateKey);
                     storableWallet.setCanExportPrivateKey(0);
-                    walletCopyKey.setEnabled(false);
+//                    walletCopyKey.setEnabled(false);
                     ArrayList<StorableWallet> list = WalletStorage.getInstance(getApplicationContext()).get();
                     for (int i = 0 ; i < list.size() ; i++){
                         if (list.get(i).getPublicKey().equals(storableWallet.getPublicKey())){
