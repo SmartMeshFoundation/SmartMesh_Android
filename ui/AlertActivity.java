@@ -17,8 +17,11 @@ import com.lingtuan.firefly.custom.SubmitDialog;
 import com.lingtuan.firefly.login.LoginUI;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.service.UpdateVersionService;
+import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
+import com.lingtuan.firefly.wallet.WalletCopyActivity;
+import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
 import java.io.File;
 
@@ -51,6 +54,11 @@ public class AlertActivity extends BaseActivity{
 			showOfflineDialog(getIntent().getStringExtra("msg"));
 		}else if(type==3){
 			showSmartMeshDialog();
+		}else if(type==4){
+			showWalletDialog();
+		}else if(type==5){
+			StorableWallet storableWallet = (StorableWallet) getIntent().getSerializableExtra("strablewallet");
+			showBackupDialog(storableWallet);
 		}
 	}
 
@@ -61,40 +69,52 @@ public class AlertActivity extends BaseActivity{
 				.setMessage(describe.replace("\\n", "\n"))
 				.setPositiveButton(getString(R.string.updatelater), new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {
-						Intent versionService = new Intent(AlertActivity.this, UpdateVersionService.class);
-						stopService(versionService);
-						dialog.dismiss();
-						finish();
+						try {
+							Intent versionService = new Intent(AlertActivity.this, UpdateVersionService.class);
+							stopService(versionService);
+							dialog.dismiss();
+							finish();
+						}catch (Exception e){
+							e.printStackTrace();
+							dialog.dismiss();
+							finish();
+						}
 					}
 				})
 				.setNegativeButton(getString(R.string.updatenow),
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int which) {
-								dialog.dismiss();
-								if (TextUtils.isEmpty(url)){
+								try {
+									dialog.dismiss();
+									if (TextUtils.isEmpty(url)){
+										finish();
+										return;
+									}
+									showToast(getString(R.string.chatting_start_download));
+									int index = url.lastIndexOf("/")+1;
+									String apkName = url.substring(index,url.length());
+									DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+									DownloadManager.Request request = new DownloadManager.Request(
+											Uri.parse(url));
+									request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+									request.setMimeType("application/vnd.android.package-archive");
+									// Set to can be found by the media scanner
+									request.allowScanningByMediaScanner();
+									// Set to visible and manageable
+									request.setVisibleInDownloadsUi(true);
+
+									Utils.deleteFiles(new File(Environment.getExternalStorageDirectory() + "/download/"+apkName));
+
+									request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, apkName);
+									long refernece = dm.enqueue(request);
+									SharedPreferences sPreferences = getSharedPreferences("downloadplato", 0);
+									sPreferences.edit().putLong("plato", refernece).commit();
 									finish();
-									return;
+								}catch (Exception e){
+									e.printStackTrace();
+									dialog.dismiss();
+									finish();
 								}
-								showToast(getString(R.string.chatting_start_download));
-								int index = url.lastIndexOf("/")+1;
-								String apkName = url.substring(index,url.length());
-								DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-								DownloadManager.Request request = new DownloadManager.Request(
-										Uri.parse(url));
-								request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-								request.setMimeType("application/vnd.android.package-archive");
-								// Set to can be found by the media scanner
-								request.allowScanningByMediaScanner();
-								// Set to visible and manageable
-								request.setVisibleInDownloadsUi(true);
-
-								Utils.deleteFiles(new File(Environment.getExternalStorageDirectory() + "/download/"+apkName));
-
-								request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, apkName);
-								long refernece = dm.enqueue(request);
-								SharedPreferences sPreferences = getSharedPreferences("downloadplato", 0);
-								sPreferences.edit().putLong("plato", refernece).commit();
-								finish();
 							}
 						});
 		builder.show();
@@ -111,31 +131,37 @@ public class AlertActivity extends BaseActivity{
 				.setNegativeButton(getString(R.string.updatenow),
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int which) {
-								dialog.dismiss();
-								if (TextUtils.isEmpty(url)){
+								try {
+									dialog.dismiss();
+									if (TextUtils.isEmpty(url)){
+										finish();
+										return;
+									}
+									showToast(getString(R.string.chatting_start_download));
+									int index = url.lastIndexOf("/")+1;
+									String apkName = url.substring(index,url.length());
+									DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+									DownloadManager.Request request = new DownloadManager.Request(
+											Uri.parse(url));
+									request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+									request.setMimeType("application/vnd.android.package-archive");
+									// Set to can be found by the media scanner
+									request.allowScanningByMediaScanner();
+									// Set to visible and manageable
+									request.setVisibleInDownloadsUi(true);
+
+									Utils.deleteFiles(new File(Environment.getExternalStorageDirectory() + "/download/"+apkName));
+
+									request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, apkName);
+									long refernece = dm.enqueue(request);
+									SharedPreferences sPreferences = getSharedPreferences("downloadplato", 0);
+									sPreferences.edit().putLong("plato", refernece).commit();
 									finish();
-									return;
+								}catch (Exception e){
+									e.printStackTrace();
+									dialog.dismiss();
+									finish();
 								}
-								showToast(getString(R.string.chatting_start_download));
-								int index = url.lastIndexOf("/")+1;
-								String apkName = url.substring(index,url.length());
-								DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-								DownloadManager.Request request = new DownloadManager.Request(
-										Uri.parse(url));
-								request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-								request.setMimeType("application/vnd.android.package-archive");
-								// Set to can be found by the media scanner
-								request.allowScanningByMediaScanner();
-								// Set to visible and manageable
-								request.setVisibleInDownloadsUi(true);
-
-								Utils.deleteFiles(new File(Environment.getExternalStorageDirectory() + "/download/"+apkName));
-
-								request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, apkName);
-								long refernece = dm.enqueue(request);
-								SharedPreferences sPreferences = getSharedPreferences("downloadplato", 0);
-								sPreferences.edit().putLong("plato", refernece).commit();
-								finish();
 							}
 						});
 		builder.show();
@@ -190,6 +216,45 @@ public class AlertActivity extends BaseActivity{
 							}
 						});
 		builder.show();
+		builder.setCancelable(false);
+	}
+
+
+	private void showWalletDialog(){
+		SubmitDialog.Builder builder = new SubmitDialog.Builder(this);
+		builder.setDialogType(4);
+		builder.setTitle(getString(R.string.wallet_copy_disclaimer))
+				.setMessage(getString(R.string.wallet_copy_disclaimer_info))
+				.setNegativeButton(getString(R.string.ok),
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								MySharedPrefs.writeBoolean(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.IS_SHOW_WALLET_DIALOG,false);
+								dialog.dismiss();
+								finish();
+							}
+						});
+		builder.showWallet();
+		builder.setCancelable(false);
+	}
+
+	private void showBackupDialog(final StorableWallet storableWallet){
+		SubmitDialog.Builder builder = new SubmitDialog.Builder(this);
+		builder.setDialogType(5);
+		builder.setTitle(getString(R.string.wallet_backup_title))
+				.setMessage(getString(R.string.wallet_copy_disclaimer_info))
+				.setNegativeButton(getString(R.string.wallet_backup_now),
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								Intent copyIntent = new Intent(NextApplication.mContext,WalletCopyActivity.class);
+								copyIntent.putExtra(Constants.WALLET_INFO, storableWallet);
+								copyIntent.putExtra(Constants.WALLET_ICON, storableWallet.getImgId());
+								copyIntent.putExtra(Constants.WALLET_TYPE, 1);
+								startActivity(copyIntent);
+								dialog.dismiss();
+								finish();
+							}
+						});
+		builder.showWalletBackup();
 		builder.setCancelable(false);
 	}
 

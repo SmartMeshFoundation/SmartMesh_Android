@@ -29,6 +29,7 @@ import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.quickmark.CaptureActivity;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
 import com.lingtuan.firefly.service.XmppService;
+import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyToast;
@@ -82,10 +83,13 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
     private ImageView walletImg;//The wallet picture
     private TextView walletName;//Name of the wallet
+    private TextView walletBackup;//backup of the wallet
     private TextView walletAddress;//The wallet address
     private TextView qrCode;//Qr code
     private TextView transRecord;//Transaction records
     private TextView copyAddress;//Copy the address
+
+    private LinearLayout walletNameBody;
 
     private SwipeRefreshLayout swipe_refresh;
 
@@ -151,6 +155,8 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         //The main related
         walletImg = (ImageView) view.findViewById(R.id.walletImg);
         walletName = (TextView) view.findViewById(R.id.walletName);
+        walletNameBody = (LinearLayout) view.findViewById(R.id.walletNameBody);
+        walletBackup = (TextView) view.findViewById(R.id.walletBackup);
         walletAddress = (TextView) view.findViewById(R.id.walletAddress);
         qrCode = (TextView) view.findViewById(R.id.qrCode);
         transRecord = (TextView) view.findViewById(R.id.transRecord);
@@ -173,7 +179,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         walletListView.setOnItemClickListener(this);
 
         walletImg.setOnClickListener(this);
-        walletName.setOnClickListener(this);
+        walletNameBody.setOnClickListener(this);
         qrCode.setOnClickListener(this);
         transRecord.setOnClickListener(this);
         copyAddress.setOnClickListener(this);
@@ -202,6 +208,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         initWalletInfo();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.WALLET_REFRESH_DEL);//Refresh the page
+        filter.addAction(Constants.WALLET_SUCCESS);//Refresh the page
+        filter.addAction(Constants.WALLET_REFRESH_BACKUP);//Refresh the page
+        filter.addAction(Constants.WALLET_REFRESH_GESTURE);//Refresh the page
         filter.addAction(Constants.CHANGE_LANGUAGE);//Update language refresh the page
         filter.addAction(XmppAction.ACTION_TRANS);//trans
         getActivity().registerReceiver(mBroadcastReceiver, filter);
@@ -212,14 +221,19 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent != null && (Constants.WALLET_REFRESH_DEL.equals(intent.getAction()))) {
-                mAdapter.notifyDataSetChanged();
-                initWalletInfo();
-            }else if (intent != null && (Constants.CHANGE_LANGUAGE.equals(intent.getAction()))) {
-                accountTitle.setText(getString(R.string.app_name));
-                Utils.updateViewLanguage(view.findViewById(R.id.account_drawerlayout));
-            }else if (intent != null && (XmppAction.ACTION_TRANS.equals(intent.getAction()))) {
-                loadData(false);
+            if (intent != null){
+                if (Constants.WALLET_REFRESH_DEL.equals(intent.getAction()) || Constants.WALLET_REFRESH_BACKUP.equals(intent.getAction()) ) {
+                    mAdapter.notifyDataSetChanged();
+                    initWalletInfo();
+                }else if (Constants.WALLET_REFRESH_GESTURE.equals(intent.getAction()) || Constants.WALLET_SUCCESS.equals(intent.getAction())) {
+                    mAdapter.notifyDataSetChanged();
+                    initWalletInfo();
+                }else if (Constants.CHANGE_LANGUAGE.equals(intent.getAction())) {
+                    accountTitle.setText(getString(R.string.app_name));
+                    Utils.updateViewLanguage(view.findViewById(R.id.account_drawerlayout));
+                }else if (XmppAction.ACTION_TRANS.equals(intent.getAction())) {
+                    loadData(false);
+                }
             }
         }
     };
@@ -254,7 +268,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
             case R.id.walletImg://Backup the purse
-            case R.id.walletName:
+            case R.id.walletNameBody:
                 if (storableWallet == null){
                     return;
                 }
@@ -283,6 +297,14 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
             case R.id.copyAddress://Copy the address
+                if (storableWallet != null && !storableWallet.isBackup()){
+                    Intent intent = new Intent(getActivity(), AlertActivity.class);
+                    intent.putExtra("type", 5);
+                    intent.putExtra("strablewallet", storableWallet);
+                    startActivity(intent);
+                    getActivity().overridePendingTransition(0, 0);
+                    return;
+                }
                 Utils.copyText(getActivity(),walletAddress.getText().toString());
                 break;
             case R.id.ethTransfer://The eth transfer
@@ -348,24 +370,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 walletImg.setImageResource(imgId);
                 storableWallet = storableWallets.get(i);
                 storableWallet.setImgId(imgId);
-                walletName.setText(storableWallet.getWalletName());
-                String address = storableWallet.getPublicKey();
-                if(!address.startsWith("0x")){
-                    address = "0x"+address;
-                }
-                walletAddress.setText(address);
-                if (storableWallet.getEthBalance() > 0){
-                    BigDecimal ethDecimal = new BigDecimal(storableWallet.getEthBalance()).setScale(10,BigDecimal.ROUND_DOWN);
-                    ethBalance.setText(ethDecimal.toPlainString());
-                }else{
-                    ethBalance.setText(storableWallet.getEthBalance() +"");
-                }
-                if (storableWallet.getFftBalance() > 0){
-                    BigDecimal fftDecimal = new BigDecimal(storableWallet.getFftBalance()).setScale(5,BigDecimal.ROUND_DOWN);
-                    fftBalance.setText(fftDecimal.toPlainString());
-                }else{
-                    fftBalance.setText(storableWallet.getFftBalance() +"");
-                }
                 break;
             }
         }
@@ -374,9 +378,18 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             walletImg.setImageResource(imgId);
             storableWallet = storableWallets.get(0);
             storableWallet.setImgId(imgId);
-            walletName.setText(storableWallet.getWalletName());
-            String address = storableWallet.getPublicKey();
+        }
 
+        if (storableWallet != null){
+            walletName.setText(storableWallet.getWalletName());
+
+            if (storableWallet.isBackup()){
+                walletBackup.setVisibility(View.GONE);
+            }else{
+                walletBackup.setVisibility(View.VISIBLE);
+            }
+
+            String address = storableWallet.getPublicKey();
             if(!address.startsWith("0x")){
                 address = "0x"+address;
             }

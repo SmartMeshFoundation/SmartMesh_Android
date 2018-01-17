@@ -37,7 +37,7 @@ public class SubmitDialog extends Dialog {
         private String negativeButtonText;
         private View contentView;
         private int color;
-        private boolean isOffline;
+        private int type;//0 version 1 offline 2 network
         private DialogInterface.OnClickListener positiveButtonClickListener,negativeButtonClickListener;
 
         private SubmitDialog dialog;
@@ -97,8 +97,8 @@ public class SubmitDialog extends Dialog {
         /**
          * is offline
          * */
-        public void setIsOffline(boolean isOffline){
-            this.isOffline = isOffline;
+        public void setDialogType(int type){
+            this.type = type;
         }
 
         /**
@@ -192,11 +192,17 @@ public class SubmitDialog extends Dialog {
             	layout.findViewById(R.id.title).setVisibility(View.GONE);
             }
 
-            if (isOffline){
-                layout.findViewById(R.id.updateVersionBody).setVisibility(View.GONE);
-                layout.findViewById(R.id.offlineBody).setVisibility(View.VISIBLE);
-            }else{
+            if (type == 0){//update version
                 layout.findViewById(R.id.updateVersionBody).setVisibility(View.VISIBLE);
+                layout.findViewById(R.id.offlineBody).setVisibility(View.GONE);
+                layout.findViewById(R.id.smartMeshBody).setVisibility(View.GONE);
+            }else if (type == 1){//offline
+                layout.findViewById(R.id.updateVersionBody).setVisibility(View.GONE);
+                layout.findViewById(R.id.smartMeshBody).setVisibility(View.GONE);
+                layout.findViewById(R.id.offlineBody).setVisibility(View.VISIBLE);
+            }else{//show net work
+                layout.findViewById(R.id.smartMeshBody).setVisibility(View.VISIBLE);
+                layout.findViewById(R.id.updateVersionBody).setVisibility(View.GONE);
                 layout.findViewById(R.id.offlineBody).setVisibility(View.GONE);
             }
 
@@ -248,6 +254,117 @@ public class SubmitDialog extends Dialog {
                 LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT);
                 lp.setMargins(Utils.dip2px(context, 15), 0, Utils.dip2px(context, 15), 0);
                 ((LinearLayout) layout.findViewById(R.id.content)).addView(contentView, lp);
+            }
+            dialog.setContentView(layout);
+            dialog.show();
+            WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+            params.width = WindowManager.LayoutParams.MATCH_PARENT;
+            params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+            dialog.getWindow().setAttributes(params);
+            return dialog;
+        }
+
+
+        /**
+         * Create the custom dialog
+         */
+        public SubmitDialog showWallet() {
+            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            // instantiate the dialog with the custom Theme
+            final SubmitDialog dialog = new SubmitDialog(context, R.style.SubmitDialog);
+            this.dialog=dialog;
+            View layout = inflater.inflate(R.layout.submit_dialog_wallet_layout, null);
+            dialog.addContentView(layout, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+            // set the dialog title
+            ((TextView) layout.findViewById(R.id.title)).setText(title);
+            if(TextUtils.isEmpty(title)){
+                layout.findViewById(R.id.title).setVisibility(View.GONE);
+            }
+
+            layout.findViewById(R.id.positiveButton).setVisibility(View.GONE);
+
+            if(color != 0){
+                ((TextView) layout.findViewById(R.id.positiveButton)).setTextColor(color);
+            }
+            // set the cancel button
+            if (negativeButtonText != null) {
+                ((TextView) layout.findViewById(R.id.negativeButton)).setText(negativeButtonText);
+                if (negativeButtonClickListener != null) {
+                    layout.findViewById(R.id.negativeButton)
+                            .setOnClickListener(new View.OnClickListener() {
+                                public void onClick(View v) {
+                                    negativeButtonClickListener.onClick(dialog,DialogInterface.BUTTON_NEGATIVE);
+                                }
+                            });
+                }
+
+            } else {
+                // if no confirm button just set the visibility to GONE
+                layout.findViewById(R.id.negativeButton).setVisibility( View.GONE);
+            }
+            if (color != 0){
+                ((TextView) layout.findViewById(R.id.negativeButton)).setTextColor(color);
+            }
+            // set the content message
+            if (message != null) {
+                ((TextView) layout.findViewById(R.id.message)).setText(message);
+            } else if (contentView != null) {
+                // if no message set
+                // add the contentView to the dialog body
+                ((LinearLayout) layout.findViewById(R.id.content)).removeAllViews();
+                LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT);
+                lp.setMargins(Utils.dip2px(context, 15), 0, Utils.dip2px(context, 15), 0);
+                ((LinearLayout) layout.findViewById(R.id.content)).addView(contentView, lp);
+            }
+            dialog.setContentView(layout);
+            dialog.show();
+            WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+            params.width = WindowManager.LayoutParams.MATCH_PARENT;
+            params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+            dialog.getWindow().setAttributes(params);
+            return dialog;
+        }
+
+
+        /**
+         * Create the custom dialog
+         */
+        public SubmitDialog showWalletBackup() {
+            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            // instantiate the dialog with the custom Theme
+            final SubmitDialog dialog = new SubmitDialog(context, R.style.SubmitDialog);
+            this.dialog=dialog;
+            View layout = inflater.inflate(R.layout.submit_dialog_wallet_backup_layout, null);
+            dialog.addContentView(layout, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+            // set the dialog title
+            ((TextView) layout.findViewById(R.id.title)).setText(title);
+            if(TextUtils.isEmpty(title)){
+                layout.findViewById(R.id.title).setVisibility(View.GONE);
+            }
+
+            layout.findViewById(R.id.positiveButton).setVisibility(View.GONE);
+
+            if(color != 0){
+                ((TextView) layout.findViewById(R.id.positiveButton)).setTextColor(color);
+            }
+            // set the cancel button
+            if (negativeButtonText != null) {
+                ((TextView) layout.findViewById(R.id.negativeButton)).setText(negativeButtonText);
+                if (negativeButtonClickListener != null) {
+                    layout.findViewById(R.id.negativeButton)
+                            .setOnClickListener(new View.OnClickListener() {
+                                public void onClick(View v) {
+                                    negativeButtonClickListener.onClick(dialog,DialogInterface.BUTTON_NEGATIVE);
+                                }
+                            });
+                }
+
+            } else {
+                // if no confirm button just set the visibility to GONE
+                layout.findViewById(R.id.negativeButton).setVisibility( View.GONE);
+            }
+            if (color != 0){
+                ((TextView) layout.findViewById(R.id.negativeButton)).setTextColor(color);
             }
             dialog.setContentView(layout);
             dialog.show();

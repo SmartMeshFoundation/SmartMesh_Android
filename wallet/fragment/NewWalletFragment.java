@@ -85,20 +85,10 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
     public void onClick(View view){
         switch (view.getId()){
             case R.id.createWallet://Create a wallet
-                if (NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getMid())&& TextUtils.isEmpty(NextApplication.myInfo.getMobile())&& TextUtils.isEmpty(NextApplication.myInfo.getEmail())) {
-                    startActivity(new Intent(getActivity(), SecurityUI.class));
-                    Utils.openNewActivityAnim(getActivity(),false);
-                }else{
-                    startActivityForResult(new Intent(getActivity(),WalletCreateActivity.class),100);
-                }
+                startActivityForResult(new Intent(getActivity(),WalletCreateActivity.class),100);
                 break;
             case R.id.importWallet://Import the wallet
-                if (NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getMid())&& TextUtils.isEmpty(NextApplication.myInfo.getMobile())&& TextUtils.isEmpty(NextApplication.myInfo.getEmail())) {
-                    startActivity(new Intent(getActivity(), SecurityUI.class));
-                    Utils.openNewActivityAnim(getActivity(),false);
-                }else{
-                    startActivityForResult(new Intent(getActivity(),WalletImportActivity.class),100);
-                }
+                startActivityForResult(new Intent(getActivity(),WalletImportActivity.class),100);
                 break;
         }
     }

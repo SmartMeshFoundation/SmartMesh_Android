@@ -9,11 +9,14 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
+import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
@@ -117,6 +120,26 @@ public class WalletCopyActivity extends BaseActivity {
 //        }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        boolean isShowWalletDialog = MySharedPrefs.readBooleanNormal(WalletCopyActivity.this,MySharedPrefs.FILE_USER,MySharedPrefs.IS_SHOW_WALLET_DIALOG);
+        if (isShowWalletDialog){
+            Intent intent = new Intent(WalletCopyActivity.this, AlertActivity.class);
+            intent.putExtra("type", 4);
+            startActivity(intent);
+            overridePendingTransition(0, 0);
+        }else{
+            MySharedPrefs.writeBoolean(WalletCopyActivity.this,MySharedPrefs.FILE_USER,MySharedPrefs.IS_SHOW_WALLET_DIALOG,true);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        MySharedPrefs.writeBoolean(WalletCopyActivity.this,MySharedPrefs.FILE_USER,MySharedPrefs.IS_SHOW_WALLET_DIALOG,false);
+    }
+
     /**
      * to export the private key
      * export KeyStore
@@ -166,6 +189,11 @@ public class WalletCopyActivity extends BaseActivity {
 
             }
         });
+
+        if (type == 2){
+            mdf.setTitleAndContentText(null,getString(R.string.wallet_scan_del_hint));
+        }
+
         mdf.show(this.getSupportFragmentManager(), "mdf");
     }
 
@@ -256,23 +284,37 @@ public class WalletCopyActivity extends BaseActivity {
             switch (msg.what) {
                 case 0://The private key
                     LoadingDialog.close();
-                    BigInteger privateKey = (BigInteger) msg.obj;
-                    Intent showPrivateKey = new Intent(WalletCopyActivity.this,WalletPrivateKeyActivity.class);
-                    showPrivateKey.putExtra(Constants.PRIVATE_KEY,privateKey.toString());
-                    startActivity(showPrivateKey);
                     storableWallet.setCanExportPrivateKey(0);
+                    storableWallet.setBackup(true);
 //                    walletCopyKey.setEnabled(false);
                     ArrayList<StorableWallet> list = WalletStorage.getInstance(getApplicationContext()).get();
                     for (int i = 0 ; i < list.size() ; i++){
                         if (list.get(i).getPublicKey().equals(storableWallet.getPublicKey())){
                             list.get(i).setCanExportPrivateKey(0);
+                            list.get(i).setBackup(true);
                             break;
                         }
                     }
                     WalletStorage.getInstance(getApplicationContext()).updateWalletToList(WalletCopyActivity.this,storableWallet.getPublicKey());
+                    Utils.sendBroadcastReceiver(WalletCopyActivity.this, new Intent(Constants.WALLET_REFRESH_BACKUP), false);
+
+                    BigInteger privateKey = (BigInteger) msg.obj;
+                    Intent showPrivateKey = new Intent(WalletCopyActivity.this,WalletPrivateKeyActivity.class);
+                    showPrivateKey.putExtra(Constants.PRIVATE_KEY,privateKey.toString());
+                    startActivity(showPrivateKey);
                     break;
                 case 1://keystore
                     LoadingDialog.close();
+                    storableWallet.setBackup(true);
+                    ArrayList<StorableWallet> walletList = WalletStorage.getInstance(getApplicationContext()).get();
+                    for (int i = 0 ; i < walletList.size() ; i++){
+                        if (walletList.get(i).getPublicKey().equals(storableWallet.getPublicKey())){
+                            walletList.get(i).setBackup(true);
+                            break;
+                        }
+                    }
+                    WalletStorage.getInstance(getApplicationContext()).updateWalletToList(WalletCopyActivity.this,storableWallet.getPublicKey());
+                    Utils.sendBroadcastReceiver(WalletCopyActivity.this, new Intent(Constants.WALLET_REFRESH_BACKUP), false);
                     String keyStore = (String)msg.obj;
                     Intent showKeyStore = new Intent(WalletCopyActivity.this,WalletKeyStoreActivity.class);
                     showKeyStore.putExtra(Constants.KEYSTORE,keyStore);
