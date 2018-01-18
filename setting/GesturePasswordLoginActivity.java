@@ -227,7 +227,7 @@ public class GesturePasswordLoginActivity extends BaseActivity{
             nameArray[i] =  address.replace(address.substring(12,30),"...");
         }
         OptionPicker picker = new OptionPicker(this,nameArray);
-        picker.setCycleDisable(false);//Do not disable loops
+        picker.setCycleDisable(true);//Do not disable loops
         picker.setTopBackgroundColor(0xFFEEEEEE);
         picker.setTopHeight(40);
         picker.setTextSize(14);
