@@ -28,6 +28,7 @@ import com.google.zxing.NotFoundException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
+import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.quickmark.camera.CameraManager;
@@ -37,7 +38,9 @@ import com.lingtuan.firefly.quickmark.decode.CaptureActivityHandler;
 import com.lingtuan.firefly.quickmark.decode.FinishListener;
 import com.lingtuan.firefly.quickmark.decode.InactivityTimer;
 import com.lingtuan.firefly.quickmark.view.ViewfinderView;
+import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.WalletSendActivity;
+import com.lingtuan.firefly.wallet.util.WalletStorage;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -70,8 +73,6 @@ public final class CaptureActivity extends BaseActivity implements
 	
 	private ImageView photoIcon;
 	
-	private  int type;//   1 forresult 2 watch the purse
-	
 	public ViewfinderView getViewfinderView() {
 		return viewfinderView;
 	}
@@ -84,7 +85,7 @@ public final class CaptureActivity extends BaseActivity implements
 		return cameraManager;
 	}
 
-
+    private  int type;//   1 forresult 2 watch the purse
 	@SuppressWarnings("deprecation")
 	@Override
 	protected void onResume() {
@@ -153,7 +154,8 @@ public final class CaptureActivity extends BaseActivity implements
 				savedResultToShow = result;
 			}
 			if (savedResultToShow != null) {
-				Message message = Message.obtain(handler,R.id.decode_succeeded, savedResultToShow);
+				Message message = Message.obtain(handler,
+						R.id.decode_succeeded, savedResultToShow);
 				handler.sendMessage(message);
 			}
 			savedResultToShow = null;
@@ -174,7 +176,8 @@ public final class CaptureActivity extends BaseActivity implements
 	}
 
 	@Override
-	public void surfaceChanged(SurfaceHolder holder, int format, int width,int height) {
+	public void surfaceChanged(SurfaceHolder holder, int format, int width,
+							   int height) {
 
 	}
 
@@ -184,12 +187,17 @@ public final class CaptureActivity extends BaseActivity implements
 
 		String msg = rawResult.getText();
 		if(!TextUtils.isEmpty(msg) && msg.startsWith("0x")){
+
+			if (WalletStorage.getInstance(NextApplication.mContext).get().size() <= 0){
+				finish();
+			}
+
 			if(msg.length() == 42){
 				if(type == 1)
 				{
 					Intent i = new Intent();
 					i.putExtra("address",msg);
-					i.putExtra("sendtype", 0);
+					i.putExtra("sendtype", -1);//Transfer method does not change
 					setResult(RESULT_OK,i);
 					finish();
 				}else if (type == 2){
@@ -236,8 +244,7 @@ public final class CaptureActivity extends BaseActivity implements
 					i.putExtra("amount", amount);
 					setResult(RESULT_OK,i);
 					finish();
-				}
-				else{
+				}else{
 					Intent intent = new Intent(this,WalletSendActivity.class);
 					intent.putExtra("address", address);
 					intent.putExtra("sendtype", sendtype);
@@ -245,14 +252,25 @@ public final class CaptureActivity extends BaseActivity implements
 					startActivity(intent);
 					finish();
 				}
-			}
-			else{
+			}else{
 				finish();
 			}
-
-		}
-		else{
-			finish();
+		}else{
+			if (!TextUtils.isEmpty(msg) && (msg.startsWith("http") || msg.startsWith("www")) || msg.startsWith("https://") || msg.startsWith("file:///")){
+				Intent intent = new Intent(this,QuickMarkUI.class);
+				intent.putExtra("result", msg);
+				startActivity(intent);
+				Utils.openNewActivityAnim(this, true);
+			}else{
+				if (type == 1){
+					Intent i = new Intent();
+					i.putExtra("sendtype", -1);
+					setResult(RESULT_OK,i);
+					finish();
+				}else{
+					finish();
+				}
+			}
 		}
 	}
 
