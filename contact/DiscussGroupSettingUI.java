@@ -26,11 +26,10 @@ import com.lingtuan.firefly.contact.vo.DiscussGroupMemberVo;
 import com.lingtuan.firefly.contact.vo.DiscussionGroupsVo;
 import com.lingtuan.firefly.custom.GridViewWithHeaderAndFooter;
 import com.lingtuan.firefly.custom.GridViewWithHeaderAndFooter.OnTouchBlankPositionListener;
-import com.lingtuan.firefly.custom.SwitchButton;
+import com.lingtuan.firefly.custom.switchbutton.SwitchButton;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.quickmark.GroupQuickMarkUI;
-import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
@@ -428,6 +427,7 @@ public class DiscussGroupSettingUI extends BaseActivity implements GroupMemberIm
 		} else {
 			showdata.add(new UserBaseVo());
 		}
+		allNum.setText(getString(R.string.discuss_all,data.size()));
 		adapter.notifyDataSetChanged();
 	}
 
@@ -615,8 +615,10 @@ public class DiscussGroupSettingUI extends BaseActivity implements GroupMemberIm
 		switchBtn.setOnCheckedChangeListener(null);
 		if (0 == vo.getMask()) {
 			switchBtn.setChecked(false);
+			switchBtn.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
 		} else {
 			switchBtn.setChecked(true);
+			switchBtn.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
 			notifyClock.setVisibility(View.VISIBLE);
 		}
 
@@ -627,6 +629,11 @@ public class DiscussGroupSettingUI extends BaseActivity implements GroupMemberIm
 					notifyClock.setVisibility(View.VISIBLE);
 				} else {
 					notifyClock.setVisibility(View.GONE);
+				}
+				if (isChecked){
+					switchBtn.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+				}else{
+					switchBtn.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
 				}
 				switchNotify();
 			}
