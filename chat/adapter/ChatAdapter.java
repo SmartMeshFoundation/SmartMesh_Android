@@ -32,6 +32,7 @@ import com.lingtuan.firefly.chat.AtGroupParser;
 import com.lingtuan.firefly.chat.ChatFileInfoUI;
 import com.lingtuan.firefly.chat.ChattingManager;
 import com.lingtuan.firefly.custom.BitmapFillet;
+import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.custom.CustomLinkMovementMethod;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.imagescan.ScanLargePic;
@@ -296,6 +297,12 @@ public class ChatAdapter extends BaseAdapter {
     public void insertSystemChatMsg(int index, ChatMsg msg) {
         mList.add(index, msg);
         notifyDataSetChanged();
+        imagePathList.clear();
+        if (mList != null) {
+            for (int i = 0; i < mList.size(); i++) {
+                addImageUrl(mList.get(i));
+            }
+        }
     }
 
     public void addChatMsg(ChatMsg msg, boolean notify) {
@@ -577,8 +584,8 @@ public class ChatAdapter extends BaseAdapter {
 
             h.leftLinear = (LinearLayout) convertView.findViewById(R.id.item_chatting_body_linear);
             h.imageUploadLinear = (LinearLayout) convertView.findViewById(R.id.item_chatting_image_upload_linear);
-            h.avatar = (ImageView) convertView.findViewById(R.id.item_chatting_avatar);
-//            h.mNickname = (TextView) convertView.findViewById(R.id.item_chatting_nickname);
+            h.avatar = (CharAvatarView) convertView.findViewById(R.id.item_chatting_avatar);
+            h.mNickname = (TextView) convertView.findViewById(R.id.item_chatting_nickname);
             h.content = (TextView) convertView.findViewById(R.id.item_chatting_text);
             h.time = (TextView) convertView.findViewById(R.id.item_chatting_time);
             h.icon = (ImageView) convertView.findViewById(R.id.item_chatting_icon);
@@ -588,7 +595,7 @@ public class ChatAdapter extends BaseAdapter {
 
             h.shopAddress = (TextView) convertView.findViewById(R.id.item_chatting_third_address);
             h.shopName = (TextView) convertView.findViewById(R.id.item_chatting_third_name);
-            h.shopImage = (ImageView) convertView.findViewById(R.id.item_chatting_third_avatar);
+            h.shopImage = (CharAvatarView) convertView.findViewById(R.id.item_chatting_third_avatar);
             h.audioTimes = (TextView) convertView.findViewById(R.id.item_chatting_audio_times);
             h.audioIcon = (ImageView) convertView.findViewById(R.id.item_chatting_audio_icon);
 
@@ -693,7 +700,7 @@ public class ChatAdapter extends BaseAdapter {
         h.avatar.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                if (isGroup && !msg.isMe() && mInputContent != null && mChattingManager != null) {//Long press head @ function
+                if ((isGroup || TextUtils.equals("everyone",msg.getChatId() ))&& !msg.isMe() && mInputContent != null && mChattingManager != null) {//Long press head @ function
                     int selectIndex = mInputContent.getSelectionStart();
                     Editable mEditable = mInputContent.getEditableText();
                     mEditable.insert(selectIndex, "@" + msg.getRealname() + " ");
@@ -726,10 +733,21 @@ public class ChatAdapter extends BaseAdapter {
                 url = tempAvatar.get(msg.getUserId());
             }
         }
-
-        NextApplication.displayCircleImage(h.avatar, url);
+        h.avatar.setText(msg.getUsername(),h.avatar,url);
         h.time.setVisibility(msg.isShowTime() ? View.VISIBLE : View.GONE);
         Utils.setLoginTime(mContext, h.time, msg.getMsgTime());
+        if (h.mNickname != null) {
+            if (!isGroup && !TextUtils.equals("everyone",msg.getChatId())) {
+                h.mNickname.setVisibility(View.GONE);
+            } else {//group
+                h.mNickname.setVisibility(View.VISIBLE);
+                String name = msg.getUsername();
+                if (!TextUtils.isEmpty(tempAvatar.get(msg.getUserId()))) {
+                    name = tempName.get(msg.getUserId());
+                }
+                h.mNickname.setText(name);
+            }
+        }
         return convertView;
     }
 
@@ -766,7 +784,7 @@ public class ChatAdapter extends BaseAdapter {
             h.shopAddress.setTextSize(12);
         }
 
-        NextApplication.displayCircleImage(h.shopImage, msg.getShareThumb());
+        h.shopImage.setText(msg.getShareFriendName(),h.shopImage, msg.getShareThumb());
         h.shopAddress.setText(msg.getContent());
         h.leftLinear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -787,8 +805,9 @@ public class ChatAdapter extends BaseAdapter {
      * @param msg message
      * */
     private void showCardMsg(Holder h, final ChatMsg msg) {
-        NextApplication.displayCircleImage(h.shopImage, msg.getThirdImage());
-        h.shopAddress.setText(msg.getCardSign());
+        h.shopImage.setText(msg.getThirdName(),h.shopImage, msg.getThirdImage());
+//        h.shopAddress.setText(msg.getCardSign());
+        h.shopAddress.setText(mContext.getString(R.string.chatting_card_hint));
         h.shopName.setText(msg.getThirdName());
         h.leftLinear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1160,6 +1179,7 @@ public class ChatAdapter extends BaseAdapter {
                 audioIcon.setImageResource(R.drawable.anim_songs_voice_left_icon);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && audioIcon.getDrawable() instanceof AnimationDrawable) {
                     ((AnimationDrawable) audioIcon.getDrawable()).start();
+                    ((AnimationDrawable) audioIcon.getDrawable()).setOneShot(false);
                 }
             } else {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && audioIcon.getDrawable() instanceof AnimationDrawable &&((AnimationDrawable) audioIcon.getDrawable()).isRunning()) {
@@ -1173,6 +1193,7 @@ public class ChatAdapter extends BaseAdapter {
                 audioIcon.setImageResource(R.drawable.anim_songs_voice_right_icon);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && audioIcon.getDrawable() instanceof AnimationDrawable) {
                     ((AnimationDrawable) audioIcon.getDrawable()).start();
+                    ((AnimationDrawable) audioIcon.getDrawable()).setOneShot(false);
                 }
             } else {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && audioIcon.getDrawable() instanceof AnimationDrawable &&((AnimationDrawable) audioIcon.getDrawable()).isRunning()) {
@@ -1205,10 +1226,9 @@ public class ChatAdapter extends BaseAdapter {
                         return;
                     }
 
-
                     boolean is_mode_in_call = MySharedPrefs.readBooleanNormal(mContext, MySharedPrefs.FILE_USER, MySharedPrefs.AUDIO_MODE);
                     if (is_mode_in_call) {
-                        audioManager.setMode(AudioManager.MODE_IN_CALL);
+                        audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
                         audioManager.setSpeakerphoneOn(false);
                     } else {
                         audioManager.setMode(AudioManager.MODE_NORMAL);
@@ -1217,7 +1237,7 @@ public class ChatAdapter extends BaseAdapter {
 
 
                     mPlayer.reset();
-                    if (audioManager.getMode() == AudioManager.MODE_IN_CALL) {
+                    if (audioManager.getMode() == AudioManager.MODE_IN_COMMUNICATION) {
                         if (listener != null) {
                             listener.onShow_mode_in_call_tip();
                         }
@@ -1225,7 +1245,6 @@ public class ChatAdapter extends BaseAdapter {
                     } else {
                         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     }
-
                     mPlayer.setDataSource(TextUtils.isEmpty(mList.get(position).getLocalUrl()) ? mList.get(position).getContent() : mList.get(position).getLocalUrl());
                     mPlayer.prepare();
                     mPlayer.start();
@@ -1261,6 +1280,11 @@ public class ChatAdapter extends BaseAdapter {
                                 animationDrawable = null;
                             }
                             mList.get(position).setAudioPlaying(false);
+                            if (type == LEFT_AUDIO) {
+                                audioIcon.setImageResource(R.drawable.icon_audio_left3);
+                            } else {
+                                audioIcon.setImageResource(R.drawable.icon_audio_right3);
+                            }
                             notifyDataSetChanged();
                         }
 
@@ -1281,7 +1305,15 @@ public class ChatAdapter extends BaseAdapter {
                 audioManager.setMode(AudioManager.MODE_NORMAL);
                 audioManager.setSpeakerphoneOn(true);
             }
-            mPlayer.reset();
+            try {
+                mPlayer.reset();
+                if (mPlayer.isPlaying()){
+                    mPlayer.stop();
+                }
+                mPlayer.release();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
@@ -1299,16 +1331,16 @@ public class ChatAdapter extends BaseAdapter {
     static class Holder {
         LinearLayout leftLinear;
         LinearLayout imageUploadLinear;
-        ImageView avatar;
+        CharAvatarView avatar;
         ImageView msgWarnning;
         ImageView msgImage;
-//        TextView mNickname;
+        TextView mNickname;
         TextView time;
         ImageView icon;
         TextView content;
         ProgressBar mNotifBar;
 
-        ImageView shopImage;
+        CharAvatarView shopImage;
         TextView shopName;
         TextView shopAddress;
         TextView audioTimes;
