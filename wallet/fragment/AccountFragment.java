@@ -96,9 +96,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private StorableWallet storableWallet;
 
     //ETH SMT parts
-    private TextView ethBalance,fftBalance;//eth、smt balance
-    private LinearLayout ethTransfer,fftTransfer;//eth、smt transfer
-    private LinearLayout ethQrCode,fftQrCode;//eth、smt Qr code collection
+    private TextView ethBalance,fftBalance,meshBalance;//eth、smt balance
+    private LinearLayout ethTransfer,fftTransfer,meshTransfer;//eth、smt transfer
+    private LinearLayout ethQrCode,fftQrCode,meshQrCode;//eth、smt Qr code collection
 
     private int index = -1;//Which one is selected
 
@@ -165,10 +165,13 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         //eth smt related
         ethBalance = (TextView) view.findViewById(R.id.ethBalance);
         fftBalance = (TextView) view.findViewById(R.id.fftBalance);
+        meshBalance = (TextView) view.findViewById(R.id.meshBalance);
         ethTransfer = (LinearLayout) view.findViewById(R.id.ethTransfer);
         fftTransfer = (LinearLayout) view.findViewById(R.id.fftTransfer);
+        meshTransfer = (LinearLayout) view.findViewById(R.id.meshTransfer);
         ethQrCode = (LinearLayout) view.findViewById(R.id.ethQrCode);
         fftQrCode = (LinearLayout) view.findViewById(R.id.fftQrCode);
+        meshQrCode = (LinearLayout) view.findViewById(R.id.meshQrCode);
     }
 
     private void setListener(){
@@ -186,8 +189,10 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
         ethTransfer.setOnClickListener(this);
         fftTransfer.setOnClickListener(this);
+        meshTransfer.setOnClickListener(this);
         ethQrCode.setOnClickListener(this);
         fftQrCode.setOnClickListener(this);
+        meshQrCode.setOnClickListener(this);
 
         swipe_refresh.setOnRefreshListener(this);
     }
@@ -319,6 +324,12 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 startActivity(fftIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
+            case R.id.meshTransfer://SMT transfer
+                Intent meshIntent = new Intent(getActivity(),WalletSendActivity.class);
+                meshIntent.putExtra("sendtype", 2);
+                startActivity(meshIntent);
+                Utils.openNewActivityAnim(getActivity(),false);
+                break;
             case R.id.ethQrCode://The eth qr code collection
                 if (storableWallet == null){
                     return;
@@ -337,6 +348,16 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 fftEthIntent.putExtra("type", 2);
                 fftEthIntent.putExtra("address", storableWallet.getPublicKey());
                 startActivity(fftEthIntent);
+                Utils.openNewActivityAnim(getActivity(),false);
+                break;
+            case R.id.meshQrCode://SMT qr code collection
+                if (storableWallet == null){
+                    return;
+                }
+                Intent meshEthIntent = new Intent(getActivity(),QuickMarkShowUI.class);
+                meshEthIntent.putExtra("type", 3);
+                meshEthIntent.putExtra("address", storableWallet.getPublicKey());
+                startActivity(meshEthIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
         }
@@ -406,6 +427,13 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 fftBalance.setText(fftDecimal.toPlainString());
             }else{
                 fftBalance.setText(storableWallet.getFftBalance() +"");
+            }
+
+            if (storableWallet.getMeshBalance() > 0){
+                BigDecimal meshDecimal = new BigDecimal(storableWallet.getMeshBalance()).setScale(5,BigDecimal.ROUND_DOWN);
+                meshBalance.setText(meshDecimal.toPlainString());
+            }else{
+                meshBalance.setText(storableWallet.getMeshBalance() +"");
             }
         }
 
@@ -480,6 +508,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             if (errcod == 0){
                 double ethBalance1 = object.optJSONObject("data").optDouble("eth");
                 double fftBalance1 = object.optJSONObject("data").optDouble("smt");
+                double meshBalance1 = object.optJSONObject("data").optDouble("mesh");
                 if (ethBalance1 > 0){
                     BigDecimal ethDecimal = new BigDecimal(ethBalance1).setScale(10,BigDecimal.ROUND_DOWN);
                     ethBalance.setText(ethDecimal.toPlainString());
@@ -492,8 +521,17 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 }else{
                     fftBalance.setText(fftBalance1 + "");
                 }
+
+                if (meshBalance1 > 0){
+                    BigDecimal meshDecimal = new BigDecimal(meshBalance1).setScale(5,BigDecimal.ROUND_DOWN);
+                    meshBalance.setText(meshDecimal.toPlainString());
+                }else{
+                    meshBalance.setText(meshBalance1 + "");
+                }
+
                 storableWallet.setEthBalance(ethBalance1);
                 storableWallet.setFftBalance(fftBalance1);
+                storableWallet.setMeshBalance(meshBalance1);
             }else{
                 if(errcod == -2){
                     long difftime = object.optJSONObject("data").optLong("difftime");

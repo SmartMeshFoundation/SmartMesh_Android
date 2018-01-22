@@ -53,11 +53,12 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
 
     private TextView walletAddress;
 
-    private TextView transEth,transFft;//eth  smt record
-    private View transLine, transLine2;
+    private TextView transEth,transFft,transMesh;//eth  smt record
+    private View transLine, transLine2,transLine3;
     private ListView transListView;//Record list
     private ArrayList<TransVo> transEthVos;
     private ArrayList<TransVo> transFftVos;
+    private ArrayList<TransVo> transMeshVos;
     private TransAdapter mAdapter;
 
     private TextView emptyView;//Trans is empty
@@ -66,7 +67,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
     private String mAddress;
     private String mWalletName;
 
-    private int recordType;//smt or eth
+    private int recordType;//0 eth 1 smt 2 mesh
 
 
     @Override
@@ -90,8 +91,10 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
         emptyView = (TextView) findViewById(R.id.emptyView);
         transEth = (TextView) findViewById(R.id.transEth);
         transFft = (TextView) findViewById(R.id.transFft);
+        transMesh = (TextView) findViewById(R.id.transMesh);
         transLine = findViewById(R.id.transLine);
         transLine2 = findViewById(R.id.transLine2);
+        transLine3 = findViewById(R.id.transLine3);
         transListView = (ListView) findViewById(R.id.transListView);
     }
 
@@ -102,17 +105,20 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
         filter.addAction(Constants.CHANGE_LANGUAGE);//Modify the language refresh the page
         registerReceiver(mBroadcastReceiver, filter);
 
+        transEthVos = new ArrayList<>();
+        transFftVos = new ArrayList<>();
+        transMeshVos = new ArrayList<>();
+
         appTitle.setText(getString(R.string.transcation_records));
         transEth.setSelected(true);
         transLine2.setVisibility(View.INVISIBLE);
+        transLine3.setVisibility(View.INVISIBLE);
         initWalletInfo(0);
         swipe_refresh.setColorSchemeResources(R.color.black);
         swipe_refresh.setOnRefreshListener(this);
         adapter = new DropTextViewAdapter(TransactionRecordsActivity.this,WalletStorage.getInstance(getApplicationContext()).get());
         walletAccount.setAdapter(adapter);
 
-        transEthVos = new ArrayList<>();
-        transFftVos = new ArrayList<>();
         mAdapter = new TransAdapter(TransactionRecordsActivity.this,transEthVos,walletAddress.getText().toString());
         transListView.setAdapter(mAdapter);
 
@@ -136,6 +142,7 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
     protected void setListener() {
         transEth.setOnClickListener(this);
         transFft.setOnClickListener(this);
+        transMesh.setOnClickListener(this);
         transListView.setOnItemClickListener(this);
         walletAccount.setOnItemListener(new DropTextView.OnItemListener() {
             @Override
@@ -143,10 +150,13 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
                 initWalletInfo(position);
                 transEth.setSelected(true);
                 transFft.setSelected(false);
+                transMesh.setSelected(false);
                 transLine.setVisibility(View.VISIBLE);
                 transLine2.setVisibility(View.INVISIBLE);
+                transLine3.setVisibility(View.INVISIBLE);
                 transEthVos.clear();
                 transFftVos.clear();
+                transMeshVos.clear();
                 mAdapter.resetSource(transEthVos,walletAddress.getText().toString());
                 emptyView.setVisibility(View.GONE);
                 getTransMethod(0,walletAddress.getText().toString());
@@ -161,8 +171,10 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
             case R.id.transEth:
                 transEth.setSelected(true);
                 transFft.setSelected(false);
+                transMesh.setSelected(false);
                 transLine.setVisibility(View.VISIBLE);
                 transLine2.setVisibility(View.INVISIBLE);
+                transLine3.setVisibility(View.INVISIBLE);
                 mAdapter.resetSource(transEthVos,walletAddress.getText().toString());
                 emptyView.setVisibility(View.GONE);
                 getTransMethod(0,walletAddress.getText().toString());
@@ -171,11 +183,25 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
             case R.id.transFft:
                 transEth.setSelected(false);
                 transFft.setSelected(true);
+                transMesh.setSelected(false);
                 transLine.setVisibility(View.INVISIBLE);
                 transLine2.setVisibility(View.VISIBLE);
+                transLine3.setVisibility(View.INVISIBLE);
                 mAdapter.resetSource(transFftVos,walletAddress.getText().toString());
                 emptyView.setVisibility(View.GONE);
                 getTransMethod(1,walletAddress.getText().toString());
+                swipe_refresh.setRefreshing(true);
+                break;
+            case R.id.transMesh:
+                transEth.setSelected(false);
+                transFft.setSelected(false);
+                transMesh.setSelected(true);
+                transLine.setVisibility(View.INVISIBLE);
+                transLine2.setVisibility(View.INVISIBLE);
+                transLine3.setVisibility(View.VISIBLE);
+                mAdapter.resetSource(transMeshVos,walletAddress.getText().toString());
+                emptyView.setVisibility(View.GONE);
+                getTransMethod(2,walletAddress.getText().toString());
                 swipe_refresh.setRefreshing(true);
                 break;
             default:
@@ -194,12 +220,16 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
             public void run() {
                 recordType = type;
                 List<TransVo> mlist =   FinalUserDataBase.getInstance().getTransList(type,address);
+
                 if (type == 0){
                     transEthVos.clear();
                     transEthVos.addAll(mlist);
-                }else{
+                }else if (type == 1){
                     transFftVos.clear();
                     transFftVos.addAll(mlist);
+                }else if (type == 2){
+                    transMeshVos.clear();
+                    transMeshVos.addAll(mlist);
                 }
                 mHandler.sendEmptyMessage(type);
             }
@@ -229,6 +259,13 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
                         mAdapter.resetSource(transFftVos,walletAddress.getText().toString());
                     }
                     break;
+                case 2:
+                    if (transMesh.isSelected()){
+                        checkEmpty(2);
+                        swipe_refresh.setRefreshing(false);
+                        mAdapter.resetSource(transMeshVos,walletAddress.getText().toString());
+                    }
+                    break;
             }
         }
     };
@@ -237,6 +274,8 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
         if (type == 0 && transEthVos.size() <= 0){
             emptyView.setVisibility(View.VISIBLE);
         }else if (type == 1 && transFftVos.size() <= 0){
+            emptyView.setVisibility(View.VISIBLE);
+        }else if (type == 2 && transMeshVos.size() <= 0){
             emptyView.setVisibility(View.VISIBLE);
         }else{
             emptyView.setVisibility(View.GONE);
@@ -279,9 +318,12 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
         if (transEth.isSelected()){
             mAdapter.resetSource(transEthVos,walletAddress.getText().toString());
             getTransMethod(0,walletAddress.getText().toString());
-        }else{
+        }else if (transFft.isSelected()){
             mAdapter.resetSource(transFftVos,walletAddress.getText().toString());
             getTransMethod(1,walletAddress.getText().toString());
+        }else if (transMesh.isSelected()){
+            mAdapter.resetSource(transMeshVos,walletAddress.getText().toString());
+            getTransMethod(2,walletAddress.getText().toString());
         }
     }
 
@@ -289,13 +331,14 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent(TransactionRecordsActivity.this,TransactionDetailActivity.class);
         if (recordType == 0 && transEthVos.size() > 0){//eth record
-            transEthVos.get(position).setFromAddress(walletAddress.getText().toString());
             transEthVos.get(position).setType(recordType);
             intent.putExtra("transVo",transEthVos.get(position));
         }else if (recordType == 1 && transFftVos.size() > 0){
-            transFftVos.get(position).setFromAddress(walletAddress.getText().toString());
             transFftVos.get(position).setType(recordType);
             intent.putExtra("transVo",transFftVos.get(position));
+        }else if (recordType == 2 && transMeshVos.size() > 0){
+            transMeshVos.get(position).setType(recordType);
+            intent.putExtra("transVo",transMeshVos.get(position));
         }
         startActivity(intent);
     }

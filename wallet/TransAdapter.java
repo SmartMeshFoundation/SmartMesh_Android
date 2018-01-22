@@ -72,15 +72,19 @@ public class TransAdapter extends BaseAdapter {
             holder.address.setText(transVo.getToAddress());
             if (transVo.getType() == 0){//eth
                 holder.value.setText("-" + context.getString(R.string.eth_er,transVo.getValue()));
-            }else{//smt
+            }else if (transVo.getType() == 1){//smt
                 holder.value.setText("-" + context.getString(R.string.smt_er,transVo.getValue()));
+            }else if (transVo.getType() == 2){
+                holder.value.setText("-" + context.getString(R.string.mesh_er,transVo.getValue()));
             }
         }else{
             holder.address.setText(transVo.getFromAddress());
             if (transVo.getType() == 0){//eth
                 holder.value.setText("+" + context.getString(R.string.eth_er,transVo.getValue()));
-            }else{//smt
+            }else if (transVo.getType() == 1){//smt
                 holder.value.setText("+" + context.getString(R.string.smt_er,transVo.getValue()));
+            }else if (transVo.getType() == 2){
+                holder.value.setText("+" + context.getString(R.string.mesh_er,transVo.getValue()));
             }
         }
 

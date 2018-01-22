@@ -129,8 +129,10 @@ public class TransactionDetailActivity extends BaseActivity{
 
             if (transVo.getType() == 0){
                 transDetailMoneyType.setText(getString(R.string.eth_er_lower_1));
-            }else{
+            }else if (transVo.getType() == 1){
                 transDetailMoneyType.setText(getString(R.string.smt_er_lower_1));
+            }else if (transVo.getType() == 2){
+                transDetailMoneyType.setText(getString(R.string.mesh_er_lower_1));
             }
 
             transDetailTo.setText(transVo.getToAddress());

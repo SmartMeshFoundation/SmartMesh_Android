@@ -4,33 +4,48 @@ package com.lingtuan.firefly.wallet.vo;
 
 import java.io.Serializable;
 
-import geth.Account;
 
 public class StorableWallet implements Serializable{
 
+   //The wallet address 、public key
     private String publicKey;
 
+    //Name of the wallet
     private String walletName;
-    
+    //Password prompt information
     private String pwdInfo;
 
-   
+    //The currently selected purse
     private boolean isSelect;
 
-    
+    //0 can't export, 1 can be derived
     private int canExportPrivateKey;
 
-    
+    //is backup true or false
+    private boolean isBackup;
+
+    //The currently selected purse
     private int imgId;
 
-   
+    //The etheric fang balance
     private double ethBalance;
 
-   
+    //SMT balance
     private double fftBalance;
 
-    
+    //SMT balance
+    private double meshBalance;
+
+    // 0 the default wallet 1 observe the purse
     private int walletType;
+
+    public boolean isBackup() {
+        return isBackup;
+    }
+
+    public void setBackup(boolean backup) {
+        isBackup = backup;
+    }
 
     public String getPublicKey() {
         return publicKey;
@@ -71,6 +86,14 @@ public class StorableWallet implements Serializable{
 
     public void setFftBalance(double fftBalance) {
         this.fftBalance = fftBalance;
+    }
+
+    public double getMeshBalance() {
+        return meshBalance;
+    }
+
+    public void setMeshBalance(double meshBalance) {
+        this.meshBalance = meshBalance;
     }
 
     public int getImgId() {

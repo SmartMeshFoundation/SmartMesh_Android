@@ -2,15 +2,95 @@ package com.lingtuan.firefly.wallet.vo;
 
 import org.json.JSONObject;
 
+import java.io.Serializable;
+
 /**
  * Created on 2017/8/25.
+ * Transfer record
  */
 
-public class TransVo {
-    private String address;
+public class TransVo implements Serializable{
+    //address
+    private String fromAddress;
+
+    private String toAddress;
+
+    //The amount of
     private String value;
+    //time
     private long time;
-    private int type;// 0 eth 1 smt;
+    // 0 eth 1 smt,2 mesh;
+    private int type;
+    //Transaction details web page address
+    private String txurl;
+    //gas fee
+    private String fee;
+    //Exchange block number
+    private int txBlockNumber;
+    //Transaction hash
+    private String tx;
+    //The latest block number
+    private int blockNumber;
+    //-1 Unpackaged 、0 Waits for 12 blocks to be confirmed 、1 Transaction Completed 、2 Transaction failed
+    private int state;
+
+    private int noticeType;//0 sender 1 receiver
+
+    public int getNoticeType() {
+        return noticeType;
+    }
+
+    public void setNoticeType(int noticeType) {
+        this.noticeType = noticeType;
+    }
+
+    public String getTxurl() {
+        return txurl;
+    }
+
+    public void setTxurl(String txurl) {
+        this.txurl = txurl;
+    }
+
+    public String getFee() {
+        return fee;
+    }
+
+    public void setFee(String fee) {
+        this.fee = fee;
+    }
+
+    public int getTxBlockNumber() {
+        return txBlockNumber;
+    }
+
+    public void setTxBlockNumber(int txBlockNumber) {
+        this.txBlockNumber = txBlockNumber;
+    }
+
+    public String getTx() {
+        return tx;
+    }
+
+    public void setTx(String tx) {
+        this.tx = tx;
+    }
+
+    public int getBlockNumber() {
+        return blockNumber;
+    }
+
+    public void setBlockNumber(int blockNumber) {
+        this.blockNumber = blockNumber;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
 
     public int getType() {
         return type;
@@ -20,12 +100,20 @@ public class TransVo {
         this.type = type;
     }
 
-    public String getAddress() {
-        return address;
+    public String getFromAddress() {
+        return fromAddress;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setFromAddress(String fromAddress) {
+        this.fromAddress = fromAddress;
+    }
+
+    public String getToAddress() {
+        return toAddress;
+    }
+
+    public void setToAddress(String toAddress) {
+        this.toAddress = toAddress;
     }
 
     public String getValue() {
@@ -45,9 +133,18 @@ public class TransVo {
     }
 
     public TransVo parse(JSONObject object){
-        setAddress(object.optString("address"));
+        if (object == null){
+            return null;
+        }
+        setToAddress(object.optString("address"));
         setTime(object.optLong("dateline"));
         setValue(object.optString("value"));
+        setTxurl(object.optString("txurl"));
+        setFee(object.optString("fee"));
+        setTxBlockNumber(object.optInt("txBlockNumber",0));
+        setTx(object.optString("tx"));
+        setBlockNumber(object.optInt("blockNumber",0));
+        setState(object.optInt("state",-1));
         return this;
     }
 }
