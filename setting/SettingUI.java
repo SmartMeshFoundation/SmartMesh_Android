@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -40,7 +41,7 @@ import java.util.Locale;
 public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedChangeListener {
 
     //语言选择
-    private RelativeLayout languageSelectionBody;//Language selection
+    private RelativeLayout languageSelectionBody,versionBody;//Language selection, check version
     private RelativeLayout useAgree;//use agree
     private RelativeLayout blackListBody;//The blacklist version detection
     private TextView exit;//exit
@@ -48,6 +49,7 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
     private RelativeLayout startSmartMeshWorkBody;
 
     private TextView versionCheck;//The version number
+    private TextView versionCircle;//The version circle
 
     @Override
     protected void setContentView() {
@@ -58,8 +60,10 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
     protected void findViewById() {
         languageSelectionBody = (RelativeLayout) findViewById(R.id.languageSelectionBody);
         useAgree = (RelativeLayout) findViewById(R.id.useAgree);
+        versionBody = (RelativeLayout) findViewById(R.id.versionBody);
         blackListBody = (RelativeLayout) findViewById(R.id.blackListBody);
         versionCheck = (TextView) findViewById(R.id.versionCheck);
+        versionCircle = (TextView) findViewById(R.id.versionCircle);
         exit = (TextView) findViewById(R.id.exit);
         startSmartMeshWorkButton = (SwitchButton) findViewById(R.id.startSmartMeshWorkButton);
         gestureButton = (SwitchButton) findViewById(R.id.gestureButton);
@@ -71,6 +75,7 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
         languageSelectionBody.setOnClickListener(this);
         useAgree.setOnClickListener(this);
         blackListBody.setOnClickListener(this);
+        versionBody.setOnClickListener(this);
         exit.setOnClickListener(this);
         // -1 default , 0 close , 1 open
         int noNetWork = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
@@ -92,6 +97,23 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
         registerReceiver(mBroadcastReceiver, filter);
         setTitle(getString(R.string.setting));
         versionCheck.setText(Utils.getVersionName(SettingUI.this));
+
+        String tempVersion = MySharedPrefs.readString(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_UPDATE_VERSION);
+        tempVersion = tempVersion.replace(".","").trim();
+        if (!TextUtils.isEmpty(tempVersion)){
+            String currentVersion = Utils.getVersionName(SettingUI.this).replace(".","").trim();
+            try {
+                if (Integer.parseInt(tempVersion) > Integer.parseInt(currentVersion)){
+                    versionCircle.setVisibility(View.VISIBLE);
+                }else{
+                    versionCircle.setVisibility(View.GONE);
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+                versionCircle.setVisibility(View.GONE);
+            }
+        }
+
         int version =android.os.Build.VERSION.SDK_INT;
         if(version < 16){
             startSmartMeshWorkBody.setVisibility(View.GONE);
@@ -152,11 +174,60 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
             case R.id.exit:
                 checkLogOut();
                 break;
+            case R.id.versionBody:
+                checkVersion();
+                break;
             default:
                 super.onClick(v);
                 break;
 
         }
+    }
+
+    /**
+     * check version
+     * */
+    private void checkVersion() {
+        if (versionCircle.getVisibility() != View.VISIBLE){
+            return;
+        }
+        NetRequestImpl.getInstance().versionUpdate(new RequestListener() {
+            @Override
+            public void start() {
+                LoadingDialog.show(SettingUI.this,"");
+            }
+
+            @Override
+            public void success(JSONObject response) {
+                LoadingDialog.close();
+                String version = response.optString("version");
+                String describe = response.optString("describe");
+                String url = response.optString("url");
+                int coerce = response.optInt("coerce",0);
+
+                MySharedPrefs.write(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_UPDATE_VERSION,version);
+
+                Bundle data = new Bundle();
+                if (coerce == 0){// Don't force
+                    data.putInt("type", 0);}
+                else{
+                    data.putInt("type", 1);
+                }
+                data.putString("version", version);
+                data.putString("describe", describe);
+                data.putString("url", url);
+                Intent intent = new Intent();
+                intent.setAction(Constants.ACTION_UPDATE_VERSION);
+                intent.putExtras(data);
+                sendBroadcast(intent);
+            }
+
+            @Override
+            public void error(int errorCode, String errorMsg) {
+                LoadingDialog.close();
+                showToast(errorMsg);
+            }
+        });
     }
 
     /**

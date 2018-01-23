@@ -14,9 +14,6 @@ public class MySharedPrefs {
     /*List stored purse*/
     public static final String FILE_WALLET = "walletlist";
 
-    /*Purse a list of key values*/
-    public static final String KEY_WALLET = "wallet_key";
-
     /*Global information is stored*/
     public static final String FILE_APPLICATION = "application";
 
@@ -46,6 +43,8 @@ public class MySharedPrefs {
     /*Whether it is the first time you install and use the software*/
     public static final String KEY_IS_FIRST_USE = "key_is_first_use";
 
+    /*update version*/
+    public static final String KEY_UPDATE_VERSION = "key_update_version";
 
     /*Personal information*/
     public static final String KEY_LOGIN_USERINFO = "user_userinfo";
@@ -59,6 +58,12 @@ public class MySharedPrefs {
 
     /*Whether shielding information*/
     public static final String IS_MASK_MSG = "is_mask_msg";
+
+    /*Gesture error*/
+    public static final String GESTIRE_ERROR = "gesture_error";
+
+    /*show wallet dialog*/
+    public static final String IS_SHOW_WALLET_DIALOG = "show_wallet_dialog";
 
     /**
      * The receiver model
@@ -135,34 +140,16 @@ public class MySharedPrefs {
     public static final String KEY_GROUP_FILEPATH = "group_filepath";
 
     /**
-     * No net related
+     * no net work communication
      * */
-    public static final String KEY_OFFLINE_MSG = "offlinenewmsg";
-    public static final String OFFLINE_PEOPLE_FILTER = "offline_people_filter";
-    public static final String OFFLINE_PEOPLE_FILTER_ORDER = "offline_people_filter_order";
-    /**
-     * No social network: check whether the personal details are no longer remind dialog identifier
-     */
-    public static final String IS_SHOW_OFFLINE_WARN = "is_show_offline_warn";
-    public static final String NEARY_PEOPLE_FILTER = "nearby_people_filter";
-
-
-    /**
-     * Agree to sync block
-     */
-    public static final String AGREE_SYNC_BLOCK = "agree_sync_block";
-
-    /**
-     * Agree with synchronous mask
-     */
-    public static final String AGREE_SYNC_BLOCK_MASK = "agree_sync_block_mask";
+    public static final String KEY_NO_NETWORK_COMMUNICATION = "no_net_work_communication_";
 
     /**
      * read the wallet list
      * @ param context context
      * */
     public static String readWalletList(Context context){
-        return  readString(context,FILE_WALLET,KEY_WALLET);
+        return readString(context,FILE_WALLET,NextApplication.myInfo.getLocalId());
     }
 
     /**
@@ -308,7 +295,6 @@ public class MySharedPrefs {
                 e.printStackTrace();
             }
         }
-
         editor.commit();
     }
 
