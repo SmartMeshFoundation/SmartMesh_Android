@@ -1,7 +1,6 @@
 package com.lingtuan.firefly.raiden;
 
 import android.content.Context;
-import android.content.Intent;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,9 +10,7 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.raiden.vo.RaidenChannelVo;
-import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -26,16 +23,16 @@ public class RaidenChannelListAdapter extends BaseAdapter{
 
     private List<RaidenChannelVo> source = null ;
     private ChangeChannelStateListener channelStateListener;
-    private StorableWallet storableWallet;
 
     public interface ChangeChannelStateListener {
         void changeChannel(int position,boolean isOpen);
+        void deopsitChannel(int position);
+        void transferChannel(int position);
     }
 
-    public RaidenChannelListAdapter(Context c, List<RaidenChannelVo> source, StorableWallet storableWallet,ChangeChannelStateListener channelStateListener){
+    public RaidenChannelListAdapter(Context c, List<RaidenChannelVo> source,ChangeChannelStateListener channelStateListener){
         this.context = c ;
         this.source = source;
-        this.storableWallet = storableWallet;
         this.channelStateListener = channelStateListener;
     }
 
@@ -99,20 +96,18 @@ public class RaidenChannelListAdapter extends BaseAdapter{
         holder.raidenPay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context,RaidenTransferUI.class);
-                intent.putExtra("raidenChannelVo",vo);
-                intent.putExtra("storableWallet",storableWallet);
-                context.startActivity(intent);
+                if (channelStateListener != null){
+                    channelStateListener.transferChannel(position);
+                }
             }
         });
 
         holder.raidenAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context,RaidenChannelDepositUI.class);
-                intent.putExtra("raidenChannelVo",vo);
-                intent.putExtra("storableWallet",storableWallet);
-                context.startActivity(intent);
+                if (channelStateListener != null){
+                    channelStateListener.deopsitChannel(position);
+                }
             }
         });
 

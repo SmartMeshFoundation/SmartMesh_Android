@@ -18,12 +18,7 @@ import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 /**
  * Created on 2018/1/24.
@@ -106,23 +101,29 @@ public class RaidenCreateChannel extends BaseActivity{
     }
 
     private void createChannelMethod() {
-        String partnerAddress = partner.getText().toString();
-        String depositBalance = deposit.getText().toString();
+        final String partnerAddress = partner.getText().toString();
+        final String depositBalance = deposit.getText().toString();
         if (TextUtils.isEmpty(depositBalance)){
             return;
         }
         LoadingDialog.show(this,"");
-        RaidenNetUtils.getInstance().createChannel(partnerAddress, Constants.CONTACT_ADDRESS, Double.parseDouble(depositBalance), 10, 100, new Callback() {
+        new Thread(new Runnable() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                mHandler.sendEmptyMessage(0);
+            public void run() {
+                try {
+                    String jsonString = RaidenNetUtils.getInstance().openChannel(partnerAddress, Constants.CONTACT_ADDRESS, Double.parseDouble(depositBalance), 100);
+                    if (TextUtils.isEmpty(jsonString)){
+                        mHandler.sendEmptyMessage(0);
+                    }else {
+                        mHandler.sendEmptyMessage(1);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    mHandler.sendEmptyMessage(0);
+                }
             }
+        }).start();
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                mHandler.sendEmptyMessage(1);
-            }
-        });
     }
 
     @SuppressLint("HandlerLeak")
@@ -135,6 +136,9 @@ public class RaidenCreateChannel extends BaseActivity{
                     break;
                 case 1:
                     LoadingDialog.close();
+                    //Send to refresh the page
+                    Intent i = new Intent();
+                    setResult(RESULT_OK,i);
                     finish();
                     break;
             }

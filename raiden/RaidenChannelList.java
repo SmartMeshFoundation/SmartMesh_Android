@@ -22,13 +22,8 @@ import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 /**
  * Created on 2018/1/24.
@@ -91,7 +86,7 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
                 loadChannelList();
             }
         }, 500);
-        mAdapter = new RaidenChannelListAdapter(this, source,storableWallet,this);
+        mAdapter = new RaidenChannelListAdapter(this,source,this);
         listView.setAdapter(mAdapter);
     }
 
@@ -115,20 +110,25 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
     }
 
     private void loadChannelList() {
-        RaidenNetUtils.getInstance().getChannels(new Callback() {
+        new Thread(new Runnable() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                mHandler.sendEmptyMessage(0);
+            public void run() {
+                try {
+                    String jsonString = RaidenNetUtils.getInstance().getChannels();
+                    if (TextUtils.isEmpty(jsonString)){
+                        mHandler.sendEmptyMessage(0);
+                    }else{
+                        Message message = Message.obtain();
+                        message.what = 1;
+                        message.obj = jsonString;
+                        mHandler.sendMessage(message);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    mHandler.sendEmptyMessage(0);
+                }
             }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Message message = Message.obtain();
-                message.what = 1;
-                message.obj = response.body().string();
-                mHandler.sendMessage(message);
-            }
-        });
+        }).start();
     }
 
     @SuppressLint("HandlerLeak")
@@ -136,7 +136,7 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0:
-                    showToast(getString(R.string.error_get_balance));
+                    showToast(getString(R.string.error_get_raiden_list));
                     swipeLayout.setRefreshing(false);
                     break;
                 case 1:
@@ -148,6 +148,8 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
                     break;
                 case 3:
                     LoadingDialog.close();
+                    swipeLayout.setRefreshing(true);
+                    loadChannelList();
                     break;
             }
         }
@@ -204,6 +206,28 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
         }
     }
 
+    @Override
+    public void deopsitChannel(int position) {
+        if (source.size() <= 0){
+            return;
+        }
+        Intent intent = new Intent(RaidenChannelList.this,RaidenChannelDepositUI.class);
+        intent.putExtra("raidenChannelVo",source.get(position));
+        intent.putExtra("storableWallet",storableWallet);
+        startActivityForResult(intent,RAIDEN_CHANNEL_CREATE);
+    }
+
+    @Override
+    public void transferChannel(int position) {
+        if (source.size() <= 0){
+            return;
+        }
+        Intent intent = new Intent(RaidenChannelList.this,RaidenTransferUI.class);
+        intent.putExtra("raidenChannelVo",source.get(position));
+        intent.putExtra("storableWallet",storableWallet);
+        startActivityForResult(intent,RAIDEN_CHANNEL_CREATE);
+    }
+
     /**
      * close channel
      * */
@@ -211,18 +235,37 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
         if (source.size() <= 0){
             return;
         }
-        RaidenChannelVo channelVo = source.get(position);
+        final RaidenChannelVo channelVo = source.get(position);
         LoadingDialog.show(this,"");
-        RaidenNetUtils.getInstance().closeChannel(channelVo.getChannelAddress(), new Callback() {
+        new Thread(new Runnable() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                mHandler.sendEmptyMessage(2);
+            public void run() {
+                try {
+                   String jsonString  = RaidenNetUtils.getInstance().closeChannel(channelVo.getChannelAddress());
+                    if (TextUtils.isEmpty(jsonString)){
+                        mHandler.sendEmptyMessage(2);
+                    }else{
+                        mHandler.sendEmptyMessage(3);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    mHandler.sendEmptyMessage(2);
+                }
             }
+        }).start();
+    }
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                mHandler.sendEmptyMessage(3);
-            }
-        });
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK && requestCode == RAIDEN_CHANNEL_CREATE){
+            swipeLayout.setRefreshing(true);
+            loadChannelList();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }

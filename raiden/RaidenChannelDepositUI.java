@@ -1,6 +1,7 @@
 package com.lingtuan.firefly.raiden;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -13,12 +14,7 @@ import com.lingtuan.firefly.raiden.vo.RaidenChannelVo;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 /**
  * Created  on 2018/1/26.
@@ -69,7 +65,7 @@ public class RaidenChannelDepositUI extends BaseActivity{
 
         if (storableWallet != null){
             if (storableWallet.getFftBalance() > 0){
-                BigDecimal smtDecimal = new BigDecimal(storableWallet.getFftBalance()).setScale(10,BigDecimal.ROUND_DOWN);
+                BigDecimal smtDecimal = new BigDecimal(storableWallet.getFftBalance()).setScale(5,BigDecimal.ROUND_DOWN);
                 balance.setText(getString(R.string.smt_er,smtDecimal.toPlainString()));
             }else{
                 balance.setText(getString(R.string.smt_er,storableWallet.getFftBalance() +""));
@@ -94,22 +90,28 @@ public class RaidenChannelDepositUI extends BaseActivity{
     }
 
     private void channelAddBalanceMethod() {
-        String channelNumber = channelAddNumber.getText().toString().trim();
+        final String channelNumber = channelAddNumber.getText().toString().trim();
         if (TextUtils.isEmpty(channelNumber)){
             return;
         }
         LoadingDialog.show(this,"");
-        RaidenNetUtils.getInstance().addBalance(Double.parseDouble(channelNumber), channelVo.getChannelAddress(), new Callback() {
+        new Thread(new Runnable() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                mHandler.sendEmptyMessage(0);
+            public void run() {
+                try {
+                    String jsonString =  RaidenNetUtils.getInstance().depositChannel(Double.parseDouble(channelNumber), channelVo.getChannelAddress());
+                    if (TextUtils.isEmpty(jsonString)){
+                        mHandler.sendEmptyMessage(0);
+                    }else{
+                        mHandler.sendEmptyMessage(1);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    mHandler.sendEmptyMessage(0);
+                }
             }
+        }).start();
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                mHandler.sendEmptyMessage(1);
-            }
-        });
     }
 
     @SuppressLint("HandlerLeak")
@@ -122,6 +124,9 @@ public class RaidenChannelDepositUI extends BaseActivity{
                     break;
                 case 1:
                     LoadingDialog.close();
+                    //Send to refresh the page
+                    Intent intent = new Intent();
+                    setResult(RESULT_OK,intent);
                     finish();
                     break;
             }

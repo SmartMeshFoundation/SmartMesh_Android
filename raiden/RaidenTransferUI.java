@@ -1,6 +1,7 @@
 package com.lingtuan.firefly.raiden;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -12,12 +13,6 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.raiden.vo.RaidenChannelVo;
 import com.lingtuan.firefly.util.LoadingDialog;
-
-import java.io.IOException;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 /**
  * Created on 2018/1/26.
@@ -77,22 +72,28 @@ public class RaidenTransferUI extends BaseActivity {
     }
 
     private void channelPayMethod() {
-        String ammount = toValue.getText().toString().trim();
+        final String ammount = toValue.getText().toString().trim();
         if (TextUtils.isEmpty(ammount)){
             return;
         }
         LoadingDialog.show(this,"");
-        RaidenNetUtils.getInstance().sendAmount(Double.parseDouble(ammount), channelVo.getPartnerAddress(),channelVo.getTokenAddress(), new Callback() {
+        new Thread(new Runnable() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                mHandler.sendEmptyMessage(0);
+            public void run() {
+                try {
+                    String jsonString =  RaidenNetUtils.getInstance().sendAmount(Double.parseDouble(ammount), channelVo.getPartnerAddress(),channelVo.getTokenAddress());
+                    if (TextUtils.isEmpty(jsonString)){
+                        mHandler.sendEmptyMessage(0);
+                    }else{
+                        mHandler.sendEmptyMessage(1);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    mHandler.sendEmptyMessage(0);
+                }
             }
+        }).start();
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                mHandler.sendEmptyMessage(1);
-            }
-        });
     }
 
     @SuppressLint("HandlerLeak")
@@ -105,6 +106,8 @@ public class RaidenTransferUI extends BaseActivity {
                     break;
                 case 1:
                     LoadingDialog.close();
+                    Intent intent = new Intent();
+                    setResult(RESULT_OK,intent);
                     finish();
                     break;
             }
