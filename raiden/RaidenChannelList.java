@@ -9,6 +9,8 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
@@ -34,8 +36,8 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
 
     private static int RAIDEN_CHANNEL_CREATE = 100;
 
-//    private TextView emptyTextView;
-//    private RelativeLayout emptyRela;
+    private TextView emptyTextView;
+    private RelativeLayout emptyRela;
 
     private ListView listView = null;
     private SwipeRefreshLayout swipeLayout;
@@ -61,8 +63,8 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
         listView = (ListView) findViewById(R.id.listView);
         swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
 
-//        emptyRela = (RelativeLayout) findViewById(R.id.empty_like_rela);
-//        emptyTextView = (TextView) findViewById(R.id.empty_text);
+        emptyRela = (RelativeLayout) findViewById(R.id.empty_like_rela);
+        emptyTextView = (TextView) findViewById(R.id.empty_text);
         createChannel = (ImageView) findViewById(R.id.app_right);
     }
 
@@ -138,6 +140,7 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
                 case 0:
                     showToast(getString(R.string.error_get_raiden_list));
                     swipeLayout.setRefreshing(false);
+                    checkListEmpty();
                     break;
                 case 1:
                     swipeLayout.setRefreshing(false);
@@ -156,6 +159,10 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
     };
 
 
+    /**
+     * parse json
+     * @param jsonString response string
+     * */
     private void parseJson(String jsonString) {
         if (TextUtils.isEmpty(jsonString)){
             return;
@@ -173,23 +180,23 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
                 }
             }
             mAdapter.resetSource(source);
-//            checkListEmpty();
+            checkListEmpty();
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
-//    /**
-//     * To test whether the current list is empty
-//     */
-//    private void checkListEmpty() {
-//        if(source == null || source.size() == 0){
-//            emptyRela.setVisibility(View.VISIBLE);
-//            emptyTextView.setText(R.string.black_list_empty);
-//        }else{
-//            emptyRela.setVisibility(View.GONE);
-//        }
-//    }
+    /**
+     * To test whether the current list is empty
+     */
+    private void checkListEmpty() {
+        if(source == null || source.size() == 0){
+            emptyRela.setVisibility(View.VISIBLE);
+            emptyTextView.setText(R.string.get_raiden_list_empty);
+        }else{
+            emptyRela.setVisibility(View.GONE);
+        }
+    }
 
     @Override
     public void changeChannel(final int position,boolean isOpen) {
