@@ -222,6 +222,7 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
         intent.putExtra("raidenChannelVo",source.get(position));
         intent.putExtra("storableWallet",storableWallet);
         startActivityForResult(intent,RAIDEN_CHANNEL_CREATE);
+        Utils.openNewActivityAnim(RaidenChannelList.this,false);
     }
 
     @Override
@@ -233,6 +234,7 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
         intent.putExtra("raidenChannelVo",source.get(position));
         intent.putExtra("storableWallet",storableWallet);
         startActivityForResult(intent,RAIDEN_CHANNEL_CREATE);
+        Utils.openNewActivityAnim(RaidenChannelList.this,false);
     }
 
     /**
