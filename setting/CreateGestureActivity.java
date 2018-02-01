@@ -11,6 +11,7 @@ import com.lingtuan.firefly.custom.gesturelock.LockPatternIndicator;
 import com.lingtuan.firefly.custom.gesturelock.LockPatternUtil;
 import com.lingtuan.firefly.custom.gesturelock.LockPatternView;
 import com.lingtuan.firefly.util.Constants;
+import com.lingtuan.firefly.util.MySharedPrefs;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -150,7 +151,12 @@ public class CreateGestureActivity extends BaseActivity {
 	 */
 	private void saveChosenPattern(List<LockPatternView.Cell> cells) {
 		byte[] bytes = LockPatternUtil.patternToHash(cells);
-		aCache.put(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId(), bytes);
+		int walletMode = MySharedPrefs.readInt(CreateGestureActivity.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+		if (walletMode != 0 && NextApplication.myInfo == null){
+			aCache.put(Constants.GESTURE_PASSWORD, bytes);
+		}else{
+			aCache.put(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId(), bytes);
+		}
 	}
 
 	private enum Status {

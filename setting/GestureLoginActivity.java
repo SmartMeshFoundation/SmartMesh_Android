@@ -34,7 +34,7 @@ public class GestureLoginActivity extends BaseActivity {
     private View gestureView;
     private TextView messageTv;
     private TextView forgetGestureBtn;
-    private int type ; //0 login  1 open gesture 2 close gesture
+    private int type ; //0 login  1 open gesture  2 close gesture
 
     private ImageView walletImg;
     private TextView walletName;
@@ -81,7 +81,12 @@ public class GestureLoginActivity extends BaseActivity {
         setTitle(getString(R.string.gesture_checking));
         aCache = ACache.get(NextApplication.mContext);
         //get current pwd
-        gesturePassword = aCache.getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
+        int walletMode = MySharedPrefs.readInt(GestureLoginActivity.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+        if (walletMode != 0 && NextApplication.myInfo == null){
+            gesturePassword = aCache.getAsBinary(Constants.GESTURE_PASSWORD);
+        }else{
+            gesturePassword = aCache.getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
+        }
         lockPatternView.setOnPatternListener(patternListener);
         updateStatus(Status.DEFAULT);
         initWalletInfo();
@@ -196,8 +201,13 @@ public class GestureLoginActivity extends BaseActivity {
     private void loginGestureSuccess() {
         Intent intent = new Intent(Constants.ACTION_GESTURE_LOGIN);
         Utils.sendBroadcastReceiver(GestureLoginActivity.this,intent,false);
+        int walletMode = MySharedPrefs.readInt(GestureLoginActivity.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
         if (type == 2){
-            aCache.put(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId(),"");
+            if (walletMode == 0 && NextApplication.myInfo != null){
+                aCache.put(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId(),"");
+            }else{
+                aCache.put(Constants.GESTURE_PASSWORD,"");
+            }
         }
         finish();
     }
