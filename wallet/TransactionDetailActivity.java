@@ -19,6 +19,7 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.MonIndicator;
@@ -387,12 +388,12 @@ public class TransactionDetailActivity extends BaseActivity{
             timerTask.cancel();
             timerTask = null;
         }
-
-        if (isSendTrans){
-             FinalUserDataBase.getInstance().insertTrans(transVo,true);
-        }
-        else{
-             FinalUserDataBase.getInstance().updateTransTemp(transVo);
+        if (NextApplication.myInfo != null){
+            if (isSendTrans){
+                FinalUserDataBase.getInstance().insertTrans(transVo,true);
+            }else{
+                FinalUserDataBase.getInstance().updateTransTemp(transVo);
+            }
         }
     }
 }

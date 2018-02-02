@@ -21,13 +21,16 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.base.BaseFragment;
 import com.lingtuan.firefly.login.LoginUtil;
+import com.lingtuan.firefly.setting.GesturePasswordLoginActivity;
 import com.lingtuan.firefly.setting.SecurityUI;
 import com.lingtuan.firefly.ui.MainFragmentUI;
+import com.lingtuan.firefly.ui.SplashActivity;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.WalletCreateActivity;
 import com.lingtuan.firefly.wallet.WalletImportActivity;
+import com.lingtuan.firefly.wallet.util.WalletStorage;
 
 
 /**
@@ -41,7 +44,7 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
     private View view = null;
     private boolean isDataFirstLoaded;
 
-    private TextView createWallet,importWallet;//Create a wallet, import wallet
+    private TextView createWallet,importWallet,walletModeLogin;//Create a wallet, import wallet
     private TextView title;
 
 
@@ -71,6 +74,7 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
     protected void findViewById() {
         createWallet = (TextView) view.findViewById(R.id.createWallet);
         importWallet = (TextView) view.findViewById(R.id.importWallet);
+        walletModeLogin = (TextView) view.findViewById(R.id.wallet_mode_login);
         title = (TextView) view.findViewById(R.id.app_title);
 
     }
@@ -78,6 +82,7 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
     protected void setListener() {
         createWallet.setOnClickListener(this);
         importWallet.setOnClickListener(this);
+        walletModeLogin.setOnClickListener(this);
     }
 
 
@@ -86,9 +91,17 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
         switch (view.getId()){
             case R.id.createWallet://Create a wallet
                 startActivityForResult(new Intent(getActivity(),WalletCreateActivity.class),100);
+                Utils.openNewActivityAnim(getActivity(),false);
                 break;
             case R.id.importWallet://Import the wallet
                 startActivityForResult(new Intent(getActivity(),WalletImportActivity.class),100);
+                Utils.openNewActivityAnim(getActivity(),false);
+                break;
+            case R.id.wallet_mode_login://wallet login
+                Intent intent = new Intent(getActivity(),GesturePasswordLoginActivity.class);
+                intent.putExtra("type",3);
+                startActivity(intent);
+                Utils.openNewActivityAnim(getActivity(),false);
                 break;
         }
     }
@@ -104,6 +117,12 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
         getActivity().registerReceiver(mBroadcastReceiver, filter);
         view.findViewById(R.id.app_back).setVisibility(View.GONE);
         title.setText(getString(R.string.app_name));
+        int walletMode = MySharedPrefs.readInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+        if (walletMode != 0 && NextApplication.myInfo == null && WalletStorage.getInstance(getActivity().getApplicationContext()).get().size()>0){
+            walletModeLogin.setVisibility(View.VISIBLE);
+        }else{
+            walletModeLogin.setVisibility(View.GONE);
+        }
     }
 
     @Override

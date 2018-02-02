@@ -10,8 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -22,20 +20,19 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.base.BaseFragment;
 import com.lingtuan.firefly.contact.DiscussGroupJoinUI;
+import com.lingtuan.firefly.custom.gesturelock.ACache;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.fragment.MainContactFragmentUI;
 import com.lingtuan.firefly.fragment.MainFoundFragmentUI;
 import com.lingtuan.firefly.fragment.MainMessageFragmentUI;
 import com.lingtuan.firefly.fragment.MySelfFragment;
-import com.lingtuan.firefly.login.LoginUI;
 import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.service.LoadDataService;
 import com.lingtuan.firefly.service.XmppService;
+import com.lingtuan.firefly.setting.GestureLoginActivity;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
-import com.lingtuan.firefly.util.MyToast;
-import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.util.netutil.NetRequestUtils;
@@ -94,16 +91,19 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         if (intent == null) {
             return;
         }
-
         try {
             Utils.settingLanguage(MainFragmentUI.this);
             Utils.updateViewLanguage(findViewById(android.R.id.content));
+            int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
             if (intent.getBooleanExtra("isOfflineMsg", false)){
                 showOfflineAlert(intent.getStringExtra("offlineContent"));
                 return;
             }
             if (intent.getBooleanExtra("isNewMsg", false)) {
                 onClick(main_tab_chats);
+            }
+            if (walletMode != 0){
+                onClick(main_tab_account);
             }
             setIntent(intent);
         }catch (Exception e){
@@ -112,12 +112,9 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
 
         try {
             Uri parse = intent.getData();
-
             String gid = parse.getQueryParameter("gid");
             String scheme = parse.getScheme();
-
-            if (!TextUtils.isEmpty(scheme) && "joingroup".equals(scheme))//join group
-            {
+            if (!TextUtils.isEmpty(scheme) && "joingroup".equals(scheme)){//join group
                 Intent joinGroup = new Intent(this, DiscussGroupJoinUI.class);
                 joinGroup.putExtra("groupid", gid);
                 startActivity(joinGroup);
@@ -185,16 +182,18 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
     protected void initData() {
 
         //open new app
-        if (getIntent() != null && getIntent().getExtras() != null && getIntent().getExtras().getBoolean("isNewMsg")) {
-            if (getIntent().getExtras().getBoolean("isOfflineMsg", false))//jump main
-            {
+        if (getIntent() != null && getIntent().getExtras() != null) {
+            if (getIntent().getExtras().getBoolean("isOfflineMsg", false)){//jump main
                 onClick(main_tab_chats);
                 showOfflineAlert(getIntent().getExtras().getString("offlineContent"));
             }else if (getIntent().getExtras().getBoolean("isNewMsg", false)) {//jump message
                 onClick(main_tab_chats);
             }
         }
-
+        int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+        if (walletMode != 0){
+            onClick(main_tab_account);
+        }
         try {
             Uri parse = getIntent().getData();
             String gid = parse.getQueryParameter("gid");
@@ -218,23 +217,28 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         filter.addAction(Constants.CHANGE_LANGUAGE);//Refresh the page
         filter.addAction(Constants.ACTION_NETWORK_RECEIVER);//Network monitoring
         filter.addAction(Constants.WALLET_SUCCESS);//Refresh the page
+        filter.addAction(Constants.WALLET_REFRESH_GESTURE);//Refresh the page
         filter.addAction(Constants.WALLET_REFRESH_DEL);//Refresh the page
+        filter.addAction(Constants.ACTION_GESTURE_LOGIN);//gesture success
         registerReceiver(mBroadcastReceiver, filter);
 
-        main_tab_chats.setSelected(true);
-
-        showFragment(MainMessageFragmentUI.class);
-
+        if (walletMode == 0){
+            main_tab_chats.setSelected(true);
+            showFragment(MainMessageFragmentUI.class);
+        }
         if (Utils.isConnectNet(MainFragmentUI.this) && NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getToken()) && TextUtils.isEmpty(NextApplication.myInfo.getMid())&& TextUtils.isEmpty(NextApplication.myInfo.getMobile())&& TextUtils.isEmpty(NextApplication.myInfo.getEmail())){
             LoginUtil.getInstance().initContext(MainFragmentUI.this);
             LoginUtil.getInstance().register(NextApplication.myInfo.getUsername(),NextApplication.myInfo.getPassword(),null,NextApplication.myInfo.getLocalId(),null);
         }
 
-        int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
-        int version =android.os.Build.VERSION.SDK_INT;
-        if (openSmartMesh == 1 && version >= 16){
-            //Start without social network service
-           startService(new Intent(MainFragmentUI.this, AppNetService.class));
+        MySharedPrefs.writeBoolean(MainFragmentUI.this,MySharedPrefs.FILE_USER,MySharedPrefs.IS_SHOW_WALLET_DIALOG,false);
+        if (NextApplication.myInfo != null){
+            int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+            int version =android.os.Build.VERSION.SDK_INT;
+            if (openSmartMesh == 1 && version >= 16){
+                //Start without social network service
+                startService(new Intent(MainFragmentUI.this, AppNetService.class));
+            }
         }
     }
 
@@ -283,13 +287,17 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         Utils.formatUnreadCount(mMsgUnread, totalUnreadCount);
     }
 
-
-
-
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent != null && (Constants.CHANGE_LANGUAGE.equals(intent.getAction()))) {
+            if (intent != null && (Constants.ACTION_GESTURE_LOGIN.equals(intent.getAction()))) {
+                if(WalletStorage.getInstance(getApplicationContext()).get().size()>0){
+                    showFragment(AccountFragment.class);
+                } else{
+                    showFragment(NewWalletFragment.class);
+                }
+                selectChanged(R.id.main_tab_account);
+            }else if (intent != null && (Constants.CHANGE_LANGUAGE.equals(intent.getAction()))) {
                 Utils.updateViewLanguage(findViewById(R.id.main_linear));
             } else if (intent != null && LoadDataService.ACTION_START_CONTACT_LISTENER.equals(intent.getAction())) {
                 getContentResolver().registerContentObserver( ContactsContract.Contacts.CONTENT_URI, true, mObserver);
@@ -318,7 +326,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                     }
 
                 }
-            }else if (intent != null && (Constants.WALLET_SUCCESS.equals(intent.getAction()))){
+            }else if (intent != null && (Constants.WALLET_SUCCESS.equals(intent.getAction())) ||Constants.WALLET_REFRESH_GESTURE.equals(intent.getAction())){
                 if(WalletStorage.getInstance(getApplicationContext()).get().size()>0){
                     showFragment(AccountFragment.class);
                 } else{
@@ -348,29 +356,68 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
 
     @Override
     public void onClick(View v){
+        int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
         switch (v.getId()){
             case R.id.main_tab_chats:
-                showFragment(MainMessageFragmentUI.class);
-                break;
-            case R.id.main_tab_contact:
-                showFragment(MainContactFragmentUI.class);
-                break;
-            case R.id.main_tab_account:
-                if(WalletStorage.getInstance(getApplicationContext()).get().size()>0){
-                    showFragment(AccountFragment.class);
-                } else{
-                    showFragment(NewWalletFragment.class);
+                if (walletMode != 0 && NextApplication.myInfo == null){
+                    startActivity(new Intent(MainFragmentUI.this,WalletModeLoginUI.class));
+                }else{
+                    showFragment(MainMessageFragmentUI.class);
+                    selectChanged(v.getId());
                 }
                 break;
+            case R.id.main_tab_contact:
+                if (walletMode != 0 && NextApplication.myInfo == null){
+                    startActivity(new Intent(MainFragmentUI.this,WalletModeLoginUI.class));
+                }else{
+                    showFragment(MainContactFragmentUI.class);
+                    selectChanged(v.getId());
+                }
+                break;
+            case R.id.main_tab_account:
+                if (walletMode == 1){
+                    showFragment(NewWalletFragment.class);
+                    selectChanged(v.getId());
+                }else {
+                    if(WalletStorage.getInstance(getApplicationContext()).get().size()>0){
+                        byte[] gestureByte;
+                        if (walletMode != 0 && NextApplication.myInfo == null){
+                            gestureByte  = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD);
+                        }else{
+                            gestureByte  = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
+                        }
+                        if (gestureByte != null && gestureByte.length > 0){
+                            startActivity(new Intent(MainFragmentUI.this, GestureLoginActivity.class));
+                            Utils.openNewActivityAnim(MainFragmentUI.this,false);
+                        }else{
+                            showFragment(AccountFragment.class);
+                            selectChanged(v.getId());
+                        }
+                    } else{
+                        showFragment(NewWalletFragment.class);
+                        selectChanged(v.getId());
+                    }
+                }
+
+                break;
             case R.id.main_tab_found:
-                showFragment(MainFoundFragmentUI.class);
+                if (walletMode != 0 && NextApplication.myInfo == null){
+                    startActivity(new Intent(MainFragmentUI.this,WalletModeLoginUI.class));
+                }else{
+                    showFragment(MainFoundFragmentUI.class);
+                    selectChanged(v.getId());
+                }
                 break;
             case R.id.main_tab_setting:
-                showFragment(MySelfFragment.class);
+                if (walletMode != 0 && NextApplication.myInfo == null){
+                    startActivity(new Intent(MainFragmentUI.this,WalletModeLoginUI.class));
+                }else{
+                    showFragment(MySelfFragment.class);
+                    selectChanged(v.getId());
+                }
                 break;
         }
         XmppUtils.loginXmppForNextApp(this);
-        selectChanged(v.getId());
     }
 
     private void selectChanged(final int resId) {
@@ -379,26 +426,32 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         main_tab_account.setSelected(false);
         main_tab_found.setSelected(false);
         main_tab_setting.setSelected(false);
+        main_tab_chats.setEnabled(true);
+        main_tab_contact.setEnabled(true);
+        main_tab_account.setEnabled(true);
+        main_tab_found.setEnabled(true);
+        main_tab_setting.setEnabled(true);
 
         switch (resId) {
             case R.id.main_tab_chats:
                 main_tab_chats.setSelected(true);
+                main_tab_chats.setEnabled(false);
                 break;
-
             case R.id.main_tab_contact:
                 main_tab_contact.setSelected(true);
+                main_tab_contact.setEnabled(false);
                 break;
-
             case R.id.main_tab_found:
                 main_tab_found.setSelected(true);
+                main_tab_found.setEnabled(false);
                 break;
-
             case R.id.main_tab_setting:
                 main_tab_setting.setSelected(true);
+                main_tab_setting.setEnabled(false);
                 break;
-
             case R.id.main_tab_account:
                 main_tab_account.setSelected(true);
+                main_tab_account.setEnabled(false);
                 break;
         }
     }

@@ -23,12 +23,16 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseFragment;
+import com.lingtuan.firefly.custom.gesturelock.ACache;
 import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.quickmark.CaptureActivity;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
-import com.lingtuan.firefly.service.XmppService;
+import com.lingtuan.firefly.raiden.RaidenChannelList;
+import com.lingtuan.firefly.setting.CreateGestureActivity;
+import com.lingtuan.firefly.setting.GestureLoginActivity;
 import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
@@ -50,7 +54,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import okhttp3.Call;
@@ -75,6 +78,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
 
+    private TextView walletGesture;//wallet gesture
     private TextView walletManager;//Account management
     private TextView createWallet;//Create a wallet
     private TextView showQuicMark;//Flicking a
@@ -100,9 +104,11 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private LinearLayout ethTransfer,fftTransfer,meshTransfer;//eth、smt transfer
     private LinearLayout ethQrCode,fftQrCode,meshQrCode;//eth、smt Qr code collection
 
+    private LinearLayout raidenTransfer;//raiden
+
     private int index = -1;//Which one is selected
 
-
+    private boolean isChecked;
 
     public AccountFragment(){
 
@@ -151,6 +157,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         createWallet = (TextView) view.findViewById(R.id.createWallet);
         showQuicMark = (TextView) view.findViewById(R.id.showQuicMark);
         walletManager = (TextView) view.findViewById(R.id.walletManager);
+        walletGesture = (TextView) view.findViewById(R.id.walletGesture);
 
         //The main related
         walletImg = (ImageView) view.findViewById(R.id.walletImg);
@@ -172,11 +179,14 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         ethQrCode = (LinearLayout) view.findViewById(R.id.ethQrCode);
         fftQrCode = (LinearLayout) view.findViewById(R.id.fftQrCode);
         meshQrCode = (LinearLayout) view.findViewById(R.id.meshQrCode);
+
+        raidenTransfer = (LinearLayout) view.findViewById(R.id.raidenTransfer);
     }
 
     private void setListener(){
         accountInfo.setOnClickListener(this);
         walletManager.setOnClickListener(this);
+        walletGesture.setOnClickListener(this);
         createWallet.setOnClickListener(this);
         showQuicMark.setOnClickListener(this);
         walletListView.setOnItemClickListener(this);
@@ -187,6 +197,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         transRecord.setOnClickListener(this);
         copyAddress.setOnClickListener(this);
 
+        raidenTransfer.setOnClickListener(this);
         ethTransfer.setOnClickListener(this);
         fftTransfer.setOnClickListener(this);
         meshTransfer.setOnClickListener(this);
@@ -209,6 +220,21 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         mDrawerToggle = new ActionBarDrawerToggle(getActivity(), mDrawerLayout, R.string.drawer_open,R.string.drawer_close);
         mDrawerToggle.syncState();
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+        int walletMode = MySharedPrefs.readInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+        if (walletMode != 0 && NextApplication.myInfo == null){
+            walletGesture.setVisibility(View.VISIBLE);
+            byte[] gestureByte  = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD);
+            if (gestureByte != null && gestureByte.length > 0){
+                isChecked = true;
+                walletGesture.setText(getString(R.string.gesture_wallet_open));
+            }else{
+                isChecked = false;
+                walletGesture.setText(getString(R.string.gesture_wallet_close));
+            }
+        }else{
+            walletGesture.setVisibility(View.GONE);
+        }
+
 
         initWalletInfo();
         IntentFilter filter = new IntentFilter();
@@ -220,8 +246,41 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         filter.addAction(XmppAction.ACTION_TRANS);//trans
         getActivity().registerReceiver(mBroadcastReceiver, filter);
 
-
+//        writePassToSdcard();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                String keystorePath = new File(getActivity().getFilesDir(), SDCardCtrl.WALLERPATH).getPath();
+//                String raidenDataPath = new File(getActivity().getFilesDir(), SDCardCtrl.RAIDEN_DATA).getPath();
+//                String raidenPassPath = new File(getActivity().getFilesDir(), SDCardCtrl.RAIDEN_PASS).getPath() + "/pass";
+//                Mobile.mobileStartUp("0x70aefe8d97ef5984b91b5169418f3db283f65a29", keystorePath,"ws://192.168.0.131:8546",raidenDataPath,raidenPassPath);
+//            }
+//        }).start();
     }
+//
+//    private void writePassToSdcard() {
+//        try {
+//            File dir = new File(getActivity().getFilesDir() + SDCardCtrl.RAIDEN_PASS);
+//            if (!dir.exists()) {
+//                dir.mkdirs();
+//            }
+//            File f = new File(dir, "pass");
+//            if (!f.exists()) {
+//                f.createNewFile();
+//            }
+//            copyString("123456", f);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public void copyString(String fileContents, File outputFile) throws FileNotFoundException {
+//        OutputStream output = new FileOutputStream(outputFile);
+//        PrintWriter p = new PrintWriter(output);
+//        p.println(fileContents);
+//        p.flush();
+//        p.close();
+//    }
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -252,6 +311,25 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        int walletMode = MySharedPrefs.readInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+        if (walletMode != 0 && NextApplication.myInfo == null){
+            walletGesture.setVisibility(View.VISIBLE);
+            byte[] gestureByte  = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD );
+            if (gestureByte != null && gestureByte.length > 0){
+                isChecked = true;
+                walletGesture.setText(getString(R.string.gesture_wallet_open));
+            }else{
+                isChecked = false;
+                walletGesture.setText(getString(R.string.gesture_wallet_close));
+            }
+        }else{
+            walletGesture.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.app_right://Open the sidebar
@@ -261,6 +339,18 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 mDrawerLayout.closeDrawer(GravityCompat.END);
                 startActivity(new Intent(getActivity(), ManagerWalletActivity.class));
                 Utils.openNewActivityAnim(getActivity(),false);
+                break;
+            case R.id.walletGesture://Account management
+                byte[] gestureByte  = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD);
+                if (gestureByte != null && gestureByte.length > 0){
+                    Intent intent = new Intent(getActivity(),GestureLoginActivity.class);
+                    intent.putExtra("type",isChecked ? 2 : 1);
+                    startActivity(intent);
+                    isChecked = !isChecked;
+                }else{
+                    Intent intent = new Intent(getActivity(),CreateGestureActivity.class);
+                    startActivity(intent);
+                }
                 break;
             case R.id.createWallet://Create a wallet
                 mDrawerLayout.closeDrawer(GravityCompat.END);
@@ -295,6 +385,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
             case R.id.transRecord://Transaction records
+                if (NextApplication.myInfo == null){
+                    return;
+                }
                 Intent transIntent = new Intent(getActivity(), TransactionRecordsActivity.class);
                 transIntent.putExtra("address",walletAddress.getText().toString());
                 transIntent.putExtra("name",storableWallet.getWalletName());
@@ -358,6 +451,15 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 meshEthIntent.putExtra("type", 3);
                 meshEthIntent.putExtra("address", storableWallet.getPublicKey());
                 startActivity(meshEthIntent);
+                Utils.openNewActivityAnim(getActivity(),false);
+                break;
+            case R.id.raidenTransfer://SMT qr code collection
+                if (storableWallet == null){
+                    return;
+                }
+                Intent raidenIntent = new Intent(getActivity(),RaidenChannelList.class);
+                raidenIntent.putExtra("storableWallet", storableWallet);
+                startActivity(raidenIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
         }

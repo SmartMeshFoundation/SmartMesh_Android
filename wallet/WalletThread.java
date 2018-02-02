@@ -1,11 +1,16 @@
 package com.lingtuan.firefly.wallet;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Message;
 import android.text.TextUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.setting.GesturePasswordLoginActivity;
+import com.lingtuan.firefly.util.Constants;
+import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.SDCardCtrl;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
@@ -114,7 +119,14 @@ public class WalletThread extends Thread {
 				if (WalletStorage.getInstance(context).get().size() <= 0){
 					storableWallet.setSelect(true);
 				}
-				WalletStorage.getInstance(context).add(storableWallet,context);
+				int walletMode = MySharedPrefs.readInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+				if (walletMode == 1){
+					MySharedPrefs.writeInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN, 2);
+					WalletStorage.getInstance(context).updateWalletList(storableWallet,context);
+				}else{
+					WalletStorage.getInstance(context).add(storableWallet,context);
+				}
+
 				mHandler.sendEmptyMessage(WalletHandler.WALLET_SUCCESS);
 				addAddressMethod(walletAddress);
 			}
