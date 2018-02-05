@@ -105,8 +105,11 @@ public class WalletModeLoginUI extends BaseActivity implements View.OnClickListe
                     Utils.openNewActivityAnim(WalletModeLoginUI.this, true);
                 }
                 break;
-
+            default:
+                super.onClick(v);
+                break;
         }
     }
+
 
 }

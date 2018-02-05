@@ -34,6 +34,8 @@ import com.lingtuan.firefly.raiden.RaidenChannelList;
 import com.lingtuan.firefly.setting.CreateGestureActivity;
 import com.lingtuan.firefly.setting.GestureLoginActivity;
 import com.lingtuan.firefly.ui.AlertActivity;
+import com.lingtuan.firefly.ui.MainFragmentUI;
+import com.lingtuan.firefly.ui.WalletModeLoginUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyToast;
@@ -386,13 +388,15 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 break;
             case R.id.transRecord://Transaction records
                 if (NextApplication.myInfo == null){
-                    return;
+                    startActivity(new Intent(getActivity(),WalletModeLoginUI.class));
+                    Utils.openNewActivityAnim(getActivity(),false);
+                }else{
+                    Intent transIntent = new Intent(getActivity(), TransactionRecordsActivity.class);
+                    transIntent.putExtra("address",walletAddress.getText().toString());
+                    transIntent.putExtra("name",storableWallet.getWalletName());
+                    startActivity(transIntent);
+                    Utils.openNewActivityAnim(getActivity(),false);
                 }
-                Intent transIntent = new Intent(getActivity(), TransactionRecordsActivity.class);
-                transIntent.putExtra("address",walletAddress.getText().toString());
-                transIntent.putExtra("name",storableWallet.getWalletName());
-                startActivity(transIntent);
-                Utils.openNewActivityAnim(getActivity(),false);
                 break;
             case R.id.copyAddress://Copy the address
                 if (storableWallet != null && !storableWallet.isBackup()){

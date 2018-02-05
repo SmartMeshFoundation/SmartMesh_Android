@@ -4,9 +4,11 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.lingtuan.firefly.NextApplication;
+import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.SDCardCtrl;
+import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
 import org.json.JSONArray;
@@ -21,10 +23,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class WalletStorage {
 
     private ArrayList<StorableWallet> mapdb;
+    private ArrayList<StorableWallet> mapdbLogin;
     private static WalletStorage instance;
     private String walletToExport; // Used as temp if users wants to export but still needs to grant write permission
 
@@ -47,15 +51,54 @@ public class WalletStorage {
     }
 
     public synchronized boolean add(StorableWallet storableWallet, Context context){
+        for (int i = 0 ; i < mapdb.size() ; i++){
+            if (mapdb.get(i).getPublicKey().equals(storableWallet.getPublicKey())){
+                return true;
+            }
+        }
         mapdb.add(storableWallet);
         addWalletToList(context,storableWallet);
         return true;
     }
 
-    public synchronized boolean checkExists(String addresse){
+    /**
+     * update wallet list
+     * @param context         context
+     * @param storableWallet  wallet
+     * */
+    public synchronized boolean updateWalletList(StorableWallet storableWallet, Context context){
+        if (mapdb != null){
+            mapdb.clear();
+        }else{
+            mapdb = new ArrayList<>();
+        }
+        try {
+            load(context);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        for (int i = 0 ; i < mapdb.size() ; i++){
+            if (mapdb.get(i).getPublicKey().equals(storableWallet.getPublicKey())){
+                return true;
+            }
+        }
+        if (mapdb.size() > 0){
+            storableWallet.setSelect(false);
+        }
+        mapdb.add(storableWallet);
+        addWalletToList(context,storableWallet);
+        return true;
+    }
+
+    /**
+     * check wallet exists
+     * @param address address
+     * */
+    public synchronized boolean checkExists(String address){
         for(int i=0; i < mapdb.size(); i++){
-            if(mapdb.get(i).getPublicKey().equalsIgnoreCase(addresse))
-            {
+            if(mapdb.get(i).getPublicKey().equalsIgnoreCase(address)){
                 return true;
             }
         }
@@ -91,7 +134,16 @@ public class WalletStorage {
             newWallet.put(Constants.WALLET_BACKUP,storableWallet.isBackup());
             array.put(newWallet);
             json.put("data",array);
-            MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,NextApplication.myInfo.getLocalId(),json.toString());
+            int walletMode = MySharedPrefs.readInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+            if (walletMode == 0 && NextApplication.myInfo != null){
+                MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,NextApplication.myInfo.getLocalId(),json.toString());
+            }else if (walletMode == 1){
+                MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,MySharedPrefs.KEY_ALL_WALLET,json.toString());
+                MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,MySharedPrefs.KEY_WALLET,json.toString());
+            }else{
+                MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,MySharedPrefs.KEY_WALLET,json.toString());
+                MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,MySharedPrefs.KEY_ALL_WALLET,json.toString());
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -104,8 +156,15 @@ public class WalletStorage {
      * @ param address wallet address
      * */
     public void updateWalletToList(Context context,String address){
-
-        String walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId());
+        String walletList;
+        int walletMode = MySharedPrefs.readInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+        if (walletMode == 0 && NextApplication.myInfo != null){
+            walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId());
+        }else if (walletMode == 1){
+            walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET);
+        }else {
+            walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET);
+        }
         try {
             JSONObject json;
             if (TextUtils.isEmpty(walletList)){
@@ -127,11 +186,21 @@ public class WalletStorage {
                 {
                     newWallet.put(Constants.WALLET_EXTRA,0);
                     newWallet.put(Constants.WALLET_BACKUP,true);
+                }else{
+                    newWallet.put(Constants.WALLET_EXTRA,array.optJSONObject(i).optString(Constants.WALLET_EXTRA));
+                    newWallet.put(Constants.WALLET_BACKUP,array.optJSONObject(i).optString(Constants.WALLET_BACKUP));
                 }
                 newArray.put(newWallet);
             }
             json.put("data",newArray);
-            MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,NextApplication.myInfo.getLocalId(),json.toString());
+            if (walletMode == 0 && NextApplication.myInfo != null){
+                MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,NextApplication.myInfo.getLocalId(),json.toString());
+            }else if (walletMode == 1){
+                MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,MySharedPrefs.KEY_ALL_WALLET,json.toString());
+            }else{
+                MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,MySharedPrefs.KEY_WALLET,json.toString());
+            }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -162,8 +231,22 @@ public class WalletStorage {
         }
 
     }
+
+    /**
+     * delete wallet
+     * @param context          context
+     * @param walletAddress    wallet address
+     * */
     public void delWalletList(Context context,String walletAddress){
-        String walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId());
+        String walletList;
+        int walletMode = MySharedPrefs.readInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+        if (walletMode == 0 && NextApplication.myInfo != null){
+            walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId());
+        }else if (walletMode == 1){
+            walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET);
+        }else{
+            walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET);
+        }
         try {
             JSONObject json;
             if (TextUtils.isEmpty(walletList)){
@@ -173,15 +256,11 @@ public class WalletStorage {
             }
             JSONArray array = json.optJSONArray("data");
             if (array == null){
-                array = new  JSONArray();
+                array = new JSONArray();
             }
-
             JSONArray newArray = new JSONArray();
-
-            for(int i=0;i<array.length();i++)
-            {
-                if(!walletAddress.equals(array.optJSONObject(i).optString(Constants.WALLET_ADDRESS)))
-                {
+            for(int i=0;i<array.length();i++){
+                if(!walletAddress.equals(array.optJSONObject(i).optString(Constants.WALLET_ADDRESS))){
                     JSONObject newWallet = new JSONObject();
                     newWallet.put(Constants.WALLET_ADDRESS,array.optJSONObject(i).optString(Constants.WALLET_ADDRESS));
                     newWallet.put(Constants.WALLET_NAME,array.optJSONObject(i).optString(Constants.WALLET_NAME));
@@ -190,98 +269,18 @@ public class WalletStorage {
                     newArray.put(newWallet);
                 }
             }
-
             json.put("data",newArray);
-            MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,NextApplication.myInfo.getLocalId(),json.toString());
+            if (walletMode == 0 && NextApplication.myInfo != null){
+                MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,NextApplication.myInfo.getLocalId(),json.toString());
+            }else if (walletMode == 1){
+                MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,MySharedPrefs.KEY_ALL_WALLET,json.toString());
+            }else if (walletMode == 2){
+                MySharedPrefs.write(context,MySharedPrefs.FILE_WALLET,MySharedPrefs.KEY_WALLET,json.toString());
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
-//
-//    public void checkForWallets(Context c){
-//        // Full wallets
-//        File[] wallets = c.getFilesDir().listFiles();
-//        if(wallets == null){
-//            return;
-//        }
-//        for(int i=0; i < wallets.length; i++){
-//            if(wallets[i].isFile()){
-//                if(wallets[i].getName().length() == 40){
-//                    add(new FullWallet("0x"+wallets[i].getName(), wallets[i].getName()), c);
-//                }
-//            }
-//        }
-//
-//        // Watch only
-//        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(c);
-//        Map<String, ?> allEntries = preferences.getAll();
-//        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-//            if(entry.getKey().length() == 42 && !mapdb.contains(entry.getKey()))
-//                add(new WatchWallet(entry.getKey()), c);
-//        }
-//        if(mapdb.size() > 0)
-//            save(c);
-//    }
-
-//   public void importingWalletsDetector(NewWalletActivity c){
-//       if(!ExternalStorageHandler.hasReadPermission(c)) {
-//           ExternalStorageHandler.askForPermissionRead(c);
-//           return;
-//       }
-//       File[] wallets = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/Lunary/").listFiles();
-//       if(wallets == null){
-//           Dialogs.noImportWalletsFound(c);
-//           return;
-//       }
-//       ArrayList<File> foundImports = new ArrayList<File>();
-//       for(int i=0; i < wallets.length; i++){
-//           if(wallets[i].isFile()){
-//               if(wallets[i].getName().startsWith("UTC") && wallets[i].getName().length() >= 40){
-//                   foundImports.add(wallets[i]); // Mist naming
-//               } else if(wallets[i].getName().length() >= 40 ){
-//                   int position = wallets[i].getName().indexOf(".json");
-//                   if(position < 0) continue;
-//                   String addr = wallets[i].getName().substring(0, position);
-//                   if(addr.length() == 40  && !mapdb.contains("0x"+wallets[i].getName())) {
-//                       foundImports.add(wallets[i]); // Exported with Lunary
-//                   }
-//               }
-//           }
-//       }
-//       if(foundImports.size() == 0) {
-//           Dialogs.noImportWalletsFound(c);
-//           return;
-//       }
-//       Dialogs.importWallets(c, foundImports);
-//    }
-
-//   public void setWalletForExport(String wallet){
-//       walletToExport = wallet;
-//   }
-//
-//   public boolean exportWallet(Activity c) {
-//       return exportWallet(c,  false);
-//   }
-
-//    public void importWallets(Context c, ArrayList<File> toImport) throws Exception {
-//        for(int i=0; i < toImport.size(); i++){
-//
-//            String address = stripWalletName(toImport.get(i).getName());
-//            if(address.length() == 40) {
-//                copyFile(toImport.get(i), new File(c.getFilesDir(), address));
-//                toImport.get(i).delete();
-//                WalletStorage.getInstance(c).add(new FullWallet("0x" + address, address), c);
-//                AddressNameConverter.getInstance(c).put("0x" + address, "Wallet " + ("0x" + address).substring(0, 6), c);
-//
-//                Intent mediaScannerIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-//                Uri fileContentUri = Uri.fromFile(toImport.get(i)); // With 'permFile' being the File object
-//                mediaScannerIntent.setData(fileContentUri);
-//                c.sendBroadcast(mediaScannerIntent); // With 'this' being the context, e.g. the activity
-//
-//            }
-//        }
-//    }
-
     public static String stripWalletName(String s){
         if(s.lastIndexOf("--") > 0)
             s = s.substring(s.lastIndexOf("--")+2);
@@ -290,54 +289,10 @@ public class WalletStorage {
         return s;
     }
 
-//   private boolean exportWallet(Activity c, boolean already){
-//       if(walletToExport == null) return false;
-//       if(walletToExport.startsWith("0x"))
-//           walletToExport = walletToExport.substring(2);
-//
-//       if(ExternalStorageHandler.hasPermission(c)) {
-//           File folder = new File(Environment.getExternalStorageDirectory(), "Lunary");
-//           if(!folder.exists()) folder.mkdirs();
-//
-//           File storeFile = new File(folder, walletToExport+".json");
-//           try {
-//               copyFile(new File(c.getFilesDir(), walletToExport), storeFile);
-//           } catch (IOException e) {
-//               return false;
-//           }
-//
-//           // fix, otherwise won't show up via USB
-//           Intent mediaScannerIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-//           Uri fileContentUri = Uri.fromFile(storeFile); // With 'permFile' being the File object
-//           mediaScannerIntent.setData(fileContentUri);
-//           c.sendBroadcast(mediaScannerIntent); // With 'this' being the context, e.g. the activity
-//           return true;
-//       } else if(!already ){
-//           ExternalStorageHandler.askForPermission(c);
-//           return exportWallet(c, true);
-//       } else {
-//           return false;
-//       }
-//   }
-
-
-//    private void copyFile(File src, File dst) throws IOException {
-//        FileChannel inChannel = new FileInputStream(src).getChannel();
-//        FileChannel outChannel = new FileOutputStream(dst).getChannel();
-//        try {
-//            inChannel.transferTo(0, inChannel.size(), outChannel);
-//        }
-//        finally {
-//            if (inChannel != null)
-//                inChannel.close();
-//            if (outChannel != null)
-//                outChannel.close();
-//        }
-//    }
 
     /**
      * access to the private key
-     * Password @ param password purse
+     * @ param password purse password
      * @ param wallet wallet address public key
      * */
    public Credentials getFullWallet(Context context, String password, String wallet) throws IOException, JSONException, CipherException {
@@ -347,8 +302,8 @@ public class WalletStorage {
    }
     /**
      * get the KeyStore
-     * Password @ param password purse
-     * @ param wallet wallet address public key
+     * @ param password   purse password
+     * @ param wallet     wallet address public key
      * */
     public String getWalletKeyStore(Context context, String password, String wallet) throws IOException, JSONException, CipherException {
         if(wallet.startsWith("0x"))
@@ -362,20 +317,9 @@ public class WalletStorage {
         return new String(strBuffer);
     }
 
-
-//    public synchronized void save(Context context){
-//        FileOutputStream fout;
-//        try {
-//            fout = new FileOutputStream(new File(context.getFilesDir(), "wallets.dat"));
-//            ObjectOutputStream oos = new ObjectOutputStream(fout);
-//            oos.writeObject(mapdb);
-//            oos.close();
-//            fout.close();
-//        } catch (Exception e) {
-//        }
-//    }
-//
-    /**Read in json*/
+    /**
+     * Read in json
+     * */
     @SuppressWarnings("unchecked")
     public synchronized void load(Context context) throws IOException, ClassNotFoundException {
         String walletList = MySharedPrefs.readWalletList(context);
@@ -405,6 +349,193 @@ public class WalletStorage {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public synchronized ArrayList<StorableWallet> getAll(){
+        return mapdbLogin;
+    }
+
+    /**
+     * Read in json
+     * @param context context
+     * */
+    @SuppressWarnings("unchecked")
+    public synchronized ArrayList<StorableWallet> loadAll(Context context) {
+        String walletList = MySharedPrefs.readWalletModeAllList(context);
+        if (TextUtils.isEmpty(walletList)){
+            return null;
+        }
+        if (mapdbLogin == null){
+            mapdbLogin = new ArrayList<>();
+        }else{
+            mapdbLogin.clear();
+        }
+        try {
+            JSONObject object = new JSONObject(walletList);
+            JSONArray walletArray  = object.optJSONArray("data");
+            for(int i=0;i<walletArray.length();i++){
+                JSONObject walletObj = walletArray.optJSONObject(i);
+                StorableWallet storableWallet = new StorableWallet();
+                storableWallet.setPublicKey(walletObj.optString(Constants.WALLET_ADDRESS));
+                storableWallet.setWalletName(walletObj.optString(Constants.WALLET_NAME));
+                storableWallet.setCanExportPrivateKey(walletObj.optInt(Constants.WALLET_EXTRA));
+                storableWallet.setBackup(walletObj.optBoolean(Constants.WALLET_BACKUP));
+                if (i == 0){
+                    storableWallet.setSelect(true);
+                }
+                File destination = new File( new File(context.getFilesDir(), SDCardCtrl.WALLERPATH ), storableWallet.getPublicKey());
+                if(!destination.exists())
+                {
+                    storableWallet.setWalletType(1);
+                }
+                mapdbLogin.add(storableWallet);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return mapdbLogin;
+    }
+
+    /**
+     * Read in json
+     * @param context  context
+     * */
+    @SuppressWarnings("unchecked")
+    public synchronized void reLoad(Context context) throws IOException, ClassNotFoundException {
+        String walletList = MySharedPrefs.readWalletList(context);
+        String walletModeList = MySharedPrefs.readWalletModeList(context);
+        if (TextUtils.isEmpty(walletList) && TextUtils.isEmpty(walletModeList)){
+            return;
+        }
+        if (mapdb != null){
+            mapdb.clear();
+        }else{
+            mapdb = new ArrayList<>();
+        }
+
+        if (!TextUtils.isEmpty(walletList) && !TextUtils.isEmpty(walletModeList)){
+            try {
+                JSONObject object = new JSONObject(walletList);
+                JSONArray walletArray  = object.optJSONArray("data");
+                addWalletArray(context,walletArray,false);
+                JSONObject objectMode = new JSONObject(walletModeList);
+                JSONArray walletModeArray  = objectMode.optJSONArray("data");
+                boolean hasExists = false;
+                for(int i=0;i<walletModeArray.length();i++){
+                    JSONObject walletObj = walletModeArray.optJSONObject(i);
+                    for (int j = 0 ; j < mapdb.size() ; j++){
+                        hasExists = false;
+                        if (mapdb.get(j).getPublicKey().equals(walletObj.optString(Constants.WALLET_ADDRESS))){
+                            hasExists = true;
+                            break;
+                        }
+                    }
+                    if (hasExists){
+                        continue;
+                    }
+                    StorableWallet storableWallet = new StorableWallet();
+                    storableWallet.setPublicKey(walletObj.optString(Constants.WALLET_ADDRESS));
+                    storableWallet.setWalletName(walletObj.optString(Constants.WALLET_NAME));
+                    storableWallet.setCanExportPrivateKey(walletObj.optInt(Constants.WALLET_EXTRA));
+                    storableWallet.setBackup(walletObj.optBoolean(Constants.WALLET_BACKUP));
+                    File destination = new File( new File(context.getFilesDir(), SDCardCtrl.WALLERPATH ), storableWallet.getPublicKey());
+                    if(!destination.exists()){
+                        storableWallet.setWalletType(1);
+                    }
+                    addWalletToList(NextApplication.mContext,storableWallet);
+                    mapdb.add(storableWallet);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }else if (TextUtils.isEmpty(walletList) && !TextUtils.isEmpty(walletModeList)){
+            try {
+                JSONObject object = new JSONObject(walletModeList);
+                JSONArray walletArray  = object.optJSONArray("data");
+                addWalletArray(context,walletArray,true);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }else if (!TextUtils.isEmpty(walletList) && TextUtils.isEmpty(walletModeList)){
+            try {
+                JSONObject object = new JSONObject(walletList);
+                JSONArray walletArray  = object.optJSONArray("data");
+                addWalletArray(context,walletArray,false);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        addAddressToServer(mapdb);
+    }
+
+
+    /**
+     * load wallet list
+     * @param context context
+     * @param walletArray wallet json array
+     * */
+    private void addWalletArray(Context context,JSONArray walletArray,boolean needAdd){
+        if (walletArray == null){
+            return;
+        }
+        for(int i=0;i<walletArray.length();i++){
+            JSONObject walletObj = walletArray.optJSONObject(i);
+            StorableWallet storableWallet = new StorableWallet();
+            storableWallet.setPublicKey(walletObj.optString(Constants.WALLET_ADDRESS));
+            storableWallet.setWalletName(walletObj.optString(Constants.WALLET_NAME));
+            storableWallet.setCanExportPrivateKey(walletObj.optInt(Constants.WALLET_EXTRA));
+            storableWallet.setBackup(walletObj.optBoolean(Constants.WALLET_BACKUP));
+            if (i == 0){
+                storableWallet.setSelect(true);
+            }else{
+                storableWallet.setSelect(false);
+            }
+            File destination = new File( new File(context.getFilesDir(), SDCardCtrl.WALLERPATH ), storableWallet.getPublicKey());
+            if(!destination.exists()){
+                storableWallet.setWalletType(1);
+            }
+            if (needAdd){
+                addWalletToList(NextApplication.mContext,storableWallet);
+            }
+            mapdb.add(storableWallet);
+        }
+    }
+
+    /**
+     * add address to server
+     * @param mapdb wallet list
+     * */
+    private void addAddressToServer(ArrayList<StorableWallet> mapdb) {
+        if (mapdb == null || mapdb.size() <= 0){
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0 ; i < mapdb.size() ; i++){
+            String address = mapdb.get(i).getPublicKey();
+            if (!address.startsWith("0x")){
+                address = "0x" + address;
+            }
+            sb.append(address).append(",");
+        }
+        if (sb.length() > 0){
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        NetRequestImpl.getInstance().addAddress(sb.toString(), new RequestListener() {
+            @Override
+            public void start() {
+
+            }
+
+            @Override
+            public void success(JSONObject response) {
+
+            }
+
+            @Override
+            public void error(int errorCode, String errorMsg) {
+
+            }
+        });
     }
 
 }

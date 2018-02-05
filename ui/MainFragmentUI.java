@@ -361,6 +361,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
             case R.id.main_tab_chats:
                 if (walletMode != 0 && NextApplication.myInfo == null){
                     startActivity(new Intent(MainFragmentUI.this,WalletModeLoginUI.class));
+                    Utils.openNewActivityAnim(this,false);
                 }else{
                     showFragment(MainMessageFragmentUI.class);
                     selectChanged(v.getId());
@@ -369,6 +370,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
             case R.id.main_tab_contact:
                 if (walletMode != 0 && NextApplication.myInfo == null){
                     startActivity(new Intent(MainFragmentUI.this,WalletModeLoginUI.class));
+                    Utils.openNewActivityAnim(this,false);
                 }else{
                     showFragment(MainContactFragmentUI.class);
                     selectChanged(v.getId());
@@ -403,6 +405,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
             case R.id.main_tab_found:
                 if (walletMode != 0 && NextApplication.myInfo == null){
                     startActivity(new Intent(MainFragmentUI.this,WalletModeLoginUI.class));
+                    Utils.openNewActivityAnim(this,false);
                 }else{
                     showFragment(MainFoundFragmentUI.class);
                     selectChanged(v.getId());
@@ -411,6 +414,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
             case R.id.main_tab_setting:
                 if (walletMode != 0 && NextApplication.myInfo == null){
                     startActivity(new Intent(MainFragmentUI.this,WalletModeLoginUI.class));
+                    Utils.openNewActivityAnim(this,false);
                 }else{
                     showFragment(MySelfFragment.class);
                     selectChanged(v.getId());
