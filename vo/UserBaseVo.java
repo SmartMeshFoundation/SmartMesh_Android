@@ -64,11 +64,22 @@ public class UserBaseVo  extends ImageResizer implements Serializable {
 	/**If a man without a net*/
 	private boolean offLine = false;
 
+	/**offline information*/
+	private boolean offLineFound = false;
+
 	/**Contact person with multi-select*/
 	private boolean isChecked=false;
 
 	/**Multiple contacts, can't choose*/
 	private boolean cantChecked = false;
+
+	public boolean isOffLineFound() {
+		return offLineFound;
+	}
+
+	public void setOffLineFound(boolean offLineFound) {
+		this.offLineFound = offLineFound;
+	}
 
 	public String getLocalId() {
 		return localId;
@@ -237,9 +248,6 @@ public class UserBaseVo  extends ImageResizer implements Serializable {
 		return this;
 	}
 	
-	/**
-	* parse vo
-	*/
 	public UserBaseVo parse(JSONObject obj){
 		
 		if (obj == null){

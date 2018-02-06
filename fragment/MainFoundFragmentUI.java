@@ -298,6 +298,7 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
         info.setSightml(wifiPeopleVO.getSightml());
         info.setAge(wifiPeopleVO.getAge());
         info.setFriendLog(wifiPeopleVO.getFriendLog());
+        info.setOffLineFound(true);
         Utils.intentFriendUserInfo(getActivity(),info,false);
     }
 
@@ -411,6 +412,7 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
         info.setSightml(wifiPeopleVO.getSightml());
         info.setAge(wifiPeopleVO.getAge());
         info.setFriendLog(wifiPeopleVO.getFriendLog());
+        info.setOffLineFound(true);
         Utils.intentFriendUserInfo(getActivity(),info,false);
     }
 }
