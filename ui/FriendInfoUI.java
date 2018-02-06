@@ -294,6 +294,7 @@ public class FriendInfoUI extends BaseActivity {
         if (Utils.isConnectNet(FriendInfoUI.this)){
             Intent addFriend = new Intent(FriendInfoUI.this,FriendAddUI.class);
             addFriend.putExtra("localId",info.getLocalId());
+            addFriend.putExtra("offlineFound",info.isOffLineFound());
             startActivity(addFriend);
             Utils.openNewActivityAnim(FriendInfoUI.this,false);
         }else{
