@@ -18,6 +18,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
 
+import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.contact.adapter.ContactAddAdapter;
 import com.lingtuan.firefly.base.BaseActivity;
@@ -26,6 +27,7 @@ import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
 import com.lingtuan.firefly.util.MyDialogFragment;
+import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
@@ -85,9 +87,12 @@ public class MsgAddContactListUI extends BaseActivity implements OnItemClickList
 
 	@Override
 	protected void initData() {
-
-		bindService(new Intent(this, AppNetService.class), serviceConn,BIND_AUTO_CREATE);
-
+		if (NextApplication.myInfo != null){
+			int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+			if (openSmartMesh == 1){
+				bindService(new Intent(this, AppNetService.class), serviceConn,BIND_AUTO_CREATE);
+			}
+		}
 		swipeLayout.setColorSchemeResources(R.color.black);
 		setTitle(getString(R.string.contact_add_contact));
 		
@@ -105,7 +110,11 @@ public class MsgAddContactListUI extends BaseActivity implements OnItemClickList
     @Override
     protected void onDestroy() {
     	super.onDestroy();
-		unbindService(serviceConn);
+
+		int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+		if (openSmartMesh == 1 && serviceConn != null){
+			unbindService(serviceConn);
+		}
     	if(addContactMsgReceiverListener!=null)
     	{
     		unregisterReceiver(addContactMsgReceiverListener);
@@ -131,40 +140,48 @@ public class MsgAddContactListUI extends BaseActivity implements OnItemClickList
 	 * */
 	@Override
 	public boolean addFriendConfim(String uid) {
-		List<WifiPeopleVO> wifiPeopleVOs = appNetService.getwifiPeopleList();
 		boolean isFound = false;
-		for (int i = 0 ; i < wifiPeopleVOs.size() ; i++){
-			if (uid.equals(wifiPeopleVOs.get(i).getLocalId())){
-				isFound = true;
-				break;
+		if (appNetService != null){
+			List<WifiPeopleVO> wifiPeopleVOs = appNetService.getwifiPeopleList();
+			for (int i = 0 ; i < wifiPeopleVOs.size() ; i++){
+				if (uid.equals(wifiPeopleVOs.get(i).getLocalId())){
+					isFound = true;
+					break;
+				}
 			}
 		}
 		if (isFound){
 			appNetService.handleSendAddFriendCommend(uid,true);
-//			if (Utils.isConnectNet(MsgAddContactListUI.this)){
-//				NetRequestImpl.getInstance().addOfflineFriend(uid, new RequestListener() {
-//					@Override
-//					public void start() {
-//
-//					}
-//
-//					@Override
-//					public void success(JSONObject response) {
-//
-//					}
-//
-//					@Override
-//					public void error(int errorCode, String errorMsg) {
-//
-//					}
-//				});
-//			}
+			if (Utils.isConnectNet(MsgAddContactListUI.this)){
+				uploadOfflineFriends(uid);
+			}
 			return true;
 		}else{
 			return false;
 		}
-		//A network synchronization immediately
+	}
 
+	/**
+	 * Synchronous no net friends
+	 * */
+	private void uploadOfflineFriends(String uid) {
+		NetRequestImpl.getInstance().addOfflineFriend(uid, new RequestListener() {
+
+			@Override
+			public void start() {
+
+			}
+
+			@Override
+			public void success(JSONObject response) {
+
+			}
+
+			@Override
+			public void error(int errorCode, String errorMsg) {
+
+			}
+		});
 	}
 
 	/**
