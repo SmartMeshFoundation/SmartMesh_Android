@@ -4,27 +4,23 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
-import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.base.BaseFragment;
 import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.setting.GesturePasswordLoginActivity;
-import com.lingtuan.firefly.setting.SecurityUI;
 import com.lingtuan.firefly.ui.MainFragmentUI;
-import com.lingtuan.firefly.ui.SplashActivity;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
@@ -46,6 +42,9 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
 
     private TextView createWallet,importWallet,walletModeLogin;//Create a wallet, import wallet
     private TextView title;
+    private RelativeLayout appTitleBg;
+
+    private boolean  showAnimation;
 
 
     @Override
@@ -53,6 +52,12 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
         isDataFirstLoaded = true;
         super.onCreate(savedInstanceState);
         setRetainInstance(false);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        showAnimation = ((MainFragmentUI)context).getShowAnimation();
     }
 
     @Nullable
@@ -70,13 +75,31 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
     }
 
 
-
     protected void findViewById() {
+        appTitleBg = (RelativeLayout) view.findViewById(R.id.app_title_rela);
         createWallet = (TextView) view.findViewById(R.id.createWallet);
         importWallet = (TextView) view.findViewById(R.id.importWallet);
         walletModeLogin = (TextView) view.findViewById(R.id.wallet_mode_login);
         title = (TextView) view.findViewById(R.id.app_title);
 
+        if (showAnimation){
+            appTitleBg.setVisibility(View.GONE);
+            Animation transanim = new Animation() {
+                @Override
+                protected void applyTransformation(float interpolatedTime, Transformation t) {
+                    appTitleBg.setVisibility(View.VISIBLE);
+                    FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) appTitleBg.getLayoutParams();
+                    lp.setMargins(0, - (int) (Utils.dip2px(getActivity(), 48) * (1 - interpolatedTime) ), 0, 0 );
+                    appTitleBg.requestLayout();
+                }
+                @Override
+                public boolean willChangeBounds() {
+                    return true;
+                }
+            };
+            transanim.setDuration(1000);
+            appTitleBg.startAnimation(transanim);
+        }
     }
 
     protected void setListener() {
@@ -122,6 +145,19 @@ public class NewWalletFragment extends BaseFragment implements View.OnClickListe
             walletModeLogin.setVisibility(View.VISIBLE);
         }else{
             walletModeLogin.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden && walletModeLogin != null){
+            int walletMode = MySharedPrefs.readInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+            if (walletMode != 0 && NextApplication.myInfo == null && WalletStorage.getInstance(getActivity().getApplicationContext()).get().size()>0){
+                walletModeLogin.setVisibility(View.VISIBLE);
+            }else{
+                walletModeLogin.setVisibility(View.GONE);
+            }
         }
     }
 

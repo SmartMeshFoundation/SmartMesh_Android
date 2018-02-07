@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -21,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
@@ -34,7 +36,6 @@ import com.lingtuan.firefly.raiden.RaidenChannelList;
 import com.lingtuan.firefly.setting.CreateGestureActivity;
 import com.lingtuan.firefly.setting.GestureLoginActivity;
 import com.lingtuan.firefly.ui.AlertActivity;
-import com.lingtuan.firefly.ui.MainFragmentUI;
 import com.lingtuan.firefly.ui.WalletModeLoginUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
@@ -57,6 +58,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -111,6 +114,12 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private int index = -1;//Which one is selected
 
     private boolean isChecked;
+
+    private Timer timer;
+    private TimerTask timerTask;
+    private int timerLine = 10;
+
+    private PopupWindow homePop;
 
     public AccountFragment(){
 
@@ -244,6 +253,8 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         filter.addAction(Constants.WALLET_SUCCESS);//Refresh the page
         filter.addAction(Constants.WALLET_REFRESH_BACKUP);//Refresh the page
         filter.addAction(Constants.WALLET_REFRESH_GESTURE);//Refresh the page
+        filter.addAction(Constants.WALLET_REFRESH_SHOW_HINT);//trans
+        filter.addAction(Constants.ACTION_GESTURE_LOGIN);//trans
         filter.addAction(Constants.CHANGE_LANGUAGE);//Update language refresh the page
         filter.addAction(XmppAction.ACTION_TRANS);//trans
         getActivity().registerReceiver(mBroadcastReceiver, filter);
@@ -289,20 +300,54 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         public void onReceive(Context context, Intent intent) {
             if (intent != null){
                 if (Constants.WALLET_REFRESH_DEL.equals(intent.getAction()) || Constants.WALLET_REFRESH_BACKUP.equals(intent.getAction()) ) {
-                    mAdapter.notifyDataSetChanged();
                     initWalletInfo();
                 }else if (Constants.WALLET_REFRESH_GESTURE.equals(intent.getAction()) || Constants.WALLET_SUCCESS.equals(intent.getAction())) {
-                    mAdapter.notifyDataSetChanged();
+                    initWalletInfo();
+                }else if (Constants.ACTION_GESTURE_LOGIN.equals(intent.getAction())) {
                     initWalletInfo();
                 }else if (Constants.CHANGE_LANGUAGE.equals(intent.getAction())) {
                     accountTitle.setText(getString(R.string.app_name));
                     Utils.updateViewLanguage(view.findViewById(R.id.account_drawerlayout));
                 }else if (XmppAction.ACTION_TRANS.equals(intent.getAction())) {
                     loadData(false);
+                }else if (Constants.WALLET_REFRESH_SHOW_HINT.equals(intent.getAction())){
+                    if (mDrawerLayout != null){
+                        mDrawerLayout.closeDrawer(GravityCompat.END);
+                    }
+                    initHomePop();
+                    showPowTimer();
                 }
             }
         }
     };
+
+
+    /**
+     * Initialize the Pop layout
+     */
+    private void initHomePop() {
+        LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.account_more_popup_layout, null);
+        homePop = new PopupWindow(view, Utils.dip2px(getActivity(), 170), LinearLayout.LayoutParams.WRAP_CONTENT);
+        homePop.setBackgroundDrawable(new BitmapDrawable());
+        homePop.setOutsideTouchable(true);
+        homePop.setFocusable(true);
+        view.findViewById(R.id.txt_home_pop_1).setOnClickListener(this);
+        if (homePop.isShowing()) {
+            homePop.dismiss();
+        } else {
+            // On the coordinates of a specific display PopupWindow custom menu
+            homePop.showAsDropDown(accountInfo, Utils.dip2px(getActivity(), -110), Utils.dip2px(getActivity(), 0));
+        }
+    }
+
+    private void dismissHomePop() {
+        if (homePop != null && homePop.isShowing()) {
+            homePop.dismiss();
+            homePop = null;
+        }
+    }
+
 
 
     @Override
@@ -310,6 +355,14 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         super.onDestroy();
         getActivity().unregisterReceiver(mBroadcastReceiver);
         LoginUtil.getInstance().destory();
+        if (timer != null){
+            timer.cancel();
+            timer = null;
+        }
+        if (timerTask != null){
+            timerTask.cancel();
+            timerTask = null;
+        }
     }
 
     @Override
@@ -336,9 +389,17 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         switch (v.getId()){
             case R.id.app_right://Open the sidebar
                 mDrawerLayout.openDrawer(GravityCompat.END);
+                dismissHomePop();
+                cancelTimer();
+                break;
+            case R.id.txt_home_pop_1://Open the sidebar
+                dismissHomePop();
+                cancelTimer();
                 break;
             case R.id.walletManager://Account management
                 mDrawerLayout.closeDrawer(GravityCompat.END);
+                dismissHomePop();
+                cancelTimer();
                 startActivity(new Intent(getActivity(), ManagerWalletActivity.class));
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
@@ -479,7 +540,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                     WalletStorage.getInstance(getActivity().getApplicationContext()).get().get(i).setSelect(true);
                 }
             }
-            mAdapter.notifyDataSetChanged();
             initWalletInfo();
             mDrawerLayout.closeDrawer(GravityCompat.END);
         }
@@ -492,6 +552,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         ArrayList<StorableWallet> storableWallets = WalletStorage.getInstance(getActivity().getApplicationContext()).get();
         for (int i = 0 ; i < storableWallets.size(); i++){
             if (storableWallets.get(i).isSelect() ){
+                WalletStorage.getInstance(NextApplication.mContext).updateWalletToList(NextApplication.mContext,storableWallets.get(i).getPublicKey(),false);
                 index = i;
                 int imgId = Utils.getWalletImg(getActivity(),i);
                 walletImg.setImageResource(imgId);
@@ -542,6 +603,8 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 meshBalance.setText(storableWallet.getMeshBalance() +"");
             }
         }
+
+        mAdapter.notifyDataSetChanged();
 
         new Handler().postDelayed(new Runnable(){
             public void run() {
@@ -597,6 +660,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                     swipe_refresh.setRefreshing(false);
                     parseJson((String)msg.obj);
                     break;
+                case 2:
+                    dismissHomePop();
+                    break;
             }
         }
     };
@@ -650,4 +716,43 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             e.printStackTrace();
         }
     }
+
+    /**
+     * Control the popup countdown
+     * */
+    private void showPowTimer(){
+        if(timer == null){
+            timer = new Timer();
+            timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    timerLine--;
+                    if(timerLine < 0){
+                        mHandler.sendEmptyMessage(2);
+                        if (timer != null){
+                            timer.cancel();
+                            timer = null;
+                        }
+                        if (timerTask != null){
+                            timerTask.cancel();
+                            timerTask = null;
+                        }
+                    }
+                }
+            };
+            timer.schedule(timerTask,1000,1000);
+        }
+    }
+
+    private void cancelTimer(){
+        if (timer != null){
+            timer.cancel();
+            timer = null;
+        }
+        if (timerTask != null){
+            timerTask.cancel();
+            timerTask = null;
+        }
+    }
+
 }
