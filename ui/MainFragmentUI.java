@@ -13,6 +13,10 @@ import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
@@ -59,6 +63,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
     private TextView main_tab_account;//The wallet
     private TextView main_tab_found;//found
     private TextView main_tab_setting;//my
+    private LinearLayout mainBottomTab;//main tab
 
 
     private MsgReceiverListener msgReceiverListener;
@@ -68,6 +73,8 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
 
     private int totalUnreadCount = 0;
     private TextView mMsgUnread;
+
+    private boolean showAnimation;
 
     @Override
     protected void setContentView() {
@@ -99,9 +106,13 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                 showOfflineAlert(intent.getStringExtra("offlineContent"));
                 return;
             }
+
+            showAnimation = intent.getBooleanExtra("showAnimation",false);
+
             if (intent.getBooleanExtra("isNewMsg", false)) {
                 onClick(main_tab_chats);
             }
+
             if (walletMode != 0){
                 onClick(main_tab_account);
             }
@@ -161,6 +172,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
 
     @Override
     protected void findViewById() {
+        mainBottomTab = (LinearLayout) findViewById(R.id.mainBottomTab);
         main_tab_chats = (TextView) findViewById(R.id.main_tab_chats);
         main_tab_contact = (TextView) findViewById(R.id.main_tab_contact);
         main_tab_account = (TextView) findViewById(R.id.main_tab_account);
@@ -180,7 +192,6 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
 
     @Override
     protected void initData() {
-
         //open new app
         if (getIntent() != null && getIntent().getExtras() != null) {
             if (getIntent().getExtras().getBoolean("isOfflineMsg", false)){//jump main
@@ -189,6 +200,8 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
             }else if (getIntent().getExtras().getBoolean("isNewMsg", false)) {//jump message
                 onClick(main_tab_chats);
             }
+
+            showAnimation = getIntent().getBooleanExtra("showAnimation",false);
         }
         int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
         if (walletMode != 0){
@@ -224,7 +237,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
 
         if (walletMode == 0){
             main_tab_chats.setSelected(true);
-            showFragment(MainMessageFragmentUI.class);
+            showFragment(MainMessageFragmentUI.class,false);
         }
         if (Utils.isConnectNet(MainFragmentUI.this) && NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getToken()) && TextUtils.isEmpty(NextApplication.myInfo.getMid())&& TextUtils.isEmpty(NextApplication.myInfo.getMobile())&& TextUtils.isEmpty(NextApplication.myInfo.getEmail())){
             LoginUtil.getInstance().initContext(MainFragmentUI.this);
@@ -292,9 +305,9 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         public void onReceive(Context context, Intent intent) {
             if (intent != null && (Constants.ACTION_GESTURE_LOGIN.equals(intent.getAction()))) {
                 if(WalletStorage.getInstance(getApplicationContext()).get().size()>0){
-                    showFragment(AccountFragment.class);
+                    showFragment(AccountFragment.class,false);
                 } else{
-                    showFragment(NewWalletFragment.class);
+                    showFragment(NewWalletFragment.class,false);
                 }
                 selectChanged(R.id.main_tab_account);
             }else if (intent != null && (Constants.CHANGE_LANGUAGE.equals(intent.getAction()))) {
@@ -328,16 +341,16 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                 }
             }else if (intent != null && (Constants.WALLET_SUCCESS.equals(intent.getAction())) ||Constants.WALLET_REFRESH_GESTURE.equals(intent.getAction())){
                 if(WalletStorage.getInstance(getApplicationContext()).get().size()>0){
-                    showFragment(AccountFragment.class);
+                    showFragment(AccountFragment.class,false);
                 } else{
-                    showFragment(NewWalletFragment.class);
+                    showFragment(NewWalletFragment.class,false);
                 }
                 selectChanged(R.id.main_tab_account);
             }else if (intent != null && (Constants.WALLET_REFRESH_DEL.equals(intent.getAction()))){
                 if(WalletStorage.getInstance(getApplicationContext()).get().size()>0){
-                    showFragment(AccountFragment.class);
+                    showFragment(AccountFragment.class,false);
                 } else{
-                    showFragment(NewWalletFragment.class);
+                    showFragment(NewWalletFragment.class,false);
                 }
                 selectChanged(R.id.main_tab_account);
             }
@@ -363,7 +376,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                     startActivity(new Intent(MainFragmentUI.this,WalletModeLoginUI.class));
                     Utils.openNewActivityAnim(this,false);
                 }else{
-                    showFragment(MainMessageFragmentUI.class);
+                    showFragment(MainMessageFragmentUI.class,false);
                     selectChanged(v.getId());
                 }
                 break;
@@ -372,13 +385,13 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                     startActivity(new Intent(MainFragmentUI.this,WalletModeLoginUI.class));
                     Utils.openNewActivityAnim(this,false);
                 }else{
-                    showFragment(MainContactFragmentUI.class);
+                    showFragment(MainContactFragmentUI.class,false);
                     selectChanged(v.getId());
                 }
                 break;
             case R.id.main_tab_account:
                 if (walletMode == 1){
-                    showFragment(NewWalletFragment.class);
+                    showFragment(NewWalletFragment.class,showAnimation);
                     selectChanged(v.getId());
                 }else {
                     if(WalletStorage.getInstance(getApplicationContext()).get().size()>0){
@@ -392,11 +405,11 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                             startActivity(new Intent(MainFragmentUI.this, GestureLoginActivity.class));
                             Utils.openNewActivityAnim(MainFragmentUI.this,false);
                         }else{
-                            showFragment(AccountFragment.class);
+                            showFragment(AccountFragment.class,showAnimation);
                             selectChanged(v.getId());
                         }
                     } else{
-                        showFragment(NewWalletFragment.class);
+                        showFragment(NewWalletFragment.class,showAnimation);
                         selectChanged(v.getId());
                     }
                 }
@@ -407,7 +420,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                     startActivity(new Intent(MainFragmentUI.this,WalletModeLoginUI.class));
                     Utils.openNewActivityAnim(this,false);
                 }else{
-                    showFragment(MainFoundFragmentUI.class);
+                    showFragment(MainFoundFragmentUI.class,false);
                     selectChanged(v.getId());
                 }
                 break;
@@ -416,7 +429,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                     startActivity(new Intent(MainFragmentUI.this,WalletModeLoginUI.class));
                     Utils.openNewActivityAnim(this,false);
                 }else{
-                    showFragment(MySelfFragment.class);
+                    showFragment(MySelfFragment.class,false);
                     selectChanged(v.getId());
                 }
                 break;
@@ -461,11 +474,18 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
     }
 
     /**
+     * show animation    true or false
+     * */
+    public boolean getShowAnimation(){
+        return showAnimation;
+    }
+
+    /**
      * Show the new fragments
      *
      * @param c
      */
-    private void showFragment(Class<? extends BaseFragment> c) {
+    private void showFragment(Class<? extends BaseFragment> c,boolean showAnimation) {
         try {
             BaseFragment fragment;
             // If mStack greater than 0, the hidden
@@ -487,6 +507,24 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+        if (showAnimation){
+            mainBottomTab.setVisibility(View.GONE);
+            Animation transanim = new Animation() {
+                @Override
+                protected void applyTransformation(float interpolatedTime, Transformation t) {
+                    mainBottomTab.setVisibility(View.VISIBLE);
+                    FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) mainBottomTab.getLayoutParams();
+                    lp.setMargins(0, (int) (Utils.dip2px(MainFragmentUI.this, 55) * (1 - interpolatedTime)), 0, 0 );
+                    mainBottomTab.requestLayout();
+                }
+                @Override
+                public boolean willChangeBounds() {
+                    return true;
+                }
+            };
+            transanim.setDuration(1000);
+            mainBottomTab.startAnimation(transanim);
+        }
     }
 
 
@@ -496,9 +534,9 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == 100){
             if(WalletStorage.getInstance(getApplicationContext()).get().size()>0){
-                showFragment(AccountFragment.class);
+                showFragment(AccountFragment.class,false);
             } else{
-                showFragment(NewWalletFragment.class);
+                showFragment(NewWalletFragment.class,false);
             }
         }
     }
