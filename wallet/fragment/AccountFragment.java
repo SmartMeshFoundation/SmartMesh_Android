@@ -231,22 +231,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         mDrawerToggle = new ActionBarDrawerToggle(getActivity(), mDrawerLayout, R.string.drawer_open,R.string.drawer_close);
         mDrawerToggle.syncState();
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-        int walletMode = MySharedPrefs.readInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
-        if (walletMode != 0 && NextApplication.myInfo == null){
-            walletGesture.setVisibility(View.VISIBLE);
-            byte[] gestureByte  = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD);
-            if (gestureByte != null && gestureByte.length > 0){
-                isChecked = true;
-                walletGesture.setText(getString(R.string.gesture_wallet_open));
-            }else{
-                isChecked = false;
-                walletGesture.setText(getString(R.string.gesture_wallet_close));
-            }
-        }else{
-            walletGesture.setVisibility(View.GONE);
-        }
-
-
+        setWalletGesture();
         initWalletInfo();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.WALLET_REFRESH_DEL);//Refresh the page
@@ -328,7 +313,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private void initHomePop() {
         LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.account_more_popup_layout, null);
-        homePop = new PopupWindow(view, Utils.dip2px(getActivity(), 170), LinearLayout.LayoutParams.WRAP_CONTENT);
+        homePop = new PopupWindow(view, Utils.dip2px(getActivity(), 160), LinearLayout.LayoutParams.WRAP_CONTENT);
         homePop.setBackgroundDrawable(new BitmapDrawable());
         homePop.setOutsideTouchable(true);
         homePop.setFocusable(true);
@@ -337,7 +322,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             homePop.dismiss();
         } else {
             // On the coordinates of a specific display PopupWindow custom menu
-            homePop.showAsDropDown(accountInfo, Utils.dip2px(getActivity(), -110), Utils.dip2px(getActivity(), 0));
+            homePop.showAsDropDown(accountInfo, Utils.dip2px(getActivity(), -118), Utils.dip2px(getActivity(), 0));
         }
     }
 
@@ -355,33 +340,34 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         super.onDestroy();
         getActivity().unregisterReceiver(mBroadcastReceiver);
         LoginUtil.getInstance().destory();
-        if (timer != null){
-            timer.cancel();
-            timer = null;
-        }
-        if (timerTask != null){
-            timerTask.cancel();
-            timerTask = null;
-        }
+        cancelTimer();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        setWalletGesture();
+    }
+
+    /**
+     * set wallet gesture  open or close
+     * */
+    private void setWalletGesture(){
         int walletMode = MySharedPrefs.readInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
-        if (walletMode != 0 && NextApplication.myInfo == null){
-            walletGesture.setVisibility(View.VISIBLE);
-            byte[] gestureByte  = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD );
-            if (gestureByte != null && gestureByte.length > 0){
-                isChecked = true;
-                walletGesture.setText(getString(R.string.gesture_wallet_open));
-            }else{
-                isChecked = false;
-                walletGesture.setText(getString(R.string.gesture_wallet_close));
-            }
+        byte[] gestureByte;
+        if (walletMode == 0 && NextApplication.myInfo != null){
+            gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
         }else{
-            walletGesture.setVisibility(View.GONE);
+            gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD);
         }
+        if (gestureByte != null && gestureByte.length > 0){
+            isChecked = true;
+            walletGesture.setText(getString(R.string.gesture_wallet_open));
+        }else{
+            isChecked = false;
+            walletGesture.setText(getString(R.string.gesture_wallet_close));
+        }
+
     }
 
     @Override
@@ -404,7 +390,13 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
             case R.id.walletGesture://Account management
-                byte[] gestureByte  = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD);
+                int walletMode = MySharedPrefs.readInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+                byte[] gestureByte;
+                if (walletMode == 0 && NextApplication.myInfo != null){
+                    gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
+                }else{
+                    gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD);
+                }
                 if (gestureByte != null && gestureByte.length > 0){
                     Intent intent = new Intent(getActivity(),GestureLoginActivity.class);
                     intent.putExtra("type",isChecked ? 2 : 1);
@@ -604,7 +596,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             }
         }
 
-        mAdapter.notifyDataSetChanged();
+        mAdapter.resetSource(WalletStorage.getInstance(NextApplication.mContext).get());
 
         new Handler().postDelayed(new Runnable(){
             public void run() {
