@@ -98,7 +98,6 @@ public class WalletThread extends Thread {
 					return;
 				}
 
-
 				File destination = new File( new File(context.getFilesDir(), SDCardCtrl.WALLERPATH), walletAddress);
 				objectMapper = ObjectMapperFactory.getObjectMapper();
 				objectMapper.writeValue(destination, walletFile);
@@ -122,11 +121,14 @@ public class WalletThread extends Thread {
 				int walletMode = MySharedPrefs.readInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
 				if (walletMode == 1){
 					MySharedPrefs.writeInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN, 2);
-					WalletStorage.getInstance(context).updateWalletList(storableWallet,context);
+					WalletStorage.getInstance(context).addWalletList(storableWallet,context);
 				}else{
 					WalletStorage.getInstance(context).add(storableWallet,context);
 				}
-
+				if (WalletStorage.getInstance(context).get().size() > 0){
+					WalletStorage.getInstance(NextApplication.mContext).updateMapDb(storableWallet.getPublicKey());
+					WalletStorage.getInstance(NextApplication.mContext).updateWalletToList(NextApplication.mContext,storableWallet.getPublicKey(),false);
+				}
 				mHandler.sendEmptyMessage(WalletHandler.WALLET_SUCCESS);
 				addAddressMethod(walletAddress);
 			}

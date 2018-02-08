@@ -8,9 +8,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
+import com.lingtuan.firefly.wallet.vo.StorableWallet;
+
+import java.util.ArrayList;
 
 /**
  * Created on 2017/8/23.
@@ -20,18 +24,27 @@ public class AccountAdapter extends BaseAdapter {
 
     private Context context = null ;
 
+    private ArrayList<StorableWallet> walletStorages =  WalletStorage.getInstance(NextApplication.mContext).get();
+
     public AccountAdapter(Context context){
         this.context = context;
     }
 
+
+
     @Override
     public int getCount() {
-        return WalletStorage.getInstance(context.getApplicationContext()).get().size();
+        return walletStorages.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return WalletStorage.getInstance(context.getApplicationContext()).get().get(position);
+        return walletStorages.get(position);
+    }
+
+    public void resetSource(ArrayList<StorableWallet> walletStorages){
+        this.walletStorages = walletStorages;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -53,18 +66,18 @@ public class AccountAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         holder.walletImg.setImageResource(Utils.getWalletImg(context,position));
-        if (WalletStorage.getInstance(context.getApplicationContext()).get().get(position).isSelect()){
+        if (walletStorages.get(position).isSelect()){
             holder.walletItemBg.setBackgroundColor(context.getResources().getColor(R.color.item_selected));
         }else{
             holder.walletItemBg.setBackgroundColor(context.getResources().getColor(R.color.textColor));
         }
-        holder.walletName.setText(WalletStorage.getInstance(context.getApplicationContext()).get().get(position).getWalletName());
+        holder.walletName.setText(walletStorages.get(position).getWalletName());
         return convertView;
     }
 
     static class ViewHolder{
-        ImageView walletImg;
-        TextView walletName;
-        LinearLayout walletItemBg;
+        ImageView walletImg;//The wallet password
+        TextView walletName;//Name of the wallet
+        LinearLayout walletItemBg;//The root layout
     }
 }
