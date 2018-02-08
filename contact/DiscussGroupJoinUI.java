@@ -33,6 +33,7 @@ public class DiscussGroupJoinUI extends BaseActivity {
 	private ArrayList<UserBaseVo> data = new ArrayList<>();
 	private Dialog mProgressDialog;
 	private String groupName;
+	private TextView groupNotexist;
 	@Override
 	protected void setContentView() {
 		setContentView(R.layout.discuss_group_join_layout);
@@ -65,6 +66,7 @@ public class DiscussGroupJoinUI extends BaseActivity {
 		groupImageView=(DiscussGroupImageView) findViewById(R.id.join_discuss_group_avatar);
 		nameTextView=(TextView) findViewById(R.id.join_discuss_group_member);
 		numTextView=(TextView) findViewById(R.id.join_discuss_group_num);
+		groupNotexist=(TextView) findViewById(R.id.groupNotexist);
 	}
 
 	@Override
@@ -113,7 +115,10 @@ public class DiscussGroupJoinUI extends BaseActivity {
 
 			@Override
 			public void error(int errorCode, String errorMsg) {
-
+				if (errorCode == 1240820){
+					groupNotexist.setVisibility(View.VISIBLE);
+					joinBtn.setEnabled(false);
+				}
 			}
 		});
 	}
