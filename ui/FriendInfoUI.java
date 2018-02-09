@@ -243,9 +243,11 @@ public class FriendInfoUI extends BaseActivity {
            public void success(JSONObject response) {
                JSONObject object = response.optJSONObject("data");
                String localid = info.getLocalId();
+               boolean isOfflineFound = info.isOffLineFound();
                info = new UserInfoVo().parse(object);
                if (info != null){
                    info.setLocalId(localid);
+                   info.setOffLineFound(isOfflineFound);
                }
                loadData();
                LoadingDialog.close();
@@ -270,7 +272,6 @@ public class FriendInfoUI extends BaseActivity {
                 break;
             case R.id.addFriends:
                 addFriendMethod();
-
                 break;
             case R.id.sendMsg:
                 Utils.intentChattingUI(FriendInfoUI.this,info.getLocalId(),info.getThumb(),info.getUsername(),info.getGender(),info.getFriendLog(),false,false,false,0,true);
@@ -317,6 +318,5 @@ public class FriendInfoUI extends BaseActivity {
         }
 
     }
-
 
 }

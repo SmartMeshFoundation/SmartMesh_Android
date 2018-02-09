@@ -1,13 +1,18 @@
 package com.lingtuan.firefly.util;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
 import com.lingtuan.firefly.NextApplication;
+import com.lingtuan.firefly.custom.gesturelock.ACache;
+import com.lingtuan.firefly.wallet.util.WalletStorage;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.IOException;
 
 public class MySharedPrefs {
 
@@ -23,13 +28,19 @@ public class MySharedPrefs {
     /*The system time key values*/
     public static final String KEY_REQTIME = "key_reqtime";
 
+
+    /*The wallet key values*/
+    public static final String KEY_WALLET = "key_wallet";
+
+
+    /*The all wallet key values*/
+    public static final String KEY_ALL_WALLET = "key_all_wallet";
+
     /*Storing user information*/
     public static final String FILE_USER = "userinfo";
 
     /*Is the first time you login*/
     public static final String IS_FIRST_LOGIN = "is_first_login";
-
-    public static final String KEY_USERID = "userid";
 
     /*Store the current position time information*/
     public static final String LOCATION_TIME = "location_time";
@@ -41,7 +52,10 @@ public class MySharedPrefs {
     public static final String KEY_LOCATION_ADDRESSNAME = "location_addressname";
 
     /*Whether it is the first time you install and use the software*/
-    public static final String KEY_IS_FIRST_USE = "key_is_first_use";
+    public static final String KEY_IS_FIRST_WALLET_USE = "key_is_first_wallet_use";
+
+    /*Whether it is the wallet pattern   0 not wallet pattern   1 is wallet pattern but is not login     2 has login*/
+    public static final String KEY_IS_WALLET_PATTERN = "key_is_wallet_pattern";
 
     /*update version*/
     public static final String KEY_UPDATE_VERSION = "key_update_version";
@@ -104,10 +118,6 @@ public class MySharedPrefs {
      */
     public static final String MSG_VIBRATION = "vibration";
 
-    /**
-     * To notify the display messages
-     */
-    public static final String MSG_SHOW_DETAIL = "new_msg_show_detail";
 
     /**
      * Receive new messages to remind
@@ -120,19 +130,9 @@ public class MySharedPrefs {
     public static final String KEY_FRIEND_NOTE = "friend_note";
 
     /**
-     * Have information about strangers
-     */
-    public static final String IS_UNFRIEND_SEND_MSG = "is_unfriend_send_msg_";
-
-    /**
      * The local path to upload the files
      * */
     public static final String KEY_FIREFLY_FILEPATH = "firefly_filepath";
-
-    /**
-     * Chat.
-     * */
-    public static final String KEY_CHAT_CONTENT = "chatcontent_";
 
     /**
      * Upload the local path of files
@@ -149,8 +149,78 @@ public class MySharedPrefs {
      * @ param context context
      * */
     public static String readWalletList(Context context){
+        int walletMode = MySharedPrefs.readInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+        if (walletMode == 0 && NextApplication.myInfo != null){
+            return readString(context,FILE_WALLET,NextApplication.myInfo.getLocalId());
+        }else if (walletMode == 1){
+            return readString(context,FILE_WALLET,KEY_ALL_WALLET);
+        }else {
+            return readString(context,FILE_WALLET,KEY_WALLET);
+        }
+    }
+
+    /**
+     * reload wallet list
+     * */
+    public static void reLoadWalletList(){
+        int walletMode = MySharedPrefs.readInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+        if (walletMode != 0){
+            MySharedPrefs.writeInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN,0);
+            if (walletMode == 2){
+                try {
+                    WalletStorage.getInstance(NextApplication.mContext).reLoad(NextApplication.mContext);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+                byte[] gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD);
+                if (gestureByte != null && gestureByte.length > 0 && NextApplication.myInfo != null){
+                    ACache.get(NextApplication.mContext).put(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId(), gestureByte);
+                }
+                Utils.sendBroadcastReceiver(NextApplication.mContext, new Intent(Constants.WALLET_REFRESH_SHOW_HINT), false);
+            }else{
+                try {
+                    WalletStorage.getInstance(NextApplication.mContext).reLoadUserWallet(NextApplication.mContext);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+            Utils.sendBroadcastReceiver(NextApplication.mContext, new Intent(Constants.WALLET_REFRESH_GESTURE), false);
+        }
+    }
+
+    /**
+     * read the wallet list
+     * @ param context context
+     * */
+    public static String readWalletModeList(Context context){
+        return readString(context,FILE_WALLET,KEY_WALLET);
+    }
+
+    /**
+     * read the wallet list
+     * @ param context context
+     * */
+    public static String readWalletModeAllList(Context context){
+        return readString(context,FILE_WALLET,KEY_ALL_WALLET);
+    }
+
+
+    /**
+     * read the wallet list
+     * @ param context context
+     * */
+    public static String readUserWalletList(Context context){
+        if (NextApplication.myInfo == null){
+            return null;
+        }
         return readString(context,FILE_WALLET,NextApplication.myInfo.getLocalId());
     }
+
+
 
     /**
      * read the String
@@ -283,6 +353,7 @@ public class MySharedPrefs {
         SharedPreferences sharedPreferences = context.getSharedPreferences(FILE_USER, Context.MODE_PRIVATE);
         Editor editor = sharedPreferences.edit();
         editor.putString(KEY_LOGIN_USERINFO, "");
+        editor.putInt(KEY_IS_WALLET_PATTERN, 0);
         if (NextApplication.myInfo != null){
             String jsonString  = MySharedPrefs.readString(context, MySharedPrefs.FILE_USER, NextApplication.myInfo.getLocalId());
             try {

@@ -9,10 +9,10 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaScannerConnection;
@@ -23,12 +23,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.ColorInt;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,18 +42,15 @@ import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.chat.ChattingUI;
 import com.lingtuan.firefly.contact.DiscussGroupJoinUI;
-import com.lingtuan.firefly.contact.RecommentContactListUI;
 import com.lingtuan.firefly.custom.LanguageChangableView;
 import com.lingtuan.firefly.service.LoadDataService;
 import com.lingtuan.firefly.ui.FriendInfoUI;
-import com.lingtuan.firefly.ui.MainFragmentUI;
 import com.lingtuan.firefly.ui.WebViewUI;
 import com.lingtuan.firefly.vo.UserBaseVo;
 import com.lingtuan.firefly.vo.UserInfoVo;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.xmpp.XmppAction;
-import com.lingtuan.firefly.xmpp.XmppUtils;
 
 import org.apache.http.util.EncodingUtils;
 import org.json.JSONObject;
@@ -164,8 +161,22 @@ public class Utils {
     }
 
     /**
+     * A-->B页面,A不动,B从屏幕中间进入全屏
+     */
+    public static void openNewActivityFullScreenAnim(Activity act, boolean finish) {
+        if (act != null) {
+            act.overridePendingTransition(R.anim.push_miss_to_fullscreen, R.anim.push_fullscreen_to_miss);
+            if (finish) {
+                act.finish();
+            }
+        }
+    }
+
+
+    /**
      * Page B - > A, B from the screen to the right measure, A slide from left to right to screen the middle,
      */
+
     public static void exitActivityAndBackAnim(Activity act, boolean finish) {
         if (act != null) {
             if (finish) {
@@ -346,6 +357,14 @@ public class Utils {
      */
     public static String eventDetailTime(long time) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd HH:mm");
+        return format.format(time * 1000);
+    }
+
+    /**
+     * System time is a wonderful work of 10 digits and 10 digits seconds value < / font >
+     */
+    public static String transDetailTime(long time) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         return format.format(time * 1000);
     }
 
@@ -742,10 +761,20 @@ public class Utils {
      */
     public static void clickUrl(String url, Context c) {
         try {
-            Intent intent = new Intent(c, WebViewUI.class);
-            intent.putExtra("loadUrl", url);
-            c.startActivity(intent);
-            openNewActivityAnim((Activity) c, false);
+            if (url.contains(Constants.APP_URL_FLAG) && url.contains("/qrgroup.html")) {//加入群聊页面
+                Uri parse = Uri.parse(url);
+                String gid = parse.getQueryParameter("gid");
+                Intent intent = new Intent(c, DiscussGroupJoinUI.class);
+                intent.putExtra("groupid", gid);
+                c.startActivity(intent);
+                openNewActivityAnim((Activity) c, false);
+
+            }else{
+                Intent intent = new Intent(c, WebViewUI.class);
+                intent.putExtra("loadUrl", url);
+                c.startActivity(intent);
+                openNewActivityAnim((Activity) c, false);
+            }
         } catch (Exception e) {
             Intent intent = new Intent(c, WebViewUI.class);
             intent.putExtra("loadUrl", url);
@@ -782,7 +811,7 @@ public class Utils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.intentChattingUI(context, "group-" + cid, url.toString(), TextUtils.isEmpty(groupName) ? username.toString() : groupName, "1",0,true, false, false, 0, false);
+        Utils.intentChattingUI(context, "group-" + cid, url.toString(), TextUtils.isEmpty(groupName) ? username.toString() : groupName, "1",0,true, false, false, 0, true);
     }
 
     /**
@@ -828,6 +857,7 @@ public class Utils {
         info.setSightml(vo.getSightml());
         info.setAge(vo.getAge());
         info.setFriendLog(vo.getFriendLog());
+        info.setOffLineFound(vo.isOffLineFound());
         intent.putExtra("info", info);
         act.startActivity(intent);
         openNewActivityAnim(act, finish);
@@ -922,6 +952,26 @@ public class Utils {
             }
         }
 
+    }
+
+    /**
+     * TextView、Button set different color
+     */
+    public static ColorStateList toColorStateList(@ColorInt int normalColor, @ColorInt int pressedColor,
+                                                  @ColorInt int focusedColor, @ColorInt int unableColor) {
+        int[] colors = new int[]{pressedColor, focusedColor, normalColor, focusedColor, unableColor, normalColor};
+        int[][] states = new int[6][];
+        states[0] = new int[]{android.R.attr.state_pressed, android.R.attr.state_enabled};
+        states[1] = new int[]{android.R.attr.state_enabled, android.R.attr.state_focused};
+        states[2] = new int[]{android.R.attr.state_enabled};
+        states[3] = new int[]{android.R.attr.state_focused};
+        states[4] = new int[]{android.R.attr.state_window_focused};
+        states[5] = new int[]{};
+        return new ColorStateList(states, colors);
+    }
+
+    public static ColorStateList toColorStateList(@ColorInt int normalColor, @ColorInt int pressedColor) {
+        return toColorStateList(normalColor, pressedColor, pressedColor, normalColor);
     }
 
 
