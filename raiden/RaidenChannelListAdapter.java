@@ -10,11 +10,12 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.raiden.vo.RaidenChannelVo;
+import com.lingtuan.firefly.raiden.ChangeChannelStateListener;
 
 import java.util.List;
 
 /**
- * Created by Administrator on 2018/1/24.
+ * Created on 2018/1/24.
  */
 
 public class RaidenChannelListAdapter extends BaseAdapter{
@@ -24,11 +25,6 @@ public class RaidenChannelListAdapter extends BaseAdapter{
     private List<RaidenChannelVo> source = null ;
     private ChangeChannelStateListener channelStateListener;
 
-    public interface ChangeChannelStateListener {
-        void changeChannel(int position,boolean isOpen);
-        void deopsitChannel(int position);
-        void transferChannel(int position);
-    }
 
     public RaidenChannelListAdapter(Context c, List<RaidenChannelVo> source,ChangeChannelStateListener channelStateListener){
         this.context = c ;
@@ -79,13 +75,14 @@ public class RaidenChannelListAdapter extends BaseAdapter{
         }else{
             holder = (RaidenChannelHolder)convertView.getTag();
         }
+
         final RaidenChannelVo vo = source.get(position);
         holder.partner.setText(vo.getPartnerAddress());
         holder.balance.setText(vo.getBalance());
         holder.token.setText(context.getString(R.string.smt));
         holder.state.setText(vo.getState());
 
-        if (TextUtils.equals("closed",vo.getState())){
+        if (TextUtils.equals("closed",vo.getState()) ||  TextUtils.equals("stated",vo.getState())){
             holder.channelLine.setVisibility(View.GONE);
             holder.channelBody.setVisibility(View.GONE);
         }else{
