@@ -32,7 +32,7 @@ import java.util.List;
  * raiden channel list ui
  */
 
-public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayout.OnRefreshListener, RaidenChannelListAdapter.ChangeChannelStateListener {
+public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayout.OnRefreshListener,ChangeChannelStateListener {
 
     private static int RAIDEN_CHANNEL_CREATE = 100;
 
@@ -111,6 +111,9 @@ public class RaidenChannelList extends BaseActivity implements  SwipeRefreshLayo
         loadChannelList();
     }
 
+    /**
+     * load channel list
+     * */
     private void loadChannelList() {
         new Thread(new Runnable() {
             @Override

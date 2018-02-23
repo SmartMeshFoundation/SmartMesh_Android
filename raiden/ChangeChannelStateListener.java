@@ -11,7 +11,7 @@ public interface ChangeChannelStateListener {
      * @param position  list position
      * @param isOpen    true open false  close
      */
-    void changeChannel(int position,boolean isOpen);
+    void changeChannel(int position, boolean isOpen);
 
     /**
      * deposit channel
