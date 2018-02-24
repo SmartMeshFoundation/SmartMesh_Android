@@ -1,0 +1,7 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    
+    <stroke android:width="0.5dp" android:color="@color/tab_sep_line" />
+    <solid android:color="@color/textColor" />
+
+</shape>

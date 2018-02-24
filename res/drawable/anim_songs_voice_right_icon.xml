@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list android:oneshot="true"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+  	<item android:duration="150" android:drawable="@drawable/icon_audio_right3"/>
+    <item android:duration="150" android:drawable="@drawable/icon_audio_right1"/>
+    <item android:duration="150" android:drawable="@drawable/icon_audio_right2"/>
+    <item android:duration="150" android:drawable="@drawable/icon_audio_right3"/>
+    <item android:duration="150" android:drawable="@drawable/icon_audio_right3"/>
+</animation-list>
