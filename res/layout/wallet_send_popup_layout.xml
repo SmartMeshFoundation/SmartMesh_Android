@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="100dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/home_pop_bg"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/txt_home_pop_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/textColor">
+
+        <TextView
+            style="@style/home_popup_style"
+            android:text="@string/eth" />
+    </RelativeLayout>
+
+    <View style="@style/home_popup_view_style" />
+
+
+    <RelativeLayout
+        android:id="@+id/txt_home_pop_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/textColor">
+
+        <TextView
+            android:id="@+id/txtType"
+            style="@style/home_popup_style"
+            android:text="@string/smt" />
+    </RelativeLayout>
+
+</LinearLayout>
