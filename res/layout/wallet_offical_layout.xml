@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/textColor">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:textSize="14sp"
+        android:textColor="@color/textColorHint"
+        android:text="@string/wallet_official_info"/>
+
+    <EditText
+        android:id="@+id/keyStoreInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_round_hintcolor_5"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:textColor="@color/black"
+        android:hint="@string/wallet_keysotre_info"
+        android:textSize="14sp"
+        android:gravity="top|left"
+        android:padding="5dp"
+        android:minLines="8"
+        android:maxLines="8"/>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/inputKeyStorePwd"
+        android:layout_margin="20dp">
+
+        <EditText
+            android:id="@+id/keyStorePwd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textSize="14sp"
+            android:inputType="textPassword"
+            android:hint="@string/wallet_keysotre_pwd" />
+    </android.support.design.widget.TextInputLayout>
+
+    <TextView
+        android:id="@+id/importWallet"
+        style="@style/WalletStyle"
+        android:text="@string/wallet_import_start"
+        android:background="@drawable/selector_round_black_30"
+        />
+   </LinearLayout>
+  </ScrollView>
+</LinearLayout>

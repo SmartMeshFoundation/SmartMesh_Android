@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/textColor">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+    <EditText
+        android:id="@+id/keyStoreInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_round_hintcolor_5"
+        android:textColor="@color/black"
+        android:layout_margin="20dp"
+        android:hint="@string/wallet_private_key_clear"
+        android:textSize="14sp"
+        android:gravity="top|left"
+        android:padding="5dp"
+        android:minLines="6"
+        android:maxLines="6"/>
+
+    <include layout="@layout/wallet_include_pwd"/>
+
+    <TextView
+        android:id="@+id/importWallet"
+        style="@style/WalletStyle"
+        android:text="@string/wallet_import_start"
+        android:background="@drawable/selector_round_black_30"/>
+
+  </LinearLayout>
+    </ScrollView>
+</LinearLayout>
