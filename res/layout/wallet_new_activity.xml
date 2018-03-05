@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/textColor">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="48dp"/>
+
+        <include layout="@layout/app_title_layout"/>
+
+    </FrameLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="40dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/icon_wallet_main"/>
+
+    <com.lingtuan.firefly.custom.LanguageTextView
+        style="@style/WalletStyle"
+        android:textSize="18sp"
+        android:paddingTop="20dp"
+        android:layout_weight="1"
+        android:gravity="top|center_horizontal"
+        android:text="@string/smart_mesh" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical">
+
+        <com.lingtuan.firefly.custom.LanguageTextView
+            android:id="@+id/createWallet"
+            style="@style/WalletModeLeftStyle"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:background="@drawable/selector_round_yellow_30"
+            android:text="@string/wallet_create_new" />
+
+        <com.lingtuan.firefly.custom.LanguageTextView
+            android:id="@+id/importWallet"
+            style="@style/WalletModeRightStyle"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:background="@drawable/selector_round_yellow_30"
+            android:text="@string/wallet_import_new"/>
+    </LinearLayout>
+
+    <com.lingtuan.firefly.custom.LanguageTextView
+        android:id="@+id/wallet_mode_login"
+        style="@style/WalletStyle"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:textColor="@color/yellow"
+        android:text="@string/login"
+        android:visibility="gone"
+        android:background="@drawable/selector_round_white_30"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="40dp"/>
+
+</LinearLayout>

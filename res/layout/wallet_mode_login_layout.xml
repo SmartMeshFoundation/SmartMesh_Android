@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/splash_bg"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/splash">
+
+    <include layout="@layout/app_title_layout"/>
+
+    <LinearLayout
+        android:id="@+id/bottom_bg_login"
+        android:layout_width="match_parent"
+        android:layout_gravity="bottom"
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dp"
+        android:visibility="visible"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:layout_marginBottom="40dp">
+
+            <com.lingtuan.firefly.custom.LanguageTextView
+                android:id="@+id/register"
+                style="@style/WalletModeLeftStyle"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:textColor="@color/black"
+                android:text="@string/regist"
+                android:background="@drawable/selector_round_yellow_30"
+                />
+
+            <com.lingtuan.firefly.custom.LanguageTextView
+                android:id="@+id/login"
+                style="@style/WalletModeRightStyle"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:textColor="@color/black"
+                android:text="@string/login"
+                android:background="@drawable/selector_round_yellow_30"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>
