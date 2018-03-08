@@ -116,8 +116,9 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
             if (walletMode != 0){
                 onClick(main_tab_account);
             }else{
+                int version =android.os.Build.VERSION.SDK_INT;
                 int smartMeshNetWork = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
-                if (smartMeshNetWork == -1 && NextApplication.myInfo != null){
+                if (smartMeshNetWork == -1 && NextApplication.myInfo != null  && version >= 16){
                     MySharedPrefs.writeInt(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(),1);
                     //Exit without social network service
                     startService(new Intent(MainFragmentUI.this, AppNetService.class));
@@ -213,13 +214,6 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
         if (walletMode != 0){
             onClick(main_tab_account);
-        }else{
-            int smartMeshNetWork = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
-            if (smartMeshNetWork == -1 && NextApplication.myInfo != null){
-                MySharedPrefs.writeInt(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(),1);
-                //Exit without social network service
-                startService(new Intent(MainFragmentUI.this, AppNetService.class));
-            }
         }
         try {
             Uri parse = getIntent().getData();
@@ -253,20 +247,26 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
             main_tab_chats.setSelected(true);
             showFragment(MainMessageFragmentUI.class,false);
         }
+
         if (Utils.isConnectNet(MainFragmentUI.this) && NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getToken()) && TextUtils.isEmpty(NextApplication.myInfo.getMid())&& TextUtils.isEmpty(NextApplication.myInfo.getMobile())&& TextUtils.isEmpty(NextApplication.myInfo.getEmail())){
             LoginUtil.getInstance().initContext(MainFragmentUI.this);
             LoginUtil.getInstance().register(NextApplication.myInfo.getUsername(),NextApplication.myInfo.getPassword(),null,NextApplication.myInfo.getLocalId(),null);
         }
 
-        MySharedPrefs.writeBoolean(MainFragmentUI.this,MySharedPrefs.FILE_USER,MySharedPrefs.IS_SHOW_WALLET_DIALOG,false);
         if (NextApplication.myInfo != null){
             int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
             int version =android.os.Build.VERSION.SDK_INT;
             if (openSmartMesh == 1 && version >= 16){
                 //Start without social network service
                 startService(new Intent(MainFragmentUI.this, AppNetService.class));
+            }else if (walletMode == 0 && openSmartMesh == -1 && version >= 16){
+                MySharedPrefs.writeInt(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(),1);
+                //Exit without social network service
+                startService(new Intent(MainFragmentUI.this, AppNetService.class));
             }
         }
+
+        MySharedPrefs.writeBoolean(MainFragmentUI.this,MySharedPrefs.FILE_USER,MySharedPrefs.IS_SHOW_WALLET_DIALOG,false);
     }
 
     private void registerReceive() {
