@@ -115,6 +115,13 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
 
             if (walletMode != 0){
                 onClick(main_tab_account);
+            }else{
+                int smartMeshNetWork = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+                if (smartMeshNetWork == -1 && NextApplication.myInfo != null){
+                    MySharedPrefs.writeInt(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(),1);
+                    //Exit without social network service
+                    startService(new Intent(MainFragmentUI.this, AppNetService.class));
+                }
             }
             setIntent(intent);
         }catch (Exception e){
@@ -206,6 +213,13 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
         if (walletMode != 0){
             onClick(main_tab_account);
+        }else{
+            int smartMeshNetWork = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+            if (smartMeshNetWork == -1 && NextApplication.myInfo != null){
+                MySharedPrefs.writeInt(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(),1);
+                //Exit without social network service
+                startService(new Intent(MainFragmentUI.this, AppNetService.class));
+            }
         }
         try {
             Uri parse = getIntent().getData();
