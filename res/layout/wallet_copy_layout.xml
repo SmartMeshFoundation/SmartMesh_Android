@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include layout="@layout/app_title_layout"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <LinearLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/textColor">
+            <ImageView
+
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/icon"
+                android:src="@drawable/icon_static_005"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/success"
+                android:layout_gravity="center"
+                android:layout_margin="20dp"
+                android:textSize="18sp"
+                android:ellipsize="middle"
+                android:singleLine="true"
+                android:text="@string/notification_wallgen_finished"/>
+            <TextView
+                android:visibility="gone"
+                android:layout_width="220dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/address"
+                android:layout_gravity="center"
+                android:layout_margin="20dp"
+                android:textSize="12sp"
+                android:singleLine="true"
+                android:ellipsize="middle"
+                android:textColor="@color/black"
+                />
+            <TextView
+                android:id="@+id/walletCopyName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="40dp"
+                android:textColor="@color/black"
+                android:maxLines="1"/>
+            <TextView
+                android:id="@+id/walletCopyPwdInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="40dp"
+                android:textColor="@color/black"
+                android:maxLines="1"/>
+            </LinearLayout>
+            <TextView
+                android:id="@+id/walletCopyKey"
+                style="@style/WalletStyle"
+                android:text="@string/wallet_copy_private_key"
+                android:background="@drawable/selector_round_black_30"
+                />
+
+            <TextView
+                android:id="@+id/walletCopyKeyStore"
+                style="@style/WalletStyle"
+                android:text="@string/wallet_copy_keysotre"
+                android:background="@drawable/selector_round_black_30"
+                />
+
+            <TextView
+                android:id="@+id/walletDelete"
+                style="@style/WalletStyle"
+                android:text="@string/wallet_delete"
+                android:textColor="@color/black"
+                android:background="@drawable/selector_round_primary_line_30"
+                />
+        </LinearLayout>
+
+    </ScrollView>
+
+
+
+</LinearLayout>
