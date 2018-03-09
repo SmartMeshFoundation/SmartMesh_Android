@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        style="@style/LinearSingleStyle">
+
+        <EditText
+            android:id="@+id/walletPwd"
+            style="@style/EditTextSingleStyle"
+            android:inputType="textPassword"
+            android:hint="@string/account_pwd_input" />
+
+        <ImageView
+            android:id="@+id/isShowPass"
+            android:layout_width="45dp"
+            android:layout_height="match_parent"
+            android:padding="10dp"
+            android:gravity="center_vertical"
+            android:src="@drawable/eye_close" />
+
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginLeft="8dp"
+        android:background="@color/tab_sep_line"/>
+
+    <LinearLayout
+        style="@style/LinearSingleStyle">
+
+        <EditText
+            android:id="@+id/walletAgainPwd"
+            style="@style/EditTextSingleStyle"
+            android:inputType="textPassword"
+            android:hint="@string/account_pwd_again_input" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginLeft="8dp"
+        android:background="@color/tab_sep_line"/>
+
+    <LinearLayout
+        style="@style/LinearSingleStyle">
+
+        <EditText
+            android:id="@+id/walletPwdInfo"
+            style="@style/EditTextSingleStyle"
+            android:hint="@string/account_pwd_info_input" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginLeft="8dp"
+        android:background="@color/tab_sep_line"/>
+
+</LinearLayout>
