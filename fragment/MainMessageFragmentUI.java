@@ -401,6 +401,7 @@ public class MainMessageFragmentUI extends BaseFragment implements OnItemClickLi
 
     /**
      * Update the message thread
+     * The first time you create everyone, the message time is empty
      * */
     class UpdateMessage implements Runnable {
 
@@ -431,10 +432,13 @@ public class MainMessageFragmentUI extends BaseFragment implements OnItemClickLi
                 chatMsg.setUsername(getString(R.string.everyone));
                 chatMsg.setChatId("everyone");
                 chatMsg.setType(0);
-                chatMsg.setMsgTime(System.currentTimeMillis()/1000);
                 chatMsg.setContent("");
                 mList.add(chatMsg);
-                FinalUserDataBase.getInstance().insertChatEvent(chatMsg);
+                try {
+                    FinalUserDataBase.getInstance().insertChatEvent(chatMsg);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
             Collections.sort(mList, new ChatMsgComparable());
             Message msg = new Message();
