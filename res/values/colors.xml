@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#ffffffff</color>
+    <color name="colorPrimaryDark">#ff0D193D</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorRed">#FF0000</color>
+    <color name="colorFound">#0D193D</color>
+    <color name="textColorPrimary">#e0e0e0</color>
+    <color name="textColor">#FFFFFF</color>
+    <color name="textColorHint">#999999</color>
+    <color name="textColorHintPrimary">#797979</color>
+    <color name="textColorCard">#979797</color>
+    <color name="cardLine">#E2E2E2</color>
+    <color name="black_f1">#fff1f1f2</color>
+    <color name="black">#ff000000</color>
+    <color name="color70">#ffb0b0b0</color>
+    <color name="blackPrimary">#ff030303</color>
+    <color name="blacke6">#e6000000</color>
+    <color name="tab_sep_line">#ffdbdbdb</color>
+    <color name="tab_sep_message_line">#fff1f1f1</color>
+    <color name="tab_sep_normal">#ff737373</color>
+    <color name="btn_FFF7F7F7">#FFF7F7F7</color>
+    <color name="btn_e8e8e8">#E8E8E8</color>
+    <color name="gray_sep_bg">#fff6f6f6</color>
+    <color name="gray">#ffcccccc</color>
+    <color name="gray_selected_bg">#ffeeeeee</color>
+    <color name="item_selected">#ffe5e5e5</color>
+    <color name="lightgreen">#99CC33</color>
+    <color name="green">#00CC00</color>
+    <color name="transparent">#00000000</color>
+    <color name="yellow">#ffd100</color>
+    <color name="yellowDark">#f7dd67</color>
+    <color name="yellowPrimary">#D4BD48</color>
+    <color name="yellow_trans">#30D4BD48</color>
+    <color name="white_top">#f4fff1</color>
+    <color name="popup_window_shadow">#b0000000</color>
+    <color name="male_title_bg">#ff5b194b</color>
+    <color name="dialog_format_select_normal">#00000000</color>
+    <color name="dialog_format_select_pressed">#ffe5e5e5</color>
+
+    <color name="switch_button_gray">#F2F2F2</color>
+    <color name="switch_button_green">#7ED321</color>
+
+    <color name="gesture_lock_error">#FB5655</color>
+    <color name="gesture_lock_select">#FFC828</color>
+    <color name="wallet_backup_normal">#FFFBF1</color>
+    <color name="raiden_blue">#097bfe</color>
+</resources>

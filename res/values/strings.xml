@@ -1,0 +1,1797 @@
+<resources>
+    <string name="app_name">SmartMesh</string>
+    <string name="start_smt">Start SmartMesh</string>
+
+    <!-- Gesture login activity -->
+    <string name="gesture_forget_gesture">Login Password</string>
+    <string name="gesture_login">Gesture password</string>
+    <string name="gesture_close">Use gesture password to close</string>
+    <string name="gesture_pwd_close">Use wallet password to close</string>
+    <string name="gesture_error">Invaild password</string>
+    <string name="gesture_error_login">Too many password errors, please log in using your password</string>
+    <string name="gesture_correct">Entered correctly</string>
+    <string name="gesture_no_wallet">No wallet</string>
+    <string name="gesture_wallet_open">Gesture: Open</string>
+    <string name="gesture_wallet_close">Gesture: Close</string>
+
+    <!-- raiden pay -->
+    <string name="raiden_channel">Channel</string>
+    <string name="raiden_channel_create">Create Channel</string>
+    <string name="raiden_channel_add">Channel Add</string>
+    <string name="raiden_channel_add_complete">Add to Complete</string>
+    <string name="raiden_channel_create_enter">Enter Channel</string>
+    <string name="raiden_channel_close">Sure to close the channel?</string>
+    <string name="raiden_channel_raiden">Raiden</string>
+    <string name="raiden_pay">Pay:</string>
+    <string name="raiden_pay_1">Pay</string>
+    <string name="raiden_partner">Partner:</string>
+    <string name="raiden_partner_1">Partner</string>
+    <string name="raiden_balance">Balance:</string>
+    <string name="raiden_balance_1">Balance</string>
+    <string name="raiden_deposit">Deposit</string>
+    <string name="raiden_token">Token:</string>
+    <string name="raiden_token_1">Token</string>
+    <string name="raiden_state">State:</string>
+    <string name="raiden_to">To:</string>
+    <string name="raiden_from">From:</string>
+
+
+    <string name="wallet_copy_disclaimer">Disclaimer</string>
+    <string name="wallet_copy_disclaimer_info">• Please ensure secure backup your wallet.SmartMesh APP cannot access accounts,recounts keys,reset passwords,nor reverse transactions.You are responsible for your security.\n\n• Tourists(no MID and bound phone number, mailbox) to exit will not save wallet information.</string>
+
+    <!-- Create gesture activity -->
+    <string name="create_gesture_set">Set gesture password</string>
+    <string name="gesture_wallet_owd">please input password</string>
+    <string name="create_gesture_default">Set gesture password</string>
+    <string name="create_gesture_correct">Set gesture password again</string>
+    <string name="create_gesture_less_error">At least 4 points required</string>
+    <string name="create_gesture_confirm_error">Inconsistent with the previous drawing, please re-draw</string>
+    <string name="create_gesture_confirm_correct">Success</string>
+    <string name="create_gesture_reset">Preset gesture</string>
+    <string name="create_gesture_confirm">Confirm</string>
+
+    <!-- Login registration related -->
+    <string name="login">Login</string>
+    <string name="login_validating">Validating</string>
+    <string name="login_pwd_error">Username or password incorrect</string>
+    <string name="login_state_failure">Please login again</string>
+    <string name="regist">Register</string>
+    <string name="wallet_mode">Wallet pattern</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="forgot_password_hint">Forgot password</string>
+    <string name="account_pwd">Account password</string>
+    <string name="account_pwd_input">Enter your password</string>
+    <string name="account_pwd_again_input">Confirm your password</string>
+    <string name="account_pwd_again_warning">Password does not match</string>
+    <string name="account_pwd_info_input">Private key hint</string>
+    <string name="account_input_pwd_warning">Please enter your account password</string>
+    <string name="account_name_exist">Username already exists</string>
+    <string name="account_update_mid">SmartMesh ID</string>
+    <string name="account_input_mid">Enter SmartMesh ID</string>
+    <string name="account_content_mid">You can customize the MID for login and user search.</string>
+    <string name="account_upload_regist_info">For account safety, please enter MID to ensure login success</string>
+    <string name="account_logout_warn">Exit the prompt</string>
+    <string name="account_logout_hint">By logging out, there will NOT be any new message alert but all the historial data will be stored. </string>
+    <string name="account_logout_mid_warn">Please read the following instructions carefully:</string>
+    <string name="account_logout_mid_hint">Not set MID, bind phone or email account will not be able to log in again, and the wallet can not be retrieved. Are you sure you want to do this?</string>
+    <string name="account_logout_mid_hint_again">Your account will not be able to log in again after you click OK. If you have used your wallet, please check if it is backed up.</string>
+	<string name="account_name_warning">Please enter 1–20 digits for username</string>
+    <string name="account_pwd_warning">Please enter 6 – 18 digit for password</string>
+    <string name="mid_length_warning">Please enter 6 – 20 digits for MID</string>
+    <string name="mid_content_warning">MID cannot only contain number</string>
+    <string name="mid_user">MID:&quot; %s</string>
+
+    <!-- Home page -->
+    <string name="main_chats">Chat</string>
+    <string name="main_discover">Discover</string>
+    <string name="main_contact">Contacts</string>
+    <string name="account">Account</string>
+    <string name="myself">Me</string>
+    <string name="smart_mesh">SMART&quot;&quot;&quot;&quot;  MESH</string>
+    <string name="exit_app">Press again to exit SmartMesh</string>
+    <string name="transcation_records">Transactions</string>
+    <string name="transcation_detail">Transaction Detail</string>
+    <string name="transcation_search">Search Transaction</string>
+    <string name="transcation_failed">Transaction Failed</string>
+    <string name="account_manager">Manage Account</string>
+    <string name="setting">Settings</string>
+    <string name="wallet">Wallet</string>
+    <string name="security">Security Setting</string>
+    <string name="submit_feedback">Feedback</string>
+    <string name="qm_qm">Scan</string>
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Close</string>
+    <string name="qr_code">QR code</string>
+    <string name="copy_address">Copy address</string>
+    <string name="copy_link">Copy link</string>
+    <string name="copy_end">Copied to clipboard</string>
+    <string name="trans_success">Transfer successful</string>
+    <string name="trans_empty">No transaction record</string>
+    <string name="get_gas_error">Unable to obtain gas</string>
+    <string name="syning_later">syncing try later</string>
+    <string name="balance_er">Balance: %s</string>
+    <string name="eth">ETH</string>
+    <string name="smt">SMT</string>
+    <string name="mesh">MESH</string>
+    <string name="eth_balance">%s ETH</string>
+    <string name="smt_balance">%s SMT</string>
+    <string name="mesh_balance">%s MESH</string>
+    <string name="eth_er">%s ETHER</string>
+    <string name="smt_er">%s SMT</string>
+    <string name="eth_er_lower">%s ether</string>
+    <string name="eth_er_lower_1">ether</string>
+    <string name="smt_er_lower_1">smt</string>
+    <string name="mesh_er_lower_1">mesh</string>
+    <string name="gwei">gwei</string>
+    <string name="custom_gas_price">Custom Gas Price</string>
+    <string name="custom_gas">Custom Gas</string>
+    <string name="ok">OK</string>
+    <string name="advance">Advance</string>
+    <string name="custom_gas_notice">Gas price too Height，is recommended less than 100 gwei</string>
+    <string name="custom_gas_notice_1">Gas price is too low, is recommended greater than 8 gwei</string>
+    <string name="custom_gas_mesh_notice">The address Mesh tokens are locked, do not transfer. Gas consumed can not be recovered.</string>
+    <string name="custom_gas_smt_title">Gas tips</string>
+    <string name="custom_gas_smt_notice">At the moment, only support for gate.io and okex.com coins are used for this function. Temporarily do not use other platforms, so as to avoid unnecessary loss of digital property.</string>
+
+
+    <!-- Prompt relevant -->
+    <string name="hint_pwd_warning">To ensure safety of your balance, please do not disclose your privacy to others. </string>
+    <string name="hint_root_waning">Safety Warning</string>
+    <string name="hint_root_waning_content">There is a security risk on your mobile phone. Please use this app after this issue is solved.</string>
+    <string name="hint_content_cannot_empty">Cannot be blank!</string>
+    <string name="hint_empty_search">Username does not exsit</string>
+
+    <!-- Network related -->
+    <string name="error">Execution failed!</string>
+    <string name="error_get_balance">Failed to get the balance</string>
+    <string name="error_get_raiden_list">Failed to get channel list</string>
+    <string name="get_raiden_list_empty">Channel list is empty</string>
+    <string name="parse_error">Analysis failed!</string>
+    <string name="error_net">Please check your network connection</string>
+    <string name="pager_error">Loading page error. Please try again</string>
+    <string name="net_request_timeout">Request timeout! Please try again later</string>
+    <string name="net_unavailable">Network is not available, please try again later</string>
+
+    <!-- Personal data related to -->
+    <string name="offline_addffiend">Add friend request send success</string>
+    <string name="user_name">Username</string>
+    <string name="info">Personal Profile</string>
+    <string name="info_my_profile">View or edit your personal profile</string>
+    <string name="info_add_gender">Gender</string>
+    <string name="info_add_region">Region</string>
+    <string name="info_signature">Signature</string>
+    <string name="info_edit_dialog">Saving... One moment please</string>
+    <string name="info_edit_picture_cut_failure"> Image clipping failed </string>
+    <string name="info_upload_picture_failure">Image upload fail</string>
+    <string name="info_add_note">Add note</string>
+    <string name="info_set_note">Edit note</string>
+    <string name="info_data_set">Data settings</string>
+    <string name="info_shield_user">Block this user?</string>
+	<string name="info_block">Block</string>
+    <string name="select_country_title">Select area</string>
+    <string name="nearby">%s nearby</string>
+
+    <!-- normal -->
+    <string name="normal_mobile_models">Mobile phone model = </string>
+    <string name="normal_system_version">System version = </string>
+    <string name="normal_app_version">Application version = </string>
+    <string name="normal_app_channel">Application channel = </string>
+    <string name="normal_crash_time">Crash time = </string>
+    <string name="normal_connect_error">Connection error</string>
+    <string name="send_message"> Send message </string>
+    <string name="search">Search</string>
+    <string name="search_by_nick">Enter Nickname/MID/Email to add friends</string>
+    <string name="add">Add</string>
+    <string name="to_add">Add</string>
+    <string name="create">Create</string>
+    <string name="finish">Complete</string>
+    <string name="submit">Submit</string>
+    <string name="out">Out</string>
+    <string name="bind">Bind</string>
+    <string name="yes">Yes</string>
+    <string name="cancel">Cancel</string>
+    <string name="submit_num">Submit(%d)</string>
+    <string name="resend">ReSend</string>
+    <string name="send">Send</string>
+    <string name="agree">Accept</string>
+    <string name="agreeed">Accepted</string>
+    <string name="save">Save</string>
+    <string name="mark">Favorite</string>
+    <string name="transpond">Forward</string>
+    <string name="invite">Invite</string>
+    <string name="notif">Notification</string>
+    <string name="man">Male</string>
+    <string name="woman">Female</string>
+    <string name="everyone">#Everyone</string>
+
+    <!-- chat-->
+    <string name="chatting_selected_delete">Delete selected conversation</string>
+    <string name="chatting_selected_relay">Forward selected conversation</string>
+    <string name="chatting_waiting_receive">Waiting to accept</string>
+    <string name="chatting_sending_two">Sending…</string>
+    <string name="chatting_sending">Sending</string>
+    <string name="chatting_send_failure">Failed </string>
+    <string name="chatting_send_success">Sent!</string>
+    <string name="chatting_cancel_sending">Cancel</string>
+    <string name="chatting_did_not_receive">Not accepted</string>
+    <string name="chatting_receive">Accepted</string>
+    <string name="chatting_receiveing">Accepting…</string>
+    <string name="chatting_accept_failure">Accepting failed</string>
+    <string name="chatting_receive_success">Accepted!</string>
+    <string name="chatting_cancel_receiving">Cancel accept</string>
+    <string name="chatting_cross">Uploading</string>
+    <string name="chatting_has_been_sent">Sent</string>
+    <string name="chatting_did_not_download">Not downloaded</string>
+    <string name="chatting_downloading">Downloading…</string>
+    <string name="chatting_download_failed">Download fail</string>
+    <string name="chatting_have_download">Downloaded</string>
+    <string name="chatting_cancel_download">Cancel download</string>
+    <string name="chatting_start_download">Start downloading </string>
+    <string name="chatting_incompatible_message">Incompatible the message</string>
+    <string name="chatting_card">Business card</string>
+    <string name="chatting_card_hint">Off the Chain Value Transfers</string>
+    <string name="chatting_file">File</string>
+    <string name="chatting_audio_normal">Press to talk</string>
+    <string name="chatting_audio_press">Release when finish talking</string>
+    <string name="chatting_audio_down">Release your finger to cancel sending</string>
+    <string name="chatting_audio_last_say"> 1:00 seconds left</string>
+    <string name="chatting_audio_last_say_s"> %s seconds left</string>
+    <string name="chatting_selected">%d selected</string>
+    <string name="chatting_new_message">─────Below are new messages─────</string>
+    <string name="chatting_set">Chat setting</string>
+    <string name="chatting_image_update_percent">%d \%</string>
+
+    <string name="chat_audio_failed">Audio play failed</string>
+    <string name="chat_audio_short">Audio too short</string>
+    <string name="chat_cancel_collection_failed">Cancel favorite</string>
+    <string name="chat_collection_failed">favorited</string>
+    <string name="chat_unread_num">%d new messages</string>
+    <string name="chat_notify_picture">%s sent you a picture</string>
+    <string name="chat_notify_audio">%s sent you a voice</string>
+    <string name="chat_notify_gif">%s sent you a GIF</string>
+    <string name="chat_notify_card">%1$s sent you %2$s\'s business card</string>
+    <string name="chat_notify_link">%s:shared a link</string>
+    <string name="chat_notify_small_video">%s:sent you a video</string>
+    <string name="chat_notify_file">%s:sent you a file</string>
+    <string name="chat_notify_two_hint">%1$s: sent %2$s</string>
+    <string name="chat_notify_invite">You are invited to %2$s by %1$s</string>
+    <string name="chat_notify_invited_join">You are invited to join %s</string>
+    <string name="chat_notify_move_out">You are removed from %s</string>
+    <string name="chat_notify_group_dissolve">This group chat is disbanded</string>
+    <string name="chat_notify_dissolution_of">%s is disbanded</string>
+    <string name="chat_notify_have_join">You are invited to %s. Let\'s chat!</string>
+    <string name="chat_notify_have_new_trans">You have a new transaction</string>
+    <string name="chat_file_days_failure">Invalid after %d days</string>
+    <string name="chat_file_hours_failure">Invalid after %d hours</string>
+    <string name="chat_file_minutes_failure">Invalid after %d minutes</string>
+    <string name="chat_file_as_failure">Becoming invalid</string>
+    <string name="chat_file_scan">Scanning</string>
+    <string name="chat_file_all_size">File cannot be over 5GB!</string>
+    <string name="chat_file_collected">Favorite</string>
+    <string name="chat_file_already_collected">Added to Favorite</string>
+    <string name="chat_file_deleted">Deleted</string>
+    <string name="chat_file_empty">Empty</string>
+    <string name="chat_no_support">Not supported</string>
+    <string name="chat_welcome_to_everyone">Welcome to #Everyone</string>
+    <string name="chat_friend_notify">Friend notification</string>
+    <string name="chat_token_notify">Transaction Records</string>
+    <string name="chat_at_me">[Someone @ you]</string>
+    <string name="chat_at_all">[Someone @ everyone]</string>
+    <string name="chat_at_all_two">&quot;@all </string>
+    <string name="chat_at_all_three">All</string>
+    <string name="chat_document">File</string>
+    <string name="chat_video">Video</string>
+    <string name="chat_audio">Audio</string>
+    <string name="chat_other">Other</string>
+    <string name="chat_send_file">Sending(%s)</string>
+    <string name="chat_select_chatting_file">Select file</string>
+    <string name="chat_choice_info_upload">Select chat history upload (required)</string>
+    <string name="chat_please_choice_msg">Please select chat history</string>
+    <string name="chat_has_selected_size">selected %s</string>
+    <string name="chat_upload_image_max">Choose up to %d images</string>
+    <string name="chat_send_to">Send to:</string>
+
+    <string name="change_receiver_mode">Switched to handset mode</string>
+    <string name="change_speaker_mode">Switched to speaker mode</string>
+    <string name="chated_recently">Recent contacts</string>
+    <string name="chatting_selected_title">Send to friend</string>
+    <string name="copy_success">Copied to clipboard</string>
+    <string name="delete_success">Deleted</string>
+    <string name="detect_zxing">Scan QR code in image</string>
+    <string name="download_file">Downloading (%s)</string>
+    <string name="fav_file_warning">You can only favorite uploaded files </string>
+    <string name="file_delete">Source has been deleted</string>
+    <string name="file_outdate">Expired</string>
+    <string name="leave_message_to_friend">Leave a message to your friend</string>
+    <string name="loading_more">Loading…</string>
+    <string name="permanent">Valid permanently</string>
+    <string name="photo_group_scan">Choose photos</string>
+    <string name="photo_save_dir">Photo has been saved to %s document</string>
+    <string name="outdate_time">Due on %s</string>
+    <string name="re_download_file">Please download again</string>
+    <string name="re_upload_file">Upload again</string>
+    <string name="save_pic_to_phone">Save to phone</string>
+    <string name="send_to_friend">Send to friend</string>
+    <string name="send_ok">Sent</string>
+    <string name="tip_receiver_mode">Handset mode</string>
+    <string name="title_crop_image">Photo clipping</string>
+    <string name="transpond_warning">This type of message does not support cross-application forwarding</string>
+    <string name="transpond_warning_everyone">Cannot forward to #Everyone</string>
+    <string name="txt_downloading_progress">Downloading(%1$s/%2$s)</string>
+    <string name="txt_uploading_progress">Uploading(%1$s/%2$s)</string>
+    <string name="use_other_app_open">Open</string>
+
+    <!-- offline-->
+    <string name="offline_file_send_tip">File can only send to Off Internet Comunication user </string>
+    <string name="offline_room_new_come">%s entered this chat room</string>
+    <string name="offline_room_new_leaves">%s off the chat room</string>
+    <string name="offline_no_people"> No Off Internet Comunication users</string>
+
+    <!-- friend  contac -->
+    <string name="added">Added</string>
+    <string name="add_friends">Add friend</string>
+    <string name="add_friend_by_contact" >Contact</string>
+    <string name="add_friend"> Add Friends </string>
+    <string name="friend">Friends</string>
+    <string name="add_friends_validation">Friend request</string>
+    <string name="add_friend_hint">Send a friend request</string>
+    <string name="add_friend_hint_hello">Say hi</string>
+    <string name="contact_add_content">%s please add me as a friend</string>
+    <string name="contact_add_group_discussion">New group chat</string>
+    <string name="contact_add_contact">Contacts</string>
+    <string name="contact_friends">Contact</string>
+    <string name="contact_empty_msg">No chatting history</string>
+    <string name="contact_new_friends">Recommended friends</string>
+    <string name="contact_already_friends">Already your friend</string>
+    <string name="contact_default">Friends</string>
+    <string name="contact_num">%d friends</string>
+    <string name="contact_smt_accect">&quot;SmartMesh&quot;Want to visit your address book</string>
+    <string name="contact_add_content_share">Mutual friends "%s"</string>
+    <string name="contact_quick_search_already_existx_pep">Search in contacts</string>
+    <string name="friend_can_invite">Invite friends</string>
+    <string name="friend_can_add">Can add to friend</string>
+    <string name="friend_have_add">Added friend</string>
+    <string name="friend_invite_people">Choose a friend</string>
+    <string name="friend_hope_add">Wants to add you as a friend</string>
+    <string name="friend_is_not_your">This user is not your friend</string>
+    <string name="friend_note_not_empty">Remarks cannot be empty</string>
+    <string name="friend_note">Friends note</string>
+
+
+    <!-- report-->
+    <string name="report">Report</string>
+    <string name="report_reason_1">I don\'t like the user</string>
+    <string name="report_reason_2">I don\'t accept this user\'s speech</string>
+    <string name="report_reason_3">Harassment or humiliation</string>
+    <string name="report_reason_4">Hate speech (Discrimination)</string>
+    <string name="report_reason_5">Prefer not to say</string>
+    <string name="report_reason_6">Intellectual property infringement</string>
+    <string name="report_reason_7">Commercial spam harassment</string>
+    <string name="report_reason_8">Infringement</string>
+    <string name="report_reason_9">Illegal drugs</string>
+
+    <!-- Chat temporarily no complaints-->
+    <string name="report_chat_title">Report</string>
+    <string name="report_reason">Your reason to report</string>
+    <string name="report_reason_choice">Please select:</string>
+    <string name="report_fraud_cheat_money">Fraud</string>
+    <string name="report_sexy_rel">Pornographic related</string>
+    <string name="report_cursing">Cursing</string>
+    <string name="reprot_adverse_rel">Advertising harassment</string>
+    <string name="report_political_reactionary">Politics related</string>
+    <string name="report_msg_count">%d messages</string>
+    <string name="report_no_choice_guest">Unselected</string>
+    <string name="report_sent">Report submitted</string>
+
+    <!-- News related to -->
+    <string name="msg_event_show_card">[business card]</string>
+    <string name="msg_event_show_image">[image]</string>
+    <string name="msg_event_show_audio">[audio]</string>
+    <string name="msg_event_invite_msg103">[link] %s</string>
+    <string name="msg_event_invite_msg105">[video]</string>
+    <string name="msg_event_invite_msg1009">[file]</string>
+    <string name="msg_event_invite_msgunknown">[%s]</string>
+    <string name="msg_msgunknown">%1$s has sent you %2$s,Please update to the newest version to view.</string>
+    <string name="msg_not_notify">Mute Notifications</string>
+    <string name="msg_incompatible">Incompatible message</string>
+
+    <!-- Locate relevant-->
+    <string name="location_notify">[SmartMesh]Prohibited access to private data: GPS location dataa. You can change it in Settings> Rights Management</string>
+
+    <!-- Group chat related -->
+    <string name="discuss_group_invite">You are invited by %s to join a group chat</string>
+    <string name="discuss_group_invite_default">You are invited to join a group chat</string>
+    <string name="discuss_group_dismiss">The group chat is disbanded</string>
+    <string name="discuss_group_rename">Group name is changed to: %s</string>
+    <string name="discuss_group_outside">%s has quit this group chat</string>
+    <string name="discuss_group_kick">You are removed from this group chat by group owner</string>
+    <string name="discuss_group_invite_others">You invited %s to join a group chat</string>
+    <string name="discuss_group_remove_other">You moved %s out of this group chat</string>
+    <string name="discuss_group_all_member">All</string>
+    <string name="discuss_group_member">Total of %1$d people.Maximum %2$d people.</string>
+    <string name="discuss_group_all_member_num">All (%d）</string>
+    <string name="discuss_group_member_num">%d people</string>
+    <string name="discuss_group_join">OK</string>
+    <string name="discuss_group_sure_join">Are you sure you want to join this group chat?</string>
+    <string name="discuss_modify_name">Update the name of this group chat</string>
+    <string name="discuss_all">All members (%d)</string>
+    <string name="discuss_name">Group chat name</string>
+    <string name="discuss_not_exist">Unable to obtain group information, please check for existence</string>
+    <string name="group_chat">Group Chat</string>
+    <string name="group_quickmark">Group chat QR code</string>
+    <string name="group_dismiss_discussion">Delete and Leave</string>
+    <string name="group_out_discussion">Delete and Leave</string>
+    <string name="group_member_select_list">Select people to remind</string>
+    <string name="group_empty">You have not created a group chat yet</string>
+    <string name="group_all_member">All</string>
+    <string name="total_num">（Total of %d people）</string>
+    <string name="tip_del_member">Are you sure to delete this member?</string>
+    <string name="sorry_no_search_result">Sorry, no results found</string>
+    <string name="join_group">Join Group</string>
+    <string name="title_quickmark">Group QR Code</string>
+    <string name="quickmark_error">Create QR Code Failed</string>
+    <string name="quickmark_scan">Scan QR Code</string>
+    <string name="quickmark_scan_longclick">Press Scan QR Code in Image</string>
+    <string name="share">Share</string>
+    <string name="share_group">[%1$s] invited you to join the SmartMesh App Group [%2$s] %3$s click the copy link, and then select the browser to open</string>
+
+    <!-- Set up relevant -->
+    <string name="setting_language_selection">Language</string>
+    <string name="setting_chinese_simplified">Chinese</string>
+    <string name="setting_english">English</string>
+    <string name="setting_stealth">Appear offline</string>
+    <string name="black_list">Blacklist</string>
+    <string name="black_list_empty">Blacklist empty</string>
+    <string name="black_list_remove_title">Remove the blacklist</string>
+    <string name="black_list_remove">After removing from blacklist, this user becomes your friend</string>
+    <string name="black_list_join">Add BlackList</string>
+    <string name="smartmesh_communication">Off Internet Comunication</string>
+    <string name="smartmesh_communication_open">Off Internet Comunication</string>
+    <string name="smartmesh_communication_hint">You can open or close Off Internet Comunication on Me → Setting </string>
+    <string name="smartmesh_open">Open</string>
+    <string name="smartmesh_later">Later</string>
+    <string name="exit">Exit</string>
+    <string name="mid">MID/mobile phone/email</string>
+    <string name="updatelater">Update Later</string>
+    <string name="updatenow">Update Now</string>
+    <string name="version_circle">•</string>
+    <string name="select_img_error">Picture select failure</string>
+    <string name="select_camera_error">Picture shoot failed</string>
+    <!-- Safety related-->
+    <string name="reg_country_code">%1$s +%2$s</string>
+    <string name="reg_country_code_title">Choose a country or region</string>
+    <string name="singapore">Singapore</string>
+    <string name="code_number_not_empty">Verification Code cannot be Blank!</string>
+    <string name="county_code">+%s</string>
+    <string name="confirm_phone_number">Confirm your phone number</string>
+    <string name="confirm_email_number">Confirm your email</string>
+    <string name="send_verification_warning">Verification code will send to: %s</string>
+    <string name="send_verification_email_warning">Verification code will send to: %s</string>
+    <string name="enter_phone_number">Please enter your phone number</string>
+    <string name="enter_please_code_number">Please enter the verification code</string>
+    <string name="enter_code_number">Enter the verification code</string>
+    <string name="enter_email_number">Please enter your email</string>
+    <string name="verify_the_code">Verification SMS</string>
+    <string name="bind_mobile">Link your phone number</string>
+    <string name="bind_email">Link your email</string>
+    <string name="bind_mobile_warning">Please link your phone number to ensure account safety</string>
+    <string name="bind_email_warning">Please link your email to ensure account safety</string>
+    <string name="bind_success">Linked!</string>
+    <string name="bind_mobile_number">Your phone number is：%s</string>
+    <string name="bind_email_number">Your email is：%s</string>
+    <string name="country">Country or region</string>
+    <string name="phone">Phone number</string>
+    <string name="email">Email</string>
+    <string name="next">Next</string>
+    <string name="sms_verify_hint">SMS has successfully sent to</string>
+    <string name="phone_book">Contacts</string>
+    <string name="replace_phone">Change phone number</string>
+    <string name="replace_email">Change email</string>
+    <string name="verify_mobile">Verify your phone number</string>
+    <string name="verify_email">Verify your email</string>
+    <string name="verify_password">Verify your password</string>
+
+    <!-- About page has been hidden temporarily do not need-->
+    <string name="fft_instructions">SmartMesh wallet is a mobile blockchain wallet app which easy and safe to use. SmartMesh wallet can also be used to save and transfer ETH,SMT and other digital currency.</string>
+    <string name="use_agreement">Use Agreement</string>
+    <string name="version_checking">Version</string>
+    <string name="gesture_checking">Wallet Gesture</string>
+    <string name="no_new_version">Updated to the latest version</string>
+    <string name="new_version">New version(%s)</string>
+
+    <!-- The wallet -->
+    <string name="wallet_create">Create new account</string>
+    <string name="wallet_import">Import an account</string>
+    <string name="wallet_delete">Delete account</string>
+    <string name="wallet_official">Official wallet</string>
+    <string name="wallet_name_hint">Account Name</string>
+    <string name="wallet_create_new">Create</string>
+    <string name="wallet_import_new">Import</string>
+    <string name="wallet_create_ing">Creating...</string>
+    <string name="wallet_import_ing">Importing...</string>
+    <string name="wallet_setting_name">Please set the account name</string>
+    <string name="wallet_name_warning">Please set account names with 1–12 digits</string>
+    <string name="wallet_pwd_warning">Please set passwords with 6–16 digits</string>
+
+    <!-- Create the import wallet hints -->
+    <string name="wallet_add">Address here</string>
+    <string name="wallet_copy">Back up account</string>
+    <string name="wallet_notification">This may take a few minutes</string>
+    <string name="notification_wallgen_success">Success!</string>
+    <string name="notification_wallgen_finished">Account created!</string>
+    <string name="notification_wallgen_failure">Failed to create account!</string>
+    <string name="notification_wallgen_no_memory">Out of memory!</string>
+    <string name="notification_wallimp_finished">Import account success!</string>
+    <string name="notification_wallimp_failure">Import account failed</string>
+    <string name="notification_wallimp_repeat">This account already exists</string>
+    <string name="notification_wallimp_repeat_username">This username already exists!</string>
+    <string name="notification_click_to_view">Click to see more</string>
+    <string name="notification_wall_wait">Wallet creating... just a moment please!</string>
+    <string name="notification_wallet_copy">We suggest you to have a back up account. Export hints and save them before trasferring a small amount. </string>
+    <string name="notification_wallet_creat">Note: SmartMesh wallet does not save user password nor provide backups. All password are required to backup using encrypted private key. We highly recommended to backup and save your private key at the same time, otherwise your wallet can never be retrieved.</string>
+
+    <!-- Submit feedback interface -->
+    <string name="report_problem">Problem</string>
+    <string name="suggestions_for_improvement">Suggestion</string>
+    <string name="problem_info">What\'s the problem?</string>
+    <string name="problem_info_empty">You havent fill in the specific issues</string>
+    <string name="advice_info_empty">You havent fill in the specific Suggestions</string>
+    <string name="advice_info">What is the recommended？</string>
+    <string name="advice_info_hint">Please leave your valuable opinions and Suggestions, we will try to improve.</string>
+    <string name="email_info">Your email address?</string>
+    <string name="email_is_error">Please input the correct email address</string>
+    <string name="email_empty">email address can not is empty</string>
+    <string name="email_info_hint">Please leave your email address.</string>
+    <string name="submit_ok">Submit</string>
+    <string name="submit_success">Successed</string>
+    <string name="submit_faile">Failed</string>
+    <string name="wallet_import_hint">How to import the account？</string>
+
+    <!-- Import the wallet -->
+    <string name="wallet_private_key">Private key</string>
+    <string name="wallet_scan">Observe mode</string>
+    <string name="wallet_private_key_clear">Please enter the private key in text</string>
+    <string name="wallet_keysotre_info">Keystore text content</string>
+    <string name="wallet_keysotre_pwd">KeyStore&quot;&quot; password</string>
+    <string name="wallet_import_start">Start importing</string>
+    <string name="wallet_official_info">Copy and paste Ether keystore, or scan QR code</string>
+    <string name="wallet_scan_info">Observe mode only needs the wallet address</string>
+    <string name="wallet_scan_warning">Address must start with 0x in total with 42 digits</string>
+    <string name="wallet_scan_del">Deleting accounts cannot be reversed. Are you sure?</string>
+    <string name="wallet_scan_cant_trans">Transfer not supported in observe mode</string>
+    <string name="wallet_scan_del_hint">Caution!This operation cannot be revoked!</string>
+    <string name="wallet_backup">Please Backup</string>
+
+    <!-- Backup the purse -->
+    <string name="wallet_copy_private_key">Export private key</string>
+    <string name="wallet_copy_keysotre">Export keystore</string>
+    <string name="wallet_copy_name">Account name: %s</string>
+    <string name="wallet_copy_pwd_info">Hint: %s</string>
+    <string name="wallet_copy_pwd_error">Wrong password</string>
+    <string name="wallet_pwd_empty">Password cannot be blank</string>
+    <string name="wallet_show_private_key">Current account private key</string>
+    <string name="wallet_private_key_check_out">Private key can only be exported once, please keep it safe</string>
+    <string name="wallet_copy_private_key_2">Copy private key</string>
+    <string name="wallet_show_keystore">Current account KeyStore</string>
+    <string name="wallet_copy_keystore_2">Copy keystore</string>
+    <string name="wallet_private_key_empty">Private key cannot be blank</string>
+    <string name="wallet_keystore_empty">Keystore cannot be blank</string>
+    <string name="wallet_show_private_key_2">Display private key</string>
+    <string name="wallet_show_private_key_3">Private key copied</string>
+    <string name="wallet_show_keystore_2">Display keyStore</string>
+    <string name="wallet_blance">Account balance</string>
+    <string name="wallet_sync_ing">Syncing block：%1$d / %2$d</string>
+    <string name="wallet_sync_start">Synchronize to the latest block to use the wallet</string>
+    <string name="wallet_sync_hint">ETH light node wallets support create transfor and purchase SMT can also be used.</string>
+    <string name="wallet_sync">Sync</string>
+    <string name="wallet_sync_address">Syncing…</string>
+    <string name="wallet_backup_now">Backup Now</string>
+    <string name="wallet_backup_title">you need to backup first</string>
+    <string name="wallet_backup_content_1">The wallet is your block chain account which is total different from wensite／app account and it\'s cryptographic based.</string>
+    <string name="wallet_backup_content_2">You need to doble check the wallet is being backup properly in case of any assets loss.</string>
+    <string name="wallet_backup_content_3">We suggest you backup mnemonic words and keystore both,the test with tiny ethers untill you feel comfidencr.</string>
+    <string name="wallet_backup_content_4">Official private key</string>
+    <string name="wallet_backup_content_5">Use for recovring wallet，please store physically.</string>
+    <string name="wallet_backup_content_6">Official Keystore</string>
+    <string name="wallet_backup_content_7">Encryed with your transaction password,please remember it.</string>
+
+    <!-- transaction detail -->
+    <string name="wallet_trans_detail_type_0">Waiting for packing</string>
+    <string name="wallet_trans_detail_type_1">%d/12 Block confirmation</string>
+    <string name="wallet_trans_detail_from">From:</string>
+    <string name="wallet_trans_detail_to">To:</string>
+    <string name="wallet_trans_detail_fee">Gas Fee:</string>
+    <string name="wallet_trans_detail_number">Transaction #:</string>
+    <string name="wallet_trans_detail_block">Block #:</string>
+    <string name="wallet_trans_detail_time">Transaction Time:</string>
+    <string name="wallet_trans_detail_copy_url">Copy URL</string>
+    <string name="wallet_trans_detail_block_none">None</string>
+
+    <string name="wallet_trans_collect_eth">Notice: %s ether Receiving successful</string>
+    <string name="wallet_trans_collect_smt">Notice: %s smt Receiving successful</string>
+    <string name="wallet_trans_collect_mesh">Notice: %s mesh Receiving successful</string>
+    <string name="wallet_trans_msg_eth">Notice: %s ether Transfer successful</string>
+    <string name="wallet_trans_msg_smt">Notice: %s smt Transfer successful</string>
+    <string name="wallet_trans_msg_mesh">Notice: %s mesh Transfer successful</string>
+    <string name="wallet_trans_collect_eth_failed">Notice: %s ether Receiving failed</string>
+    <string name="wallet_trans_collect_smt_failed">Notice: %s smt Receiving failed</string>
+    <string name="wallet_trans_collect_mesh_failed">Notice: %s mesh Receiving failed</string>
+    <string name="wallet_trans_msg_eth_failed">Notice: %s ether Transfer failed</string>
+    <string name="wallet_trans_msg_smt_failed">Notice: %s smt Transfer failed</string>
+    <string name="wallet_trans_msg_mesh_failed">Notice: %s mesh Transfer failed</string>
+    <string name="wallet_trans_from">Sender: %s</string>
+    <string name="wallet_trans_to">Receiver: %s</string>
+
+    <string name="bloance_not_enough_eth">ETH Insufficient balance</string>
+    <string name="bloance_not_enough_smt">SMT Insufficient balance</string>
+    <string name="bloance_not_enough_mesh">MESH Insufficient balance</string>
+    <string name="empty_address">Empty address</string>
+    <string name="error_address">Wrong address</string>
+    <string name="input_address">Receiver\' Address</string>
+    <string name="input_vaule">Amount</string>
+    <string name="gathering">Receipt</string>
+    <string name="money_empty">Amount transferring cannot be blank</string>
+    <string name="quick_blance_to_me">Scan to transfer</string>
+    <string name="send_price">Confirm</string>
+    <string name="send_gas">Mining Fee</string>
+    <string name="send_address">Address：</string>
+    <string name="send_account">Account：</string>
+    <string name="send_amount">Amount：</string>
+    <string name="send_blance">Transfer</string>
+    <string name="send_blance_title">%s-transfer</string>
+    <string name="set_amount">Please enter the amount</string>
+    <string name="set_amount_address">Please enter the address</string>
+    <string name="time">Date：</string>
+    <string name="description">Description</string>
+
+    <string name="passed_friend">I passed your friend request, chat now!</string>
+
+
+    <string-array name="chat_smiley_list">
+        <item>[smile]</item>
+        <item>[amazed]</item>
+        <item>[grinning]</item>
+        <item>[laughs]</item>
+        <item>[angry]</item>
+        <item>[crying]</item>
+        <item>[pervert]</item>
+        <item>[speechless]</item>
+        <item>[little devil]</item>
+        <item>[sweat]</item>
+        <item>[surprised]</item>
+        <item>[bitter smile]</item>
+        <item>[grievance]</item>
+        <item>[sunglasses]</item>
+        <item>[sleepy]</item>
+        <item>[tease]</item>
+        <item>[kiss]</item>
+        <item>[blank stare]</item>
+        <item>[curse]</item>
+        <item>[doubt]</item>
+        <item>[eat cookies]</item>
+        <item>[froze]</item>
+        <item>[shock]</item>
+        <item>[explosion]</item>
+        <item>[smoking]</item>
+        <item>[masks]</item>
+        <item>[applause]</item>
+        <item>[embarrassed]</item>
+        <item>[nosebleeds]</item>
+        <item>[miserable]</item>
+        <item>[faint]</item>
+        <item>[sad]</item>
+        <item>[awkward]</item>
+        <item>[sorry]</item>
+        <item>[laughing]</item>
+        <item>[crazy]</item>
+        <item>[spit]</item>
+        <item>[gold digger]</item>
+        <item>[bashful]</item>
+        <item>[yawn]</item>
+        <item>[scared]</item>
+        <item>[beard]</item>
+        <item>[arrogance]</item>
+        <item>[work hard]</item>
+        <item>[grimace]</item>
+        <item>[black line]</item>
+        <item>[shut up]</item>
+        <item>[shy]</item>
+        <item>[ill]</item>
+        <item>[seriously]</item>
+        <item>[like]</item>
+        <item>[bye]</item>
+        <item>[ignore]</item>
+        <item>[hum]</item>
+        <item>[thanks]</item>
+        <item>[hug]</item>
+        <item>[strong]</item>
+        <item>[weak]</item>
+        <item>[handshake]</item>
+        <item>[fistsalute]</item>
+        <item>[OK]</item>
+        <item>[victory]</item>
+        <item>[seduce]</item>
+        <item>[love you]</item>
+        <item>[fist]</item>
+        <item>[NO]</item>
+        <item>[bad]</item>
+        <item>[candle]</item>
+        <item>[love]</item>
+        <item>[sun]</item>
+        <item>[moon]</item>
+        <item>[watermelon]</item>
+        <item>[rice]</item>
+        <item>[Coke]</item>
+        <item>[ice cream]</item>
+        <item>[Rose]</item>
+        <item>[wine]</item>
+        <item>[medicine]</item>
+        <item>[popcorn]</item>
+        <item>[umbrella]</item>
+        <item>[gift]</item>
+        <item>[clouds]</item>
+    </string-array>
+
+    <string-array name="delete_remove_top_chat_array">
+        <item>Cancel stick on top</item>
+        <item>Delete this conversation</item>
+    </string-array>
+    <string-array name="delete_clear_top_chat_array">
+        <item>Cancel stick on top</item>
+        <item>Erase all history in this chat</item>
+    </string-array>
+
+    <string-array name="delete_to_top_chat_array">
+        <item>Stick on top</item>
+        <item>Delete this conversation</item>
+    </string-array>
+    <string-array name="clear_to_top_chat_array">
+        <item>Stick on top</item>
+        <item>Erase all history in this chat</item>
+    </string-array>
+
+    <string-array name="delete_trans_array">
+        <item>Delete</item>
+    </string-array>
+
+    <string-array name="delete_chat_array">
+        <item>Delete this conversation</item>
+    </string-array>
+
+    <string-array name="delete_friend_array">
+        <item>Delete</item>
+    </string-array>
+
+
+    <string-array name="copy_del_text">
+        <item>Copy</item>
+        <item>Delete</item>
+    </string-array>
+
+    <string-array name="copy_del_only_text">
+        <item>Delete</item>
+    </string-array>
+
+
+    <string-array name="cancel_fav_del_list_file">
+        <item>Cancel favorite</item>
+        <item>Delete</item>
+    </string-array>
+
+    <string-array name="fav_del_list_file">
+        <item>Favorite</item>
+        <item>Delete</item>
+    </string-array>
+
+
+    <string-array name="speaker_mode_list">
+        <item>Speaker mode</item>
+        <item>Delete</item>
+    </string-array>
+
+    <string-array name="receiver_mode_list">
+        <item>Handset mode</item>
+        <item>Delete</item>
+    </string-array>
+
+    <string-array name="scan_edit_avatar">
+        <item>View profile picture</item>
+        <item>Camera</item>
+        <item>Choose from photos</item>
+    </string-array>
+
+
+    <string-array name="sex_list">
+        <item>Male</item>
+        <item>Female</item>
+    </string-array>
+
+
+    <string-array name="sex_list_all">
+        <item>Male</item>
+        <item>Female</item>
+        <item>All</item>
+    </string-array>
+
+
+    <string-array name="country_list">
+        <item>安道尔</item>
+        <item>奥地利</item>
+        <item>澳大利亚</item>
+        <item>阿尔巴尼亚</item>
+        <item>阿尔及利亚</item>
+        <item>爱尔兰</item>
+        <item>安哥拉</item>
+        <item>阿根廷</item>
+        <item>埃及</item>
+        <item>阿鲁巴</item>
+        <item>阿拉伯联合酋长国</item>
+        <item>阿曼</item>
+        <item>阿塞拜疆</item>
+        <item>埃塞俄比亚</item>
+        <item>安提瓜岛和巴布达</item>
+        <item>巴巴多斯岛</item>
+        <item>巴布亚新几内亚</item>
+        <item>博茨瓦纳</item>
+        <item>冰岛</item>
+        <item>不丹</item>
+        <item>波多黎各</item>
+        <item>巴哈马</item>
+        <item>保加利亚</item>
+        <item>巴基斯坦</item>
+        <item>巴林</item>
+        <item>波兰</item>
+        <item>布隆迪</item>
+        <item>比利时</item>
+        <item>玻利维亚</item>
+        <item>百慕大</item>
+        <item>北马里亚纳群岛</item>
+        <item>贝宁</item>
+        <item>巴拿马</item>
+        <item>巴西</item>
+        <item>朝鲜</item>
+        <item>德国</item>
+        <item>丹麦</item>
+        <item>多米尼加共和国</item>
+        <item>厄瓜多尔</item>
+        <item>俄罗斯</item>
+        <item>厄立特里亚</item>
+        <item>法国</item>
+        <item>斐济</item>
+        <item>芬兰</item>
+        <item>菲律宾</item>
+        <item>古巴</item>
+        <item>冈比亚</item>
+        <item>关岛</item>
+        <item>格恩西岛</item>
+        <item>刚果民主共和国</item>
+        <item>哥伦比亚</item>
+        <item>格陵兰</item>
+        <item>格林内达</item>
+        <item>哥斯达黎加</item>
+        <item>海地</item>
+        <item>洪都拉斯</item>
+        <item>韩国</item>
+        <item>荷兰</item>
+        <item>哈萨克斯坦</item>
+        <item>吉布提</item>
+        <item>吉尔吉斯坦</item>
+        <item>捷克共和国</item>
+        <item>基里巴斯</item>
+        <item>加纳</item>
+        <item>加拿大</item>
+        <item>柬埔寨</item>
+        <item>克罗地亚</item>
+        <item>喀麦隆</item>
+        <item>开曼群岛</item>
+        <item>肯尼亚</item>
+        <item>科威特</item>
+        <item>利比里亚</item>
+        <item>黎巴嫩</item>
+        <item>利比亚</item>
+        <item>罗马尼亚</item>
+        <item>留尼旺岛</item>
+        <item>卢森堡</item>
+        <item>莱索托</item>
+        <item>拉脱维亚</item>
+        <item>卢旺达</item>
+        <item>老挝</item>
+        <item>列支敦士登</item>
+        <item>缅甸</item>
+        <item>马达加斯加</item>
+        <item>马尔代夫</item>
+        <item>摩尔多瓦</item>
+        <item>蒙古</item>
+        <item>美国</item>
+        <item>孟加拉</item>
+        <item>秘鲁</item>
+        <item>摩洛哥</item>
+        <item>毛里求斯</item>
+        <item>毛里塔尼亚</item>
+        <item>马拉维</item>
+        <item>马来西亚</item>
+        <item>摩纳哥</item>
+        <item>马其顿</item>
+        <item>莫桑比克</item>
+        <item>马绍尔群岛</item>
+        <item>墨西哥</item>
+        <item>尼泊尔</item>
+        <item>南非</item>
+        <item>尼加拉瓜</item>
+        <item>纳米比亚</item>
+        <item>尼日利亚</item>
+        <item>挪威</item>
+        <item>帕劳群岛</item>
+        <item>葡萄牙</item>
+        <item>卡塔尔</item>
+        <item>乔治亚</item>
+        <item>日本</item>
+        <item>瑞典</item>
+        <item>瑞士</item>
+        <item>苏丹</item>
+        <item>塞尔维亚,黑山</item>
+        <item> 圣基茨和尼维斯</item>
+        <item>斯洛伐克</item>
+        <item>塞拉利昂</item>
+        <item>斯里兰卡</item>
+        <item>所罗门群岛</item>
+        <item>苏里南</item>
+        <item>斯洛文尼亚</item>
+        <item>圣马力诺</item>
+        <item>萨摩亚</item>
+        <item>塞内加尔</item>
+        <item>塞舌尔</item>
+        <item>沙特阿拉伯</item>
+        <item>斯威士兰</item>
+        <item>土耳其</item>
+        <item>泰国</item>
+        <item>汤加</item>
+        <item>塔吉克斯坦</item>
+        <item>特立尼达和多巴哥</item>
+        <item>坦桑尼亚</item>
+        <item>危地马拉</item>
+        <item>乌干达</item>
+        <item>乌克兰</item>
+        <item>文莱</item>
+        <item>乌拉圭</item>
+        <item>瓦努阿图</item>
+        <item>委内瑞拉</item>
+        <item>乌兹别克斯坦</item>
+        <item>西班牙</item>
+        <item>新加坡</item>
+        <item>新喀里多尼亚</item>
+        <item>希腊</item>
+        <item>新西兰</item>
+        <item>匈牙利</item>
+        <item>约旦</item>
+        <item>印度</item>
+        <item>意大利</item>
+        <item>印度尼西亚</item>
+        <item>英国</item>
+        <item>伊朗</item>
+        <item>伊拉克</item>
+        <item>也门</item>
+        <item>牙买加</item>
+        <item>亚美尼亚</item>
+        <item>越南</item>
+        <item>以色列</item>
+        <item>直布罗陀</item>
+        <item>赞比亚</item>
+        <item>中非共和国</item>
+        <item>中国澳门</item>
+        <item>中国</item>
+        <item>中国台湾</item>
+        <item>中国香港</item>
+        <item>智利</item>
+        <item>泽西岛</item>
+    </string-array>
+    <string-array name="list_0">
+        <item>安徽</item>
+        <item>北京</item>
+        <item>重庆</item>
+        <item>福建</item>
+        <item>广东</item>
+        <item>甘肃</item>
+        <item>广西</item>
+        <item>贵州</item>
+        <item>湖北</item>
+        <item>河北</item>
+        <item>黑龙江</item>
+        <item>湖南</item>
+        <item>河南</item>
+        <item>海南</item>
+        <item>吉林</item>
+        <item>江苏</item>
+        <item>江西</item>
+        <item>辽宁</item>
+        <item>内蒙古</item>
+        <item>宁夏</item>
+        <item>青海</item>
+        <item>四川</item>
+        <item>山东</item>
+        <item>上海</item>
+        <item>陕西</item>
+        <item>山西</item>
+        <item>天津</item>
+        <item>台湾</item>
+        <item>西藏</item>
+        <item>香港</item>
+        <item>新疆</item>
+        <item>云南</item>
+        <item>浙江</item>
+    </string-array>
+
+
+    <string-array name="list_0_0">
+        <item>安庆</item>
+        <item>蚌埠市</item>
+        <item>毫州</item>
+        <item>巢湖</item>
+        <item>池州</item>
+        <item>滁州</item>
+        <item>阜阳</item>
+        <item>淮北</item>
+        <item>合肥</item>
+        <item>淮南</item>
+        <item>黄山</item>
+        <item>六安</item>
+        <item>马鞍山</item>
+        <item>宿州</item>
+        <item>铜陵</item>
+        <item>芜湖</item>
+        <item>宣城</item>
+    </string-array>
+    <string-array name="list_0_1">
+        <item>昌平</item>
+        <item>朝阳</item>
+        <item>东城</item>
+        <item>大兴</item>
+        <item>房山</item>
+        <item>丰台</item>
+        <item>海淀</item>
+        <item>怀柔</item>
+        <item>门头沟</item>
+        <item>密云</item>
+        <item>平谷</item>
+        <item>石景山</item>
+        <item>顺义</item>
+        <item>通州</item>
+        <item>西城</item>
+        <item>延庆</item>
+    </string-array>
+    <string-array name="list_0_2">
+        <item>北碚</item>
+        <item>巴南</item>
+        <item>璧山</item>
+        <item>城口</item>
+        <item>长寿</item>
+        <item>大渡口</item>
+        <item>垫江</item>
+        <item>大足</item>
+        <item>丰都</item>
+        <item>奉节</item>
+        <item>涪陵</item>
+        <item>合川</item>
+        <item>江北</item>
+        <item>江津</item>
+        <item>九龙坡</item>
+        <item>开县</item>
+        <item>两江新区</item>
+        <item>梁平</item>
+        <item>南岸</item>
+        <item>南川</item>
+        <item>彭水</item>
+        <item>綦江</item>
+        <item>荣昌</item>
+        <item>沙坪呗</item>
+        <item>双桥</item>
+        <item>石柱</item>
+        <item>铜梁</item>
+        <item>潼南</item>
+        <item>武隆</item>
+        <item>万盛</item>
+        <item>巫山</item>
+        <item>巫溪</item>
+        <item>万州</item>
+        <item>秀山</item>
+        <item>渝北</item>
+        <item>永川</item>
+        <item>云阳</item>
+        <item>酉阳</item>
+        <item>渝中</item>
+        <item>忠县</item>
+    </string-array>
+    <string-array name="list_0_3">
+        <item>福州</item>
+        <item>龙岩</item>
+        <item>宁德</item>
+        <item>南平</item>
+        <item>莆田</item>
+        <item>泉州</item>
+        <item>三明</item>
+        <item>厦门</item>
+        <item>漳州</item>
+    </string-array>
+    <string-array name="list_0_4">
+        <item>潮州</item>
+        <item>东莞</item>
+        <item>佛山</item>
+        <item>广州</item>
+        <item>河源</item>
+        <item>惠州</item>
+        <item>江门</item>
+        <item>揭阳</item>
+        <item>茂名</item>
+        <item>梅州</item>
+        <item>清远</item>
+        <item>韶关</item>
+        <item>汕头</item>
+        <item>汕尾</item>
+        <item>深圳</item>
+        <item>云浮</item>
+        <item>阳江</item>
+        <item>珠海</item>
+        <item>湛江</item>
+        <item>肇庆</item>
+        <item>中山</item>
+    </string-array>
+    <string-array name="list_0_5">
+        <item>白银</item>
+        <item>定西</item>
+        <item>甘南</item>
+        <item>金昌</item>
+        <item>酒泉</item>
+        <item>嘉峪关</item>
+        <item>陇南</item>
+        <item>临夏</item>
+        <item>兰州市</item>
+        <item>平凉</item>
+        <item>庆阳</item>
+        <item>天水</item>
+        <item>武威</item>
+        <item>张掖</item>
+    </string-array>
+    <string-array name="list_0_6">
+        <item>北海</item>
+        <item>百色</item>
+        <item>崇左</item>
+        <item>防城港</item>
+        <item>贵港</item>
+        <item>桂林</item>
+        <item>河池</item>
+        <item>贺州</item>
+        <item>来宾</item>
+        <item>柳州</item>
+        <item>南宁</item>
+        <item>钦州</item>
+        <item>梧州</item>
+        <item>玉林</item>
+    </string-array>
+    <string-array name="list_0_7">
+        <item>安顿</item>
+        <item>毕节</item>
+        <item>贵阳</item>
+        <item>六盘水</item>
+        <item>黔东南</item>
+        <item>黔南</item>
+        <item>黔西南</item>
+        <item>铜仁</item>
+        <item>遵义</item>
+    </string-array>
+    <string-array name="list_0_8">
+        <item>恩施</item>
+        <item>鄂州</item>
+        <item>黄冈</item>
+        <item>黄石</item>
+        <item>荆门</item>
+        <item>潜江</item>
+        <item>神农架</item>
+        <item>十堰</item>
+        <item>随州</item>
+        <item>天门</item>
+        <item>武汉</item>
+        <item>孝感</item>
+        <item>咸宁</item>
+        <item>仙桃</item>
+        <item>襄阳</item>
+        <item>宜昌</item>
+    </string-array>
+    <string-array name="list_0_9">
+        <item>保定</item>
+        <item>承德</item>
+        <item>沧州</item>
+        <item>邯郸</item>
+        <item>衡水</item>
+        <item>廊坊</item>
+        <item>秦皇岛</item>
+        <item>石家庄</item>
+        <item>唐山</item>
+        <item>邢台</item>
+        <item>张家口</item>
+    </string-array>
+    <string-array name="list_0_10">
+        <item>大庆</item>
+        <item>大兴安岭</item>
+        <item>哈尔滨</item>
+        <item>鹤岗</item>
+        <item>黑河</item>
+        <item>佳木斯</item>
+        <item>鸡西</item>
+        <item>牡丹江</item>
+        <item>齐齐哈尔</item>
+        <item>七台河</item>
+        <item>绥化</item>
+        <item>双鸭山</item>
+        <item>伊春</item>
+    </string-array>
+    <string-array name="list_0_11">
+        <item>常德</item>
+        <item>长沙</item>
+        <item>郴州</item>
+        <item>怀化</item>
+        <item>衡阳</item>
+        <item>娄底</item>
+        <item>邵阳</item>
+        <item>湘潭</item>
+        <item>湘西</item>
+        <item>益阳</item>
+        <item>岳阳</item>
+        <item>永州</item>
+        <item>张家界</item>
+        <item>株洲</item>
+    </string-array>
+    <string-array name="list_0_12">
+        <item>安阳</item>
+        <item>鹤壁</item>
+        <item>济源</item>
+        <item>焦作</item>
+        <item>开封</item>
+        <item>漯河</item>
+        <item>洛阳</item>
+        <item>南阳</item>
+        <item>平顶山</item>
+        <item>濮阳</item>
+        <item>三门峡</item>
+        <item>商丘</item>
+        <item>许昌</item>
+        <item>新乡</item>
+        <item>信阳</item>
+        <item>周口</item>
+        <item>驻马店</item>
+        <item>郑州</item>
+    </string-array>
+    <string-array name="list_0_13">
+        <item>白沙</item>
+        <item>保亭</item>
+        <item>昌江</item>
+        <item>澄迈</item>
+        <item>定安</item>
+        <item>东方</item>
+        <item>儋州</item>
+        <item>海口</item>
+        <item>乐东</item>
+        <item>临高</item>
+        <item>陵水</item>
+        <item>琼海</item>
+        <item>琼中</item>
+        <item>三沙</item>
+        <item>三亚</item>
+        <item>屯昌</item>
+        <item>文昌</item>
+        <item>万宁</item>
+        <item>五指山</item>
+    </string-array>
+    <string-array name="list_0_14">
+        <item>白城</item>
+        <item>白山</item>
+        <item>长春</item>
+        <item>吉林</item>
+        <item>辽源</item>
+        <item>四平</item>
+        <item>松原</item>
+        <item>通化</item>
+        <item>延边</item>
+    </string-array>
+    <string-array name="list_0_15">
+        <item>常州</item>
+        <item>淮安</item>
+        <item>连云港</item>
+        <item>南京</item>
+        <item>南通</item>
+        <item>宿迁</item>
+        <item>苏州</item>
+        <item>泰州</item>
+        <item>无锡</item>
+        <item>徐州</item>
+        <item>盐城</item>
+        <item>扬州</item>
+        <item>镇江</item>
+    </string-array>
+    <string-array name="list_0_16">
+        <item>抚州</item>
+        <item>赣江</item>
+        <item>吉安</item>
+        <item>景德镇</item>
+        <item>九江</item>
+        <item>南昌</item>
+        <item>萍乡</item>
+        <item>上饶</item>
+        <item>新余</item>
+        <item>宜春</item>
+        <item>鹰潭</item>
+    </string-array>
+    <string-array name="list_0_17">
+        <item>鞍山</item>
+        <item>本溪</item>
+        <item>朝阳</item>
+        <item>丹东</item>
+        <item>大连</item>
+        <item>抚顺</item>
+        <item>阜新</item>
+        <item>葫芦岛</item>
+        <item>锦州</item>
+        <item>辽阳</item>
+        <item>盘锦</item>
+        <item>沈阳</item>
+        <item>铁岭</item>
+        <item>营口</item>
+    </string-array>
+    <string-array name="list_0_18">
+        <item>阿拉善</item>
+        <item>包头</item>
+        <item>巴彦淖尔</item>
+        <item>赤峰</item>
+        <item>鄂尔多斯</item>
+        <item>呼和浩特</item>
+        <item>呼伦贝尔</item>
+        <item>通辽</item>
+        <item>乌海</item>
+        <item>乌兰察布</item>
+        <item>兴安</item>
+        <item>锡林郭勒</item>
+    </string-array>
+    <string-array name="list_0_19">
+        <item>固原</item>
+        <item>石嘴山</item>
+        <item>吴忠</item>
+        <item>银川</item>
+        <item>中卫</item>
+    </string-array>
+    <string-array name="list_0_20">
+        <item>果洛</item>
+        <item>海北</item>
+        <item>海东</item>
+        <item>黄南</item>
+        <item>海南</item>
+        <item>海西</item>
+        <item>西宁</item>
+        <item>玉树</item>
+    </string-array>
+    <string-array name="list_0_21">
+        <item>阿坝</item>
+        <item>巴中</item>
+        <item>成都</item>
+        <item>德阳</item>
+        <item>达州</item>
+        <item>广安</item>
+        <item>广元</item>
+        <item>甘孜</item>
+        <item>凉山</item>
+        <item>乐山</item>
+        <item>泸州</item>
+        <item>眉山</item>
+        <item>锦阳</item>
+        <item>南充</item>
+        <item>内江</item>
+        <item>攀枝花</item>
+        <item>遂宁</item>
+        <item>雅安</item>
+        <item>宜宾</item>
+        <item>自贡</item>
+        <item>资阳</item>
+    </string-array>
+    <string-array name="list_0_22">
+        <item>滨州</item>
+        <item>东营</item>
+        <item>德州</item>
+        <item>菏泽</item>
+        <item>济南</item>
+        <item>济宁</item>
+        <item>聊城</item>
+        <item>莱芜</item>
+        <item>临沂</item>
+        <item>青岛</item>
+        <item>日照</item>
+        <item>泰安</item>
+        <item>潍坊</item>
+        <item>威海</item>
+        <item>烟台</item>
+        <item>淄博</item>
+        <item>枣庄</item>
+    </string-array>
+    <string-array name="list_0_23">
+        <item>宝山</item>
+        <item>崇明</item>
+        <item>长宁</item>
+        <item>奉贤</item>
+        <item>虹口</item>
+        <item>黄浦</item>
+        <item>静安</item>
+        <item>嘉定</item>
+        <item>金山</item>
+        <item>卢湾</item>
+        <item>闵行</item>
+        <item>浦东新区</item>
+        <item>普陀</item>
+        <item>青浦</item>
+        <item>松江</item>
+        <item>徐汇</item>
+        <item>杨浦</item>
+        <item>闸北</item>
+    </string-array>
+    <string-array name="list_0_24">
+        <item>安康</item>
+        <item>宝鸡</item>
+        <item>汉中</item>
+        <item>商洛</item>
+        <item>铜川</item>
+        <item>渭南</item>
+        <item>西安</item>
+        <item>咸阳</item>
+        <item>延安</item>
+        <item>榆林</item>
+    </string-array>
+    <string-array name="list_0_25">
+        <item>长治</item>
+        <item>大同</item>
+        <item>晋城</item>
+        <item>晋中</item>
+        <item>临汾</item>
+        <item>吕梁</item>
+        <item>朔州</item>
+        <item>太原</item>
+        <item>忻州</item>
+        <item>运城</item>
+        <item>阳泉</item>
+    </string-array>
+    <string-array name="list_0_26">
+        <item>北辰</item>
+        <item>宝坻</item>
+        <item>滨海新区</item>
+        <item>东丽</item>
+        <item>河北</item>
+        <item>河东</item>
+        <item>和平</item>
+        <item>红桥</item>
+        <item>河西</item>
+        <item>静海</item>
+        <item>津南</item>
+        <item>蓟县</item>
+        <item>宁河</item>
+        <item>南开</item>
+        <item>武清</item>
+        <item>西青</item>
+    </string-array>
+    <string-array name="list_0_27">
+        <item>阿里</item>
+        <item>昌都</item>
+        <item>拉萨</item>
+        <item>林芝</item>
+        <item>那曲</item>
+        <item>日喀则</item>
+        <item>山南</item>
+    </string-array>
+    <string-array name="list_0_28">
+        <item>阿克苏</item>
+        <item>阿拉尔</item>
+        <item>阿勒泰</item>
+        <item>博尔塔拉</item>
+        <item>巴音郭楞</item>
+        <item>昌吉</item>
+        <item>哈密</item>
+        <item>和田</item>
+        <item>克拉玛依</item>
+        <item>喀什</item>
+        <item>克孜勒苏</item>
+        <item>石河子</item>
+        <item>塔城</item>
+        <item>吐鲁番</item>
+        <item>图木舒克</item>
+        <item>五家渠</item>
+        <item>乌鲁木齐</item>
+        <item>伊犁</item>
+    </string-array>
+    <string-array name="list_0_29">
+        <item>保山</item>
+        <item>楚雄</item>
+        <item>德宏</item>
+        <item>大理</item>
+        <item>迪庆</item>
+        <item>红河</item>
+        <item>昆明</item>
+        <item>临沧</item>
+        <item>丽江</item>
+        <item>怒江</item>
+        <item>普洱</item>
+        <item>曲靖</item>
+        <item>文山</item>
+        <item>西双版纳</item>
+        <item>玉溪</item>
+        <item>昭通</item>
+    </string-array>
+    <string-array name="list_0_30">
+        <item>湖州</item>
+        <item>杭州</item>
+        <item>金华</item>
+        <item>嘉兴</item>
+        <item>丽水</item>
+        <item>宁波</item>
+        <item>衢州</item>
+        <item>绍兴</item>
+        <item>台州</item>
+        <item>温州</item>
+        <item>舟山</item>
+    </string-array>
+
+    <string-array name="list_0_31">
+        <item>高雄市</item>
+        <item>花莲县</item>
+        <item>基隆市</item>
+        <item>金门县</item>
+        <item>嘉义市</item>
+        <item>连江县</item>
+        <item>苗栗县</item>
+        <item>南投县</item>
+        <item>屏东县</item>
+        <item>澎湖县</item>
+        <item>台北市</item>
+        <item>台东县</item>
+        <item>台南市</item>
+        <item>桃园县</item>
+        <item>台中市</item>
+        <item>新北市</item>
+        <item>新竹市</item>
+        <item>新竹县</item>
+        <item>云林县</item>
+        <item>宜兰县</item>
+        <item>彰化县</item>
+    </string-array>
+    <string-array name="list_0_32">
+        <item>北区</item>
+        <item>大埔区</item>
+        <item>东区</item>
+        <item>观塘区</item>
+        <item>黄大仙区</item>
+        <item>九龙城区</item>
+        <item>葵青区</item>
+        <item>离岛区</item>
+        <item>南区</item>
+        <item>荃湾区</item>
+        <item>深水埗区</item>
+        <item>沙田区</item>
+        <item>屯门区</item>
+        <item>湾仔区</item>
+        <item>西贡区</item>
+        <item>油尖旺区</item>
+        <item>元朗区</item>
+        <item>中西区</item>
+    </string-array>
+
+    <string name="country_code">
+         93:Afghanistan:AFGHANISTAN,
+         355:Albania:ALBANIA,
+         213:Algeria:ALGERIA,
+         1684:American Samoa:AMERICANSAMOA,
+         376:Andorra:ANDORRA,
+         244:Angola:ANGOLA,
+         1264:Anguilla:ANGUILLA,
+         1268:Antigua and Barbuda:ANTIGUAANDBARBUDA,
+         54:Argentina:ARGENTINA,
+         374:Armenia:ARMENIA,
+         297:Aruba:ARUBA,
+         61:Australia:AUSTRALIA,
+         43:Austria:AUSTRIA,
+         994:Azerbaijan:AZERBAIJAN,
+         1242:Bahamas:BAHAMAS,
+         973:Bahrain:BAHRAIN,
+         880:Bangladesh:BANGLADESH,
+         1246:Barbados:BARBADOS,
+         375:Belarus:BELARUS,
+         32:Belgium:BELGIUM,
+         501:Belize:BELIZE,
+         229:Benin:BENIN,
+         1441:Bermuda:BERMUDA,
+         975:Bhutan:BHUTAN,
+         591:Bolivia:BOLIVIA,
+         387:Bosnia and Herzegovina:BOSNIAANDHERZEGOVINA,
+         267:Botswana:BOTSWANA,
+         55:Brazil:BRAZIL,
+         673:Brunei:BRUNEI,
+         359:Bulgaria:BULGARIA,
+         226:Burkina Faso:BURKINAFASO,
+         95:Myanmar:MYANMAR,
+         257:Burundi:BURUNDI,
+         855:Cambodia:CAMBODIA,
+         237:Cameroon:CAMEROON,
+         1:Canada:CANADA,
+         238:Cape Verde:CAPEVERDE,
+         236:Central African Republic:CENTRALAFRICANREPUBLIC,
+         235:Chad:CHAD,
+         56:Chile:CHILE,
+         86:China:CHINA,
+         61:Christmas Islands:CHRISTMASISLANDS,
+         61:Cocos Islands:COCOSISLANDS,
+         57:Colombia:COLOMBIA,
+         269:Comoros:COMOROS,
+         682:Cook Islands:COOKISLANDS,
+         506:Costa Rica:COSTARICA,
+         385:Croatia:CROATIA,
+         53:Cuba :CUBA,
+         357:Cyprus:CYPRUS,
+         420:Czech:CZECH,
+         243:Congo (Congo-Kinshasa):CONGOCONGOKINSHASA,
+         45:Denmark:DENMARK,
+         253:Djibouti:DJIBOUTI,
+         1767:Dominica:DOMINICA,
+         1809:Dominica:DOMINICAG,
+         593:Ecuador:ECUADOR,
+         20:Egypt:EGYPT,
+         503:El Salvador:ELSALVADOR,
+         240:Equatorial Guinea:EQUATORIALGUINEA,
+         291:Eritrea:ERITREA,
+         372:Estonia:ESTONIA,
+         251:Ethiopia:ETHIOPIA,
+         298:Faroe Islands:FAROEISLANDS,
+         679:Fiji:FIJI,
+         358:Finland:FINLAND,
+         33:France:FRANCE,
+         689:French Polynesia:FRENCHPOLYNESIA,
+         241:Gabon:GABON,
+         220:Gambia:GAMBIA,
+         995:Georgia:GEORGIA,
+         49:Germany:GERMANY,
+         233:Ghana:GHANA,
+         350:Gibraltar:GIBRALTAR,
+         30:Greece:GREECE,
+         1473:Grenada:GRENADA,
+         1671:Guam:GUAM,
+         502:Guatemala:GUATEMALA,
+         263:Zimbabwe:ZIMBABWE,
+         224:Guinea:GUINEA,
+         245:Guinea-Bissau:GUINEABISSAU,
+         592:Guyana:GUYANA,
+         509:Haiti:HAITI,
+         39:Vatican City:VATICANCITY,
+         504:Honduras:HONDURAS,
+         852:Hong Kong:HONGKONG,
+         36:Hungary:HUNGARY,
+         354:Iceland:ICELAND,
+         91:India:INDIA,
+         62:Indonesia:INDONESIA,
+         98:Iran:IRAN,
+         964:Iraq:IRAQ,
+         353:Ireland:IRELAND,
+         972:Israel:ISRAEL,
+         39:Italy:ITALY,
+         225:Cote D\'Ivoire:COTEDIVOIRE,
+         1876:Jamaica:JAMAICA,
+         81:Japan:JAPAN,
+         962:Jordan:JORDAN,
+         7:Kazakhstan:KAZAKHSTAN,
+         254:Kenya:KENYA,
+         686:Kiribati:KIRIBATI,
+         965:Kuwait:KUWAIT,
+         996:Kyrgyzstan:KYRGYZSTAN,
+         856:Laos:LAOS,
+         371:Latvia:LATVIA,
+         961:Lebanon:LEBANON,
+         266:Lesotho:LESOTHO,
+         231:Liberia:LIBERIA,
+         218:Libya:LIBYA,
+         423:Liechtenstein:LIECHTENSTEIN,
+         370:Lithuania:LITHUANIA,
+         352:Luxembourg:LUXEMBOURG,
+         853:Macau:MACAU,
+         389:Macedonia:MACEDONIA,
+         261:Madagascar:MADAGASCAR,
+         265:Malawi:MALAWI,
+         60:Malaysia:MALAYSIA,
+         960:Maldives:MALDIVES,
+         223:Mali:MALI,
+         356:Malta:MALTA,
+         692:Marshall Islands:MARSHALLISLANDS,
+         222:Mauritania:MAURITANIA,
+         230:Mauritius:MAURITIUS,
+         262:Mayotte:MAYOTTE,
+         52:Mexico:MEXICO,
+         691:Micronesia:MICRONESIA,
+         373:Moldova:MOLDOVA,
+         377:Monaco:MONACO,
+         976:Mongolia:MONGOLIA,
+         382:Montenegro:MONTENEGRO,
+         1664:Montserrat:MONTSERRAT,
+         212:Morocco:MOROCCO,
+         258:Mozambique:MOZAMBIQUE,
+         264:Namibia:NAMIBIA,
+         674:Nauru:NAURU,
+         977:Nepal:NEPAL,
+         31:Netherlands:NETHERLANDS,
+         687:New Caledonia:NEWCALEDONIA,
+         64:New Zealand:NEWZEALAND,
+         505:Nicaragua:NICARAGUA,
+         227:Niger:NIGER,
+         234:Nigeria:NIGERIA,
+         683:Niue:NIUE,
+         850:Korea (North):KOREANORTH,
+         47:Norway:NORWAY,
+         968:Oman:OMAN,
+         92:Pakistan:PAKISTAN,
+         680:Palau:PALAU,
+         507:Panama:PANAMA,
+         675:Papua New Guinea:PAPUANEWGUINEA,
+         595:Paraguay:PARAGUAY,
+         51:Peru:PERU,
+         63:Philippines:PHILIPPINES,
+         870:Pitcairn Islands:PITCAIRNISLANDS,
+         48:Poland:POLAND,
+         351:Portugal:PORTUGAL,
+         1:Puerto Rico:PUERTORICO,
+         974:Qatar:QATAR,
+         242:Congo:CONGO,
+         40:Romania:ROMANIA,
+         7:Russian Federation:RUSSIANFEDERATION,
+         250:Rwanda:RWANDA,
+         290:Saint Helena:SAINTHELENA ,
+         1869:Saint Kitts-Nevis:SAINTKITTSNEVIS,
+         1758:Saint Lucia:SAINTLUCIA,
+         1784:Saint Vincent and the Grenadines:SAINTVINCENTANDTHEGRENADINES,
+         685:Samoa:SAMOA,
+         378:San Marino:SANMARINO,
+         239:Sao Tome and Principe:SAOTOMEANDPRINCIPE,
+         966:Saudi Arabia:SAUDIARABIA,
+         221:Senegal:SENEGAL,
+         381:Serbia:SERBIA,
+         248:Seychelles:SEYCHELLES,
+         232:Sierra Leone:SIERRALEONE,
+         65:Singapore:SINGAPORE,
+         421:Slovakia:SLOVAKIA,
+         386:Slovenia:SLOVENIA,
+         677:Solomon Islands:SOLOMONISLANDS,
+         252:Somalia:SOMALIA,
+         27:South Africa:SOUTHAFRICA,
+         82:Korea (South):KOREASOUTH,
+         34:Spain:SPAIN,
+         94:Sri Lanka:SRILANKA,
+         249:Sudan:SUDAN,
+         268:Swaziland:SWAZILAND,
+         46:Sweden:SWEDEN,
+         41:Switzerland:SWITZERLAND,
+         963:Syria:SYRIA,
+         886:TaiWan:TAIWAN,
+         992:Tajikistan:TAJIKISTAN,
+         255:Tanzania:TANZANIA,
+         66:Thailand:THAILAND,
+         670:Timor-Leste:TIMORLESTE,
+         228:Togo:TOGO,
+         690:Tokelau:TOKELAU,
+         676:Tonga:TONGA,
+         1868:Trinidad and Tobago:TRINIDADANDTOBAGO,
+         216:Tunisia:TUNISIA,
+         90:Turkey:TURKEY,
+         993:Turkmenistan:TURKMENISTAN,
+         688:Tuvalu:TUVALU,
+         256:Uganda:UGANDA,
+         380:Ukraine:UKRAINE,
+         971:United Arab Emirates:UNITEDARABEMIRATES,
+         44:United Kingdom:UNITEDKINGDOM,
+         1:United States:UNITEDSTATES,
+         598:Uruguay:URUGUAY,
+         998:Uzbekistan:UZBEKISTAN,
+         678:Vanuatu:VANUATU,
+         58:Venezuela:VENEZUELA,
+         84:Vietnam:VIETNAM,
+         681:Wallis and Futuna:WALLISANDFUTUNA,
+         967:Yemen:YEMEN,
+         260:Zambia:ZAMBIA
+     </string>
+</resources>
