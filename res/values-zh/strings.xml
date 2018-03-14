@@ -1,0 +1,1794 @@
+<resources>
+    <string name="app_name">SmartMesh</string>
+    <string name="start_smt">开始SmartMesh</string>
+
+    <!-- Gesture login activity -->
+    <string name="gesture_forget_gesture">使用钱包密码登录</string>
+    <string name="gesture_login">使用手势密码登录</string>
+    <string name="gesture_close">使用手势密码关闭</string>
+    <string name="gesture_pwd_close">使用钱包密码关闭</string>
+    <string name="gesture_wallet_owd">请输入钱包密码</string>
+    <string name="gesture_error">手势密码输入错误</string>
+    <string name="gesture_error_login">手势密码错误次数太多，请使用密码登录</string>
+    <string name="gesture_correct">输入正确</string>
+    <string name="gesture_no_wallet">您还没有钱包</string>
+    <string name="gesture_wallet_open">手势锁：开</string>
+    <string name="gesture_wallet_close">手势锁：关</string>
+
+    <!-- raiden pay -->
+    <string name="raiden_channel">通道</string>
+    <string name="raiden_channel_create">创建通道</string>
+    <string name="raiden_channel_add">存款</string>
+    <string name="raiden_channel_add_complete">完成添加</string>
+    <string name="raiden_channel_create_enter">完成创建</string>
+    <string name="raiden_channel_close">是否关闭通道?</string>
+    <string name="raiden_channel_raiden">雷电</string>
+    <string name="raiden_pay">支付:</string>
+    <string name="raiden_pay_1">支付</string>
+    <string name="raiden_partner">地址:</string>
+    <string name="raiden_partner_1">地址</string>
+    <string name="raiden_balance">余额:</string>
+    <string name="raiden_balance_1">余额</string>
+    <string name="raiden_deposit">存款</string>
+    <string name="raiden_token">代币:</string>
+    <string name="raiden_token_1">代币</string>
+    <string name="raiden_state">状态:</string>
+    <string name="raiden_to">To:</string>
+    <string name="raiden_from">From:</string>
+
+    <string name="wallet_copy_disclaimer">免责声明</string>
+    <string name="wallet_copy_disclaimer_info">• 请确保已备份钱包至安全的地方，SmartMesh APP不承担任何钱包丢失、被盗、忘记密码等产生的资产损失。\n\n• 游客模式（无MID和绑定手机号、邮箱的）退出将不会保存钱包的信息。</string>
+
+    <!-- Create gesture activity -->
+    <string name="create_gesture_set">设置手势密码</string>
+    <string name="create_gesture_default">绘制解锁图形</string>
+    <string name="create_gesture_correct">再次绘制解锁图形</string>
+    <string name="create_gesture_less_error">至少连接4个点，请重新输入</string>
+    <string name="create_gesture_confirm_error">与上一次绘制不一致，请重新绘制</string>
+    <string name="create_gesture_confirm_correct">设置成功</string>
+    <string name="create_gesture_reset">重新设置</string>
+    <string name="create_gesture_confirm">确认</string>
+
+    <!-- 登录注册相关 -->
+    <string name="login">登录</string>
+    <string name="login_validating">正在验证</string>
+    <string name="login_pwd_error"> 用户名或密码不正确</string>
+    <string name="login_state_failure">登录状态失效,请重新登录。</string>
+    <string name="regist">注册</string>
+    <string name="wallet_mode">钱包模式</string>
+    <string name="forgot_password">忘记密码?</string>
+    <string name="forgot_password_hint">忘记密码</string>
+    <string name="account_pwd">账户密码</string>
+    <string name="account_pwd_input">设置密码</string>
+    <string name="account_pwd_again_input">确认密码</string>
+    <string name="account_pwd_again_warning">两次密码不一致</string>
+    <string name="account_pwd_info_input">密码提示（可不填）</string>
+    <string name="account_input_pwd_warning">请输入账户密码</string>
+    <string name="account_name_exist">该账号名称已存在</string>
+    <string name="account_update_mid">SmartMesh ID</string>
+    <string name="account_input_mid">输入SmartMesh ID</string>
+    <string name="account_content_mid">您可以自定义MID，可用于登录帐号和用户搜索。</string>
+    <string name="account_upload_regist_info">为了账户安全,请填写MID,以确保正常登录</string>
+    <string name="account_logout_warn">退出提示</string>
+    <string name="account_logout_hint"> 退出当前账号不会删除历史数据，但会收不到新消息提醒</string>
+    <string name="account_logout_mid_warn">请认真阅读以下说明：</string>
+    <string name="account_logout_mid_hint"> 没有设置MID、绑定手机或邮箱的帐号退出后将无法再次登录，并且钱包也无法找回。您确定要这么做吗？</string>
+    <string name="account_logout_mid_hint_again"> 您的帐号在点击确认后将无法再次登录，如使用过钱包请检查是否备份。</string>
+    <string name="account_name_warning">请输入 1 – 20位账户名称</string>
+    <string name="account_pwd_warning">请输入 6 – 18位密码</string>
+    <string name="mid_length_warning">请输入 6 – 20位MID</string>
+    <string name="mid_content_warning">MID不能为纯数字</string>
+    <string name="mid_user">MID:&quot; %s</string>
+
+    <!-- 首页 -->
+    <string name="main_chats">聊天</string>
+    <string name="main_discover">发现</string>
+    <string name="main_contact">人脉</string>
+    <string name="account">账户</string>
+    <string name="myself">我的</string>
+    <string name="smart_mesh">SMART&quot;&quot;&quot;&quot;  MESH</string>
+    <string name="exit_app">再按一次退出SmartMesh</string>
+    <string name="transcation_records">交易记录</string>
+    <string name="transcation_detail">交易详情</string>
+    <string name="transcation_failed">交易失败</string>
+    <string name="transcation_search">查询交易</string>
+    <string name="account_manager">账户管理</string>
+    <string name="setting">设置</string>
+    <string name="wallet">钱包</string>
+    <string name="security">安全</string>
+    <string name="submit_feedback">提交反馈</string>
+    <string name="qm_qm">扫一扫</string>
+    <string name="drawer_open">打开</string>
+    <string name="drawer_close">关闭</string>
+    <string name="qr_code">二维码</string>
+    <string name="copy_address">复制地址</string>
+    <string name="copy_link">复制链接</string>
+    <string name="copy_end">已复制到剪贴板</string>
+    <string name="trans_success">转账成功</string>
+    <string name="trans_empty">暂时没有交易记录</string>
+    <string name="get_gas_error">获取gas失败</string>
+    <string name="syning_later">同步中，稍后再试</string>
+    <string name="balance_er">当前余额：%s</string>
+    <string name="eth">ETH</string>
+    <string name="smt">SMT</string>
+    <string name="mesh">MESH</string>
+    <string name="eth_er">%s ETHER</string>
+    <string name="smt_er">%s SMT</string>
+    <string name="mesh_er">%s MESH</string>
+    <string name="eth_er_lower">%s ether</string>
+    <string name="eth_er_lower_1">ether</string>
+    <string name="smt_er_lower_1">smt</string>
+    <string name="mesh_er_lower_1">mesh</string>
+    <string name="gwei">gwei</string>
+    <string name="custom_gas_price">自定义Gas Price</string>
+    <string name="custom_gas">自定义Gas</string>
+    <string name="ok">我知道了</string>
+    <string name="advance">高级设置</string>
+    <string name="custom_gas_notice">Gas price太高，建议应该小于100 gwei</string>
+    <string name="custom_gas_notice_1">Gas price太低，建议应该大于8 gwei</string>
+    <string name="custom_gas_mesh_notice">该地址Mesh代币处于锁定状态，请勿转账。消耗的Gas无法找回。</string>
+    <string name="custom_gas_smt_title">Gas提示</string>
+    <string name="custom_gas_smt_notice">目前仅支持 gate.io 和 okex.com 充币使用该功能。其他平台暂时请勿使用，以免造成不必要的数字财产损失。</string>
+
+    <!-- 提示相关 -->
+    <string name="hint_pwd_warning">为保障您的资金安全，请不要轻易透露您的隐私给其他人。</string>
+    <string name="hint_root_waning">安全提示</string>
+    <string name="hint_root_waning_content">您的手机存在安全隐患，请解除隐患后再使用此软件。</string>
+    <string name="hint_content_cannot_empty">内容不能为空</string>
+    <string name="hint_empty_search">用户不存在</string>
+
+    <!-- 网络相关 -->
+    <string name="error">操作失败</string>
+    <string name="error_get_balance">获取余额失败</string>
+    <string name="error_get_raiden_list">获取通道列表失败</string>
+    <string name="get_raiden_list_empty">通道列表为空</string>
+    <string name="parse_error">解析失败</string>
+    <string name="error_net">请检查网络连接！</string>
+    <string name="pager_error">载入页面错误，请重试</string>
+    <string name="net_request_timeout">请求超时，请稍候再试。</string>
+    <string name="net_unavailable">网络不可用，请稍候再试。</string>
+
+    <!-- 个人资料相关 -->
+    <string name="offline_addffiend">添加好友请求发送成功</string>
+    <string name="user_name">用户名</string>
+    <string name="info">个人资料</string>
+    <string name="info_my_profile">查看或编辑个人资料</string>
+    <string name="info_add_gender">添加性别</string>
+    <string name="info_add_region">添加地区</string>
+    <string name="info_signature">个性签名</string>
+    <string name="info_edit_dialog"> 正在保存，请稍候 </string>
+    <string name="info_edit_picture_cut_failure"> 图片裁剪失败 </string>
+    <string name="info_upload_picture_failure">图片上传失败</string>
+    <string name="info_add_note">添加备注</string>
+    <string name="info_set_note">设置备注</string>
+    <string name="info_data_set">资料设置</string>
+    <string name="info_shield_user">是否同时拉黑用户?</string>
+    <string name="info_block">拉黑</string>
+    <string name="select_country_title">选择地区</string>
+    <string name="nearby">%s附近</string>
+
+    <!-- normal -->
+    <string name="normal_mobile_models">手机型号 = </string>
+    <string name="normal_system_version">系统版本 = </string>
+    <string name="normal_app_version">应用版本 = </string>
+    <string name="normal_app_channel">应用渠道 = </string>
+    <string name="normal_crash_time">崩溃时间 = </string>
+    <string name="normal_connect_error">连接有问题</string>
+    <string name="send_message"> 发消息 </string>
+    <string name="search">搜索</string>
+    <string name="search_by_nick">输入昵称/MID/邮箱添加好友</string>
+    <string name="add">添加</string>
+    <string name="to_add">去添加</string>
+    <string name="create">创建</string>
+    <string name="finish">完成</string>
+    <string name="submit">确定</string>
+    <string name="out">退出</string>
+    <string name="bind">绑定</string>
+    <string name="yes">是的</string>
+    <string name="cancel">取消</string>
+    <string name="submit_num">确定(%d)</string>
+    <string name="resend">重发</string>
+    <string name="send">发送</string>
+    <string name="agree">接受</string>
+    <string name="agreeed">已接受</string>
+    <string name="save">保存</string>
+    <string name="mark">收藏</string>
+    <string name="transpond">转发</string>
+    <string name="invite">邀请</string>
+    <string name="notif">提示</string>
+    <string name="man">男</string>
+    <string name="woman">女</string>
+    <string name="everyone">#Everyone</string>
+
+    <!-- chat-->
+    <string name="chatting_selected_delete">删除所选对话</string>
+    <string name="chatting_selected_relay">转发所选对话</string>
+    <string name="chatting_waiting_receive">等待接收</string>
+    <string name="chatting_sending_two">正在发送...</string>
+    <string name="chatting_sending">发送中</string>
+    <string name="chatting_send_failure">发送失败</string>
+    <string name="chatting_send_success">发送成功</string>
+    <string name="chatting_cancel_sending">取消发送</string>
+    <string name="chatting_did_not_receive">未接收</string>
+    <string name="chatting_receive">接收</string>
+    <string name="chatting_receiveing">接收中</string>
+    <string name="chatting_accept_failure">接收失败</string>
+    <string name="chatting_receive_success">接收成功</string>
+    <string name="chatting_cancel_receiving">取消接收</string>
+    <string name="chatting_cross">上传中</string>
+    <string name="chatting_has_been_sent">已发送</string>
+    <string name="chatting_did_not_download">未下载</string>
+    <string name="chatting_downloading">下载中</string>
+    <string name="chatting_download_failed">下载失败</string>
+    <string name="chatting_have_download">已下载</string>
+    <string name="chatting_cancel_download">取消下载</string>
+    <string name="chatting_start_download">开始下载</string>
+    <string name="chatting_incompatible_message">不兼容消息</string>
+    <string name="chatting_card">名片</string>
+    <string name="chatting_card_hint">让价值传输更自由</string>
+    <string name="chatting_file">文件</string>
+    <string name="chatting_audio_normal">按住 说话</string>
+    <string name="chatting_audio_press">松开 结束</string>
+    <string name="chatting_audio_down">手指上滑 取消发送</string>
+    <string name="chatting_audio_last_say"> 倒计时 1:00</string>
+    <string name="chatting_audio_last_say_s"> 倒计时 %s</string>
+    <string name="chatting_selected">%d项选中</string>
+    <string name="chatting_new_message">─────以下为新消息─────</string>
+    <string name="chatting_set">聊天设置</string>
+    <string name="chatting_image_update_percent">%d \%</string>
+
+    <string name="chat_audio_failed">语音播放失败</string>
+    <string name="chat_audio_short">录音时间过短</string>
+    <string name="chat_cancel_collection_failed">取消收藏成功</string>
+    <string name="chat_collection_failed">文件收藏成功</string>
+    <string name="chat_unread_num">%d条新消息</string>
+    <string name="chat_notify_picture">%s发来一张图片</string>
+    <string name="chat_notify_audio">%s发来一段语音</string>
+    <string name="chat_notify_gif">%s发来一个动画</string>
+    <string name="chat_notify_card">%1$s发来了%2$s的名片</string>
+    <string name="chat_notify_link">%s:分享了一条链接</string>
+    <string name="chat_notify_small_video">%s:发来一段微视频</string>
+    <string name="chat_notify_file">%s:发来了一个文件</string>
+    <string name="chat_notify_two_hint">%1$s:发来一个%2$s</string>
+    <string name="chat_notify_invite">你被%1$s邀请加入%2$s</string>
+    <string name="chat_notify_invited_join">你被邀请加入%s</string>
+    <string name="chat_notify_move_out">你被管理员移出%s</string>
+    <string name="chat_notify_group_dissolve">群聊已经解散</string>
+    <string name="chat_notify_dissolution_of">%s已经解散</string>
+    <string name="chat_notify_have_join">你已加入%s群组，开始群聊吧！</string>
+    <string name="chat_notify_have_new_trans">你有一笔新的交易记录</string>
+    <string name="chat_file_days_failure">%d天后失效</string>
+    <string name="chat_file_hours_failure">%d小时候失效</string>
+    <string name="chat_file_minutes_failure">%d分钟后失效</string>
+    <string name="chat_file_as_failure">马上失效</string>
+    <string name="chat_file_scan">扫描中...</string>
+    <string name="chat_file_all_size">总文件大小不能超过5G！</string>
+    <string name="chat_file_collected">收藏</string>
+    <string name="chat_file_already_collected">已收藏</string>
+    <string name="chat_file_deleted">文件已删除</string>
+    <string name="chat_file_empty">数据为空</string>
+    <string name="chat_no_support">暂不支持</string>
+    <string name="chat_welcome_to_everyone">欢迎进入#Everyone</string>
+    <string name="chat_friend_notify">好友通知</string>
+    <string name="chat_token_notify">交易记录</string>
+    <string name="chat_at_me">[有人@我]</string>
+    <string name="chat_at_all">[有人@全体成员]</string>
+    <string name="chat_at_all_two">&quot;@全体成员 </string>
+    <string name="chat_at_all_three">全体成员</string>
+    <string name="chat_document">文档</string>
+    <string name="chat_video">视频</string>
+    <string name="chat_audio">音频</string>
+    <string name="chat_other">其他</string>
+    <string name="chat_send_file">发送(%s)</string>
+    <string name="chat_select_chatting_file">选择文件</string>
+    <string name="chat_choice_info_upload">选择聊天记录上传(必选)</string>
+    <string name="chat_please_choice_msg">请选择聊天记录</string>
+    <string name="chat_has_selected_size">已选%s</string>
+    <string name="chat_upload_image_max">最多可选择%d张图片</string>
+    <string name="chat_send_to">发送给：</string>
+
+    <string name="change_receiver_mode">已切换为听筒播放模式</string>
+    <string name="change_speaker_mode">已切换为扬声器播放模式</string>
+    <string name="chated_recently">最近聊天的人</string>
+    <string name="chatting_selected_title">发送给朋友</string>
+    <string name="copy_success">拷贝成功</string>
+    <string name="delete_success">删除成功</string>
+    <string name="detect_zxing">识别图中二维码</string>
+    <string name="download_file">下载(%s)</string>
+    <string name="fav_file_warning">未上传的文件不能收藏！</string>
+    <string name="file_delete">来源已删除</string>
+    <string name="file_outdate">已失效</string>
+    <string name="leave_message_to_friend">给朋友留言</string>
+    <string name="loading_more">正在加载更多...</string>
+    <string name="permanent">永久有效</string>
+    <string name="photo_group_scan">选择照片</string>
+    <string name="photo_save_dir">图片已保存至%s文件夹</string>
+    <string name="outdate_time">%s到期</string>
+    <string name="re_download_file">重新下载</string>
+    <string name="re_upload_file">重新上传</string>
+    <string name="save_pic_to_phone">保存到手机</string>
+    <string name="send_to_friend">发送给朋友</string>
+    <string name="send_ok">发送成功</string>
+    <string name="tip_receiver_mode">当前为听筒播放模式</string>
+    <string name="title_crop_image">照片裁减</string>
+    <string name="transpond_warning">该类型消息不支持跨应用转发！</string>
+    <string name="transpond_warning_everyone">不能给#Everyone转发消息</string>
+    <string name="txt_downloading_progress">下载中...(%1$s/%2$s)</string>
+    <string name="txt_uploading_progress">上传中...(%1$s/%2$s)</string>
+    <string name="use_other_app_open">其他应用打开</string>
+
+    <!-- offline-->
+    <string name="offline_file_send_tip">文件只支持无网通讯用户发送</string>
+    <string name="offline_room_new_come">%s进入了聊天室</string>
+    <string name="offline_room_new_leaves">%s离开了聊天室</string>
+    <string name="offline_no_people">暂时没有无网通讯用户</string>
+
+    <!-- friend  contac -->
+    <string name="added">已添加</string>
+    <string name="add_friends">加好友</string>
+    <string name="add_friend_by_contact" >通讯录好友</string>
+    <string name="add_friend"> 加好友 </string>
+    <string name="friend">好友</string>
+    <string name="add_friends_validation"> 朋友验证 </string>
+    <string name="add_friend_hint">你需要发送验证应用程序,请通过</string>
+    <string name="add_friend_hint_hello">你好</string>
+    <string name="contact_add_content">%s 请求 加你为好友</string>
+    <string name="contact_add_group_discussion">创建群聊</string>
+    <string name="contact_add_contact">添加好友</string>
+    <string name="contact_friends">通迅录好友</string>
+    <string name="contact_empty_msg">暂无聊天消息</string>
+    <string name="contact_new_friends">好友推荐</string>
+    <string name="contact_already_friends">已为好友</string>
+    <string name="contact_default">我的好友</string>
+    <string name="contact_num">%d位好友</string>
+    <string name="contact_smt_accect">&quot;SmartMesh&quot;想访问您的通讯录</string>
+    <string name="contact_add_content_share">共同好友 "%s"</string>
+    <string name="contact_quick_search_already_existx_pep">快速查找现有人脉</string>
+    <string name="friend_can_invite">可邀请好友</string>
+    <string name="friend_can_add">可添加好友</string>
+    <string name="friend_have_add">已添加好友</string>
+    <string name="friend_invite_people">选择好友</string>
+    <string name="friend_hope_add">想加你为好友</string>
+    <string name="friend_is_not_your">该用户不是您的好友</string>
+    <string name="friend_note_not_empty">备注不能为空</string>
+    <string name="friend_note">好友备注</string>
+
+
+    <!-- report-->
+    <string name="report">举报</string>
+    <string name="report_reason_1">我不喜欢这个用户</string>
+    <string name="report_reason_2">该用户言论不可苟同</string>
+    <string name="report_reason_3">骚扰(侮辱)</string>
+    <string name="report_reason_4">仇恨言论(种族歧视)</string>
+    <string name="report_reason_5">色情</string>
+    <string name="report_reason_6">模仿产品商标</string>
+    <string name="report_reason_7">商业垃圾邮件</string>
+    <string name="report_reason_8">骚扰(欺负)</string>
+    <string name="report_reason_9">非法(毒品)</string>
+
+    <!-- 聊天投诉暂时没有-->
+    <string name="report_chat_title">聊天投诉</string>
+    <string name="report_reason">投诉理由</string>
+    <string name="report_reason_choice">请选择投诉理由</string>
+    <string name="report_fraud_cheat_money">欺诈骗钱</string>
+    <string name="report_sexy_rel">色情相关</string>
+    <string name="report_cursing">诅咒谩骂</string>
+    <string name="reprot_adverse_rel">广告骚扰</string>
+    <string name="report_political_reactionary">政治反动</string>
+    <string name="report_msg_count">%d条消息</string>
+    <string name="report_no_choice_guest">未选择</string>
+    <string name="report_sent">举报成功</string>
+
+    <!-- 消息相关 -->
+    <string name="msg_event_show_card">[名片]</string>
+    <string name="msg_event_show_image">[图片]</string>
+    <string name="msg_event_show_audio">[语音]</string>
+    <string name="msg_event_invite_msg103">[链接] %s</string>
+    <string name="msg_event_invite_msg105">[微视频]</string>
+    <string name="msg_event_invite_msg1009">[文件]</string>
+    <string name="msg_event_invite_msgunknown">[%s]</string>
+    <string name="msg_msgunknown">%1$s发来了%2$s,因版本过低无法显示，请及时更新</string>
+    <string name="msg_not_notify">消息免打扰</string>
+    <string name="msg_incompatible">不兼容消息</string>
+
+    <!-- 定位相关-->
+    <string name="location_notify">[SmartMesh]已被禁止访问隐私数据：读取位置信息。可在“设置>权限管理”重新授权。</string>
+
+    <!-- 群聊相关 -->
+    <string name="discuss_group_invite">你被%s邀请加入群聊</string>
+    <string name="discuss_group_invite_default">你被邀请加入群聊</string>
+    <string name="discuss_group_dismiss">该群聊已被解散</string>
+    <string name="discuss_group_rename">群聊已经更名为: %s</string>
+    <string name="discuss_group_outside">%s 退出群聊</string>
+    <string name="discuss_group_kick">你被群主移出群聊</string>
+    <string name="discuss_group_invite_others">你邀请%s加入群聊</string>
+    <string name="discuss_group_remove_other">你将%s移出了群聊</string>
+    <string name="discuss_group_all_member">All members </string>
+    <string name="discuss_group_member">共%1$d人，上限%2$d人</string>
+    <string name="discuss_group_all_member_num">全部成员（%d）</string>
+    <string name="discuss_group_member_num">%d 人</string>
+    <string name="discuss_group_join">加入该群聊</string>
+    <string name="discuss_group_sure_join">确认加入群聊</string>
+    <string name="discuss_modify_name">修改群聊名称</string>
+    <string name="discuss_name">群聊名称</string>
+    <string name="discuss_all">全部成员(%d)</string>
+    <string name="discuss_not_exist">无法获取群信息，请检查是否存在</string>
+    <string name="group_chat">群聊</string>
+    <string name="group_quickmark">群聊二维码</string>
+    <string name="group_dismiss_discussion">解散群聊</string>
+    <string name="group_out_discussion">删除并退出</string>
+    <string name="group_member_select_list">选择提醒的人</string>
+    <string name="group_empty">你还没有创建群聊</string>
+    <string name="group_all_member">全部成员</string>
+    <string name="total_num">（共%d"人）</string>
+    <string name="tip_del_member">确定要删除该成员？</string>
+    <string name="sorry_no_search_result">对不起，无查找结果</string>
+    <string name="join_group">加入群聊</string>
+    <string name="title_quickmark">群聊二维码</string>
+    <string name="quickmark_error">二维码生成失败</string>
+    <string name="quickmark_scan">扫描二维码</string>
+    <string name="quickmark_scan_longclick">长按此图识别图中二维码</string>
+    <string name="share">分享</string>
+    <string name="share_group">【%1$s】邀请你加入SmartMesh App群组【%2$s】%3$s 点击复制链接，再选择浏览器打开</string>
+
+    <!-- 设置相关 -->
+    <string name="setting_language_selection">系统语言</string>
+    <string name="setting_chinese_simplified">中文简体</string>
+    <string name="setting_english">English</string>
+    <string name="setting_stealth">隐身</string>
+    <string name="black_list">黑名单</string>
+    <string name="black_list_empty">暂无黑名单</string>
+    <string name="black_list_remove_title">移除黑名单</string>
+    <string name="black_list_remove">移除黑名单后，该用户成为正常好友关系</string>
+    <string name="black_list_join">加入黑名单</string>
+    <string name="smartmesh_communication">无网通讯</string>
+    <string name="smartmesh_communication_open">是否开启无网通讯</string>
+    <string name="smartmesh_communication_hint">可以在我的→设置里开启或者关闭无网通讯</string>
+    <string name="smartmesh_open">开启</string>
+    <string name="smartmesh_later">以后再说</string>
+    <string name="exit">退出</string>
+    <string name="mid">MID/Mobile/Email</string>
+    <string name="updatelater">下次再说</string>
+    <string name="updatenow">立即更新</string>
+    <string name="version_circle">•</string>
+    <string name="select_img_error">图片选择失败</string>
+    <string name="select_camera_error">图片拍摄失败</string>
+
+    <!-- 安全相关-->
+    <string name="reg_country_code">%1$s +%2$s</string>
+    <string name="reg_country_code_title">选择国家或地区</string>
+    <string name="singapore">新加坡</string>
+    <string name="code_number_not_empty">验证码不能为空</string>
+    <string name="county_code">+%s</string>
+    <string name="confirm_phone_number">确认电话号码</string>
+    <string name="confirm_email_number">确认邮箱</string>
+    <string name="send_verification_warning">我们将发送验证码到这个手机号: %s</string>
+    <string name="send_verification_email_warning">我们将发送验证码到这个邮箱: %s</string>
+    <string name="enter_phone_number">请输入手机号</string>
+    <string name="enter_please_code_number">请输入验证码</string>
+    <string name="enter_code_number">输入验证码</string>
+    <string name="enter_email_number">请输入邮箱</string>
+    <string name="verify_the_code">验证短信</string>
+    <string name="bind_mobile">绑定手机号</string>
+    <string name="bind_email">绑定邮箱</string>
+    <string name="bind_mobile_warning">绑定一个电话号码,增加账户的安全</string>
+    <string name="bind_email_warning">绑定邮箱，提高账户的安全性</string>
+    <string name="bind_success">绑定成功</string>
+    <string name="bind_mobile_number">您的手机号：%s</string>
+    <string name="bind_email_number">您的邮箱：%s</string>
+    <string name="country">您的国家</string>
+    <string name="phone">您的手机号</string>
+    <string name="email">您的邮箱</string>
+    <string name="next">下一步</string>
+    <string name="sms_verify_hint">我们已经发送给您一个短信验证码</string>
+    <string name="phone_book">通讯录</string>
+    <string name="replace_phone">更换电话号码</string>
+    <string name="replace_email">更换邮箱</string>
+    <string name="verify_mobile">验证手机号</string>
+    <string name="verify_email">验证邮箱</string>
+    <string name="verify_password">验证密码</string>
+
+    <!-- 关于界面  已隐藏暂时不需要 -->
+    <string name="fft_instructions">SmartMesh钱包是一款移动端轻钱包App,它旨在为用户提供一款安全好用的区块链资产钱包应用。SmartMesh钱包可以用来保存和发送ETH、SMT等数字货币。</string>
+    <string name="use_agreement">使用协议</string>
+    <string name="version_checking">版本号</string>
+    <string name="gesture_checking">钱包手势绘制</string>
+    <string name="no_new_version">暂无新版本</string>
+    <string name="new_version">检测到新版本(%s)</string>
+
+    <!-- 提交反馈界面 -->
+    <string name="report_problem">报告问题</string>
+    <string name="suggestions_for_improvement">改进建议</string>
+    <string name="problem_info">出现什么问题？</string>
+    <string name="problem_info_empty">您还没有填写具体问题</string>
+    <string name="advice_info_empty">您还没有填写具体建议</string>
+    <string name="advice_info">有什么建议？</string>
+    <string name="advice_info_hint">请留下您的宝贵意见和建议，我们将努力改进。</string>
+    <string name="email_info">您的邮箱？</string>
+    <string name="email_empty">邮箱地址不能为空</string>
+    <string name="email_is_error">请输入正确的邮箱地址</string>
+    <string name="email_info_hint">请留下您的电子邮箱</string>
+    <string name="submit_ok">提交</string>
+    <string name="submit_success">提交成功</string>
+    <string name="submit_faile">提交失败</string>
+
+    <!-- 钱包 -->
+    <string name="wallet_create">创建账户</string>
+    <string name="wallet_import">导入账户</string>
+    <string name="wallet_delete">删除账户</string>
+    <string name="wallet_official">官方钱包</string>
+    <string name="wallet_name_hint">账户名称</string>
+    <string name="wallet_create_new">创建</string>
+    <string name="wallet_import_new">导入</string>
+    <string name="wallet_create_ing">正在创建账户</string>
+    <string name="wallet_import_ing">正在导入账户</string>
+    <string name="wallet_setting_name">请设置账户名称</string>
+    <string name="wallet_name_warning">请输入 1 – 12位账户名称</string>
+    <string name="wallet_pwd_warning">请输入 6 – 16位密码</string>
+
+    <!-- 创建导入钱包提示 -->
+    <string name="wallet_add">钱包地址已合并</string>
+    <string name="wallet_copy">备份账户</string>
+    <string name="wallet_notification">这可能需要几分钟</string>
+    <string name="notification_wallgen_success">创建成功</string>
+    <string name="notification_wallgen_finished">创建账户成功!</string>
+    <string name="notification_wallgen_failure">创建账户失败!</string>
+    <string name="notification_wallgen_no_memory">内存不足!</string>
+    <string name="notification_wallimp_finished">导入账户成功!</string>
+    <string name="notification_wallimp_failure">导入账户失败!</string>
+    <string name="notification_wallimp_repeat">该账户已存在!</string>
+    <string name="notification_wallimp_repeat_username">该用户名已存在!</string>
+    <string name="notification_click_to_view">点击查看更多</string>
+    <string name="notification_wall_wait">我们正在为您生成一个钱包,请等待钱包创建完成</string>
+    <string name="notification_wallet_copy">强烈建议您在使用账户前先进行备份，导出文件并存储到安全的地方，然后尝试转入小额资产并使用。</string>
+    <string name="notification_wallet_creat">注意：SmartMesh钱包不存储用户密码，不能提供找回功能，密码需要自己备份，密码用户加密私钥，建议同时对私钥进行备份保存，否则钱包丢失后不能找回。</string>
+
+    <!-- 导入钱包 -->
+    <string name="wallet_private_key">私钥</string>
+    <string name="wallet_scan">观察</string>
+    <string name="wallet_private_key_clear">请输入私钥明文</string>
+    <string name="wallet_keysotre_info">KeyStore文本内容</string>
+    <string name="wallet_keysotre_pwd">KeyStore&quot;&quot; 密码</string>
+    <string name="wallet_import_start">开始导入</string>
+    <string name="wallet_official_info">直接复制粘贴以太坊钱包KeyStore文件内容至输入框。或者通过生成KeyStore内容的二维码，扫描录入。</string>
+    <string name="wallet_scan_info">观察钱包不需要导入私钥，只导入账户地址，进行日常查看账户、交易记录</string>
+    <string name="wallet_scan_warning">地址必须是0x开头的42位字符串</string>
+    <string name="wallet_scan_del">删除账户不可逆转，请谨慎操作</string>
+    <string name="wallet_scan_cant_trans">观察模式无法转账</string>
+    <string name="wallet_scan_del_hint">请慎重，此操作无法撤销</string>
+    <string name="wallet_backup">请备份</string>
+
+    <!-- 备份钱包 -->
+    <string name="wallet_copy_private_key">导出私钥明文</string>
+    <string name="wallet_copy_keysotre">导出KeyStore</string>
+    <string name="wallet_copy_name">账户名：%s</string>
+    <string name="wallet_copy_pwd_info">密码提示：%s</string>
+    <string name="wallet_copy_pwd_error">密码错误</string>
+    <string name="wallet_pwd_empty">密码不能为空</string>
+    <string name="wallet_show_private_key">当前账号私钥</string>
+    <string name="wallet_private_key_check_out">私钥仅能导出一次，请妥善保管</string>
+    <string name="wallet_copy_private_key_2">复制私钥</string>
+    <string name="wallet_show_keystore">当前账号KeyStore</string>
+    <string name="wallet_copy_keystore_2">复制KeyStore</string>
+    <string name="wallet_private_key_empty">私钥不能为空</string>
+    <string name="wallet_keystore_empty">KeyStore不能为空</string>
+    <string name="wallet_show_private_key_2">显示私钥</string>
+    <string name="wallet_show_private_key_3">私钥已复制</string>
+    <string name="wallet_show_keystore_2">显示KeyStore</string>
+    <string name="wallet_blance">账户可用余额</string>
+    <string name="wallet_sync_ing">同步区块：%1$d / %2$d</string>
+    <string name="wallet_sync_start">同步区块以后才能正常使用钱包</string>
+    <string name="wallet_sync_hint">ETH轻节点钱包，提供创建、导入、转账，且可使用SMT</string>
+    <string name="wallet_sync">同步</string>
+    <string name="wallet_sync_address">同步地址中。。。</string>
+    <string name="wallet_backup_now">立即备份</string>
+    <string name="wallet_backup_title">请立即备份钱包</string>
+    <string name="wallet_backup_content_1">区块链钱包不同于传统网站账户，它是基于密码学的去中心化账户系统。</string>
+    <string name="wallet_backup_content_2">你必须自己保管好钱包的私钥和交易密码，任何意外发生将会导致资产丢失。</string>
+    <string name="wallet_backup_content_3">我们建议先做好双重备份，再打入小额测试，最后开始愉快使用。</string>
+    <string name="wallet_backup_content_4">备份私钥明文</string>
+    <string name="wallet_backup_content_5">丢失钱包或忘记密码时，可恢复钱包</string>
+    <string name="wallet_backup_content_6">备份 Keystore文件</string>
+    <string name="wallet_backup_content_7">官方钱包格式，交易密码保护的私钥文件</string>
+
+    <!-- 转账详情 -->
+    <string name="wallet_trans_detail_type_0">等待打包</string>
+    <string name="wallet_trans_detail_type_1">%d/12 区块确认</string>
+    <string name="wallet_trans_detail_from">发款方:</string>
+    <string name="wallet_trans_detail_to">收款方:</string>
+    <string name="wallet_trans_detail_fee">矿工费用:</string>
+    <string name="wallet_trans_detail_number">交易号:</string>
+    <string name="wallet_trans_detail_block">区块:</string>
+    <string name="wallet_trans_detail_time">交易时间:</string>
+    <string name="wallet_trans_detail_copy_url">复制URL</string>
+    <string name="wallet_trans_detail_block_none">无</string>
+
+
+    <string name="wallet_trans_collect_eth">收款通知: %s ether 收款成功</string>
+    <string name="wallet_trans_collect_smt">收款通知: %s smt 收款成功</string>
+    <string name="wallet_trans_collect_mesh">收款通知: %s mesh 收款成功</string>
+    <string name="wallet_trans_msg_eth">转账通知: %s ether 转账成功</string>
+    <string name="wallet_trans_msg_smt">转账通知: %s smt 转账成功</string>
+    <string name="wallet_trans_msg_mesh">转账通知: %s mesh 转账成功</string>
+    <string name="wallet_trans_collect_eth_failed">收款通知: %s ether 收款失败</string>
+    <string name="wallet_trans_collect_smt_failed">收款通知: %s smt 收款失败</string>
+    <string name="wallet_trans_collect_mesh_failed">收款通知: %s mesh 收款失败</string>
+    <string name="wallet_trans_msg_eth_failed">转账通知: %s ether 转账失败</string>
+    <string name="wallet_trans_msg_smt_failed">转账通知: %s smt 转账失败</string>
+    <string name="wallet_trans_msg_mesh_failed">转账通知: %s mesh 转账失败</string>
+    <string name="wallet_trans_from">发送方: %s</string>
+    <string name="wallet_trans_to">接收方: %s</string>
+
+    <string name="bloance_not_enough_eth">ETH余额不足</string>
+    <string name="bloance_not_enough_smt">SMT余额不足</string>
+    <string name="bloance_not_enough_mesh">MESH余额不足</string>
+    <string name="empty_address">接地址为空</string>
+    <string name="error_address">接地址错误</string>
+    <string name="input_address">请输入地址</string>
+    <string name="input_vaule">请输入数量</string>
+    <string name="gathering">收款</string>
+    <string name="money_empty">转账数量不能为空</string>
+    <string name="quick_blance_to_me">扫一扫给我转账</string>
+    <string name="send_price">确认转账</string>
+    <string name="send_gas">矿工费用</string>
+    <string name="send_address">地址：</string>
+    <string name="send_account">账户：</string>
+    <string name="send_amount">数量：</string>
+    <string name="send_blance">转账</string>
+    <string name="send_blance_title">%s-转账</string>
+    <string name="set_amount">请输入数量</string>
+    <string name="set_amount_address">请输入地址</string>
+    <string name="time">时间：</string>
+    <string name="description">说明</string>
+
+    <string name="passed_friend">我通过了您的好友请求，现在开始聊天吧!</string>
+
+    <string-array name="chat_smiley_list">
+        <item>[smile]</item>
+        <item>[amazed]</item>
+        <item>[grinning]</item>
+        <item>[laughs]</item>
+        <item>[angry]</item>
+        <item>[crying]</item>
+        <item>[pervert]</item>
+        <item>[speechless]</item>
+        <item>[little devil]</item>
+        <item>[sweat]</item>
+        <item>[surprised]</item>
+        <item>[bitter smile]</item>
+        <item>[grievance]</item>
+        <item>[sunglasses]</item>
+        <item>[sleepy]</item>
+        <item>[tease]</item>
+        <item>[kiss]</item>
+        <item>[blank stare]</item>
+        <item>[curse]</item>
+        <item>[doubt]</item>
+        <item>[eat cookies]</item>
+        <item>[froze]</item>
+        <item>[shock]</item>
+        <item>[explosion]</item>
+        <item>[smoking]</item>
+        <item>[masks]</item>
+        <item>[applause]</item>
+        <item>[embarrassed]</item>
+        <item>[nosebleeds]</item>
+        <item>[miserable]</item>
+        <item>[faint]</item>
+        <item>[sad]</item>
+        <item>[awkward]</item>
+        <item>[sorry]</item>
+        <item>[laughing]</item>
+        <item>[crazy]</item>
+        <item>[spit]</item>
+        <item>[gold digger]</item>
+        <item>[bashful]</item>
+        <item>[yawn]</item>
+        <item>[scared]</item>
+        <item>[beard]</item>
+        <item>[arrogance]</item>
+        <item>[work hard]</item>
+        <item>[grimace]</item>
+        <item>[black line]</item>
+        <item>[shut up]</item>
+        <item>[shy]</item>
+        <item>[ill]</item>
+        <item>[seriously]</item>
+        <item>[like]</item>
+        <item>[bye]</item>
+        <item>[ignore]</item>
+        <item>[hum]</item>
+        <item>[thanks]</item>
+        <item>[hug]</item>
+        <item>[strong]</item>
+        <item>[weak]</item>
+        <item>[handshake]</item>
+        <item>[fistsalute]</item>
+        <item>[OK]</item>
+        <item>[victory]</item>
+        <item>[seduce]</item>
+        <item>[love you]</item>
+        <item>[fist]</item>
+        <item>[NO]</item>
+        <item>[bad]</item>
+        <item>[candle]</item>
+        <item>[love]</item>
+        <item>[sun]</item>
+        <item>[moon]</item>
+        <item>[watermelon]</item>
+        <item>[rice]</item>
+        <item>[Coke]</item>
+        <item>[ice cream]</item>
+        <item>[Rose]</item>
+        <item>[wine]</item>
+        <item>[medicine]</item>
+        <item>[popcorn]</item>
+        <item>[umbrella]</item>
+        <item>[gift]</item>
+        <item>[clouds]</item>
+    </string-array>
+
+    <string-array name="delete_remove_top_chat_array">
+        <item>取消置顶</item>
+        <item>删除该聊天</item>
+    </string-array>
+    <string-array name="delete_clear_top_chat_array">
+        <item>取消置顶</item>
+        <item>清空该聊天</item>
+    </string-array>
+
+    <string-array name="delete_to_top_chat_array">
+        <item>置顶聊天</item>
+        <item>删除该聊天</item>
+    </string-array>
+    <string-array name="clear_to_top_chat_array">
+        <item>置顶聊天</item>
+        <item>清空该聊天</item>
+    </string-array>
+
+    <string-array name="delete_trans_array">
+        <item>删除该记录</item>
+    </string-array>
+
+    <string-array name="delete_chat_array">
+        <item>删除该会话</item>
+    </string-array>
+
+    <string-array name="delete_friend_array">
+        <item>删除该好友</item>
+    </string-array>
+
+
+    <string-array name="copy_del_text">
+        <item>拷贝</item>
+        <item>删除</item>
+    </string-array>
+
+    <string-array name="copy_del_only_text">
+        <item>删除</item>
+    </string-array>
+
+
+    <string-array name="cancel_fav_del_list_file">
+        <item>取消收藏</item>
+        <item>删除</item>
+    </string-array>
+
+    <string-array name="fav_del_list_file">
+        <item>收藏</item>
+        <item>删除</item>
+    </string-array>
+
+
+    <string-array name="speaker_mode_list">
+        <item>扬声器模式</item>
+        <item>删除</item>
+    </string-array>
+
+    <string-array name="receiver_mode_list">
+        <item>听筒模式</item>
+        <item>删除</item>
+    </string-array>
+
+    <string-array name="scan_edit_avatar">
+        <item>查看大头像</item>
+        <item>拍照</item>
+        <item>从相册选择</item>
+    </string-array>
+
+
+    <string-array name="sex_list">
+        <item>男</item>
+        <item>女</item>
+    </string-array>
+
+
+    <string-array name="sex_list_all">
+        <item>男</item>
+        <item>女</item>
+        <item>全部</item>
+    </string-array>
+
+
+    <string-array name="country_list">
+        <item>安道尔</item>
+        <item>奥地利</item>
+        <item>澳大利亚</item>
+        <item>阿尔巴尼亚</item>
+        <item>阿尔及利亚</item>
+        <item>爱尔兰</item>
+        <item>安哥拉</item>
+        <item>阿根廷</item>
+        <item>埃及</item>
+        <item>阿鲁巴</item>
+        <item>阿拉伯联合酋长国</item>
+        <item>阿曼</item>
+        <item>阿塞拜疆</item>
+        <item>埃塞俄比亚</item>
+        <item>安提瓜岛和巴布达</item>
+        <item>巴巴多斯岛</item>
+        <item>巴布亚新几内亚</item>
+        <item>博茨瓦纳</item>
+        <item>冰岛</item>
+        <item>不丹</item>
+        <item>波多黎各</item>
+        <item>巴哈马</item>
+        <item>保加利亚</item>
+        <item>巴基斯坦</item>
+        <item>巴林</item>
+        <item>波兰</item>
+        <item>布隆迪</item>
+        <item>比利时</item>
+        <item>玻利维亚</item>
+        <item>百慕大</item>
+        <item>北马里亚纳群岛</item>
+        <item>贝宁</item>
+        <item>巴拿马</item>
+        <item>巴西</item>
+        <item>朝鲜</item>
+        <item>德国</item>
+        <item>丹麦</item>
+        <item>多米尼加共和国</item>
+        <item>厄瓜多尔</item>
+        <item>俄罗斯</item>
+        <item>厄立特里亚</item>
+        <item>法国</item>
+        <item>斐济</item>
+        <item>芬兰</item>
+        <item>菲律宾</item>
+        <item>古巴</item>
+        <item>冈比亚</item>
+        <item>关岛</item>
+        <item>格恩西岛</item>
+        <item>刚果民主共和国</item>
+        <item>哥伦比亚</item>
+        <item>格陵兰</item>
+        <item>格林内达</item>
+        <item>哥斯达黎加</item>
+        <item>海地</item>
+        <item>洪都拉斯</item>
+        <item>韩国</item>
+        <item>荷兰</item>
+        <item>哈萨克斯坦</item>
+        <item>吉布提</item>
+        <item>吉尔吉斯坦</item>
+        <item>捷克共和国</item>
+        <item>基里巴斯</item>
+        <item>加纳</item>
+        <item>加拿大</item>
+        <item>柬埔寨</item>
+        <item>克罗地亚</item>
+        <item>喀麦隆</item>
+        <item>开曼群岛</item>
+        <item>肯尼亚</item>
+        <item>科威特</item>
+        <item>利比里亚</item>
+        <item>黎巴嫩</item>
+        <item>利比亚</item>
+        <item>罗马尼亚</item>
+        <item>留尼旺岛</item>
+        <item>卢森堡</item>
+        <item>莱索托</item>
+        <item>拉脱维亚</item>
+        <item>卢旺达</item>
+        <item>老挝</item>
+        <item>列支敦士登</item>
+        <item>缅甸</item>
+        <item>马达加斯加</item>
+        <item>马尔代夫</item>
+        <item>摩尔多瓦</item>
+        <item>蒙古</item>
+        <item>美国</item>
+        <item>孟加拉</item>
+        <item>秘鲁</item>
+        <item>摩洛哥</item>
+        <item>毛里求斯</item>
+        <item>毛里塔尼亚</item>
+        <item>马拉维</item>
+        <item>马来西亚</item>
+        <item>摩纳哥</item>
+        <item>马其顿</item>
+        <item>莫桑比克</item>
+        <item>马绍尔群岛</item>
+        <item>墨西哥</item>
+        <item>尼泊尔</item>
+        <item>南非</item>
+        <item>尼加拉瓜</item>
+        <item>纳米比亚</item>
+        <item>尼日利亚</item>
+        <item>挪威</item>
+        <item>帕劳群岛</item>
+        <item>葡萄牙</item>
+        <item>卡塔尔</item>
+        <item>乔治亚</item>
+        <item>日本</item>
+        <item>瑞典</item>
+        <item>瑞士</item>
+        <item>苏丹</item>
+        <item>塞尔维亚,黑山</item>
+        <item> 圣基茨和尼维斯</item>
+        <item>斯洛伐克</item>
+        <item>塞拉利昂</item>
+        <item>斯里兰卡</item>
+        <item>所罗门群岛</item>
+        <item>苏里南</item>
+        <item>斯洛文尼亚</item>
+        <item>圣马力诺</item>
+        <item>萨摩亚</item>
+        <item>塞内加尔</item>
+        <item>塞舌尔</item>
+        <item>沙特阿拉伯</item>
+        <item>斯威士兰</item>
+        <item>土耳其</item>
+        <item>泰国</item>
+        <item>汤加</item>
+        <item>塔吉克斯坦</item>
+        <item>特立尼达和多巴哥</item>
+        <item>坦桑尼亚</item>
+        <item>危地马拉</item>
+        <item>乌干达</item>
+        <item>乌克兰</item>
+        <item>文莱</item>
+        <item>乌拉圭</item>
+        <item>瓦努阿图</item>
+        <item>委内瑞拉</item>
+        <item>乌兹别克斯坦</item>
+        <item>西班牙</item>
+        <item>新加坡</item>
+        <item>新喀里多尼亚</item>
+        <item>希腊</item>
+        <item>新西兰</item>
+        <item>匈牙利</item>
+        <item>约旦</item>
+        <item>印度</item>
+        <item>意大利</item>
+        <item>印度尼西亚</item>
+        <item>英国</item>
+        <item>伊朗</item>
+        <item>伊拉克</item>
+        <item>也门</item>
+        <item>牙买加</item>
+        <item>亚美尼亚</item>
+        <item>越南</item>
+        <item>以色列</item>
+        <item>直布罗陀</item>
+        <item>赞比亚</item>
+        <item>中非共和国</item>
+        <item>中国澳门</item>
+        <item>中国</item>
+        <item>中国台湾</item>
+        <item>中国香港</item>
+        <item>智利</item>
+        <item>泽西岛</item>
+    </string-array>
+    <string-array name="list_0">
+        <item>安徽</item>
+        <item>北京</item>
+        <item>重庆</item>
+        <item>福建</item>
+        <item>广东</item>
+        <item>甘肃</item>
+        <item>广西</item>
+        <item>贵州</item>
+        <item>湖北</item>
+        <item>河北</item>
+        <item>黑龙江</item>
+        <item>湖南</item>
+        <item>河南</item>
+        <item>海南</item>
+        <item>吉林</item>
+        <item>江苏</item>
+        <item>江西</item>
+        <item>辽宁</item>
+        <item>内蒙古</item>
+        <item>宁夏</item>
+        <item>青海</item>
+        <item>四川</item>
+        <item>山东</item>
+        <item>上海</item>
+        <item>陕西</item>
+        <item>山西</item>
+        <item>天津</item>
+        <item>台湾</item>
+        <item>西藏</item>
+        <item>香港</item>
+        <item>新疆</item>
+        <item>云南</item>
+        <item>浙江</item>
+    </string-array>
+
+
+    <string-array name="list_0_0">
+        <item>安庆</item>
+        <item>蚌埠市</item>
+        <item>毫州</item>
+        <item>巢湖</item>
+        <item>池州</item>
+        <item>滁州</item>
+        <item>阜阳</item>
+        <item>淮北</item>
+        <item>合肥</item>
+        <item>淮南</item>
+        <item>黄山</item>
+        <item>六安</item>
+        <item>马鞍山</item>
+        <item>宿州</item>
+        <item>铜陵</item>
+        <item>芜湖</item>
+        <item>宣城</item>
+    </string-array>
+    <string-array name="list_0_1">
+        <item>昌平</item>
+        <item>朝阳</item>
+        <item>东城</item>
+        <item>大兴</item>
+        <item>房山</item>
+        <item>丰台</item>
+        <item>海淀</item>
+        <item>怀柔</item>
+        <item>门头沟</item>
+        <item>密云</item>
+        <item>平谷</item>
+        <item>石景山</item>
+        <item>顺义</item>
+        <item>通州</item>
+        <item>西城</item>
+        <item>延庆</item>
+    </string-array>
+    <string-array name="list_0_2">
+        <item>北碚</item>
+        <item>巴南</item>
+        <item>璧山</item>
+        <item>城口</item>
+        <item>长寿</item>
+        <item>大渡口</item>
+        <item>垫江</item>
+        <item>大足</item>
+        <item>丰都</item>
+        <item>奉节</item>
+        <item>涪陵</item>
+        <item>合川</item>
+        <item>江北</item>
+        <item>江津</item>
+        <item>九龙坡</item>
+        <item>开县</item>
+        <item>两江新区</item>
+        <item>梁平</item>
+        <item>南岸</item>
+        <item>南川</item>
+        <item>彭水</item>
+        <item>綦江</item>
+        <item>荣昌</item>
+        <item>沙坪呗</item>
+        <item>双桥</item>
+        <item>石柱</item>
+        <item>铜梁</item>
+        <item>潼南</item>
+        <item>武隆</item>
+        <item>万盛</item>
+        <item>巫山</item>
+        <item>巫溪</item>
+        <item>万州</item>
+        <item>秀山</item>
+        <item>渝北</item>
+        <item>永川</item>
+        <item>云阳</item>
+        <item>酉阳</item>
+        <item>渝中</item>
+        <item>忠县</item>
+    </string-array>
+    <string-array name="list_0_3">
+        <item>福州</item>
+        <item>龙岩</item>
+        <item>宁德</item>
+        <item>南平</item>
+        <item>莆田</item>
+        <item>泉州</item>
+        <item>三明</item>
+        <item>厦门</item>
+        <item>漳州</item>
+    </string-array>
+    <string-array name="list_0_4">
+        <item>潮州</item>
+        <item>东莞</item>
+        <item>佛山</item>
+        <item>广州</item>
+        <item>河源</item>
+        <item>惠州</item>
+        <item>江门</item>
+        <item>揭阳</item>
+        <item>茂名</item>
+        <item>梅州</item>
+        <item>清远</item>
+        <item>韶关</item>
+        <item>汕头</item>
+        <item>汕尾</item>
+        <item>深圳</item>
+        <item>云浮</item>
+        <item>阳江</item>
+        <item>珠海</item>
+        <item>湛江</item>
+        <item>肇庆</item>
+        <item>中山</item>
+    </string-array>
+    <string-array name="list_0_5">
+        <item>白银</item>
+        <item>定西</item>
+        <item>甘南</item>
+        <item>金昌</item>
+        <item>酒泉</item>
+        <item>嘉峪关</item>
+        <item>陇南</item>
+        <item>临夏</item>
+        <item>兰州市</item>
+        <item>平凉</item>
+        <item>庆阳</item>
+        <item>天水</item>
+        <item>武威</item>
+        <item>张掖</item>
+    </string-array>
+    <string-array name="list_0_6">
+        <item>北海</item>
+        <item>百色</item>
+        <item>崇左</item>
+        <item>防城港</item>
+        <item>贵港</item>
+        <item>桂林</item>
+        <item>河池</item>
+        <item>贺州</item>
+        <item>来宾</item>
+        <item>柳州</item>
+        <item>南宁</item>
+        <item>钦州</item>
+        <item>梧州</item>
+        <item>玉林</item>
+    </string-array>
+    <string-array name="list_0_7">
+        <item>安顿</item>
+        <item>毕节</item>
+        <item>贵阳</item>
+        <item>六盘水</item>
+        <item>黔东南</item>
+        <item>黔南</item>
+        <item>黔西南</item>
+        <item>铜仁</item>
+        <item>遵义</item>
+    </string-array>
+    <string-array name="list_0_8">
+        <item>恩施</item>
+        <item>鄂州</item>
+        <item>黄冈</item>
+        <item>黄石</item>
+        <item>荆门</item>
+        <item>潜江</item>
+        <item>神农架</item>
+        <item>十堰</item>
+        <item>随州</item>
+        <item>天门</item>
+        <item>武汉</item>
+        <item>孝感</item>
+        <item>咸宁</item>
+        <item>仙桃</item>
+        <item>襄阳</item>
+        <item>宜昌</item>
+    </string-array>
+    <string-array name="list_0_9">
+        <item>保定</item>
+        <item>承德</item>
+        <item>沧州</item>
+        <item>邯郸</item>
+        <item>衡水</item>
+        <item>廊坊</item>
+        <item>秦皇岛</item>
+        <item>石家庄</item>
+        <item>唐山</item>
+        <item>邢台</item>
+        <item>张家口</item>
+    </string-array>
+    <string-array name="list_0_10">
+        <item>大庆</item>
+        <item>大兴安岭</item>
+        <item>哈尔滨</item>
+        <item>鹤岗</item>
+        <item>黑河</item>
+        <item>佳木斯</item>
+        <item>鸡西</item>
+        <item>牡丹江</item>
+        <item>齐齐哈尔</item>
+        <item>七台河</item>
+        <item>绥化</item>
+        <item>双鸭山</item>
+        <item>伊春</item>
+    </string-array>
+    <string-array name="list_0_11">
+        <item>常德</item>
+        <item>长沙</item>
+        <item>郴州</item>
+        <item>怀化</item>
+        <item>衡阳</item>
+        <item>娄底</item>
+        <item>邵阳</item>
+        <item>湘潭</item>
+        <item>湘西</item>
+        <item>益阳</item>
+        <item>岳阳</item>
+        <item>永州</item>
+        <item>张家界</item>
+        <item>株洲</item>
+    </string-array>
+    <string-array name="list_0_12">
+        <item>安阳</item>
+        <item>鹤壁</item>
+        <item>济源</item>
+        <item>焦作</item>
+        <item>开封</item>
+        <item>漯河</item>
+        <item>洛阳</item>
+        <item>南阳</item>
+        <item>平顶山</item>
+        <item>濮阳</item>
+        <item>三门峡</item>
+        <item>商丘</item>
+        <item>许昌</item>
+        <item>新乡</item>
+        <item>信阳</item>
+        <item>周口</item>
+        <item>驻马店</item>
+        <item>郑州</item>
+    </string-array>
+    <string-array name="list_0_13">
+        <item>白沙</item>
+        <item>保亭</item>
+        <item>昌江</item>
+        <item>澄迈</item>
+        <item>定安</item>
+        <item>东方</item>
+        <item>儋州</item>
+        <item>海口</item>
+        <item>乐东</item>
+        <item>临高</item>
+        <item>陵水</item>
+        <item>琼海</item>
+        <item>琼中</item>
+        <item>三沙</item>
+        <item>三亚</item>
+        <item>屯昌</item>
+        <item>文昌</item>
+        <item>万宁</item>
+        <item>五指山</item>
+    </string-array>
+    <string-array name="list_0_14">
+        <item>白城</item>
+        <item>白山</item>
+        <item>长春</item>
+        <item>吉林</item>
+        <item>辽源</item>
+        <item>四平</item>
+        <item>松原</item>
+        <item>通化</item>
+        <item>延边</item>
+    </string-array>
+    <string-array name="list_0_15">
+        <item>常州</item>
+        <item>淮安</item>
+        <item>连云港</item>
+        <item>南京</item>
+        <item>南通</item>
+        <item>宿迁</item>
+        <item>苏州</item>
+        <item>泰州</item>
+        <item>无锡</item>
+        <item>徐州</item>
+        <item>盐城</item>
+        <item>扬州</item>
+        <item>镇江</item>
+    </string-array>
+    <string-array name="list_0_16">
+        <item>抚州</item>
+        <item>赣江</item>
+        <item>吉安</item>
+        <item>景德镇</item>
+        <item>九江</item>
+        <item>南昌</item>
+        <item>萍乡</item>
+        <item>上饶</item>
+        <item>新余</item>
+        <item>宜春</item>
+        <item>鹰潭</item>
+    </string-array>
+    <string-array name="list_0_17">
+        <item>鞍山</item>
+        <item>本溪</item>
+        <item>朝阳</item>
+        <item>丹东</item>
+        <item>大连</item>
+        <item>抚顺</item>
+        <item>阜新</item>
+        <item>葫芦岛</item>
+        <item>锦州</item>
+        <item>辽阳</item>
+        <item>盘锦</item>
+        <item>沈阳</item>
+        <item>铁岭</item>
+        <item>营口</item>
+    </string-array>
+    <string-array name="list_0_18">
+        <item>阿拉善</item>
+        <item>包头</item>
+        <item>巴彦淖尔</item>
+        <item>赤峰</item>
+        <item>鄂尔多斯</item>
+        <item>呼和浩特</item>
+        <item>呼伦贝尔</item>
+        <item>通辽</item>
+        <item>乌海</item>
+        <item>乌兰察布</item>
+        <item>兴安</item>
+        <item>锡林郭勒</item>
+    </string-array>
+    <string-array name="list_0_19">
+        <item>固原</item>
+        <item>石嘴山</item>
+        <item>吴忠</item>
+        <item>银川</item>
+        <item>中卫</item>
+    </string-array>
+    <string-array name="list_0_20">
+        <item>果洛</item>
+        <item>海北</item>
+        <item>海东</item>
+        <item>黄南</item>
+        <item>海南</item>
+        <item>海西</item>
+        <item>西宁</item>
+        <item>玉树</item>
+    </string-array>
+    <string-array name="list_0_21">
+        <item>阿坝</item>
+        <item>巴中</item>
+        <item>成都</item>
+        <item>德阳</item>
+        <item>达州</item>
+        <item>广安</item>
+        <item>广元</item>
+        <item>甘孜</item>
+        <item>凉山</item>
+        <item>乐山</item>
+        <item>泸州</item>
+        <item>眉山</item>
+        <item>锦阳</item>
+        <item>南充</item>
+        <item>内江</item>
+        <item>攀枝花</item>
+        <item>遂宁</item>
+        <item>雅安</item>
+        <item>宜宾</item>
+        <item>自贡</item>
+        <item>资阳</item>
+    </string-array>
+    <string-array name="list_0_22">
+        <item>滨州</item>
+        <item>东营</item>
+        <item>德州</item>
+        <item>菏泽</item>
+        <item>济南</item>
+        <item>济宁</item>
+        <item>聊城</item>
+        <item>莱芜</item>
+        <item>临沂</item>
+        <item>青岛</item>
+        <item>日照</item>
+        <item>泰安</item>
+        <item>潍坊</item>
+        <item>威海</item>
+        <item>烟台</item>
+        <item>淄博</item>
+        <item>枣庄</item>
+    </string-array>
+    <string-array name="list_0_23">
+        <item>宝山</item>
+        <item>崇明</item>
+        <item>长宁</item>
+        <item>奉贤</item>
+        <item>虹口</item>
+        <item>黄浦</item>
+        <item>静安</item>
+        <item>嘉定</item>
+        <item>金山</item>
+        <item>卢湾</item>
+        <item>闵行</item>
+        <item>浦东新区</item>
+        <item>普陀</item>
+        <item>青浦</item>
+        <item>松江</item>
+        <item>徐汇</item>
+        <item>杨浦</item>
+        <item>闸北</item>
+    </string-array>
+    <string-array name="list_0_24">
+        <item>安康</item>
+        <item>宝鸡</item>
+        <item>汉中</item>
+        <item>商洛</item>
+        <item>铜川</item>
+        <item>渭南</item>
+        <item>西安</item>
+        <item>咸阳</item>
+        <item>延安</item>
+        <item>榆林</item>
+    </string-array>
+    <string-array name="list_0_25">
+        <item>长治</item>
+        <item>大同</item>
+        <item>晋城</item>
+        <item>晋中</item>
+        <item>临汾</item>
+        <item>吕梁</item>
+        <item>朔州</item>
+        <item>太原</item>
+        <item>忻州</item>
+        <item>运城</item>
+        <item>阳泉</item>
+    </string-array>
+    <string-array name="list_0_26">
+        <item>北辰</item>
+        <item>宝坻</item>
+        <item>滨海新区</item>
+        <item>东丽</item>
+        <item>河北</item>
+        <item>河东</item>
+        <item>和平</item>
+        <item>红桥</item>
+        <item>河西</item>
+        <item>静海</item>
+        <item>津南</item>
+        <item>蓟县</item>
+        <item>宁河</item>
+        <item>南开</item>
+        <item>武清</item>
+        <item>西青</item>
+    </string-array>
+    <string-array name="list_0_27">
+        <item>阿里</item>
+        <item>昌都</item>
+        <item>拉萨</item>
+        <item>林芝</item>
+        <item>那曲</item>
+        <item>日喀则</item>
+        <item>山南</item>
+    </string-array>
+    <string-array name="list_0_28">
+        <item>阿克苏</item>
+        <item>阿拉尔</item>
+        <item>阿勒泰</item>
+        <item>博尔塔拉</item>
+        <item>巴音郭楞</item>
+        <item>昌吉</item>
+        <item>哈密</item>
+        <item>和田</item>
+        <item>克拉玛依</item>
+        <item>喀什</item>
+        <item>克孜勒苏</item>
+        <item>石河子</item>
+        <item>塔城</item>
+        <item>吐鲁番</item>
+        <item>图木舒克</item>
+        <item>五家渠</item>
+        <item>乌鲁木齐</item>
+        <item>伊犁</item>
+    </string-array>
+    <string-array name="list_0_29">
+        <item>保山</item>
+        <item>楚雄</item>
+        <item>德宏</item>
+        <item>大理</item>
+        <item>迪庆</item>
+        <item>红河</item>
+        <item>昆明</item>
+        <item>临沧</item>
+        <item>丽江</item>
+        <item>怒江</item>
+        <item>普洱</item>
+        <item>曲靖</item>
+        <item>文山</item>
+        <item>西双版纳</item>
+        <item>玉溪</item>
+        <item>昭通</item>
+    </string-array>
+    <string-array name="list_0_30">
+        <item>湖州</item>
+        <item>杭州</item>
+        <item>金华</item>
+        <item>嘉兴</item>
+        <item>丽水</item>
+        <item>宁波</item>
+        <item>衢州</item>
+        <item>绍兴</item>
+        <item>台州</item>
+        <item>温州</item>
+        <item>舟山</item>
+    </string-array>
+
+    <string-array name="list_0_31">
+        <item>高雄市</item>
+        <item>花莲县</item>
+        <item>基隆市</item>
+        <item>金门县</item>
+        <item>嘉义市</item>
+        <item>连江县</item>
+        <item>苗栗县</item>
+        <item>南投县</item>
+        <item>屏东县</item>
+        <item>澎湖县</item>
+        <item>台北市</item>
+        <item>台东县</item>
+        <item>台南市</item>
+        <item>桃园县</item>
+        <item>台中市</item>
+        <item>新北市</item>
+        <item>新竹市</item>
+        <item>新竹县</item>
+        <item>云林县</item>
+        <item>宜兰县</item>
+        <item>彰化县</item>
+    </string-array>
+    <string-array name="list_0_32">
+        <item>北区</item>
+        <item>大埔区</item>
+        <item>东区</item>
+        <item>观塘区</item>
+        <item>黄大仙区</item>
+        <item>九龙城区</item>
+        <item>葵青区</item>
+        <item>离岛区</item>
+        <item>南区</item>
+        <item>荃湾区</item>
+        <item>深水埗区</item>
+        <item>沙田区</item>
+        <item>屯门区</item>
+        <item>湾仔区</item>
+        <item>西贡区</item>
+        <item>油尖旺区</item>
+        <item>元朗区</item>
+        <item>中西区</item>
+    </string-array>
+
+    <string name="country_code">
+        93:阿富汗:AFUHAN,
+        355:阿尔巴尼亚:AERBANIYA,
+        213:阿尔及利亚:AERJILIYA,
+        1684:美属萨摩亚:MEISHUSAMOYA,
+        376:安道尔:ANDAOER,
+        244:安哥拉:ANGELA,
+        1264:安圭拉:ANGUILA,
+        1268:安提瓜和巴布达:ANTIGUAHEBABUDA,
+        54:阿根廷:AGENTING,
+        374:亚美尼亚:YAMEINIYA,
+        297:阿鲁巴:ALUBA,
+        61:澳大利亚:AODALIYA,
+        43:奥地利:AODILI,
+        994:阿塞拜疆:ASAIBAIJIANG,
+        1242:巴哈马:BAHAMA,
+        973:巴林:BALIN,
+        880:孟加拉国:MENGJIALAGUO,
+        1246:巴巴多斯:BABADUOSI,
+        375:白俄罗斯:BAIELUOSI,
+        32:比利时:BILISHI,
+        501:伯利兹:BOLIZI,
+        229:贝宁:BEINING,
+        1441:百慕大:BAIMUDA,
+        975:不丹:BUDAN,
+        591:玻利维亚:BOLIWEIYA,
+        387:波斯尼亚和黑塞哥维那:BOSINIYAHEHEISAIGEWEINA,
+        267:博茨瓦纳:BOCIWANA,
+        55:巴西:BAXI,
+        673:文莱:WENLAI,
+        359:保加利亚:BAOJIALIYA,
+        226:布基纳法索:BUJINAFASUO,
+        95:缅甸:MIANDIAN,
+        257:布隆迪:BULONGDI,
+        855:柬埔寨:JIANPUZHAI,
+        237:喀麦隆:KAMAILONG,
+        1:加拿大:JIANADA,
+        238:佛得角:FODEJIAO,
+        236:中非共和国:ZHONGFEIGONGHEGUO,
+        235:乍得:ZHADE,
+        56:智利:ZHILI,
+        86:中国:ZHONGGUO,
+        61:圣诞岛:SHENGDANDAO,
+        61:科科斯群岛:KEKESIQUNDAO,
+        57:哥伦比亚:GELUNBIYA,
+        269:科摩罗:KEMOLUO,
+        682:库克群岛:KUKEQUNDAO,
+        506:哥斯达黎加:GESIDALIJIA,
+        385:克罗地亚:KELUODIYA,
+        53:古巴:GUBA,
+        357:塞浦路斯:SAIPULUSI,
+        420:捷克共和国:JIEKEGONGHEGUO,
+        243:刚果（金）:GANGGUOJIN,
+        45:丹麦:DANMAI,
+        253:吉布提:JIBUTI,
+        1767:多米尼加:DUOMINIJIA,
+        1809:多米尼加共和国:DUOMINIJIAGONGHEGUO,
+        593:厄瓜多尔:EGUADUOER,
+        20:埃及:AIJI,
+        503:萨尔瓦多:SAERWADUO,
+        240:赤道几内亚:CHIDAOJINEIYA,
+        291:厄立特里亚:ELITELIYA,
+        372:爱沙尼亚:AISHANIYA,
+        251:埃塞俄比亚:AISAIEBIYA,
+        298:法罗群岛:FALUOQUNDAO,
+        679:斐济:FEIJI,
+        358:芬兰:FENLAN,
+        33:法国:FAGUO,
+        689:法属波利尼西亚:FASHUBOLINIXIYA,
+        241:加蓬:JIAPENG,
+        220:冈比亚:GANGBIYA,
+        995:格鲁吉亚:GELUJIYA,
+        49:德国:DEGUO,
+        233:加纳:JIANA,
+        350:直布罗陀:ZHIBULUOTUO,
+        30:希腊:XILA,
+        1473:格林纳达:GELINNADA,
+        1671:关岛:GUANDAO,
+        502:危地马拉:WEIDIMALA,
+        263:津巴布韦:JINBABUWEI,
+        224:几内亚:JINEIYA,
+        245:几内亚比绍:JINEIYABISHAO,
+        592:圭亚那:GUIYANA,
+        509:海地:HAIDI,
+        39:梵蒂冈:FANDIGANG,
+        504:洪都拉斯:HONGDOULASI,
+        852:中国香港特别行政区:ZHONGGUOXIANGGANGTEBIEHANGZHENGQU,
+        36:匈牙利:XIONGYALI,
+        354:冰岛:BINGDAO,
+        91:印度:YINDU,
+        62:印度尼西亚:YINDUNIXIYA,
+        98:伊朗:YILANG,
+        964:伊拉克:YILAKE,
+        353:爱尔兰:AIERLAN,
+        972:以色列:YISELIE,
+        39:意大利:YIDALI,
+        225:科特迪瓦:KETEDIWA,
+        1876:牙买加:YAMAIJIA,
+        81:日本:RIBEN,
+        962:约旦:YUEDAN,
+        7:哈萨克斯坦:HASAKESITAN,
+        254:肯尼亚:KENNIYA,
+        686:基里巴斯:JILIBASI,
+        965:科威特:KEWEITE,
+        996:吉尔吉斯斯坦:JIERJISISITAN,
+        856:老挝人民民主共和国:LAOWORENMINMINZHUGONGHEGUO,
+        371:拉脱维亚:LATUOWEIYA,
+        961:黎巴嫩:LIBANEN,
+        266:莱索托:LAISUOTUO,
+        231:利比里亚:LIBILIYA,
+        218:利比亚:LIBIYA,
+        423:列支敦士登:LIEZHIDUNSHIDENG,
+        370:立陶宛:LITAOWAN,
+        352:卢森堡:LUSENBAO,
+        853:中国澳门特别行政区:ZHONGGUOAOMENTEBIEHANGZHENGQU,
+        389:马其顿:MAQIDUN,
+        261:马达加斯加:MADAJIASIJIA,
+        265:马拉维:MALAWEI,
+        60:马来西亚:MALAIXIYA,
+        960:马尔代夫:MAERDAIFU,
+        223:马里:MALI,
+        356:马耳他:MAERTA,
+        692:马绍尔群岛:MASHAOERQUNDAO,
+        222:毛里塔尼亚:MAOLITANIYA,
+        230:毛里求斯:MAOLIQIUSI,
+        262:马约特:MAYUETE,
+        52:墨西哥:MOXIGE,
+        691:密克罗尼西亚联邦:MIKELUONIXIYALIANBANG,
+        373:摩尔多瓦:MOERDUOWA,
+        377:摩纳哥:MONAGE,
+        976:蒙古:MENGGU,
+        382:黑山共和国:HEISHANGONGHEGUO,
+        1664:蒙塞拉特群岛:MENGSAILATEQUNDAO,
+        212:摩洛哥:MOLUOGE,
+        258:莫桑比克:MOSANGBIKE,
+        264:纳米比亚:NAMIBIYA,
+        674:瑙鲁:NAOLU,
+        977:尼泊尔:NIBOER,
+        31:荷兰:HELAN,
+        687:新喀里多尼亚:XINKALIDUONIYA,
+        64:新西兰:XINXILAN,
+        505:尼加拉瓜:NIJIALAGUA,
+        227:尼日尔:NIRIER,
+        234:尼日利亚:NIRILIYA,
+        683:纽埃:NIUAI,
+        850:朝鲜:CHAOXIAN,
+        47:挪威:NUOWEI,
+        968:阿曼:AMAN,
+        92:巴基斯坦:BAJISITAN,
+        680:帕劳:PALAO,
+        507:巴拿马:BANAMA,
+        675:巴布亚新几内亚:BABUYAXINJINEIYA,
+        595:巴拉圭:BALAGUI,
+        51:秘鲁:MILU,
+        63:菲律宾:FEILVBIN,
+        870:皮特凯恩群岛:PITEKAIENQUNDAO,
+        48:波兰:BOLAN,
+        351:葡萄牙:PUTAOYA,
+        1:波多黎各:BODUOLIGE,
+        974:卡塔尔:KATAER,
+        242:刚果（布）:GANGGUOBU,
+        40:罗马尼亚:LUOMANIYA,
+        7:俄罗斯:ELUOSI,
+        250:卢旺达:LUWANGDA,
+        290:圣赫勒拿:SHENGHELENA,
+        1869:圣基茨和尼维斯:SHENGJICIHENIWEISI,
+        1758:圣卢西亚:SHENGLUXIYA,
+        1784:圣文森特和格林纳丁斯:SHENGWENSENTEHEGELINNADINGSI,
+        685:萨摩亚:SAMOYA,
+        378:圣马力诺:SHENGMALINUO,
+        239:圣多美和普林西比:SHENGDUOMEIHEPULINXIBI,
+        966:沙特阿拉伯:SHATEALABO,
+        221:塞内加尔:SAINEIJIAER,
+        381:塞尔维亚:SAIERWEIYA,
+        248:塞舌尔群岛:SAISHEERQUNDAO,
+        232:塞拉利昂:SAILALIANG,
+        65:新加坡:XINJIAPO,
+        421:斯洛伐克:SILUOFAKE,
+        386:斯洛文尼亚:SILUOWENNIYA,
+        677:所罗门群岛:SUOLUOMENQUNDAO,
+        252:索马里:SUOMALI,
+        27:南非:NANFEI,
+        82:韩国:HANGUO,
+        34:西班牙:XIBANYA,
+        94:斯里兰卡:SILILANKA,
+        249:苏丹:SUDAN,
+        268:斯威士兰:SIWEISHILAN,
+        46:瑞典:RUIDIAN,
+        41:瑞士:RUISHI,
+        963:叙利亚:XULIYA,
+        886:台湾:TAIWAN,
+        992:塔吉克斯坦:TAJIKESITAN,
+        255:坦桑尼亚:TANSANGNIYA,
+        66:泰国:TAIGUO,
+        670:东帝汶:DONGDIWEN,
+        228:多哥:DUOGE,
+        690:托克劳:TUOKELAO,
+        676:汤加:TANGJIA,
+        1868:特立尼达和多巴哥:TELINIDAHEDUOBAGE,
+        216:突尼斯:TUNISI,
+        90:土耳其:TUERQI,
+        993:土库曼斯坦:TUKUMANSITAN,
+        688:图瓦卢:TUWALU,
+        256:乌干达:WUGANDA,
+        380:乌克兰:WUKELAN,
+        971:阿拉伯联合酋长国:ALABOLIANHEQIUZHANGGUO,
+        44:英国:YINGGUO,
+        1:美国:MEIGUO,
+        598:乌拉圭:WULAGUI,
+        998:乌兹别克斯坦:WUZIBIEKESITAN,
+        678:瓦努阿图:WANUATU,
+        58:委内瑞拉:WEINEIRUILA,
+        84:越南:YUENAN,
+        681:瓦利斯和富图纳:WALISIHEFUTUNA,
+        967:也门:YEMEN,
+        260:赞比亚:ZANBIYA
+    </string>
+
+</resources>
