@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="5dp">
+
+    <TextView
+        android:id="@+id/item_chatting_time"
+        style="@style/item_chatting_category_time"
+        android:layout_centerHorizontal="true"
+        android:text="2014-10-11" />
+
+    <ImageView
+        android:id="@+id/item_chatting_select_iv"
+        style="@style/chatting_select_iv"
+        android:layout_alignBottom="@+id/linear"
+        android:src="@drawable/checkbox_unselected"/>
+
+    <RelativeLayout
+        android:id="@+id/linear"
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/item_chatting_time"
+        android:layout_toRightOf="@id/item_chatting_select_iv"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.lingtuan.firefly.custom.CharAvatarView
+            android:id="@+id/item_chatting_avatar"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginLeft="5dp"
+            android:layout_gravity="top" />
+
+        <TextView
+            android:id="@+id/item_chatting_nickname"
+            style="@style/item_chatting_left_nickanme"
+            android:visibility="gone"
+            android:layout_toRightOf="@id/item_chatting_avatar" />
+
+        <LinearLayout
+            android:id="@+id/item_chatting_body_linear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/item_chatting_nickname"
+            android:layout_marginLeft="5dp"
+            android:layout_toRightOf="@id/item_chatting_avatar"
+            android:background="@drawable/chatting_left_bg"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginTop="5dp">
+
+                <ImageView
+                    android:id="@+id/img_file_logo"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="3dp"
+                    android:src="@drawable/add_friend_by_contact" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="5dp"
+                    android:layout_toRightOf="@+id/img_file_logo"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/txt_file_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:maxLines="2"
+                        android:padding="1dp"
+                        android:textColor="@color/black"
+                        android:textSize="13sp" />
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/txt_file_size"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:padding="1dp"
+                            android:textColor="@color/textColorHintPrimary"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/txt_file_sent_state"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:gravity="center_vertical"
+                            android:padding="1dp"
+                            android:textColor="@color/textColorHintPrimary"
+                            android:textSize="12sp" />
+                    </RelativeLayout>
+                </LinearLayout>
+            </RelativeLayout>
+            <ProgressBar
+                android:id="@+id/file_send_progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:max="100"
+                android:progressDrawable="@drawable/progressbar_send_file_bg"
+                android:visibility="visible" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relativelayout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/linear"
+        android:layout_alignTop="@id/linear" />
+
+</RelativeLayout>
