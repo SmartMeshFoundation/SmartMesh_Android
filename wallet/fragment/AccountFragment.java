@@ -77,8 +77,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
      */
     private View view = null;
     private boolean isDataFirstLoaded;
-    private TextView accountTitle;
-    private ImageView accountInfo;
 
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -157,8 +155,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
 
     private void findViewById() {
-        accountTitle = (TextView) view.findViewById(R.id.app_title);
-        accountInfo = (ImageView) view.findViewById(R.id.app_right);
 
         swipe_refresh = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh);
 
@@ -195,9 +191,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     }
 
     private void setListener(){
-        accountInfo.setOnClickListener(this);
         walletManager.setOnClickListener(this);
         walletGesture.setOnClickListener(this);
+        walletAddress.setOnClickListener(this);
         createWallet.setOnClickListener(this);
         showQuicMark.setOnClickListener(this);
         walletListView.setOnItemClickListener(this);
@@ -222,12 +218,8 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private void initData() {
 
         swipe_refresh.setColorSchemeResources(R.color.black);
-        accountInfo.setVisibility(View.VISIBLE);
-        accountInfo.setImageResource(R.drawable.icon_menu);
-        view.findViewById(R.id.app_back).setVisibility(View.GONE);
         mAdapter = new AccountAdapter(getActivity());
         walletListView.setAdapter(mAdapter);
-        accountTitle.setText(getString(R.string.app_name));
         mDrawerToggle = new ActionBarDrawerToggle(getActivity(), mDrawerLayout, R.string.drawer_open,R.string.drawer_close);
         mDrawerToggle.syncState();
         mDrawerLayout.setDrawerListener(mDrawerToggle);
@@ -291,7 +283,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 }else if (Constants.ACTION_GESTURE_LOGIN.equals(intent.getAction())) {
                     initWalletInfo();
                 }else if (Constants.CHANGE_LANGUAGE.equals(intent.getAction())) {
-                    accountTitle.setText(getString(R.string.app_name));
                     Utils.updateViewLanguage(view.findViewById(R.id.account_drawerlayout));
                 }else if (XmppAction.ACTION_TRANS.equals(intent.getAction())) {
                     loadData(false);
@@ -322,7 +313,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             homePop.dismiss();
         } else {
             // On the coordinates of a specific display PopupWindow custom menu
-            homePop.showAsDropDown(accountInfo, Utils.dip2px(getActivity(), -118), Utils.dip2px(getActivity(), 0));
+            homePop.showAsDropDown(walletImg, Utils.dip2px(getActivity(), -118), Utils.dip2px(getActivity(), 0));
         }
     }
 
@@ -373,7 +364,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.app_right://Open the sidebar
+            case R.id.walletImg://Open the sidebar
                 mDrawerLayout.openDrawer(GravityCompat.END);
                 dismissHomePop();
                 cancelTimer();
@@ -417,8 +408,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 startActivity(new Intent(getActivity(), CaptureActivity.class));
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.walletImg://Backup the purse
-            case R.id.walletNameBody:
+            case R.id.walletNameBody://Backup the purse
                 if (storableWallet == null){
                     return;
                 }
@@ -429,7 +419,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 startActivity(copyIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
-            case R.id.qrCode://Qr code
+            case R.id.walletAddress://Qr code
                 if (storableWallet == null){
                     return;
                 }
