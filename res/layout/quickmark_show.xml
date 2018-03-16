@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="170dp"
+            android:orientation="vertical"
+            android:background="@drawable/wallet_bg">
+
+            <ImageView
+                android:id="@+id/app_back"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:paddingRight="9dp"
+                android:paddingLeft="8dp"
+                android:scaleType="center"
+                android:src="@drawable/icon_back" />
+
+            <com.lingtuan.firefly.custom.AlwaysMarqueeTextView
+                android:id="@+id/app_title"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="70dp"
+                android:layout_marginRight="70dp"
+                android:ellipsize="marquee"
+                android:gravity="center"
+                android:singleLine="true"
+                android:textColor="@color/textColor"
+                android:textSize="19sp" />
+
+            <TextView
+                android:id="@+id/app_btn_right"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_alignParentRight="true"
+                android:gravity="center"
+                android:paddingLeft="10dp"
+                android:paddingRight="15dp"
+                android:textColor="@color/textColor"
+                android:textSize="15sp"
+                android:text="@string/photo_save"/>
+        </RelativeLayout>
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="115dp"
+            android:clickable="true"
+            app:cardCornerRadius="5dp"
+            app:cardElevation="3dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="30dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/walletAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:singleLine="true"
+                    android:ellipsize="middle"
+                    android:gravity="center_vertical"
+                    android:textSize="12sp"
+                    android:textColor="@color/textColorHint"/>
+
+                <EditText
+                    android:id="@+id/amount"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@null"
+                    android:inputType="numberDecimal"
+                    android:textColor="@color/textColorHintPrimary"
+                    android:textSize="13sp"
+                    android:maxLength="20"
+                    android:hint="@string/input_vaule" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@color/tab_sep_line"/>
+
+                <ImageView
+                    android:id="@+id/quickmark"
+                    android:layout_width="160dp"
+                    android:layout_height="160dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_gravity="center"
+                    android:background="@color/textColor"
+                    android:scaleType="fitXY" />
+
+                <TextView
+                    android:id="@+id/copyAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:layout_margin="30dp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:background="@drawable/shape_round_hintcolor_solid_5"
+                    android:text="@string/copy_address"/>
+            </LinearLayout>
+        </android.support.v7.widget.CardView>
+
+        <ImageView
+            android:id="@+id/walletImg"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="95dp"
+            android:src="@drawable/wallet_group"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="right"/>
+    </RelativeLayout>
+</LinearLayout>

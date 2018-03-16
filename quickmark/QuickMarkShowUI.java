@@ -1,9 +1,11 @@
 package com.lingtuan.firefly.quickmark;
 
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -19,19 +21,32 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.ui.AlertActivity;
+import com.lingtuan.firefly.util.Utils;
+import com.lingtuan.firefly.wallet.util.WalletStorage;
+import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 
 	private ImageView mQuickMark;
 	private EditText mAmount;
-	private LinearLayout mAmountBg;
-	private TextView unit;
 	private int type;//Qr code 0, 1 ETH qr code, 2 FFT qr code
     private String address;
+	private int index = -1;//Which one is selected
+
+	private ImageView walletImg;
+	private TextView walletAddress;
+	private TextView copyAddress;
+
+	private StorableWallet storableWallet;
+
 	@Override
 	protected void setContentView() {
 		setContentView(R.layout.quickmark_show);
@@ -42,14 +57,16 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 	protected void findViewById() {
 
 		mQuickMark = (ImageView) findViewById(R.id.quickmark);
+		walletImg = (ImageView) findViewById(R.id.walletImg);
+		walletAddress = (TextView) findViewById(R.id.walletAddress);
+		copyAddress = (TextView) findViewById(R.id.copyAddress);
 		mAmount = (EditText) findViewById(R.id.amount);
-		mAmountBg = (LinearLayout) findViewById(R.id.amount_bg);
-		unit = (TextView) findViewById(R.id.unit);
 	}
 
 	@Override
 	protected void setListener() {
 		mAmount.addTextChangedListener(this);
+		copyAddress.setOnClickListener(this);
 	}
 
 	@Override
@@ -57,45 +74,59 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 		setTitle(getString(R.string.gathering));
 		type = getIntent().getIntExtra("type",0);
 		address = getIntent().getStringExtra("address");
-		if(!TextUtils.isEmpty(address) && !address.startsWith("0x"))
-		{
+		if(!TextUtils.isEmpty(address) && !address.startsWith("0x")){
 			address = "0x"+address;
 		}
 		String content = address;
-		if(type == 0)
-		{
-			mAmountBg.setVisibility(View.GONE);
-		}else if (type == 1){
-			mAmountBg.setVisibility(View.VISIBLE);
-			unit.setText("ETH");
-			content = address+"?amount=&token=ETH";
-		}
-		else if (type == 2){
-			mAmountBg.setVisibility(View.VISIBLE);
-			unit.setText("SMT");
-			content = address+"?amount=&token=SMT";
-		}
+		if(type == 0){
 
+		}else if (type == 1){
+			content = address+"?amount=&token=ETH";
+		}else if (type == 2){
+			content = address+"?amount=&token=SMT";
+		}else if (type == 3){
+			content = address+"?amount=&token=MESH";
+		}
+		initWalletInfo();
 		Bitmap qrBitmap= createQRCodeBitmap(content ,getResources().getDisplayMetrics().widthPixels);
 		mQuickMark.setImageBitmap(qrBitmap);
 	}
+
+	@Override
+	public void onClick(View v) {
+		super.onClick(v);
+		switch (v.getId()){
+			case R.id.copyAddress:
+				if (storableWallet != null && !storableWallet.isBackup()){
+					Intent intent = new Intent(QuickMarkShowUI.this, AlertActivity.class);
+					intent.putExtra("type", 5);
+					intent.putExtra("strablewallet", storableWallet);
+					startActivity(intent);
+					overridePendingTransition(0, 0);
+					return;
+				}
+				Utils.copyText(QuickMarkShowUI.this,walletAddress.getText().toString());
+				break;
+		}
+	}
+
 	private Bitmap createQRCodeBitmap(String content , int widthAndHeight) {
-		Hashtable<EncodeHintType, Object> qrParam = new Hashtable<EncodeHintType, Object>();
+		Hashtable<EncodeHintType, Object> qrParam = new Hashtable<>();
 		qrParam.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
 		qrParam.put(EncodeHintType.CHARACTER_SET, "utf-8");
 		try {
-			BitMatrix bitMatrix = new MultiFormatWriter().encode(content,
-					BarcodeFormat.QR_CODE, widthAndHeight, widthAndHeight, qrParam);
+			BitMatrix bitMatrix = new MultiFormatWriter().encode(content,BarcodeFormat.QR_CODE, widthAndHeight, widthAndHeight, qrParam);
 			int w = bitMatrix.getWidth();
 			int h = bitMatrix.getHeight();
 			int[] data = new int[w * h];
 
 			for (int y = 0; y < h; y++) {
 				for (int x = 0; x < w; x++) {
-					if (bitMatrix.get(x, y))
-						data[y * w + x] = 0xff000000;// ��ɫ
-					else
+					if (bitMatrix.get(x, y)){
+						data[y * w + x] = 0xff000000;
+					}else{
 						data[y * w + x] = -1;
+					}
 				}
 			}
 
@@ -107,20 +138,7 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 		}
 		return null;
 	}
-	
-	private void createQRCodeBitmapWithPortrait(Bitmap qr, Bitmap portrait,int widthAndHeight) {
-		int portrait_W = portrait.getWidth();
-		int portrait_H = portrait.getHeight();
 
-		int left = (widthAndHeight - portrait_W) / 2;
-		int top = (widthAndHeight - portrait_H) / 2;
-		int right = left + portrait_W;
-		int bottom = top + portrait_H;
-		Rect rect1 = new Rect(left, top, right, bottom);
-		Canvas canvas = new Canvas(qr);
-		Rect rect2 = new Rect(0, 0, portrait_W, portrait_H);
-		canvas.drawBitmap(portrait, rect2, rect1, null);
-	}
 
 	@Override
 	public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -153,16 +171,48 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 	//Change the qr code
 	private void chengeQrCode(Editable s){
 		String content = address;
-		if(type == 0)
-		{
-
+		if(type == 0){
+			content = address+"?amount="+s.toString();
 		}else if (type == 1){
 			content = address+"?amount="+s.toString()+"&token=ETH";
 		}
 		else if (type == 2){
 			content = address+"?amount="+s.toString()+"&token=SMT";
+		}else if (type == 3){
+			content = address+"?amount="+s.toString()+"&token=MESH";
 		}
 		Bitmap qrBitmap= createQRCodeBitmap(content ,getResources().getDisplayMetrics().widthPixels);
 		mQuickMark.setImageBitmap(qrBitmap);
+	}
+
+	/**
+	 * Load or refresh the wallet information
+	 * */
+	private void initWalletInfo(){
+		ArrayList<StorableWallet> storableWallets = WalletStorage.getInstance(getApplicationContext()).get();
+		for (int i = 0 ; i < storableWallets.size(); i++){
+			if (storableWallets.get(i).isSelect() ){
+				WalletStorage.getInstance(NextApplication.mContext).updateWalletToList(NextApplication.mContext,storableWallets.get(i).getPublicKey(),false);
+				index = i;
+				int imgId = Utils.getWalletImg(QuickMarkShowUI.this,i);
+				walletImg.setImageResource(imgId);
+				storableWallet = storableWallets.get(i);
+				storableWallet.setImgId(imgId);
+				break;
+			}
+		}
+		if (index == -1 && storableWallets.size() > 0){
+			int imgId = Utils.getWalletImg(QuickMarkShowUI.this,0);
+			walletImg.setImageResource(imgId);
+			storableWallet = storableWallets.get(0);
+			storableWallet.setImgId(imgId);
+		}
+		if (storableWallet != null){
+			String address = storableWallet.getPublicKey();
+			if(!address.startsWith("0x")){
+				address = "0x"+address;
+			}
+			walletAddress.setText(address);
+		}
 	}
 }
