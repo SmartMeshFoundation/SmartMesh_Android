@@ -87,8 +87,10 @@ public class WalletCopyActivity extends BaseActivity {
             walletCopyName.setText(getString(R.string.wallet_copy_name,storableWallet.getWalletName()));
             if (TextUtils.isEmpty(storableWallet.getPwdInfo())){
                 walletCopyPwdInfo.setVisibility(View.GONE);
+                findViewById(R.id.walletCopyPwdInfoLine).setVisibility(View.GONE);
             }else{
                 walletCopyPwdInfo.setText(getString(R.string.wallet_copy_pwd_info,storableWallet.getPwdInfo()));
+                findViewById(R.id.walletCopyPwdInfoLine).setVisibility(View.VISIBLE);
             }
         }
         icon.setImageResource(iconId);
@@ -295,7 +297,7 @@ public class WalletCopyActivity extends BaseActivity {
                             break;
                         }
                     }
-                    WalletStorage.getInstance(getApplicationContext()).updateWalletToList(WalletCopyActivity.this,storableWallet.getPublicKey());
+                    WalletStorage.getInstance(getApplicationContext()).updateWalletToList(WalletCopyActivity.this,storableWallet.getPublicKey(),true);
                     Utils.sendBroadcastReceiver(WalletCopyActivity.this, new Intent(Constants.WALLET_REFRESH_BACKUP), false);
 
                     BigInteger privateKey = (BigInteger) msg.obj;
@@ -313,7 +315,7 @@ public class WalletCopyActivity extends BaseActivity {
                             break;
                         }
                     }
-                    WalletStorage.getInstance(getApplicationContext()).updateWalletToList(WalletCopyActivity.this,storableWallet.getPublicKey());
+                    WalletStorage.getInstance(getApplicationContext()).updateWalletToList(WalletCopyActivity.this,storableWallet.getPublicKey(),true);
                     Utils.sendBroadcastReceiver(WalletCopyActivity.this, new Intent(Constants.WALLET_REFRESH_BACKUP), false);
                     String keyStore = (String)msg.obj;
                     Intent showKeyStore = new Intent(WalletCopyActivity.this,WalletKeyStoreActivity.class);
