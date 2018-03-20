@@ -68,7 +68,7 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
 
     @Override
     protected void initData() {
-        setTitle(getString(R.string.black_list));
+        setTitle("添加新资产");
         swipeLayout.setColorSchemeResources(R.color.black);
         source = new ArrayList<>();
         new Handler().postDelayed(new Runnable() {
@@ -102,24 +102,32 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
                     source.clear();
                 }
 
-                JSONArray jsonArray = response.optJSONArray("data");
-                if (jsonArray != null) {
-                    int count = jsonArray.length();
-                    for (int i = 0; i < count; i++) {
-                        TokenVo tokenVo = new TokenVo().parse(jsonArray.optJSONObject(i));
-                        source.add(tokenVo);
-                    }
-                    tokenListAdapter.resetSource(source);
-                } else {
-                    showToast(getString(R.string.black_list_empty));
+                for (int i = 0 ; i < 10 ; i++){
+                    TokenVo tokenVo = new TokenVo();
+                    tokenVo.setChecked(false);
+                    tokenVo.setTokenInfo("SMChain" + i);
+                    tokenVo.setTokenName("SmartMesh" + i);
+                    source.add(tokenVo);
                 }
+                tokenListAdapter.resetSource(source);
+//                JSONArray jsonArray = response.optJSONArray("data");
+//                if (jsonArray != null) {
+//                    int count = jsonArray.length();
+//                    for (int i = 0; i < count; i++) {
+//                        TokenVo tokenVo = new TokenVo().parse(jsonArray.optJSONObject(i));
+//                        source.add(tokenVo);
+//                    }
+//                    tokenListAdapter.resetSource(source);
+//                } else {
+//                    showToast(getString(R.string.black_list_empty));
+//                }
                 isLoadingData=false;
                 swipeLayout.setRefreshing(false);
-                if (jsonArray!=null&&jsonArray.length()>=10) {
-                    tokenListView.resetFooterState(true);
-                } else {
-                    tokenListView.resetFooterState(false);
-                }
+//                if (jsonArray!=null&&jsonArray.length()>=10) {
+//                    tokenListView.resetFooterState(true);
+//                } else {
+//                    tokenListView.resetFooterState(false);
+//                }
                 checkListEmpty();
             }
 
@@ -139,7 +147,7 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
     private void checkListEmpty() {
         if(source == null || source.size() == 0){
             emptyRela.setVisibility(View.VISIBLE);
-            emptyTextView.setText(R.string.black_list_empty);
+            emptyTextView.setText("暂时没有新的Token");
         }else{
             emptyRela.setVisibility(View.GONE);
         }
