@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/textColor"
+    android:orientation="vertical" >
+
+    <include layout="@layout/app_title_layout" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <include layout="@layout/include_empty_view" />
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+            <com.lingtuan.firefly.custom.LoadMoreListView
+                android:id="@+id/refreshListView"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:background="#00000000"
+                android:cacheColorHint="@android:color/transparent"
+                android:divider="@null"
+                android:fadingEdge="none"
+                android:fadingEdgeLength="0dp"
+                android:footerDividersEnabled="false"
+                android:headerDividersEnabled="false"
+                android:listSelector="@drawable/scrollview_item_bg"
+                android:scrollbars="none" >
+            </com.lingtuan.firefly.custom.LoadMoreListView>
+        </android.support.v4.widget.SwipeRefreshLayout>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/submitToken"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:gravity="center"
+        android:textColor="@color/wallet_transfer_bg"
+        android:textSize="16sp"
+        android:text="向我们提交新Token"/>
+</LinearLayout>
