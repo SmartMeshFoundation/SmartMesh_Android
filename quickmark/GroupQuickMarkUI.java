@@ -3,6 +3,7 @@ package com.lingtuan.firefly.quickmark;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
@@ -14,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -28,9 +30,11 @@ import com.lingtuan.firefly.contact.ContactSelectedUI;
 import com.lingtuan.firefly.custom.DiscussGroupImageView;
 import com.lingtuan.firefly.util.BitmapUtils;
 import com.lingtuan.firefly.util.Constants;
+import com.lingtuan.firefly.util.MyPopupWindow;
 import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.vo.ChatMsg;
+import com.lingtuan.firefly.vo.ShareVo;
 import com.lingtuan.firefly.vo.UserBaseVo;
 
 import java.util.ArrayList;
@@ -174,22 +178,7 @@ public class GroupQuickMarkUI extends BaseActivity {
 		super.onClick(v);
 		switch (v.getId()) {
 			case R.id.app_btn_right:
-				try {
-					String qrPath = BitmapUtils.uploadZxing(GroupQuickMarkUI.this,BitmapUtils.takeScreenShot(GroupQuickMarkUI.this),true);
-					ArrayList<ChatMsg> list = new ArrayList<>();
-					ChatMsg msg = new ChatMsg();
-					msg.setType(1);
-					msg.setContent(qrPath);
-					msg.setLocalUrl(qrPath);
-					msg.parseUserBaseVo(NextApplication.myInfo);
-					list.add(msg);
-					Intent intent = new Intent(GroupQuickMarkUI.this, ContactSelectedUI.class);
-					intent.putExtra("msglist", list);
-					startActivity(intent);
-					Utils.openNewActivityAnim(GroupQuickMarkUI.this, false);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				showSharePop();
 				break;
 			case R.id.discussScan:
 				Intent intent1 = new Intent(GroupQuickMarkUI.this, CaptureActivity.class);
@@ -256,4 +245,53 @@ public class GroupQuickMarkUI extends BaseActivity {
 		Utils.hiddenKeyBoard(GroupQuickMarkUI.this);
 		super.onResume();
 	}
+
+	/**
+	 * share group
+	 **/
+	public void showSharePop() {
+		ArrayList<ShareVo> itemList = new ArrayList<>();
+		itemList.add(new ShareVo(getString(R.string.app_name), R.drawable.icon_share_smartmesh));
+		itemList.add(new ShareVo(getString(R.string.copy_link), R.drawable.icon_share_link));
+		MyPopupWindow.showSharedGroupDialog(GroupQuickMarkUI.this, new MyPopupWindow.ShareCallback() {
+			@Override
+			public void shareCallback(int index) {
+				switch (index) {
+					case 0:// share smart mesh app
+						shareToSmartMesh();
+						break;
+					case 1: // share other
+						shareOtherApp();
+						break;
+
+					default:
+						break;
+				}
+			}
+		}, itemList);
+	}
+
+	private void shareOtherApp() {
+		Utils.copyText(GroupQuickMarkUI.this,getString(R.string.share_group,NextApplication.myInfo.getUserName(),nickname,Constants.URL_DISCUSS + id));
+	}
+
+	private void shareToSmartMesh(){
+		try {
+			String qrPath = BitmapUtils.uploadZxing(GroupQuickMarkUI.this,BitmapUtils.takeScreenShot(GroupQuickMarkUI.this),false,true);
+			ArrayList<ChatMsg> list = new ArrayList<>();
+			ChatMsg msg = new ChatMsg();
+			msg.setType(1);
+			msg.setContent(qrPath);
+			msg.setLocalUrl(qrPath);
+			msg.parseUserBaseVo(NextApplication.myInfo);
+			list.add(msg);
+			Intent intent = new Intent(GroupQuickMarkUI.this, ContactSelectedUI.class);
+			intent.putExtra("msglist", list);
+			startActivity(intent);
+			Utils.openNewActivityAnim(GroupQuickMarkUI.this, false);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }

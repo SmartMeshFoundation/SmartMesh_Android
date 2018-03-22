@@ -25,6 +25,7 @@ import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.ui.AlertActivity;
+import com.lingtuan.firefly.util.BitmapUtils;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
@@ -47,6 +48,10 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 
 	private StorableWallet storableWallet;
 
+	private TextView appRight;
+
+	private Bitmap qrBitmap;
+
 	@Override
 	protected void setContentView() {
 		setContentView(R.layout.quickmark_show);
@@ -61,12 +66,14 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 		walletAddress = (TextView) findViewById(R.id.walletAddress);
 		copyAddress = (TextView) findViewById(R.id.copyAddress);
 		mAmount = (EditText) findViewById(R.id.amount);
+		appRight = (TextView) findViewById(R.id.app_btn_right);
 	}
 
 	@Override
 	protected void setListener() {
 		mAmount.addTextChangedListener(this);
 		copyAddress.setOnClickListener(this);
+		appRight.setOnClickListener(this);
 	}
 
 	@Override
@@ -88,7 +95,7 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 			content = address+"?amount=&token=MESH";
 		}
 		initWalletInfo();
-		Bitmap qrBitmap= createQRCodeBitmap(content ,getResources().getDisplayMetrics().widthPixels);
+		qrBitmap= createQRCodeBitmap(content ,getResources().getDisplayMetrics().widthPixels);
 		mQuickMark.setImageBitmap(qrBitmap);
 	}
 
@@ -106,6 +113,14 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 					return;
 				}
 				Utils.copyText(QuickMarkShowUI.this,walletAddress.getText().toString());
+				break;
+			case R.id.app_btn_right:
+				try {
+					String qrPath = BitmapUtils.uploadZxing(QuickMarkShowUI.this,qrBitmap,true,true);
+					showToast(qrPath);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 				break;
 		}
 	}
@@ -181,7 +196,7 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 		}else if (type == 3){
 			content = address+"?amount="+s.toString()+"&token=MESH";
 		}
-		Bitmap qrBitmap= createQRCodeBitmap(content ,getResources().getDisplayMetrics().widthPixels);
+		qrBitmap= createQRCodeBitmap(content ,getResources().getDisplayMetrics().widthPixels);
 		mQuickMark.setImageBitmap(qrBitmap);
 	}
 
