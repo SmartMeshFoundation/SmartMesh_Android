@@ -20,7 +20,7 @@
                 android:paddingRight="9dp"
                 android:paddingLeft="8dp"
                 android:scaleType="center"
-                android:src="@drawable/icon_back" />
+                android:src="@drawable/icon_white_close" />
 
             <com.lingtuan.firefly.custom.AlwaysMarqueeTextView
                 android:id="@+id/app_title"
