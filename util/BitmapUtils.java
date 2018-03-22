@@ -29,6 +29,7 @@ import android.util.DisplayMetrics;
 import android.view.View;
 
 import com.lingtuan.firefly.NextApplication;
+import com.lingtuan.firefly.quickmark.GroupQuickMarkUI;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -620,8 +621,8 @@ public class BitmapUtils {
 		
 	}
 	
-	public static String saveZxing2SD(Context context, Bitmap bitmap, boolean isNeedRecycle) throws Exception {
-		String filePath = SDCardCtrl.getQrcodePath() ;
+	public static String uploadZxing(Context context, Bitmap bitmap, boolean isQrcode,boolean isNeedRecycle) throws Exception {
+		String filePath = isQrcode ? SDCardCtrl.getQrcodePath() : SDCardCtrl.getUploadPath() ;
 		String fileName = getPhotoFileName();
 		if(!new File(filePath).exists()){
 			new File(filePath).mkdir();
@@ -651,7 +652,41 @@ public class BitmapUtils {
 		}
 		//Notification system update photo album
 		Utils.notifySystemUpdateFolder(context, file);
-		return file.getParentFile().getAbsolutePath();
+		return file.getAbsolutePath();
+	}
+
+	public static String saveZxing2SD(Context context, Bitmap bitmap, boolean isNeedRecycle) throws Exception {
+		String filePath = SDCardCtrl.getQrcodePath() ;
+		String fileName = getPhotoFileName();
+		if(!new File(filePath).exists()){
+			new File(filePath).mkdir();
+		}
+		File file = new File(filePath, fileName);
+		try {
+			if(!file.exists()){
+				file.createNewFile();
+			}
+			BufferedOutputStream bos = new BufferedOutputStream(
+					new FileOutputStream(file));
+			if(bitmap.hasAlpha())
+			{
+				bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos);
+			}
+			else{
+				bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+			}
+			bos.flush();
+			bos.close();
+			if(isNeedRecycle&&bitmap != null ){
+				bitmap.recycle();
+				bitmap = null ;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		//Notification system update photo album
+		Utils.notifySystemUpdateFolder(context, file);
+		return file.getAbsolutePath();
 	}
 
 	public static Bitmap takeScreenShot(Activity activity) {
@@ -666,9 +701,12 @@ public class BitmapUtils {
         activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);  
         int statusBarHeight = frame.top;  
         int titleBarHeight=Utils.dip2px(activity, 48);
+
+		int paddingLeft = frame.width() / 6 -  Utils.dip2px(activity , 18);
+		int paddingTop = Utils.dip2px(activity,60);
+		int contentHight = Utils.dip2px(activity,80);
         // Remove the title bar
-        Bitmap b = Bitmap.createBitmap(b1, 0, statusBarHeight+titleBarHeight, b1.getWidth(), b1.getHeight()
-                - statusBarHeight-titleBarHeight);  
+        Bitmap b = Bitmap.createBitmap(b1, paddingLeft, statusBarHeight + titleBarHeight + paddingTop, b1.getWidth() - 2 * paddingLeft, b1.getWidth() - 2 * paddingLeft + contentHight);
         view.destroyDrawingCache();  
         return b;  
     }
