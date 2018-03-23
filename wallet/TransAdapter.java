@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
@@ -63,6 +64,7 @@ public class TransAdapter extends BaseAdapter {
             holder.time = (TextView) convertView.findViewById(R.id.time);
             holder.value = (TextView) convertView.findViewById(R.id.value);
             holder.transFailed = (TextView) convertView.findViewById(R.id.transFailed);
+            holder.transIcon = (ImageView) convertView.findViewById(R.id.transIcon);
             convertView.setTag(holder);
         }else{
             holder = (ViewHolder) convertView.getTag();
@@ -70,6 +72,8 @@ public class TransAdapter extends BaseAdapter {
         TransVo transVo = transVos.get(position);
         if (transVo.getNoticeType() == 0){
             holder.address.setText(transVo.getToAddress());
+            holder.transIcon.setImageResource(R.drawable.icon_transfer_out);
+            holder.value.setTextColor(context.getResources().getColor(R.color.colorRed));
             if (transVo.getType() == 0){//eth
                 holder.value.setText("-" + context.getString(R.string.eth_er,transVo.getValue()));
             }else if (transVo.getType() == 1){//smt
@@ -79,6 +83,8 @@ public class TransAdapter extends BaseAdapter {
             }
         }else{
             holder.address.setText(transVo.getFromAddress());
+            holder.transIcon.setImageResource(R.drawable.icon_transfer_in);
+            holder.value.setTextColor(context.getResources().getColor(R.color.yellow_wallet));
             if (transVo.getType() == 0){//eth
                 holder.value.setText("+" + context.getString(R.string.eth_er,transVo.getValue()));
             }else if (transVo.getType() == 1){//smt
@@ -87,14 +93,25 @@ public class TransAdapter extends BaseAdapter {
                 holder.value.setText("+" + context.getString(R.string.mesh_er,transVo.getValue()));
             }
         }
-
+        holder.transFailed.setTextColor(context.getResources().getColor(R.color.colorRed));
         if (transVo.getState() == 2){
             holder.transFailed.setVisibility(View.VISIBLE);
+        }else if (transVo.getState() == -1){
+            holder.transFailed.setVisibility(View.VISIBLE);
+            holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_0));
+        }else if (transVo.getState() == 0){
+            holder.transFailed.setVisibility(View.VISIBLE);
+            holder.transFailed.setTextColor(context.getResources().getColor(R.color.yellow_wallet));
+            if (transVo.getBlockNumber() - transVo.getTxBlockNumber() < 0){
+                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_1,1));
+            }else{
+                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_1,transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1));
+            }
         }else{
-            holder.transFailed.setVisibility(View.GONE);
+            holder.transFailed.setVisibility(View.INVISIBLE);
         }
 
-        holder.time.setText(Utils.formatTime(transVo.getTime()));
+        holder.time.setText(Utils.formatTransTime(transVo.getTime()));
         return convertView;
     }
 
@@ -103,5 +120,6 @@ public class TransAdapter extends BaseAdapter {
         TextView time;//time
         TextView value;//Transfer amount
         TextView transFailed;//Transaction failed
+        ImageView transIcon;//Transfer icon
     }
 }
