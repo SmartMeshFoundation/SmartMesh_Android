@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -25,7 +26,7 @@ import java.util.List;
  * Transfers or receipts
  */
 
-public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayout.OnRefreshListener {
+public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayout.OnRefreshListener, AdapterView.OnItemClickListener {
 
     private TextView walletTransfer;
     private TextView walletReceipt;
@@ -36,6 +37,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
     private ListView transListView;
     private TransAdapter mAdapter;
     private ArrayList<TransVo> transVos;
+    private TextView emptyView;
 
     @Override
     protected void setContentView() {
@@ -52,6 +54,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
     protected void findViewById() {
         walletTransfer = (TextView) findViewById(R.id.walletTransfer);
         walletReceipt = (TextView) findViewById(R.id.walletReceipt);
+        emptyView = (TextView) findViewById(R.id.emptyView);
         transListView = (ListView) findViewById(R.id.transListView);
         refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
     }
@@ -61,6 +64,18 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         walletTransfer.setOnClickListener(this);
         walletReceipt.setOnClickListener(this);
         refreshLayout.setOnRefreshListener(this);
+        transListView.setOnItemClickListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        new Handler().postDelayed(new Runnable(){
+            public void run() {
+                getTransMethod(type,storableWallet.getPublicKey());
+                refreshLayout.setRefreshing(true);
+            }
+        }, 200);
     }
 
     @Override
@@ -77,7 +92,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         transListView.setAdapter(mAdapter);
         new Handler().postDelayed(new Runnable(){
             public void run() {
-                getTransMethod(0,storableWallet.getPublicKey());
+                getTransMethod(type,storableWallet.getPublicKey());
                 refreshLayout.setRefreshing(true);
             }
         }, 200);
@@ -110,7 +125,8 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
      * To obtain transfer record interface
      * @param type 0 eth 1 smt
      * */
-    private void getTransMethod(final int type,final String address) {
+    private void getTransMethod(final int type, final String address) {
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -125,17 +141,29 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler(){
         public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case 0:
-                    refreshLayout.setRefreshing(false);
-                    mAdapter.resetSource(transVos,storableWallet.getPublicKey());
-                    break;
-            }
+            refreshLayout.setRefreshing(false);
+            mAdapter.resetSource(transVos,storableWallet.getPublicKey());
+            checkEmpty();
         }
     };
 
+    private void checkEmpty(){
+        if (transVos.size() <= 0){
+            emptyView.setVisibility(View.VISIBLE);
+        }else{
+            emptyView.setVisibility(View.GONE);
+        }
+    }
+
     @Override
     public void onRefresh() {
-        getTransMethod(0,storableWallet.getPublicKey());
+        getTransMethod(type,storableWallet.getPublicKey());
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Intent intent = new Intent(WalletSendDetailUI.this,TransactionDetailActivity.class);
+        intent.putExtra("transVo",transVos.get(position));
+        startActivity(intent);
     }
 }

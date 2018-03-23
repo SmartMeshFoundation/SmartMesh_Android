@@ -292,7 +292,14 @@ public class TransactionDetailActivity extends BaseActivity{
                     try {
                         String jsonString = response.body().string();
                         JSONObject object = new JSONObject(jsonString);
-                        if (object.optInt("errcod") == 1001222){
+                        if (object.optInt("errcod") == 0){
+                            int transBlockNumber = object.optJSONObject("data").optInt("blockNumber",0);
+                            transVo.setState(0);
+                            transVo.setTxBlockNumber(transBlockNumber);
+                            Message message = Message.obtain();
+                            message.what = 1;
+                            mHandler.sendMessage(message);
+                        }else if (object.optInt("errcod") == 1001222){
                             int transBlockNumber = object.optJSONObject("data").optInt("blockNumber",0);
                             transVo.setState(0);
                             transVo.setTxBlockNumber(transBlockNumber);
