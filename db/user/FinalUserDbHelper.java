@@ -11,7 +11,7 @@ import com.lingtuan.firefly.db.TableField;
  */
 public class FinalUserDbHelper extends SQLiteOpenHelper {
 
-	public static final int DB_VERSION = 1;
+	public static final int DB_VERSION = 2;
 	
 	public FinalUserDbHelper(Context context, String dbName) {
 		super(context, dbName, null, DB_VERSION);
@@ -218,6 +218,12 @@ public class FinalUserDbHelper extends SQLiteOpenHelper {
 				+ TableField.FIELD_RESERVED_DATA18	 + " text,"
 				+ TableField.FIELD_RESERVED_DATA19	 + " integer,"
 				+ TableField.FIELD_RESERVED_DATA20	 + " text,"
+				+ TableField.FIELD_RESERVED_DATA21	 + " text,"
+				+ TableField.FIELD_RESERVED_DATA22	 + " text,"
+				+ TableField.FIELD_RESERVED_DATA23	 + " text,"
+				+ TableField.FIELD_RESERVED_DATA24	 + " text,"
+				+ TableField.FIELD_RESERVED_DATA25	 + " text,"
+				+ TableField.FIELD_RESERVED_DATA26	 + " integer,"
 				+ TableField.FIELD_CHAT_GROUP_IMAGE	 + " text,"
 				+ TableField.FIELD_CHAT_OBJECT	 	 + " text)"
 				;
@@ -392,8 +398,50 @@ public class FinalUserDbHelper extends SQLiteOpenHelper {
 		        + TableField.FIELD_RESERVED_DATA2	 + " text,"
 				+ TableField.FIELD_RESERVED_DATA3	 + " integer)"
 				;
+        //trams table
+		String sql_trans  = "CREATE TABLE IF NOT EXISTS "
+				+ TableField.TABLE_TRANS			 + "("
+				+ TableField._ID					 + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ TableField.FIELD_CHAT_MSGTIME		 + " long,"         //time
+				+ TableField.FIELD_RESERVED_DATA1	 + " integer,"      // MODE
+				+ TableField.FIELD_RESERVED_DATA2	 + " text,"      	//MONEY
+				+ TableField.FIELD_RESERVED_DATA3	 + " text,"         //FEE
+				+ TableField.FIELD_RESERVED_DATA4	 + " text,"         //NUMBER
+				+ TableField.FIELD_RESERVED_DATA5	 + " text,"         //FRIMADDRESS
+				+ TableField.FIELD_RESERVED_DATA6	 + " text,"         //TOADDRESS
+				+ TableField.FIELD_RESERVED_DATA7	 + " text,"         //txblocknumber
+				+ TableField.FIELD_RESERVED_DATA8	 + " text,"         //url
+				+ TableField.FIELD_RESERVED_DATA9	 + " integer,"      //noticetype
+				+ TableField.FIELD_RESERVED_DATA10	 + " integer)"      //msgtype
+				;
+		   //trams temp table
+		String sql_trans_temp  = "CREATE TABLE IF NOT EXISTS "
+				+ TableField.TABLE_TRANS_TEMP			 + "("
+				+ TableField._ID					 + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ TableField.FIELD_CHAT_MSGTIME		 + " long,"         //time
+				+ TableField.FIELD_RESERVED_DATA1	 + " integer,"      // MODE
+				+ TableField.FIELD_RESERVED_DATA2	 + " text,"      	//MONEY
+				+ TableField.FIELD_RESERVED_DATA3	 + " text,"         //FEE
+				+ TableField.FIELD_RESERVED_DATA4	 + " text,"         //NUMBER
+				+ TableField.FIELD_RESERVED_DATA5	 + " text,"         //FRIMADDRESS
+				+ TableField.FIELD_RESERVED_DATA6	 + " text,"         //TOADDRESS
+				+ TableField.FIELD_RESERVED_DATA7	 + " text,"         //txblocknumber
+				+ TableField.FIELD_RESERVED_DATA8	 + " text,"         //url
+				+ TableField.FIELD_RESERVED_DATA9	 + " integer,"      //noticetype
+				+ TableField.FIELD_RESERVED_DATA10	 + " integer)"      //msgtype
+				;
 
-		
+		//trams token list table
+		String sql_token_list  = "CREATE TABLE IF NOT EXISTS "
+				+ TableField.TABLE_TOKEN_LIST		 + "("
+				+ TableField._ID					 + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ TableField.FIELD_RESERVED_DATA1	 + " text,"         //title
+				+ TableField.FIELD_RESERVED_DATA2	 + " text,"      	//pic
+				+ TableField.FIELD_RESERVED_DATA3	 + " text,"         //number
+				+ TableField.FIELD_RESERVED_DATA4	 + " text,"         //price
+				+ TableField.FIELD_RESERVED_DATA5	 + " text)"         //total price
+				;
+
 		db.execSQL(sql_user_info);
 		db.execSQL(sql_friend);
 		db.execSQL(sql_chat);
@@ -406,5 +454,8 @@ public class FinalUserDbHelper extends SQLiteOpenHelper {
 		db.execSQL(sql_contact);
 		db.execSQL(sql_giffav);
 		db.execSQL(sql_groupupload);
+		db.execSQL(sql_trans);
+		db.execSQL(sql_trans_temp);
+		db.execSQL(sql_token_list);
 	}
 }
