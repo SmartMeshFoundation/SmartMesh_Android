@@ -17,6 +17,12 @@ public class TableField {
 	public static final String TABLE_CONTACT = "contact";//The address book table
 	public static final String TABLE_GIF_FAV= "giffav";//GIF collection
 
+	public static final String TABLE_TRANS = "trans";//The trans list
+
+	public static final String TABLE_TRANS_TEMP = "transtemp";//The trans list
+
+	public static final String TABLE_TOKEN_LIST = "tokenlist";//The trans list
+
 	public static final String TABLE_GROUP_UPLOAD_FILE= "groupuploadfile";//Group to upload files
 	public static String _ID = "_id";
 	public static String _MSGID = "_msgid";
@@ -97,6 +103,7 @@ public class TableField {
 	public static final String FIELD_DYNAMIC_COMMENT_ID	= "_commentid";//Social comment ID
 
 	public static final String FIELD_GIF_ID	= "_gifid";//The id of the GIF
+
 	//--------------The reserved field
 	public static final String FIELD_RESERVED_DATA1  	= "_data1";// hat table messageId my friends information table messageId table is visible to Ta / / social circle who responded to the new information replyname/url/social extension
 	public static final String FIELD_RESERVED_DATA2  	= "_data2";//Friends list visible to Ta friend my information table sharedFriendName // social extension type 0: dynamic, 1: sharing
@@ -121,6 +128,12 @@ public class TableField {
 	public static final String FIELD_RESERVED_DATA18	= "_data18";
 	public static final String FIELD_RESERVED_DATA19	= "_data19";
 	public static final String FIELD_RESERVED_DATA20	= "_data20";
+	public static final String FIELD_RESERVED_DATA21	= "_data21";
+	public static final String FIELD_RESERVED_DATA22	= "_data22";
+	public static final String FIELD_RESERVED_DATA23	= "_data23";
+	public static final String FIELD_RESERVED_DATA24	= "_data24";
+	public static final String FIELD_RESERVED_DATA25	= "_data25";
+	public static final String FIELD_RESERVED_DATA26	= "_data26";
 	//---------------------After giving out when data11 fields need to modify the table structure
 //	public static final String FIELD_RESERVED_DATA12 	= "_data12";
 //	public static final String FIELD_RESERVED_DATA13 	= "_data13";
