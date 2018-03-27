@@ -10,16 +10,16 @@ import java.io.Serializable;
  */
 
 public class TransVo implements Serializable{
-    //address
+    // from address
     private String fromAddress;
-
+    // to address
     private String toAddress;
 
     //The amount of
     private String value;
     //time
     private long time;
-    // 0 eth 1 smt,2 mesh;
+    // 0 eth 1 smt,2 mesh;   now update  0 SMT  1 ERC20合约币
     private int type;
     //Transaction details web page address
     private String txurl;
