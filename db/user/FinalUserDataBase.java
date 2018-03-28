@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.contact.vo.FriendRecommentVo;
@@ -16,8 +17,11 @@ import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.vo.ChatMsg;
 import com.lingtuan.firefly.vo.UserBaseVo;
 import com.lingtuan.firefly.vo.UserInfoVo;
+import com.lingtuan.firefly.wallet.vo.TokenVo;
+import com.lingtuan.firefly.wallet.vo.TransVo;
 
 import org.jivesoftware.smack.packet.Message.MsgType;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,7 +83,7 @@ public class FinalUserDataBase {
      * @param type
      * @return
      */
-    public boolean checkMsgExist(String msgId, MsgType msgType, int type) {
+    public boolean checkMsgExist(String msgId, MsgType msgType, int type,String number,String noticetype) {
         if (TextUtils.isEmpty(msgId) || msgType == null) {
             return false;
         }
@@ -110,7 +114,20 @@ public class FinalUserDataBase {
         boolean result = false;
         result = cursor.moveToNext();
         cursor.close();
-        return result;
+        if (!result && MsgType.system.equals(msgType) && type == 300)//Trans message
+        {
+            String fieldNumber = TableField.FIELD_RESERVED_DATA4;
+            String fieldNoticetype = TableField.FIELD_RESERVED_DATA9;
+            table = TableField.TABLE_TRANS;
+            sql = "select " + TableField._ID + " from " + table + " where " + fieldNumber + "=? and " + fieldNoticetype + "=?";
+            cursor = db.rawQuery(sql, new String[]{number,noticetype});
+            result = cursor.moveToNext();
+            cursor.close();
+            return result;
+        }
+        else{
+          return result;
+        }
     }
 
     /**
@@ -567,6 +584,12 @@ public class FinalUserDataBase {
             msg.setCreateTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA15)));
             msg.setUsersource(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA16)));
             msg.setUserfrom(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA17)));
+            if (!TextUtils.isEmpty(msg.getUserId())){
+                UserBaseVo baseVo = FinalUserDataBase.getInstance().getUserBaseVoByUid(msg.getUserId());
+                if(baseVo!=null&&!TextUtils.isEmpty(baseVo.getShowName())){
+                    msg.setUsername(baseVo.getShowName());
+                }
+            }
             list.add(msg);
         }
         cursor.close();
@@ -621,6 +644,10 @@ public class FinalUserDataBase {
                 msg.setRemoteSource(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA18)));
                 msg.setInviteType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA19)));
                 msg.setInviteSource(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA20)));
+                msg.setMoney(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
+                msg.setMode(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
+                msg.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA26)));
+
                 if (msg.isTop()) {
                     msg.setTopTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA16)));
                 }
@@ -656,11 +683,8 @@ public class FinalUserDataBase {
                 }
                 if (!msg.isHidden()) {
                     list.add(msg);
-                    if (msg.getChatId().equals("system-0") || msg.getChatId().equals("system-1") || msg.getChatId().equals("system-3") || msg.getChatId().equals("system-4")) {
+                    if (msg.getChatId().equals("system-0") || msg.getChatId().equals("system-1") || msg.getChatId().equals("system-3") || msg.getChatId().equals("system-4") || msg.getChatId().equals("system-5")) {
                         total += msg.getUnread();
-                    } else if (msg.getChatId().equals("system-2"))//The stranger message not cumulative
-                    {
-
                     } else if (!msg.getGroupMask()) {
                         total += msg.getUnread();
                     }
@@ -669,16 +693,15 @@ public class FinalUserDataBase {
                         unFriendTotle += msg.getUnread();
                     }
                 }
+               if (!msg.isGroup() && msg.getMsgTypeInt() != 3 && !TextUtils.isEmpty(msg.getChatId()) && !TextUtils.equals("everyone",msg.getChatId()) && !msg.getChatId().startsWith("system")) {
+                    UserBaseVo baseVo = FinalUserDataBase.getInstance().getUserBaseVoByUid(msg.getChatId());
+                    if(baseVo!=null&&!TextUtils.isEmpty(baseVo.getShowName())){
+                        msg.setUsername(baseVo.getShowName());
+                    }
+                }
             }
             try {
                 map.put("totalunread", total);
-                for (int i = 0; i < list.size(); i++) {
-                    if (list.get(i).getChatId().equals("system-2"))//The number of unread stranger news
-                    {
-                        list.get(i).setUnread(unFriendTotle);
-                        break;
-                    }
-                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -730,6 +753,9 @@ public class FinalUserDataBase {
             msg.setRemoteSource(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA18)));
             msg.setInviteType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA19)));
             msg.setInviteSource(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA20)));
+            msg.setMoney(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
+            msg.setMode(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
+            msg.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA26)));
             if (msg.isTop()) {
                 msg.setTopTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA16)));
             }
@@ -846,6 +872,139 @@ public class FinalUserDataBase {
         return list;
     }
 
+    /**
+     * Add trans list
+     */
+    public List<TransVo> getTransList(int type,String address) {
+        if (!address.startsWith("0x")){
+            address = "0x" + address;
+        }
+        String sql = "select * from " + TableField.TABLE_TRANS + " where "
+                + TableField.FIELD_RESERVED_DATA1 + "=? and ("
+                + TableField.FIELD_RESERVED_DATA5 + "=? or "
+                + TableField.FIELD_RESERVED_DATA6 + "=? )"
+                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc ";
+        Cursor cursor = db.rawQuery(sql, new String[]{String.valueOf(type),address,address});
+        List<TransVo> list = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            TransVo vo = new TransVo();
+            vo.setTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
+            vo.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
+            vo.setValue(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA2)));
+            vo.setFee(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
+            vo.setTx(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
+            vo.setFromAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
+            vo.setToAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
+            vo.setTxBlockNumber(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
+            vo.setTxurl(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)));
+            vo.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
+            vo.setState(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) + 1 );
+            if(vo.getNoticeType() == 0)//send
+            {
+                if(TextUtils.equals(address,vo.getToAddress()) && !TextUtils.equals(address,vo.getFromAddress()))
+                {
+                    continue;
+                }
+            }else{  //rec
+                if(TextUtils.equals(address,vo.getFromAddress()) && !TextUtils.equals(address,vo.getToAddress()))
+                {
+                    continue;
+                }
+            }
+            list.add(vo);
+        }
+        cursor.close();
+        getTransTempList(list,type,address);
+        return list;
+    }
+
+    /**
+     * Add trans list
+     */
+    public void getTransTempList(List<TransVo> transVoList,int type,String address) {
+
+        String sql = "select * from " + TableField.TABLE_TRANS_TEMP + " where "
+                + TableField.FIELD_RESERVED_DATA1 + "=? and ("
+                + TableField.FIELD_RESERVED_DATA5 + "=? or "
+                + TableField.FIELD_RESERVED_DATA6 + "=? )"
+                + " order by " + TableField.FIELD_CHAT_MSGTIME + " asc ";
+        Cursor cursor = db.rawQuery(sql, new String[]{String.valueOf(type),address,address});
+        while (cursor.moveToNext()) {
+            TransVo vo = new TransVo();
+            vo.setTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
+            vo.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
+            vo.setValue(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA2)));
+            vo.setFee(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
+            vo.setTx(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
+            vo.setFromAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
+            vo.setToAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
+            vo.setTxBlockNumber(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
+            vo.setTxurl(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)));
+            vo.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
+            vo.setState(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) + 1 );
+            if(vo.getNoticeType() == 0)//send
+            {
+                if(TextUtils.equals(address,vo.getToAddress()) && !TextUtils.equals(address,vo.getFromAddress()))
+                {
+                    continue;
+                }
+            }else{  //rec
+                if(TextUtils.equals(address,vo.getFromAddress()) && !TextUtils.equals(address,vo.getToAddress()))
+                {
+                    continue;
+                }
+            }
+            boolean isFound = false;
+            for (int i = 0 ; i < transVoList.size() ; i++){
+                String tx = transVoList.get(i).getTx();
+                if (TextUtils.equals(tx,vo.getTx())){
+                    FinalUserDataBase.getInstance().deleteTransTemp(vo.getTx());
+                    isFound = true;
+                    break;
+                }
+            }
+
+            if (!isFound){
+                transVoList.add(0,vo);
+            }
+        }
+        cursor.close();
+    }
+
+    /**
+     * Add trans message list
+     */
+    public List<ChatMsg> getChatMsgTransList() {
+        String sql = "select * from " + TableField.TABLE_CHAT_EVENT + " where "
+                + TableField.FIELD_CHAT_SYSTEM + "=1 and "
+                + TableField.FIELD_CHAT_TYPE + "=300 and "
+                + TableField.FIELD_CHAT_HIDDEN + "=1 "
+                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc ";
+        Cursor cursor = db.rawQuery(sql, null);
+        List<ChatMsg> list = new ArrayList<>();
+        ChatMsg msg;
+        while (cursor.moveToNext()) {
+            msg = new ChatMsg();
+            msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
+            msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
+            msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
+            msg.setMessageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
+            msg.setCreateTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_CREATETIME)));
+            msg.setMoney(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
+            msg.setNumber(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)));
+            msg.setMode(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
+            msg.setInviteType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA19)));
+            msg.setFee(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA21)));
+            msg.setFromAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA22)));
+            msg.setToAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA23)));
+            msg.setTxBlockNumber(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA24)));
+            msg.setShareUrl(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA25)));
+            msg.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA26)));
+            list.add(msg);
+        }
+        cursor.close();
+        return list;
+    }
 
     /**
      * Add buddy request information after the new one
@@ -887,6 +1046,41 @@ public class FinalUserDataBase {
         cursor.close();
         return msg;
     }
+    /**
+     * Add Trans after the new one
+     */
+    public ChatMsg getChatMsgTrans() {
+
+
+        String sql = "select * from " + TableField.TABLE_CHAT_EVENT + " where "
+                + TableField.FIELD_CHAT_SYSTEM + "=1 and "
+                + TableField.FIELD_CHAT_TYPE + "=300 and "
+                + TableField.FIELD_CHAT_HIDDEN + "=1 "
+                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc "
+                + " limit " + 0 + "," + 1;
+        Cursor cursor = db.rawQuery(sql, null);
+        ChatMsg msg = null;
+
+        if (cursor.moveToNext()) {
+
+            msg = new ChatMsg();
+            msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
+            msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
+            msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
+            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
+            msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
+            msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
+            msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1);
+            msg.setMessageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
+            msg.setMsgTypeInt(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_OBJECT)));
+            msg.setMoney(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
+            msg.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA26)));
+
+        }
+
+        cursor.close();
+        return msg;
+    }
 
     /**
      * Save my information (conversation) recently
@@ -906,7 +1100,6 @@ public class FinalUserDataBase {
         }
 
     }
-
     /**
      * Save the reference information Didn't do heavy work (if the need to rewrite)
      */
@@ -918,6 +1111,117 @@ public class FinalUserDataBase {
             insertFriendsRecomment(vo);
             return true;
         }
+    }
+
+
+
+    /**
+     * Save the token list all
+     * @param vo token bean
+     */
+    public void insertToken(TokenVo vo) {
+        ContentValues values = new ContentValues();
+        values.put(TableField.FIELD_RESERVED_DATA1, vo.getTokenName());
+        values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenPic());
+        values.put(TableField.FIELD_RESERVED_DATA3, vo.getTokenNumber());
+        values.put(TableField.FIELD_RESERVED_DATA4, vo.getTokenPrice());
+        values.put(TableField.FIELD_RESERVED_DATA5, vo.getTokenTotalPrice());
+        db.insert(TableField.TABLE_TOKEN_LIST, TableField._ID, values);
+    }
+
+    /**
+     * update the token list all
+     */
+    public void updateTokenList(TokenVo vo) {
+        boolean result = hasToken(vo);
+        if(result){
+            ContentValues values = new ContentValues();
+            values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenPic());
+            values.put(TableField.FIELD_RESERVED_DATA3, vo.getTokenNumber());
+            values.put(TableField.FIELD_RESERVED_DATA4, vo.getTokenPrice());
+            values.put(TableField.FIELD_RESERVED_DATA5, vo.getTokenTotalPrice());
+            db.update(TableField.TABLE_TOKEN_LIST,values,TableField.FIELD_RESERVED_DATA1 + "=? ",new String[]{vo.getTokenName()});
+        }
+    }
+
+    /**
+     * check has token
+     * */
+    private boolean hasToken(TokenVo vo){
+        String sql = "select * from " + TableField.TABLE_TOKEN_LIST + " where " + TableField.FIELD_RESERVED_DATA1 + "=?";
+        Cursor cursor = db.rawQuery(sql, new String[]{vo.getTokenName()});
+        if (cursor.moveToNext()) {
+            cursor.close();
+            return true;
+        }else{
+            cursor.close();
+            return false;
+        }
+    }
+
+    /**
+     * Save the trans list all
+     */
+    public void insertTrans(TransVo vo,boolean isTemp) {
+        ContentValues values = new ContentValues();
+        values.put(TableField.FIELD_CHAT_MSGTIME, vo.getTime());
+        values.put(TableField.FIELD_RESERVED_DATA1, vo.getType());
+        values.put(TableField.FIELD_RESERVED_DATA2, vo.getValue());
+        values.put(TableField.FIELD_RESERVED_DATA3, vo.getFee());
+        values.put(TableField.FIELD_RESERVED_DATA4, vo.getTx());
+        values.put(TableField.FIELD_RESERVED_DATA5, vo.getFromAddress());
+        values.put(TableField.FIELD_RESERVED_DATA6, vo.getToAddress());
+        values.put(TableField.FIELD_RESERVED_DATA7, vo.getTxBlockNumber());
+        values.put(TableField.FIELD_RESERVED_DATA8, vo.getTxurl() );
+        values.put(TableField.FIELD_RESERVED_DATA9, vo.getNoticeType());
+        if (isTemp){
+            values.put(TableField.FIELD_RESERVED_DATA10, vo.getState() - 1);
+            db.insert(TableField.TABLE_TRANS_TEMP, TableField._ID, values);
+        }else{
+            values.put(TableField.FIELD_RESERVED_DATA10, vo.getState());
+            db.insert(TableField.TABLE_TRANS, TableField._ID, values);
+        }
+    }
+
+    /**
+     * Save the trans list all
+     */
+    public void updateTransTemp(TransVo vo) {
+        boolean result = hasTransTemp(vo);
+        if(result)
+        {
+            ContentValues values = new ContentValues();
+            values.put(TableField.FIELD_RESERVED_DATA7, vo.getTxBlockNumber());
+            values.put(TableField.FIELD_RESERVED_DATA10, vo.getState()-1);
+            db.update(
+                    TableField.TABLE_TRANS_TEMP,
+                    values,
+                    TableField.FIELD_RESERVED_DATA4 + "=? ",
+                    new String[]{vo.getTx()});
+
+
+        }
+    }
+    private  boolean  hasTransTemp(TransVo vo)
+    {
+        String sql = "select * from " + TableField.TABLE_TRANS_TEMP + " where "
+                + TableField.FIELD_RESERVED_DATA4 + "=?";
+        Cursor cursor = db.rawQuery(sql, new String[]{vo.getTx()});
+        if (cursor.moveToNext()) {
+            cursor.close();
+            return true;
+        }
+        else{
+            cursor.close();
+            return false;
+        }
+    }
+
+    /**
+     * delete the transtemp list
+     */
+    public void deleteTransTemp(String tx) {
+        db.delete(TableField.TABLE_TRANS_TEMP, TableField.FIELD_RESERVED_DATA4 + "=?", new String[]{tx});
     }
 
     private boolean hasFriendsRecomment(String friendId) {
@@ -1082,9 +1386,13 @@ public class FinalUserDataBase {
         values.put(TableField.FIELD_RESERVED_DATA19, vo.getInviteType());
 
         values.put(TableField.FIELD_RESERVED_DATA20, vo.getInviteSource());
-
+        values.put(TableField.FIELD_RESERVED_DATA21, vo.getFee());
+        values.put(TableField.FIELD_RESERVED_DATA22, vo.getFromAddress());
+        values.put(TableField.FIELD_RESERVED_DATA23, vo.getToAddress());
+        values.put(TableField.FIELD_RESERVED_DATA24, vo.getTxBlockNumber());
+        values.put(TableField.FIELD_RESERVED_DATA25, vo.getShareUrl());
+        values.put(TableField.FIELD_RESERVED_DATA26, vo.getNoticeType());
         db.insert(TableField.TABLE_CHAT_EVENT, TableField._ID, values);
-
 
     }
 
@@ -1147,7 +1455,10 @@ public class FinalUserDataBase {
         values.put(TableField.FIELD_CHAT_BODY, vo.getContent());
         values.put(TableField.FIELD_CHAT_CREATENAME, vo.getCreateName());
         values.put(TableField.FIELD_CHAT_MSGTIME, vo.getMsgTime());
-
+        if(isSystem)// system msg clear inside outside should be delete
+        {
+            values.put(TableField.FIELD_RESERVED_DATA1, vo.getMessageId());
+        }
         if (vo.isAtGroupMe() > 0) {//Only when the @ I go to modify Otherwise do not change state
             values.put(TableField.FIELD_RESERVED_DATA8, vo.isAtGroupMe());
         }
@@ -1165,7 +1476,6 @@ public class FinalUserDataBase {
             values.put(TableField.FIELD_CHAT_UNREAD, unread + vo.getUnread());
 
             values.put(TableField.FIELD_CHAT_HIDDEN, vo.isHidden() ? 1 : 0);
-            values.put(TableField.FIELD_RESERVED_DATA1, vo.getMessageId());
             values.put(TableField.FIELD_RESERVED_DATA2, vo.getShareFriendName());
             values.put(TableField.FIELD_RESERVED_DATA3, vo.getModifyType());
             values.put(TableField.FIELD_RESERVED_DATA5, vo.getFriendLog());
@@ -1185,6 +1495,13 @@ public class FinalUserDataBase {
             values.put(TableField.FIELD_RESERVED_DATA18, vo.getRemoteSource());
             values.put(TableField.FIELD_RESERVED_DATA19, vo.getInviteType());
             values.put(TableField.FIELD_RESERVED_DATA20, vo.getInviteSource());
+            values.put(TableField.FIELD_RESERVED_DATA21, vo.getFee());
+            values.put(TableField.FIELD_RESERVED_DATA22, vo.getFromAddress());
+            values.put(TableField.FIELD_RESERVED_DATA23, vo.getToAddress());
+            values.put(TableField.FIELD_RESERVED_DATA24, vo.getTxBlockNumber());
+            values.put(TableField.FIELD_RESERVED_DATA25, vo.getShareUrl());
+            values.put(TableField.FIELD_RESERVED_DATA26, vo.getNoticeType());
+
 
             values.put(TableField.FIELD_CHAT_DISMISSGROUP, vo.isDismissGroup() ? 1 : 0);
             values.put(TableField.FIELD_CHAT_KICKGROUP, vo.isKickGroup() ? 1 : 0);
@@ -1193,6 +1510,11 @@ public class FinalUserDataBase {
             values.put(TableField.FIELD_CHAT_OBJECT, vo.getMsgTypeInt());
 
 
+        }else if(isSystem && vo.getType()==300)//trans message
+        {
+            values.put(TableField.FIELD_RESERVED_DATA9, vo.getMoney());
+            values.put(TableField.FIELD_RESERVED_DATA19, vo.getInviteType());
+            values.put(TableField.FIELD_RESERVED_DATA26, vo.getNoticeType());
         }
         String[] whereArgs = null;
         whereArgs = new String[]{String.valueOf(vo.getChatId())};
@@ -1378,6 +1700,30 @@ public class FinalUserDataBase {
     }
 
     /**
+     * Delete my trans list item
+     *
+     * @param messageid
+     */
+    public void deleteChatEventTransByMessageId(String messageid) {
+
+        db.delete(TableField.TABLE_CHAT_EVENT,
+                TableField.FIELD_CHAT_ID + "='system-5' and "
+                        + TableField.FIELD_CHAT_HIDDEN + "=1 and "
+                        + TableField.FIELD_CHAT_SYSTEM + "=1 and "
+                        + TableField.FIELD_RESERVED_DATA1 + "=?", new String[]{messageid});
+        ChatMsg msg = getChatMsgTrans();
+        if (msg != null) {
+            updateChatEventMsg(msg, true, false);
+        } else {
+            db.delete(TableField.TABLE_CHAT_EVENT,
+                    TableField.FIELD_CHAT_ID + "='system-5' and "
+                            + TableField.FIELD_CHAT_HIDDEN + "=0 and "
+                            + TableField.FIELD_CHAT_SYSTEM + "=1 and "
+                            + TableField.FIELD_RESERVED_DATA1 + "=?", new String[]{messageid});
+        }
+    }
+
+    /**
      * Delete the chat messages
      *
      * @param chatId
@@ -1395,6 +1741,7 @@ public class FinalUserDataBase {
     public void clearChatMsgByChatId(String chatId,ChatMsg msg) {
         db.delete(TableField.TABLE_CHAT, TableField.FIELD_CHAT_ID + "=?", new String[]{chatId});
         updateChatEventContent(chatId, msg);
+        updateUnreadEventChat(chatId);
     }
 
 
@@ -1442,6 +1789,23 @@ public class FinalUserDataBase {
             insertFriendUserBase(vo);
         }
     }
+
+    /**
+     * Modify the chat information in the file transfer
+     * @param loaclId user id
+     */
+    public void updateFriendNote(String loaclId,String note) {
+        if (TextUtils.isEmpty(loaclId)) {
+            return;
+        }
+        boolean result = hasFriend(loaclId);
+        if (result) {
+            ContentValues values = new ContentValues();
+            values.put(TableField.FIELD_FRIEND_NOTE, note);
+            db.update(TableField.TABLE_FRIEND,values,TableField.FIELD_FRIEND_UID + "=? ",new String[]{loaclId});
+        }
+    }
+
 
 
     /**
@@ -1517,6 +1881,16 @@ public class FinalUserDataBase {
             vo.setAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
             list.add(vo);
         }
+        /*add your self*/
+        UserBaseVo voMe = new UserBaseVo();
+        voMe.setFriendLog(-1);
+        voMe.setGender(NextApplication.myInfo.getGender());
+        voMe.setPic(NextApplication.myInfo.getPic());
+        voMe.setSightml(NextApplication.myInfo.getSightml());
+        voMe.setThumb(NextApplication.myInfo.getThumb());
+        voMe.setLocalId(NextApplication.myInfo.getLocalId());
+        voMe.setUsername(NextApplication.myInfo.getShowName());
+        list.add(voMe);
         cursor.close();
         return list;
     }
