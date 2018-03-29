@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="1dip"
+        android:orientation="horizontal" >
+
+        <RelativeLayout
+            android:id="@+id/invite_avatar_rela"
+            android:layout_width="65dip"
+            android:layout_height="65dip"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="5dip" >
+
+            <com.lingtuan.firefly.custom.CharAvatarView
+                android:id="@+id/item_avatar"
+                android:layout_width="50dip"
+                android:layout_height="50dip"
+                android:layout_centerInParent="true" />
+
+            <com.lingtuan.firefly.custom.DiscussGroupImageView
+                android:id="@+id/group_avatar"
+                android:layout_width="50dip"
+                android:layout_height="50dip"
+                android:layout_centerInParent="true"
+                android:background="@drawable/groupbg"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/item_unread"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/icon_unread"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="@color/textColor"
+                android:textSize="11sp"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/item_unread_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                 android:layout_alignParentRight="true"
+                android:layout_margin="5dp"
+                android:src="@drawable/bubble"
+                android:visibility="gone" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/item_nickname"
+                    style="@style/main_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxWidth="150dp"
+                    android:singleLine="true"/>
+
+                <ImageView
+                    android:id="@+id/item_msg_event_listener"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="3dp"
+                    android:src="@drawable/notify_clock"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dip"
+                android:layout_marginTop="4dip"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/item_tag_friend_log"
+                    style="@style/sub_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginBottom="3dip"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="4dp"
+                    android:layout_marginTop="3dip"
+                    android:textColor="@color/textColor"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/item_times"
+                    style="@style/sub_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/item_content"
+                style="@style/third_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/item_msg_event_agree"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="10dp"
+            android:gravity="center"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:singleLine="true"
+            android:text="@string/agree"
+            android:textColor="@color/textColor"
+            android:textSize="15sp"
+             />
+    </LinearLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/tab_sep_line" />
+
+</LinearLayout>
