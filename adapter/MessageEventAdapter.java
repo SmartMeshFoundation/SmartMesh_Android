@@ -14,6 +14,7 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.custom.ChatMsgComparable;
 import com.lingtuan.firefly.custom.DiscussGroupImageView;
+import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.vo.ChatMsg;
 
@@ -206,11 +207,15 @@ public class MessageEventAdapter extends BaseAdapter {
                 }
             }
         } else {
-            if ("everyone".equals(msg.getChatId()))
+            if (Constants.APP_EVERYONE.equals(msg.getChatId()))
             {
                 url = "drawable://" + R.drawable.icon_everyone;
                 nickname = mContext.getResources().getString(R.string.everyone);
                 resId = R.drawable.icon_everyone;
+            }else if (Constants.APP_MESH.equals(msg.getChatId())){
+                url = "drawable://" + R.drawable.icon_wifimesh;
+                nickname = mContext.getResources().getString(R.string.wifimesh);
+                resId = R.drawable.icon_wifimesh;
             }
             content = getContent(msg, content);
         }
@@ -219,7 +224,7 @@ public class MessageEventAdapter extends BaseAdapter {
         h.listenerIcon.setVisibility(View.GONE);
         h.unread.setVisibility(msg.getUnread() > 0 ? View.VISIBLE : View.GONE);
         if (msg.getGroupMask()) {
-            if ("everyone".equals(msg.getChatId()) || "system-0".equals(msg.getChatId()) || "system-1".equals(msg.getChatId()) || "system-3".equals(msg.getChatId()) || "system-4".equals(msg.getChatId()) || "system-5".equals(msg.getChatId())) {
+            if (Constants.APP_EVERYONE.equals(msg.getChatId()) || "system-0".equals(msg.getChatId()) || "system-1".equals(msg.getChatId()) || "system-3".equals(msg.getChatId()) || "system-4".equals(msg.getChatId()) || "system-5".equals(msg.getChatId())) {
                 //If is the invitation message or group system, there is no shielding function
             } else {
                 h.listenerIcon.setVisibility(View.VISIBLE);

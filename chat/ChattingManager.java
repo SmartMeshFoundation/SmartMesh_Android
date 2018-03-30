@@ -202,7 +202,7 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
 
     public void setVoiceInfo(int second) {
         boolean successed = true;
-        if(uid.equals("everyone")){
+        if(uid.equals(Constants.APP_EVERYONE)){
             ChatMsg msg = createAudioChatMsg(uid, SDCardCtrl.getAudioPath() + File.separator + audioName, userName, avatarUrl, second + "", isSend);
             if (appNetService != null) {
                 successed = appNetService.handleSendVoice(second, SDCardCtrl.getAudioPath() + File.separator + audioName,true, uid, msg.getMessageId());
@@ -263,7 +263,7 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
 
     public void setCardInfo(UserBaseVo cardVo) {
         boolean successed = true;
-        if(uid.equals("everyone")){
+        if(uid.equals(Constants.APP_EVERYONE)){
             ChatMsg msg = XmppMessageUtil.getInstance().sendCard(uid, userName, avatarUrl, cardVo.getShowName(), cardVo.getSightml(), cardVo.getThumb(), cardVo.getLocalId(), isGroup, isSend);
             if (appNetService != null) {
                 WifiPeopleVO cardInfo = new WifiPeopleVO();
@@ -414,6 +414,20 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
      * Select the file
      * */
     public void showFileView() {
+        boolean foundPeople  = false;
+        if(appNetService!=null && appNetService.getwifiPeopleList()!=null){
+            for (WifiPeopleVO wifiPeopleVO : appNetService.getwifiPeopleList())// All users need to traverse, find out the corresponding touid users
+            {
+                if (uid.equals(wifiPeopleVO.getLocalId())) {
+                    foundPeople=true;
+                    break;
+                }
+            }
+        }
+        if(!foundPeople){
+            MyToast.showToast(mContext,mContext.getString(R.string.offline_file_send_tip));
+            return;
+        }
         MySharedPrefs.writeBoolean(mContext, MySharedPrefs.FILE_USER, Constants.CHAT_SEND_FILE, true);
         Intent i = new Intent(mContext, SendFileUI.class);
         ((Activity) mContext).startActivityForResult(i, ACTION_MANY_FILE_RESULT);
@@ -502,7 +516,7 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         String uploadPath = BitmapUtils.saveBitmap2SD(bmpUpload, screenWidth, true).getPath();
         String url = uploadPath;
         boolean successed = true;
-        if(uid.equals("everyone")){
+        if(uid.equals(Constants.APP_EVERYONE)){
             ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
             if (appNetService != null) {
                 successed = appNetService.handleSendPicutre(url, true, uid, msg.getMessageId());
@@ -513,11 +527,13 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             }
             mAdapter.addChatMsg(msg, true);
 
+        }else if(uid.equals(Constants.APP_MESH)){// send mesh picture
+            ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
+            mAdapter.addChatMsg(msg, true);
         }else if(isGroup){
             ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
             mAdapter.addChatMsg(msg, true);
-        }
-        else{
+        }else{
             boolean foundPeople  = false;
             if(appNetService!=null && appNetService.getwifiPeopleList()!=null)
             {
@@ -628,7 +644,7 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             String uploadPath = BitmapUtils.saveBitmap2SD(bmpUpload, screenWidth, true).getPath();
             String url = uploadPath;
             boolean successed = true;
-            if(uid.equals("everyone")){
+            if(uid.equals(Constants.APP_EVERYONE)){
                 ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
                 if (appNetService != null) {
                     successed = appNetService.handleSendPicutre(url, true, uid, msg.getMessageId());
@@ -714,11 +730,9 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
 
         private Handler mHandler = new Handler() {
             public void handleMessage(android.os.Message msg) {
-                if(msg.what == 1)
-                {
+                if(msg.what == 1){
                     MyToast.showToast(mContext,mContext.getString(R.string.offline_file_send_tip));
-                }
-                else{
+                }else{
                     mAdapter.addChatMsg((ChatMsg) msg.obj, true);
                     listView.setSelection(mAdapter.getCount());
                 }
@@ -750,7 +764,7 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
 
         private void sendFile(FileChildVo vo) {
             boolean successed = true;
-            if(!uid.equals("everyone") && !isGroup){
+            if(!uid.equals(Constants.APP_EVERYONE) && !isGroup){
                 boolean foundPeople  = false;
                 if(appNetService!=null && appNetService.getwifiPeopleList()!=null)
                 {

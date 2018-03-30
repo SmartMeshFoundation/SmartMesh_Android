@@ -40,6 +40,7 @@ import com.lingtuan.firefly.listener.DialogItemClickListener;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.ui.ShowTextUI;
 import com.lingtuan.firefly.util.BitmapUtils;
+import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.FileSizeUtils;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyDialogFragment;
@@ -700,7 +701,7 @@ public class ChatAdapter extends BaseAdapter {
         h.avatar.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                if ((isGroup || TextUtils.equals("everyone",msg.getChatId() ))&& !msg.isMe() && mInputContent != null && mChattingManager != null) {//Long press head @ function
+                if ((isGroup || TextUtils.equals(Constants.APP_EVERYONE,msg.getChatId()) || TextUtils.equals(Constants.APP_MESH,msg.getChatId()))&& !msg.isMe() && mInputContent != null && mChattingManager != null) {//Long press head @ function
                     int selectIndex = mInputContent.getSelectionStart();
                     Editable mEditable = mInputContent.getEditableText();
                     mEditable.insert(selectIndex, "@" + msg.getRealname() + " ");
@@ -737,7 +738,7 @@ public class ChatAdapter extends BaseAdapter {
         h.time.setVisibility(msg.isShowTime() ? View.VISIBLE : View.GONE);
         Utils.setLoginTime(mContext, h.time, msg.getMsgTime());
         if (h.mNickname != null) {
-            if (!isGroup && !TextUtils.equals("everyone",msg.getChatId())) {
+            if (!isGroup && !TextUtils.equals(Constants.APP_EVERYONE,msg.getChatId()) && !TextUtils.equals(Constants.APP_MESH,msg.getChatId())) {
                 h.mNickname.setVisibility(View.GONE);
             } else {//group
                 h.mNickname.setVisibility(View.VISIBLE);
