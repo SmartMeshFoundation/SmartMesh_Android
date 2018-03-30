@@ -11,6 +11,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
@@ -44,8 +45,10 @@ import java.util.List;
 public class FriendInfoUI extends BaseActivity {
 
     private CharAvatarView friendImg;
-    private TextView addFriends,sendMsg,friendNote,friendAddress;
+    private TextView addFriends,sendMsg,friendNote,friendMid;
     private TextView friendSignature;//The signature
+
+    private LinearLayout addFriendsBody,sendMsgBody;
 
     private ImageView app_right;//Friends information set
 
@@ -92,18 +95,20 @@ public class FriendInfoUI extends BaseActivity {
     @Override
     protected void findViewById() {
         friendImg = (CharAvatarView) findViewById(R.id.friendImg);
+        addFriendsBody = (LinearLayout) findViewById(R.id.addFriendsBody);
+        sendMsgBody = (LinearLayout) findViewById(R.id.sendMsgBody);
         addFriends = (TextView) findViewById(R.id.addFriends);
         sendMsg = (TextView) findViewById(R.id.sendMsg);
         friendNote = (TextView) findViewById(R.id.friendNote);
-        friendAddress = (TextView) findViewById(R.id.friendAddress);
+        friendMid = (TextView) findViewById(R.id.friendMid);
         friendSignature = (TextView) findViewById(R.id.friendSignature);
         app_right = (ImageView) findViewById(R.id.app_right);
     }
 
     @Override
     protected void setListener() {
-        addFriends.setOnClickListener(this);
-        sendMsg.setOnClickListener(this);
+        sendMsgBody.setOnClickListener(this);
+        addFriendsBody.setOnClickListener(this);
         app_right.setOnClickListener(this);
     }
 
@@ -163,7 +168,7 @@ public class FriendInfoUI extends BaseActivity {
                 if (info != null && TextUtils.equals(info.getLocalId(),userid)){
                     info.setFriendLog(1);
                     addFriends.setText(getString(R.string.contact_default));
-                    addFriends.setTextColor(getResources().getColor(R.color.yellow));
+                    addFriends.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(R.drawable.icon_has_friend),null,null,null);
                     addFriends.setEnabled(false);
                 }
             }
@@ -190,16 +195,16 @@ public class FriendInfoUI extends BaseActivity {
             }
 
             if (TextUtils.isEmpty(info.getNote())){
-                friendNote.setVisibility(View.GONE);
+                friendNote.setVisibility(View.INVISIBLE);
             }else{
                 friendNote.setVisibility(View.VISIBLE);
                 friendNote.setText(info.getNote());
             }
-            if (TextUtils.isEmpty(info.getAddress())){
-                friendAddress.setVisibility(View.GONE);
+            if (TextUtils.isEmpty(info.getMid())){
+                friendMid.setVisibility(View.INVISIBLE);
             }else{
-                friendAddress.setVisibility(View.VISIBLE);
-                friendAddress.setText(info.getAddress());
+                friendMid.setVisibility(View.VISIBLE);
+                friendMid.setText(getString(R.string.mid_user,info.getMid()));
             }
             friendSignature.setText(info.getSightml());
             if (info.getFriendLog() == -1){
@@ -208,7 +213,7 @@ public class FriendInfoUI extends BaseActivity {
                 sendMsg.setVisibility(View.GONE);
             }else if (info.getFriendLog() == 1){
                 addFriends.setText(getString(R.string.contact_default));
-                addFriends.setTextColor(getResources().getColor(R.color.yellow));
+                addFriends.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(R.drawable.icon_has_friend),null,null,null);
                 addFriends.setEnabled(false);
                 if (Utils.isConnectNet(FriendInfoUI.this)){
                     app_right.setVisibility(View.VISIBLE);
@@ -219,6 +224,7 @@ public class FriendInfoUI extends BaseActivity {
                 addFriends.setEnabled(true);
                 addFriends.setText(getString(R.string.add_friends));
                 addFriends.setTextColor(getResources().getColor(R.color.black));
+                addFriends.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(R.drawable.icon_info_add_friend),null,null,null);
                 if (Utils.isConnectNet(FriendInfoUI.this)){
                     app_right.setVisibility(View.VISIBLE);
                 }else{
@@ -270,10 +276,10 @@ public class FriendInfoUI extends BaseActivity {
                 startActivityForResult(intent,100);
                 Utils.openNewActivityAnim(FriendInfoUI.this,false);
                 break;
-            case R.id.addFriends:
+            case R.id.addFriendsBody:
                 addFriendMethod();
                 break;
-            case R.id.sendMsg:
+            case R.id.sendMsgBody:
                 Utils.intentChattingUI(FriendInfoUI.this,info.getLocalId(),info.getThumb(),info.getUsername(),info.getGender(),info.getFriendLog(),false,false,false,0,true);
                 break;
         }
