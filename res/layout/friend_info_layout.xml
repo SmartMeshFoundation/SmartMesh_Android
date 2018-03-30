@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/app_title_rela"
+        android:layout_width="fill_parent"
+        android:layout_height="48dp"
+        android:background="@color/wallet_copy_bg">
+        <ImageView
+            android:id="@+id/app_back"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:paddingRight="9dp"
+            android:paddingLeft="8dp"
+            android:layout_centerVertical="true"
+            android:scaleType="center"
+            android:src="@drawable/icon_white_back" />
+
+        <com.lingtuan.firefly.custom.AlwaysMarqueeTextView
+            android:id="@+id/app_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="70dp"
+            android:layout_marginRight="70dp"
+            android:ellipsize="marquee"
+            android:gravity="center"
+            android:singleLine="true"
+            android:textColor="@color/textColor"
+            android:textSize="19sp" />
+
+        <ImageView
+            android:id="@+id/app_right"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:paddingRight="15dp"
+            android:paddingLeft="15dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:scaleType="center"
+            android:visibility="gone"
+            android:src="@drawable/icon_home_more" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/wallet_copy_bg"
+        android:padding="15dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.lingtuan.firefly.custom.CharAvatarView
+                android:id="@+id/friendImg"
+                android:layout_width="70dp"
+                android:layout_height="70dp"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/friendNote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/textColor"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_marginTop="8dp"/>
+
+                <TextView
+                    android:id="@+id/friendMid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/textColor"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:visibility="invisible"
+                    android:layout_marginTop="10dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/friendSignature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textColor"
+            android:layout_marginTop="10dp"/>
+    </LinearLayout>
+
+
+    <View
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="0dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:background="@color/textColor"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/addFriendsBody"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/addFriends"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:layout_gravity="center"
+                android:layout_marginLeft="20dp"
+                android:drawableLeft="@drawable/icon_info_add_friend"
+                android:drawablePadding="5dp"
+                android:gravity="center"
+                android:text="@string/add_friends"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/sendMsgBody"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/sendMsg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:drawableLeft="@drawable/icon_send_msg"
+                android:drawablePadding="5dp"
+                android:gravity="center"
+                android:text="@string/send_message"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
