@@ -16,6 +16,7 @@ import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
+import com.lingtuan.firefly.wallet.vo.TokenVo;
 import com.lingtuan.firefly.wallet.vo.TransVo;
 
 import java.util.ArrayList;
@@ -30,8 +31,8 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
 
     private TextView walletTransfer;
     private TextView walletReceipt;
-    private int type;//0 eth transfer 、2 smt transfer 、3 mesh transfer
     private StorableWallet storableWallet;
+    private TokenVo tokenVo;
 
     private SwipeRefreshLayout refreshLayout;
     private ListView transListView;
@@ -46,7 +47,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
     }
 
     private void getPassData() {
-        type = getIntent().getIntExtra("sendtype",-1);
+        tokenVo = (TokenVo) getIntent().getSerializableExtra("tokenVo");
         storableWallet = (StorableWallet) getIntent().getSerializableExtra("storableWallet");
     }
 
@@ -72,7 +73,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         super.onResume();
         new Handler().postDelayed(new Runnable(){
             public void run() {
-                getTransMethod(type,storableWallet.getPublicKey());
+                getTransMethod(storableWallet.getPublicKey());
                 refreshLayout.setRefreshing(true);
             }
         }, 200);
@@ -80,19 +81,15 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
 
     @Override
     protected void initData() {
-        if (type == 0){
-            setTitle(getString(R.string.eth));
-        }else if (type == 1){
-            setTitle(getString(R.string.smt));
-        }else if (type == 2){
-            setTitle(getString(R.string.mesh));
+        if (tokenVo != null){
+            setTitle(tokenVo.getTokenSymbol());
         }
         transVos = new ArrayList<>();
         mAdapter = new TransAdapter(WalletSendDetailUI.this,transVos,storableWallet.getPublicKey());
         transListView.setAdapter(mAdapter);
         new Handler().postDelayed(new Runnable(){
             public void run() {
-                getTransMethod(type,storableWallet.getPublicKey());
+                getTransMethod(storableWallet.getPublicKey());
                 refreshLayout.setRefreshing(true);
             }
         }, 200);
@@ -104,7 +101,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         switch (v.getId()){
             case R.id.walletTransfer:
                 Intent ethIntent = new Intent(WalletSendDetailUI.this,WalletSendActivity.class);
-                ethIntent.putExtra("sendtype", type);
+                ethIntent.putExtra("tokenVo", tokenVo);
                 startActivity(ethIntent);
                 Utils.openNewActivityAnim(WalletSendDetailUI.this,false);
                 break;
@@ -113,7 +110,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
                     return;
                 }
                 Intent qrEthIntent = new Intent(WalletSendDetailUI.this,QuickMarkShowUI.class);
-                qrEthIntent.putExtra("type", type + 1);
+                qrEthIntent.putExtra("tokenVo", tokenVo);
                 qrEthIntent.putExtra("address", storableWallet.getPublicKey());
                 startActivity(qrEthIntent);
                 Utils.openNewActivityAnim(WalletSendDetailUI.this,false);
@@ -123,17 +120,15 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
 
     /**
      * To obtain transfer record interface
-     * @param type 0 eth 1 smt
      * */
-    private void getTransMethod(final int type, final String address) {
-
+    private void getTransMethod(final String address) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                List<TransVo> mlist =   FinalUserDataBase.getInstance().getTransList(type,address);
+                List<TransVo> mlist =  FinalUserDataBase.getInstance().getTransList(tokenVo.getTokenSymbol(),address);
                 transVos.clear();
                 transVos.addAll(mlist);
-                mHandler.sendEmptyMessage(type);
+                mHandler.sendEmptyMessage(0);
             }
         }).start();
     }
@@ -157,7 +152,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
 
     @Override
     public void onRefresh() {
-        getTransMethod(type,storableWallet.getPublicKey());
+        getTransMethod(storableWallet.getPublicKey());
     }
 
     @Override

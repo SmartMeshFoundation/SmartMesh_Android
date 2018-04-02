@@ -66,7 +66,7 @@ public class TokenListAdapter extends BaseAdapter {
             convertView = View.inflate(context, R.layout.token_list_item_layout,null);
             holder.tokenImg = (ImageView) convertView.findViewById(R.id.tokenImg);
             holder.tokenName = (TextView) convertView.findViewById(R.id.tokenName);
-            holder.tokenInfo = (TextView) convertView.findViewById(R.id.tokenInfo);
+            holder.tokenSymbol = (TextView) convertView.findViewById(R.id.tokenSymbol);
             holder.tokenHasCheck = (SwitchButton) convertView.findViewById(R.id.tokenHasCheck);
             convertView.setTag(holder);
         }else{
@@ -76,7 +76,7 @@ public class TokenListAdapter extends BaseAdapter {
         holder.tokenImg.setImageResource(R.drawable.icon_static_010);
         holder.tokenHasCheck.setOnCheckedChangeListener(null);
         holder.tokenHasCheck.setChecked(tokenVo.isChecked());
-        holder.tokenInfo.setText(tokenVo.getTokenInfo());
+        holder.tokenSymbol.setText(tokenVo.getTokenSymbol());
         holder.tokenName.setText(tokenVo.getTokenName());
         if (tokenVo.isChecked()){
             holder.tokenHasCheck.setBackColor(context.getResources().getColorStateList(R.color.wallet_transfer_bg));
@@ -101,7 +101,7 @@ public class TokenListAdapter extends BaseAdapter {
     static class ViewHolder{
         private ImageView tokenImg;
         private TextView tokenName;
-        private TextView tokenInfo;
+        private TextView tokenSymbol;
         private SwitchButton tokenHasCheck;
     }
 }

@@ -13,6 +13,7 @@ import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.LoadMoreListView;
+import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.setting.SettingUI;
 import com.lingtuan.firefly.ui.WebViewUI;
@@ -54,9 +55,16 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
     private int oldPage=1;
     private ArrayList<TokenVo> source = null ;
 
+    private String address;//wallet address
+
     @Override
     protected void setContentView() {
         setContentView(R.layout.token_list_layout);
+        getPassData();
+    }
+
+    private void getPassData() {
+        address = getIntent().getStringExtra("address");
     }
 
     @Override
@@ -87,7 +95,7 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
             @Override
             public void run() {
                 swipeLayout.setRefreshing(true);
-                loadTokenList(1);
+                loadTokenList();
             }
         }, 500);
         tokenListAdapter = new TokenListAdapter(this, source);
@@ -124,64 +132,55 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
         }
     }
 
-    private void loadTokenList(int page) {
-        if(isLoadingData){
-            return;
-        }
-        isLoadingData=true;
-        oldPage= page;
+    /**
+     * get token list
+     * */
+    private void loadTokenList(){
+        boolean isFirstGet = MySharedPrefs.readBoolean(TokenListUI.this,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST);
+        ArrayList<TokenVo> tokenList = FinalUserDataBase.getInstance().getTokenListAll(address);
+        if (!isFirstGet && tokenList != null &&  tokenList.size() > 0){
+            tokenListAdapter.resetSource(tokenList);
+            swipeLayout.setRefreshing(false);
+        }else{
+            NetRequestImpl.getInstance().getTokenList(address, new RequestListener() {
+                @Override
+                public void start() {
 
-        NetRequestImpl.getInstance().getBlackList(page, new RequestListener() {
-            @Override
-            public void start() {
+                }
 
-            }
-
-            @Override
-            public void success(JSONObject response) {
-                currentPage=oldPage;
-                if (currentPage == 1) {
+                @Override
+                public void success(JSONObject response) {
                     source.clear();
+                    JSONArray array = response.optJSONArray("data");
+                    if (array != null){
+                        for (int i = 0 ; i < array.length() ; i++){
+                            TokenVo tokenVo = new TokenVo().parse(array.optJSONObject(i));
+                            source.add(tokenVo);
+                        }
+                    }
+                    FinalUserDataBase.getInstance().beginTransaction();
+                    for (int i = 0 ; i < source.size() ; i++){
+                        FinalUserDataBase.getInstance().updateTokenList(source.get(i),address);
+                    }
+                    FinalUserDataBase.getInstance().endTransactionSuccessful();
+                    MySharedPrefs.writeBoolean(TokenListUI.this,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST,false);
+                    tokenListAdapter.resetSource(source);
+                    swipeLayout.setRefreshing(false);
+                    checkListEmpty();
                 }
 
-                for (int i = 0 ; i < 10 ; i++){
-                    TokenVo tokenVo = new TokenVo();
-                    tokenVo.setChecked(false);
-                    tokenVo.setTokenInfo("SMChain" + i);
-                    tokenVo.setTokenName("SmartMesh" + i);
-                    source.add(tokenVo);
+                @Override
+                public void error(int errorCode, String errorMsg) {
+                    swipeLayout.setRefreshing(false);
+                    showToast(errorMsg);
+                    checkListEmpty();
                 }
-                tokenListAdapter.resetSource(source);
-//                JSONArray jsonArray = response.optJSONArray("data");
-//                if (jsonArray != null) {
-//                    int count = jsonArray.length();
-//                    for (int i = 0; i < count; i++) {
-//                        TokenVo tokenVo = new TokenVo().parse(jsonArray.optJSONObject(i));
-//                        source.add(tokenVo);
-//                    }
-//                    tokenListAdapter.resetSource(source);
-//                } else {
-//                    showToast(getString(R.string.black_list_empty));
-//                }
-                isLoadingData=false;
-                swipeLayout.setRefreshing(false);
-//                if (jsonArray!=null&&jsonArray.length()>=10) {
-//                    tokenListView.resetFooterState(true);
-//                } else {
-//                    tokenListView.resetFooterState(false);
-//                }
-                checkListEmpty();
-            }
+            });
+        }
 
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                isLoadingData=false;
-                swipeLayout.setRefreshing(false);
-                showToast(errorMsg);
-                checkListEmpty();
-            }
-        });
     }
+
+
 
     /**
      * To test whether the current list is empty
@@ -202,11 +201,11 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
 
     @Override
     public void onRefresh() {
-        loadTokenList(1);
+        loadTokenList();
     }
 
     @Override
     public void loadMore() {
-        loadTokenList(currentPage + 1);
+
     }
 }
