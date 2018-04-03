@@ -33,6 +33,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
     private TextView walletReceipt;
     private StorableWallet storableWallet;
     private TokenVo tokenVo;
+    private double smtBalance;
 
     private SwipeRefreshLayout refreshLayout;
     private ListView transListView;
@@ -48,6 +49,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
 
     private void getPassData() {
         tokenVo = (TokenVo) getIntent().getSerializableExtra("tokenVo");
+        smtBalance =getIntent().getDoubleExtra("smtBalance",0);
         storableWallet = (StorableWallet) getIntent().getSerializableExtra("storableWallet");
     }
 
@@ -102,6 +104,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
             case R.id.walletTransfer:
                 Intent ethIntent = new Intent(WalletSendDetailUI.this,WalletSendActivity.class);
                 ethIntent.putExtra("tokenVo", tokenVo);
+                ethIntent.putExtra("smtBalance", smtBalance);
                 startActivity(ethIntent);
                 Utils.openNewActivityAnim(WalletSendDetailUI.this,false);
                 break;
