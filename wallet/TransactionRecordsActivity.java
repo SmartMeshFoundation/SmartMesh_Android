@@ -215,25 +215,25 @@ public class TransactionRecordsActivity extends BaseActivity implements View.OnC
      * @param type 0 eth 1 smt
      * */
     private void getTransMethod(final int type,final String address) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                recordType = type;
-                List<TransVo> mlist =   FinalUserDataBase.getInstance().getTransList(type,address);
-
-                if (type == 0){
-                    transEthVos.clear();
-                    transEthVos.addAll(mlist);
-                }else if (type == 1){
-                    transFftVos.clear();
-                    transFftVos.addAll(mlist);
-                }else if (type == 2){
-                    transMeshVos.clear();
-                    transMeshVos.addAll(mlist);
-                }
-                mHandler.sendEmptyMessage(type);
-            }
-        }).start();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                recordType = type;
+//                List<TransVo> mlist =   FinalUserDataBase.getInstance().getTransList(type,address);
+//
+//                if (type == 0){
+//                    transEthVos.clear();
+//                    transEthVos.addAll(mlist);
+//                }else if (type == 1){
+//                    transFftVos.clear();
+//                    transFftVos.addAll(mlist);
+//                }else if (type == 2){
+//                    transMeshVos.clear();
+//                    transMeshVos.addAll(mlist);
+//                }
+//                mHandler.sendEmptyMessage(type);
+//            }
+//        }).start();
 
 
 

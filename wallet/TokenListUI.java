@@ -160,7 +160,7 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
                     }
                     FinalUserDataBase.getInstance().beginTransaction();
                     for (int i = 0 ; i < source.size() ; i++){
-                        FinalUserDataBase.getInstance().updateTokenList(source.get(i),address);
+                        FinalUserDataBase.getInstance().updateTokenList(source.get(i),address,true);
                     }
                     FinalUserDataBase.getInstance().endTransactionSuccessful();
                     MySharedPrefs.writeBoolean(TokenListUI.this,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST,false);
@@ -177,7 +177,6 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
                 }
             });
         }
-
     }
 
 

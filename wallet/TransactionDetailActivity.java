@@ -127,15 +127,7 @@ public class TransactionDetailActivity extends BaseActivity{
             }else{
                 transDetailBlockNumber.setText(transVo.getTxBlockNumber() + "");
             }
-
-            if (transVo.getType() == 0){
-                transDetailMoneyType.setText(getString(R.string.eth_er_lower_1));
-            }else if (transVo.getType() == 1){
-                transDetailMoneyType.setText(getString(R.string.smt_er_lower_1));
-            }else if (transVo.getType() == 2){
-                transDetailMoneyType.setText(getString(R.string.mesh_er_lower_1));
-            }
-
+            transDetailMoneyType.setText(transVo.getSymbol());
             transDetailTo.setText(transVo.getToAddress());
             if (!TextUtils.isEmpty(transVo.getFromAddress())){
                 transDetailFrom.setText(transVo.getFromAddress());
