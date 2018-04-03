@@ -28,49 +28,47 @@ import android.widget.TextView;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseFragment;
+import com.lingtuan.firefly.custom.CustomListView;
 import com.lingtuan.firefly.custom.gesturelock.ACache;
+import com.lingtuan.firefly.db.user.FinalUserDataBase;
+import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.quickmark.CaptureActivity;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
-import com.lingtuan.firefly.raiden.RaidenChannelList;
 import com.lingtuan.firefly.setting.CreateGestureActivity;
 import com.lingtuan.firefly.setting.GestureLoginActivity;
 import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.ui.WalletModeLoginUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
-import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestUtils;
+import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.AccountAdapter;
+import com.lingtuan.firefly.wallet.AccountTokenAdapter;
 import com.lingtuan.firefly.wallet.ManagerWalletActivity;
+import com.lingtuan.firefly.wallet.TokenListUI;
 import com.lingtuan.firefly.wallet.TransactionRecordsActivity;
 import com.lingtuan.firefly.wallet.WalletCopyActivity;
 import com.lingtuan.firefly.wallet.WalletCreateActivity;
-import com.lingtuan.firefly.wallet.WalletSendActivity;
+import com.lingtuan.firefly.wallet.WalletSendDetailUI;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
+import com.lingtuan.firefly.wallet.vo.TokenVo;
 import com.lingtuan.firefly.xmpp.XmppAction;
 
-import org.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 /**
  * Created  on 2017/8/23.
  * account
  */
 
-public class AccountFragment extends BaseFragment implements View.OnClickListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
+public class AccountFragment extends BaseFragment implements View.OnClickListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, AccountTokenAdapter.TokenOnItemClick {
 
     /**
      * root view
@@ -85,8 +83,13 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private TextView walletManager;//Account management
     private TextView createWallet;//Create a wallet
     private TextView showQuicMark;//Flicking a
+
     private ListView walletListView;//The wallet list
     private AccountAdapter mAdapter;
+    private ArrayList<TokenVo> tokenVos;
+
+    private CustomListView accountTokenList;//token list
+    private AccountTokenAdapter mTokenAdapter;
 
     private ImageView walletImg;//The wallet picture
     private TextView walletName;//Name of the wallet
@@ -102,14 +105,13 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
     private StorableWallet storableWallet;
 
-    //ETH SMT parts
-    private TextView ethBalance,fftBalance,meshBalance;//eth、smt balance
-    private LinearLayout ethTransfer,fftTransfer,meshTransfer;//eth、smt transfer
-    private LinearLayout ethQrCode,fftQrCode,meshQrCode;//eth、smt Qr code collection
+    private TextView walletBalanceNum;
 
-    private LinearLayout raidenTransfer;//raiden
+//    private LinearLayout raidenTransfer;//raiden
 
     private int index = -1;//Which one is selected
+
+    private ImageView walletBalanceAdd;
 
     private boolean isChecked;
 
@@ -161,6 +163,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         //The sidebar related
         mDrawerLayout = (DrawerLayout) view.findViewById(R.id.account_drawerlayout);
         walletListView = (ListView) view.findViewById(R.id.walletList);
+        accountTokenList = (CustomListView) view.findViewById(R.id.accountTokenList);
         createWallet = (TextView) view.findViewById(R.id.createWallet);
         showQuicMark = (TextView) view.findViewById(R.id.showQuicMark);
         walletManager = (TextView) view.findViewById(R.id.walletManager);
@@ -172,22 +175,12 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         walletNameBody = (LinearLayout) view.findViewById(R.id.walletNameBody);
         walletBackup = (TextView) view.findViewById(R.id.walletBackup);
         walletAddress = (TextView) view.findViewById(R.id.walletAddress);
+        walletBalanceAdd = (ImageView) view.findViewById(R.id.walletBalanceAdd);
         qrCode = (TextView) view.findViewById(R.id.qrCode);
         transRecord = (TextView) view.findViewById(R.id.transRecord);
         copyAddress = (TextView) view.findViewById(R.id.copyAddress);
-
-        //eth smt related
-        ethBalance = (TextView) view.findViewById(R.id.ethBalance);
-        fftBalance = (TextView) view.findViewById(R.id.fftBalance);
-        meshBalance = (TextView) view.findViewById(R.id.meshBalance);
-        ethTransfer = (LinearLayout) view.findViewById(R.id.ethTransfer);
-        fftTransfer = (LinearLayout) view.findViewById(R.id.fftTransfer);
-        meshTransfer = (LinearLayout) view.findViewById(R.id.meshTransfer);
-        ethQrCode = (LinearLayout) view.findViewById(R.id.ethQrCode);
-        fftQrCode = (LinearLayout) view.findViewById(R.id.fftQrCode);
-        meshQrCode = (LinearLayout) view.findViewById(R.id.meshQrCode);
-
-        raidenTransfer = (LinearLayout) view.findViewById(R.id.raidenTransfer);
+        walletBalanceNum = (TextView) view.findViewById(R.id.walletBalanceNum);
+//        raidenTransfer = (LinearLayout) view.findViewById(R.id.raidenTransfer);
     }
 
     private void setListener(){
@@ -200,29 +193,29 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
         walletImg.setOnClickListener(this);
         walletNameBody.setOnClickListener(this);
+        walletBalanceAdd.setOnClickListener(this);
         qrCode.setOnClickListener(this);
         transRecord.setOnClickListener(this);
         copyAddress.setOnClickListener(this);
 
-        raidenTransfer.setOnClickListener(this);
-        ethTransfer.setOnClickListener(this);
-        fftTransfer.setOnClickListener(this);
-        meshTransfer.setOnClickListener(this);
-        ethQrCode.setOnClickListener(this);
-        fftQrCode.setOnClickListener(this);
-        meshQrCode.setOnClickListener(this);
+//        raidenTransfer.setOnClickListener(this);
 
         swipe_refresh.setOnRefreshListener(this);
     }
 
     private void initData() {
-
         swipe_refresh.setColorSchemeResources(R.color.black);
         mAdapter = new AccountAdapter(getActivity());
         walletListView.setAdapter(mAdapter);
+
+        tokenVos = new ArrayList<>();
+        mTokenAdapter = new AccountTokenAdapter(getActivity(),tokenVos,this);
+        accountTokenList.setAdapter(mTokenAdapter);
+
         mDrawerToggle = new ActionBarDrawerToggle(getActivity(), mDrawerLayout, R.string.drawer_open,R.string.drawer_close);
         mDrawerToggle.syncState();
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+
         setWalletGesture();
         initWalletInfo();
         IntentFilter filter = new IntentFilter();
@@ -420,13 +413,19 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
             case R.id.walletAddress://Qr code
-                if (storableWallet == null){
+                if (storableWallet == null || tokenVos == null){
                     return;
                 }
                 Intent qrCodeIntent = new Intent(getActivity(),QuickMarkShowUI.class);
-                qrCodeIntent.putExtra("type", 0);
+                qrCodeIntent.putExtra("tokenVo", tokenVos.get(0));
                 qrCodeIntent.putExtra("address", storableWallet.getPublicKey());
                 startActivity(qrCodeIntent);
+                Utils.openNewActivityAnim(getActivity(),false);
+                break;
+            case R.id.walletBalanceAdd:
+                Intent tokenListIntent = new Intent(getActivity(),TokenListUI.class);
+                tokenListIntent.putExtra("address",walletAddress.getText().toString());
+                startActivity(tokenListIntent);
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
             case R.id.transRecord://Transaction records
@@ -452,63 +451,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 }
                 Utils.copyText(getActivity(),walletAddress.getText().toString());
                 break;
-            case R.id.ethTransfer://The eth transfer
-                Intent ethIntent = new Intent(getActivity(),WalletSendActivity.class);
-                ethIntent.putExtra("sendtype", 0);
-                startActivity(ethIntent);
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.fftTransfer://SMT transfer
-                Intent fftIntent = new Intent(getActivity(),WalletSendActivity.class);
-                fftIntent.putExtra("sendtype", 1);
-                startActivity(fftIntent);
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.meshTransfer://SMT transfer
-                Intent meshIntent = new Intent(getActivity(),WalletSendActivity.class);
-                meshIntent.putExtra("sendtype", 2);
-                startActivity(meshIntent);
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.ethQrCode://The eth qr code collection
-                if (storableWallet == null){
-                    return;
-                }
-                Intent qrEthIntent = new Intent(getActivity(),QuickMarkShowUI.class);
-                qrEthIntent.putExtra("type", 1);
-                qrEthIntent.putExtra("address", storableWallet.getPublicKey());
-                startActivity(qrEthIntent);
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.fftQrCode://SMT qr code collection
-                if (storableWallet == null){
-                    return;
-                }
-                Intent fftEthIntent = new Intent(getActivity(),QuickMarkShowUI.class);
-                fftEthIntent.putExtra("type", 2);
-                fftEthIntent.putExtra("address", storableWallet.getPublicKey());
-                startActivity(fftEthIntent);
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.meshQrCode://SMT qr code collection
-                if (storableWallet == null){
-                    return;
-                }
-                Intent meshEthIntent = new Intent(getActivity(),QuickMarkShowUI.class);
-                meshEthIntent.putExtra("type", 3);
-                meshEthIntent.putExtra("address", storableWallet.getPublicKey());
-                startActivity(meshEthIntent);
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.raidenTransfer://SMT qr code collection
-                if (storableWallet == null){
-                    return;
-                }
-                Intent raidenIntent = new Intent(getActivity(),RaidenChannelList.class);
-                raidenIntent.putExtra("storableWallet", storableWallet);
-                startActivity(raidenIntent);
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
         }
     }
 
@@ -525,6 +467,31 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             initWalletInfo();
             mDrawerLayout.closeDrawer(GravityCompat.END);
         }
+    }
+
+    @Override
+    public void setTokenOnItemClick(int position) {
+        if (storableWallet == null || tokenVos == null){
+            return;
+        }
+        Intent ethIntent = new Intent(getActivity(),WalletSendDetailUI.class);
+        ethIntent.putExtra("tokenVo", tokenVos.get(position));
+        double smtBalance = 0;
+        if (TextUtils.equals(tokenVos.get(0).getTokenSymbol(),getString(R.string.smt))){
+            smtBalance = tokenVos.get(0).getTokenBalance();
+        }else{
+            for (int i = 0 ; i < tokenVos.size() ; i++){
+                TokenVo tokenVo = tokenVos.get(i);
+                if (TextUtils.equals(tokenVo.getTokenSymbol(),getString(R.string.smt))){
+                    smtBalance = tokenVo.getTokenBalance();
+                    break;
+                }
+            }
+        }
+        ethIntent.putExtra("smtBalance", smtBalance);
+        ethIntent.putExtra("storableWallet", storableWallet);
+        startActivity(ethIntent);
+        Utils.openNewActivityAnim(getActivity(),false);
     }
 
     /**
@@ -564,26 +531,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 address = "0x"+address;
             }
             walletAddress.setText(address);
-
-            if (storableWallet.getEthBalance() > 0){
-                BigDecimal ethDecimal = new BigDecimal(storableWallet.getEthBalance()).setScale(10,BigDecimal.ROUND_DOWN);
-                ethBalance.setText(ethDecimal.toPlainString());
-            }else{
-                ethBalance.setText(storableWallet.getEthBalance() +"");
-            }
-            if (storableWallet.getFftBalance() > 0){
-                BigDecimal fftDecimal = new BigDecimal(storableWallet.getFftBalance()).setScale(5,BigDecimal.ROUND_DOWN);
-                fftBalance.setText(fftDecimal.toPlainString());
-            }else{
-                fftBalance.setText(storableWallet.getFftBalance() +"");
-            }
-
-            if (storableWallet.getMeshBalance() > 0){
-                BigDecimal meshDecimal = new BigDecimal(storableWallet.getMeshBalance()).setScale(5,BigDecimal.ROUND_DOWN);
-                meshBalance.setText(meshDecimal.toPlainString());
-            }else{
-                meshBalance.setText(storableWallet.getMeshBalance() +"");
-            }
         }
 
         mAdapter.resetSource(WalletStorage.getInstance(NextApplication.mContext).get());
@@ -595,6 +542,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             }
         }, 500);
     }
+
     @Override
     public void onRefresh() {
         new Handler().postDelayed(new Runnable(){
@@ -605,99 +553,110 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     }
 
     /**
-     * Access to the account balance
+     * get token list
      * */
     private void loadData(final boolean isShowToast){
-        try {
-            NetRequestUtils.getInstance().getBalance(getActivity(),walletAddress.getText().toString(), new Callback() {
+        boolean isFirstGet = MySharedPrefs.readBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST);
+        tokenVos = FinalUserDataBase.getInstance().getOpenTokenList(walletAddress.getText().toString());
+        if (!isFirstGet && tokenVos != null &&  tokenVos.size() > 0){
+            mTokenAdapter.resetSource(tokenVos);
+            getBalance(isShowToast);
+        }else{
+            NetRequestImpl.getInstance().getTokenList(walletAddress.getText().toString(), new RequestListener() {
                 @Override
-                public void onFailure(Call call, IOException e) {
-                    if (isShowToast){
-                        mHandler.sendEmptyMessage(0);
-                    }
+                public void start() {
+
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    Message message = Message.obtain();
-                    message.what = 1;
-                    message.obj = response.body().string();
-                    mHandler.sendMessage(message);
+                public void success(JSONObject response) {
+                    tokenVos.clear();
+                    JSONArray array = response.optJSONArray("data");
+                    if (array != null){
+                        for (int i = 0 ; i < array.length() ; i++){
+                            TokenVo tokenVo = new TokenVo().parse(array.optJSONObject(i));
+                            tokenVos.add(tokenVo);
+                        }
+                    }
+                    FinalUserDataBase.getInstance().beginTransaction();
+                    for (int i = 0 ; i < tokenVos.size() ; i++){
+                        FinalUserDataBase.getInstance().updateTokenList(tokenVos.get(i),walletAddress.getText().toString(),true);
+                    }
+                    FinalUserDataBase.getInstance().endTransactionSuccessful();
+                    MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST,false);
+                    mTokenAdapter.resetSource(tokenVos);
+                    getBalance(isShowToast);
+                }
+
+                @Override
+                public void error(int errorCode, String errorMsg) {
+                    getBalance(isShowToast);
                 }
             });
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+    }
+
+    /**
+     * get token balance
+     * */
+    private void getBalance(final boolean isShowToast){
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0 ; i < tokenVos.size() ; i++){
+            builder.append(tokenVos.get(i).getContactAddress()).append(",");
+        }
+        if (builder.length() > 0){
+            builder.deleteCharAt(builder.length() - 1);
+        }
+        NetRequestImpl.getInstance().getBalance(walletAddress.getText().toString(), builder.toString(), new RequestListener() {
+            @Override
+            public void start() {
+
+            }
+
+            @Override
+            public void success(JSONObject response) {
+                tokenVos.clear();
+                swipe_refresh.setRefreshing(false);
+                String total = response.optString("total");
+                walletBalanceNum.setText(total);
+                JSONArray array = response.optJSONArray("data");
+                if (array != null){
+                    for (int i = 0 ; i < array.length() ; i++){
+                        TokenVo tokenVo = new TokenVo().parse(array.optJSONObject(i));
+                        tokenVo.setChecked(true);
+                        tokenVos.add(tokenVo);
+                    }
+                }
+
+                FinalUserDataBase.getInstance().beginTransaction();
+                for (int i = 0 ; i < tokenVos.size() ; i++){
+                    FinalUserDataBase.getInstance().updateTokenList(tokenVos.get(i),walletAddress.getText().toString(),false);
+                }
+                FinalUserDataBase.getInstance().endTransactionSuccessful();
+                mTokenAdapter.resetSource(tokenVos);
+            }
+
+            @Override
+            public void error(int errorCode, String errorMsg) {
+                if (isShowToast){
+                    showToast(errorMsg);
+                }
+                mTokenAdapter.resetSource(tokenVos);
+                swipe_refresh.setRefreshing(false);
+            }
+        });
     }
 
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler(){
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case 0:
-                    showToast(getString(R.string.error_get_balance));
-                    swipe_refresh.setRefreshing(false);
-                    break;
-                case 1:
-                    swipe_refresh.setRefreshing(false);
-                    parseJson((String)msg.obj);
-                    break;
                 case 2:
                     dismissHomePop();
                     break;
             }
         }
     };
-
-    /**
-     * parse json
-     * */
-    private void parseJson(String jsonString){
-        if (TextUtils.isEmpty(jsonString)){
-            return;
-        }
-        try {
-            JSONObject object = new JSONObject(jsonString);
-            int errcod = object.optInt("errcod");
-            if (errcod == 0){
-                double ethBalance1 = object.optJSONObject("data").optDouble("eth");
-                double fftBalance1 = object.optJSONObject("data").optDouble("smt");
-                double meshBalance1 = object.optJSONObject("data").optDouble("mesh");
-                if (ethBalance1 > 0){
-                    BigDecimal ethDecimal = new BigDecimal(ethBalance1).setScale(10,BigDecimal.ROUND_DOWN);
-                    ethBalance.setText(ethDecimal.toPlainString());
-                }else{
-                    ethBalance.setText(ethBalance1 +"");
-                }
-                if (fftBalance1 > 0){
-                    BigDecimal fftDecimal = new BigDecimal(fftBalance1).setScale(5,BigDecimal.ROUND_DOWN);
-                    fftBalance.setText(fftDecimal.toPlainString());
-                }else{
-                    fftBalance.setText(fftBalance1 + "");
-                }
-
-                if (meshBalance1 > 0){
-                    BigDecimal meshDecimal = new BigDecimal(meshBalance1).setScale(5,BigDecimal.ROUND_DOWN);
-                    meshBalance.setText(meshDecimal.toPlainString());
-                }else{
-                    meshBalance.setText(meshBalance1 + "");
-                }
-
-                storableWallet.setEthBalance(ethBalance1);
-                storableWallet.setFftBalance(fftBalance1);
-                storableWallet.setMeshBalance(meshBalance1);
-            }else{
-                if(errcod == -2){
-                    long difftime = object.optJSONObject("data").optLong("difftime");
-                    long tempTime =  MySharedPrefs.readLong(getActivity(),MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_REQTIME);
-                    MySharedPrefs.writeLong(getActivity(),MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_REQTIME,difftime + tempTime);
-                }
-                MyToast.showToast(getActivity(),object.optString("msg"));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Control the popup countdown
@@ -736,5 +695,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             timerTask = null;
         }
     }
+
 
 }
