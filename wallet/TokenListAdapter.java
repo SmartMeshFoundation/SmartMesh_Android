@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.custom.switchbutton.SwitchButton;
+import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.setting.SettingUI;
 import com.lingtuan.firefly.util.Constants;
@@ -27,11 +28,12 @@ import java.util.ArrayList;
 public class TokenListAdapter extends BaseAdapter {
 
     private Context context;
-
+    private String address;
     private ArrayList<TokenVo> tokenVos;
 
-    public TokenListAdapter(Context context,ArrayList<TokenVo> tokenVos){
+    public TokenListAdapter(Context context,ArrayList<TokenVo> tokenVos,String address){
         this.context = context;
+        this.address = address;
         this.tokenVos = tokenVos;
     }
 
@@ -73,11 +75,18 @@ public class TokenListAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         final TokenVo tokenVo = tokenVos.get(position);
-        holder.tokenImg.setImageResource(R.drawable.icon_static_010);
         holder.tokenHasCheck.setOnCheckedChangeListener(null);
         holder.tokenHasCheck.setChecked(tokenVo.isChecked());
         holder.tokenSymbol.setText(tokenVo.getTokenSymbol());
         holder.tokenName.setText(tokenVo.getTokenName());
+        NextApplication.displayCircleImage(holder.tokenImg,tokenVo.getTokenLogo());
+
+        if (tokenVo.isFixed()){
+            holder.tokenHasCheck.setVisibility(View.GONE);
+        }else{
+            holder.tokenHasCheck.setVisibility(View.VISIBLE);
+        }
+
         if (tokenVo.isChecked()){
             holder.tokenHasCheck.setBackColor(context.getResources().getColorStateList(R.color.wallet_transfer_bg));
         }else{
@@ -89,9 +98,13 @@ public class TokenListAdapter extends BaseAdapter {
                 if (isChecked){
                     holder.tokenHasCheck.setBackColor(context.getResources().getColorStateList(R.color.wallet_transfer_bg));
                     tokenVo.setChecked(true);
+                    FinalUserDataBase.getInstance().updateTokenList(tokenVo,address,false);
+                    Utils.sendBroadcastReceiver(context,  new Intent(Constants.WALLET_BIND_TOKEN), false);
                 }else{
                     holder.tokenHasCheck.setBackColor(context.getResources().getColorStateList(R.color.switch_button_gray));
                     tokenVo.setChecked(false);
+                    FinalUserDataBase.getInstance().updateTokenList(tokenVo,address,false);
+                    Utils.sendBroadcastReceiver(context,  new Intent(Constants.WALLET_BIND_TOKEN), false);
                 }
             }
         });

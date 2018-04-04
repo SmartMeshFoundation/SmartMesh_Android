@@ -1,11 +1,15 @@
 package com.lingtuan.firefly.wallet;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -35,7 +39,7 @@ import java.util.Locale;
  *
  */
 
-public class TokenListUI extends BaseActivity implements AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, LoadMoreListView.RefreshListener {
+public class TokenListUI extends BaseActivity implements SwipeRefreshLayout.OnRefreshListener, LoadMoreListView.RefreshListener {
 
     private TextView emptyTextView;
     private RelativeLayout emptyRela;
@@ -45,17 +49,14 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
     /** Refresh the controls */
     private SwipeRefreshLayout swipeLayout;
 
-    private boolean isLoadingData = false;
-
     private TokenListAdapter tokenListAdapter = null;
 
     private TextView submitToken;
-
-    private int currentPage = 1 ;
-    private int oldPage=1;
     private ArrayList<TokenVo> source = null ;
 
     private String address;//wallet address
+
+    private ImageView searchToken;
 
     @Override
     protected void setContentView() {
@@ -72,6 +73,7 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
         tokenListView = (LoadMoreListView) findViewById(R.id.refreshListView);
         tokenListView.setOnScrollListener(new PauseOnScrollListener(NextApplication.mImageLoader, true, true));
         swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        searchToken = (ImageView) findViewById(R.id.app_right);
 
         emptyRela = (RelativeLayout) findViewById(R.id.empty_like_rela);
         emptyTextView = (TextView) findViewById(R.id.empty_text);
@@ -82,24 +84,42 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
     protected void setListener() {
         tokenListView.setOnRefreshListener(this);
         swipeLayout.setOnRefreshListener(this);
-        tokenListView.setOnItemClickListener(this);
         submitToken.setOnClickListener(this);
+        searchToken.setOnClickListener(this);
     }
 
     @Override
     protected void initData() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.WALLET_ADD_TOKEN);
+        registerReceiver(mBroadcastReceiver, filter);
         setTitle("添加新资产");
         swipeLayout.setColorSchemeResources(R.color.black);
+        searchToken.setVisibility(View.VISIBLE);
+        searchToken.setImageResource(R.drawable.search);
         source = new ArrayList<>();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                swipeLayout.setRefreshing(true);
-                loadTokenList();
-            }
-        }, 500);
-        tokenListAdapter = new TokenListAdapter(this, source);
+        tokenListAdapter = new TokenListAdapter(this, source,address);
         tokenListView.setAdapter(tokenListAdapter);
+        loadTokenList();
+    }
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null && (Constants.WALLET_ADD_TOKEN.equals(intent.getAction()))) {
+                TokenVo tokenVo = (TokenVo) intent.getSerializableExtra("tokenVo");
+                if (tokenVo != null){
+                    source.add(tokenVo);
+                }
+                tokenListAdapter.resetSource(source);
+            }
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mBroadcastReceiver);
     }
 
     @Override
@@ -129,6 +149,12 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
                 startActivity(intent);
                 Utils.openNewActivityAnim(TokenListUI.this,false);
                 break;
+            case R.id.app_right:
+                Intent searchIntent = new Intent(TokenListUI.this,TokenSearchListUI.class);
+                searchIntent.putExtra("address",address);
+                startActivity(searchIntent);
+                Utils.openNewActivityAnim(TokenListUI.this,false);
+                break;
         }
     }
 
@@ -136,47 +162,10 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
      * get token list
      * */
     private void loadTokenList(){
-        boolean isFirstGet = MySharedPrefs.readBoolean(TokenListUI.this,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST);
         ArrayList<TokenVo> tokenList = FinalUserDataBase.getInstance().getTokenListAll(address);
-        if (!isFirstGet && tokenList != null &&  tokenList.size() > 0){
-            tokenListAdapter.resetSource(tokenList);
-            swipeLayout.setRefreshing(false);
-        }else{
-            NetRequestImpl.getInstance().getTokenList(address, new RequestListener() {
-                @Override
-                public void start() {
-
-                }
-
-                @Override
-                public void success(JSONObject response) {
-                    source.clear();
-                    JSONArray array = response.optJSONArray("data");
-                    if (array != null){
-                        for (int i = 0 ; i < array.length() ; i++){
-                            TokenVo tokenVo = new TokenVo().parse(array.optJSONObject(i));
-                            source.add(tokenVo);
-                        }
-                    }
-                    FinalUserDataBase.getInstance().beginTransaction();
-                    for (int i = 0 ; i < source.size() ; i++){
-                        FinalUserDataBase.getInstance().updateTokenList(source.get(i),address,true);
-                    }
-                    FinalUserDataBase.getInstance().endTransactionSuccessful();
-                    MySharedPrefs.writeBoolean(TokenListUI.this,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST,false);
-                    tokenListAdapter.resetSource(source);
-                    swipeLayout.setRefreshing(false);
-                    checkListEmpty();
-                }
-
-                @Override
-                public void error(int errorCode, String errorMsg) {
-                    swipeLayout.setRefreshing(false);
-                    showToast(errorMsg);
-                    checkListEmpty();
-                }
-            });
-        }
+        tokenListAdapter.resetSource(tokenList);
+        swipeLayout.setRefreshing(false);
+        checkListEmpty();
     }
 
 
@@ -191,11 +180,6 @@ public class TokenListUI extends BaseActivity implements AdapterView.OnItemClick
         }else{
             emptyRela.setVisibility(View.GONE);
         }
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
     }
 
     @Override
