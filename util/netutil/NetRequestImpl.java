@@ -631,6 +631,9 @@ public class NetRequestImpl {
 
     /**
      * feedBack
+     * @param content     content
+     * @param email       your email
+     * @param type        feed back type
      */
     public void feedBack(String content,String email,int type,RequestListener listener){
         Map<String,String> params = new HashMap<>();
@@ -641,5 +644,121 @@ public class NetRequestImpl {
         requestUtils.requestJsonObject(jsonRequest, listener);
     }
 
+    /**
+     * Query SMT and token balances
+     * 查询SMT和token余额
+     * @param address        wallet address
+     * @param token_address  contact address
+     */
+    public void getBalance(String address,String token_address,RequestListener listener){
+        Map<String,String> params = new HashMap<>();
+        params.put("encrypt", "1");
+        params.put("address",address);
+        params.put("token_address",token_address);
+        JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "get_balance",false,params);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
 
+    /**
+     * Get SMT transaction gas
+     * 获取SMT交易gas
+     */
+    public void getGas(RequestListener listener){
+        Map<String,String> params = new HashMap<>();
+        params.put("encrypt", "1");
+        JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "get_gas",false,params);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
+
+    /**
+     * Get SMT transaction nonce
+     * 获取SMT交易Nonce
+     * @param address        wallet address
+     */
+    public void getNonce(String address,RequestListener listener){
+        Map<String,String> params = new HashMap<>();
+        params.put("encrypt", "1");
+        params.put("address",address);
+        JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "get_nonce",false,params);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
+
+    /**
+     * Send a transaction
+     * 发送一笔交易
+     * @param data        signed data to send
+     */
+    public void sendTransaction(String data,RequestListener listener){
+        Map<String,String> params = new HashMap<>();
+        params.put("encrypt", "1");
+        params.put("data",data);
+        JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "send_raw_transaction",false,params);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
+
+    /**
+     * Get the latest block number of SMT
+     * 获取SMT当前最新区块号
+     */
+    public void getBlockNumber(RequestListener listener){
+        Map<String,String> params = new HashMap<>();
+        params.put("encrypt", "1");
+        JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "get_block_number",false,params);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
+
+    /**
+     * Get the block number of the SMT transaction hash
+     * 获取SMT交易Hash所在区块号
+     */
+    public void getTxBlockNumber(String tx,RequestListener listener){
+        Map<String,String> params = new HashMap<>();
+        params.put("encrypt", "1");
+        params.put("tx", tx);
+        JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "tx_block_number",false,params);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
+
+    /**
+     * Search for Tokens published on SMT
+     * 搜索在SMT发布的Token
+     * @param keyword     keyword
+     * @param address     address
+     */
+    public void searchToken(String keyword,String address,RequestListener listener){
+        Map<String,String> params = new HashMap<>();
+        params.put("encrypt", "1");
+        params.put("keyword", keyword);
+        params.put("address", address);
+        JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "search_token",false,params);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
+
+    /**
+     * Bind the token to the display list
+     * 绑定token到展示列表
+     * @param address         address
+     * @param token_address   contact address
+     */
+    public void bindTokenToList(String address,String token_address,RequestListener listener){
+        Map<String,String> params = new HashMap<>();
+        params.put("encrypt", "1");
+        params.put("address", address);
+        params.put("token_address", token_address);
+        JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "add_token",false,params);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
+
+    /**
+     * Get the background record token list when opening the token list for the first time
+     * 首次打开token列表时获取后台记录token列表
+     * @param address         address
+     */
+    public void getTokenList(String address,RequestListener listener){
+        Map<String,String> params = new HashMap<>();
+        params.put("encrypt", "1");
+        params.put("address", address);
+        JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "token_list",false,params);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
 }
