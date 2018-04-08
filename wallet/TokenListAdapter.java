@@ -76,7 +76,12 @@ public class TokenListAdapter extends BaseAdapter {
         }
         final TokenVo tokenVo = tokenVos.get(position);
         holder.tokenHasCheck.setOnCheckedChangeListener(null);
-        holder.tokenHasCheck.setChecked(tokenVo.isChecked());
+        if (tokenVo.isChecked()){
+            holder.tokenHasCheck.setChecked(true);
+        }else{
+            holder.tokenHasCheck.setChecked(false);
+        }
+//        holder.tokenHasCheck.setChecked(tokenVo.isChecked());
         holder.tokenSymbol.setText(tokenVo.getTokenSymbol());
         holder.tokenName.setText(tokenVo.getTokenName());
         NextApplication.displayCircleImage(holder.tokenImg,tokenVo.getTokenLogo());

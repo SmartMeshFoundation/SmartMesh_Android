@@ -1,16 +1,12 @@
 package com.lingtuan.firefly.wallet;
 
-import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -18,17 +14,14 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
-import com.lingtuan.firefly.custom.LoadMoreListView;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
-import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -43,6 +36,8 @@ import java.util.ArrayList;
 public class TokenSearchListUI extends BaseActivity implements AdapterView.OnItemClickListener, TokenSearchListAdapter.AddTokenToList {
 
     private TextView emptyTextView;
+    private TextView emptyTextViewTwo;
+    private ImageView emptyImg;
     private RelativeLayout emptyRela;
     private ListView tokenListView = null;
     private TokenSearchListAdapter tokenListAdapter = null;
@@ -69,6 +64,8 @@ public class TokenSearchListUI extends BaseActivity implements AdapterView.OnIte
         searchEdit = (EditText) findViewById(R.id.searchEdit);
         emptyRela = (RelativeLayout) findViewById(R.id.empty_like_rela);
         emptyTextView = (TextView) findViewById(R.id.empty_text);
+        emptyTextViewTwo = (TextView) findViewById(R.id.empty_text_two);
+        emptyImg = (ImageView) findViewById(R.id.empty_like_icon);
         searchCancel = (TextView) findViewById(R.id.searchCancel);
     }
 
@@ -88,7 +85,9 @@ public class TokenSearchListUI extends BaseActivity implements AdapterView.OnIte
 
             @Override
             public void afterTextChanged(Editable s) {
-                loadTokenList(s.toString());
+                if (s.length() > 0){
+                    loadTokenList(s.toString());
+                }
             }
         });
 
@@ -167,7 +166,11 @@ public class TokenSearchListUI extends BaseActivity implements AdapterView.OnIte
     private void checkListEmpty() {
         if(source == null || source.size() == 0){
             emptyRela.setVisibility(View.VISIBLE);
-            emptyTextView.setText("暂时没有新的Token");
+            emptyImg.setVisibility(View.VISIBLE);
+            emptyTextViewTwo.setVisibility(View.VISIBLE);
+            emptyImg.setImageResource(R.drawable.icon_token_empty);
+            emptyTextView.setText("没找到匹配的结果？");
+            emptyTextViewTwo.setText("试试在页面底部提交新token");
         }else{
             emptyRela.setVisibility(View.GONE);
         }

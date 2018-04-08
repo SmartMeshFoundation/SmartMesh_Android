@@ -162,8 +162,8 @@ public class TokenListUI extends BaseActivity implements SwipeRefreshLayout.OnRe
      * get token list
      * */
     private void loadTokenList(){
-        ArrayList<TokenVo> tokenList = FinalUserDataBase.getInstance().getTokenListAll(address);
-        tokenListAdapter.resetSource(tokenList);
+        source = FinalUserDataBase.getInstance().getTokenListAll(address);
+        tokenListAdapter.resetSource(source);
         swipeLayout.setRefreshing(false);
         checkListEmpty();
     }

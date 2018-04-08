@@ -128,7 +128,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         new Thread(new Runnable() {
             @Override
             public void run() {
-                List<TransVo> mlist =  FinalUserDataBase.getInstance().getTransList(tokenVo.getTokenSymbol(),address);
+                List<TransVo> mlist =  FinalUserDataBase.getInstance().getTransList(tokenVo.getContactAddress(),address);
                 transVos.clear();
                 transVos.addAll(mlist);
                 mHandler.sendEmptyMessage(0);
