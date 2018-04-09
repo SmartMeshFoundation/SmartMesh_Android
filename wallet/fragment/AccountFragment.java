@@ -227,6 +227,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         filter.addAction(Constants.ACTION_GESTURE_LOGIN);//trans
         filter.addAction(Constants.CHANGE_LANGUAGE);//Update language refresh the page
         filter.addAction(XmppAction.ACTION_TRANS);//trans
+        filter.addAction(Constants.WALLET_BIND_TOKEN);
         getActivity().registerReceiver(mBroadcastReceiver, filter);
 
 //        writePassToSdcard();
@@ -285,6 +286,10 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                     }
                     initHomePop();
                     showPowTimer();
+                }else if (Constants.WALLET_BIND_TOKEN.equals(intent.getAction())){
+                    tokenVos = FinalUserDataBase.getInstance().getOpenTokenList(walletAddress.getText().toString());
+                    mTokenAdapter.resetSource(tokenVos);
+                    getBalance(false);
                 }
             }
         }
@@ -556,7 +561,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
      * get token list
      * */
     private void loadData(final boolean isShowToast){
-        boolean isFirstGet = MySharedPrefs.readBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST);
+        boolean isFirstGet = MySharedPrefs.readBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST + walletAddress.getText().toString());
         tokenVos = FinalUserDataBase.getInstance().getOpenTokenList(walletAddress.getText().toString());
         if (!isFirstGet && tokenVos != null &&  tokenVos.size() > 0){
             mTokenAdapter.resetSource(tokenVos);
@@ -575,6 +580,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                     if (array != null){
                         for (int i = 0 ; i < array.length() ; i++){
                             TokenVo tokenVo = new TokenVo().parse(array.optJSONObject(i));
+                            if (tokenVo.isFixed()){
+                                tokenVo.setChecked(true);
+                            }
                             tokenVos.add(tokenVo);
                         }
                     }
@@ -583,7 +591,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                         FinalUserDataBase.getInstance().updateTokenList(tokenVos.get(i),walletAddress.getText().toString(),true);
                     }
                     FinalUserDataBase.getInstance().endTransactionSuccessful();
-                    MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST,false);
+                    MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST + walletAddress.getText().toString(),false);
                     mTokenAdapter.resetSource(tokenVos);
                     getBalance(isShowToast);
                 }
