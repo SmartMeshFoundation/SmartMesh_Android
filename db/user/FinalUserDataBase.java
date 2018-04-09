@@ -13,6 +13,7 @@ import com.lingtuan.firefly.contact.vo.PhoneContactGroupVo;
 import com.lingtuan.firefly.contact.vo.PhoneContactVo;
 import com.lingtuan.firefly.db.TableField;
 import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
+import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.vo.ChatMsg;
 import com.lingtuan.firefly.vo.UserBaseVo;
@@ -43,6 +44,9 @@ public class FinalUserDataBase {
 
         if (NextApplication.myInfo != null) {
             helper = new FinalUserDbHelper(NextApplication.mContext, NextApplication.myInfo.getLocalId());
+            db = helper.getWritableDatabase();
+        }else{
+            helper = new FinalUserDbHelper(NextApplication.mContext, "-1");
             db = helper.getWritableDatabase();
         }
     }
@@ -693,7 +697,7 @@ public class FinalUserDataBase {
                         unFriendTotle += msg.getUnread();
                     }
                 }
-               if (!msg.isGroup() && msg.getMsgTypeInt() != 3 && !TextUtils.isEmpty(msg.getChatId()) && !TextUtils.equals("everyone",msg.getChatId()) && !msg.getChatId().startsWith("system")) {
+               if (!msg.isGroup() && msg.getMsgTypeInt() != 3 && !TextUtils.isEmpty(msg.getChatId()) && !TextUtils.equals(Constants.APP_EVERYONE,msg.getChatId())  && !msg.getChatId().startsWith("system")) {
                     UserBaseVo baseVo = FinalUserDataBase.getInstance().getUserBaseVoByUid(msg.getChatId());
                     if(baseVo!=null&&!TextUtils.isEmpty(baseVo.getShowName())){
                         msg.setUsername(baseVo.getShowName());
@@ -875,16 +879,16 @@ public class FinalUserDataBase {
     /**
      * Add trans list
      */
-    public List<TransVo> getTransList(int type,String address) {
+    public List<TransVo> getTransList(String tokenAddress,String address) {
         if (!address.startsWith("0x")){
             address = "0x" + address;
         }
         String sql = "select * from " + TableField.TABLE_TRANS + " where "
-                + TableField.FIELD_RESERVED_DATA1 + "=? and ("
+                + TableField.FIELD_RESERVED_DATA13 + "=? and ("
                 + TableField.FIELD_RESERVED_DATA5 + "=? or "
                 + TableField.FIELD_RESERVED_DATA6 + "=? )"
                 + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc ";
-        Cursor cursor = db.rawQuery(sql, new String[]{String.valueOf(type),address,address});
+        Cursor cursor = db.rawQuery(sql, new String[]{tokenAddress,address,address});
         List<TransVo> list = new ArrayList<>();
         while (cursor.moveToNext()) {
             TransVo vo = new TransVo();
@@ -899,6 +903,10 @@ public class FinalUserDataBase {
             vo.setTxurl(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)));
             vo.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
             vo.setState(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) + 1 );
+            vo.setSymbol(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
+            vo.setName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
+            vo.setTokenAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA13)));
+            vo.setLogo(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA14)));
             if(vo.getNoticeType() == 0)//send
             {
                 if(TextUtils.equals(address,vo.getToAddress()) && !TextUtils.equals(address,vo.getFromAddress()))
@@ -914,21 +922,21 @@ public class FinalUserDataBase {
             list.add(vo);
         }
         cursor.close();
-        getTransTempList(list,type,address);
+        getTransTempList(list,tokenAddress,address);
         return list;
     }
 
     /**
      * Add trans list
      */
-    public void getTransTempList(List<TransVo> transVoList,int type,String address) {
+    public void getTransTempList(List<TransVo> transVoList,String tokenAddress,String address) {
 
         String sql = "select * from " + TableField.TABLE_TRANS_TEMP + " where "
-                + TableField.FIELD_RESERVED_DATA1 + "=? and ("
+                + TableField.FIELD_RESERVED_DATA13 + "=? and ("
                 + TableField.FIELD_RESERVED_DATA5 + "=? or "
                 + TableField.FIELD_RESERVED_DATA6 + "=? )"
                 + " order by " + TableField.FIELD_CHAT_MSGTIME + " asc ";
-        Cursor cursor = db.rawQuery(sql, new String[]{String.valueOf(type),address,address});
+        Cursor cursor = db.rawQuery(sql, new String[]{tokenAddress,address,address});
         while (cursor.moveToNext()) {
             TransVo vo = new TransVo();
             vo.setTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
@@ -942,6 +950,10 @@ public class FinalUserDataBase {
             vo.setTxurl(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)));
             vo.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
             vo.setState(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) + 1 );
+            vo.setSymbol(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
+            vo.setName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
+            vo.setTokenAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA13)));
+            vo.setLogo(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA14)));
             if(vo.getNoticeType() == 0)//send
             {
                 if(TextUtils.equals(address,vo.getToAddress()) && !TextUtils.equals(address,vo.getFromAddress()))
@@ -1119,37 +1131,51 @@ public class FinalUserDataBase {
      * Save the token list all
      * @param vo token bean
      */
-    public void insertToken(TokenVo vo) {
+    public void insertToken(TokenVo vo,String address) {
         ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_RESERVED_DATA1, vo.getTokenName());
-        values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenPic());
-        values.put(TableField.FIELD_RESERVED_DATA3, vo.getTokenNumber());
-        values.put(TableField.FIELD_RESERVED_DATA4, vo.getTokenPrice());
-        values.put(TableField.FIELD_RESERVED_DATA5, vo.getTokenTotalPrice());
+        values.put(TableField.FIELD_RESERVED_DATA1, vo.getTokenSymbol());
+        values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenName());
+        values.put(TableField.FIELD_RESERVED_DATA3, vo.getTokenLogo());
+        values.put(TableField.FIELD_RESERVED_DATA4, vo.getTokenBalance());
+        values.put(TableField.FIELD_RESERVED_DATA5, vo.getTokenPrice());
+        values.put(TableField.FIELD_RESERVED_DATA6, vo.getTokenTotalPrice());
+        values.put(TableField.FIELD_RESERVED_DATA7, vo.getContactAddress());
+        values.put(TableField.FIELD_RESERVED_DATA8, vo.isChecked());
+        values.put(TableField.FIELD_RESERVED_DATA9, address);
+        values.put(TableField.FIELD_RESERVED_DATA10, vo.isFixed());
         db.insert(TableField.TABLE_TOKEN_LIST, TableField._ID, values);
     }
 
     /**
      * update the token list all
      */
-    public void updateTokenList(TokenVo vo) {
-        boolean result = hasToken(vo);
+    public void updateTokenList(TokenVo vo,String address,boolean update) {
+        boolean result = hasToken(vo,address);
         if(result){
             ContentValues values = new ContentValues();
-            values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenPic());
-            values.put(TableField.FIELD_RESERVED_DATA3, vo.getTokenNumber());
-            values.put(TableField.FIELD_RESERVED_DATA4, vo.getTokenPrice());
-            values.put(TableField.FIELD_RESERVED_DATA5, vo.getTokenTotalPrice());
-            db.update(TableField.TABLE_TOKEN_LIST,values,TableField.FIELD_RESERVED_DATA1 + "=? ",new String[]{vo.getTokenName()});
+            values.put(TableField.FIELD_RESERVED_DATA1, vo.getTokenSymbol());
+            values.put(TableField.FIELD_RESERVED_DATA3, vo.getTokenLogo());
+            values.put(TableField.FIELD_RESERVED_DATA4, vo.getTokenBalance());
+            values.put(TableField.FIELD_RESERVED_DATA5, vo.getTokenPrice());
+            values.put(TableField.FIELD_RESERVED_DATA6, vo.getTokenTotalPrice());
+            values.put(TableField.FIELD_RESERVED_DATA8, vo.isChecked());
+            if (update){
+                values.put(TableField.FIELD_RESERVED_DATA9, address);
+                values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenName());
+                values.put(TableField.FIELD_RESERVED_DATA10, vo.isFixed());
+            }
+            db.update(TableField.TABLE_TOKEN_LIST,values,TableField.FIELD_RESERVED_DATA7 + "=? and " + TableField.FIELD_RESERVED_DATA9 + "=?",new String[]{vo.getContactAddress(),address});
+        }else{
+            insertToken(vo,address);
         }
     }
 
     /**
      * check has token
      * */
-    private boolean hasToken(TokenVo vo){
-        String sql = "select * from " + TableField.TABLE_TOKEN_LIST + " where " + TableField.FIELD_RESERVED_DATA1 + "=?";
-        Cursor cursor = db.rawQuery(sql, new String[]{vo.getTokenName()});
+    private boolean hasToken(TokenVo vo,String address){
+        String sql = "select * from " + TableField.TABLE_TOKEN_LIST + " where " + TableField.FIELD_RESERVED_DATA7 + "=? and " + TableField.FIELD_RESERVED_DATA9 + "=?";
+        Cursor cursor = db.rawQuery(sql, new String[]{vo.getContactAddress().trim(),address.trim()});
         if (cursor.moveToNext()) {
             cursor.close();
             return true;
@@ -1158,6 +1184,59 @@ public class FinalUserDataBase {
             return false;
         }
     }
+
+    /**
+     * get the token list all
+     */
+    public ArrayList<TokenVo> getTokenListAll(String address) {
+        ArrayList<TokenVo> list = new ArrayList<>();
+        String sql = "select * from " + TableField.TABLE_TOKEN_LIST + " where " + TableField.FIELD_RESERVED_DATA9 + "=?";
+        Cursor cursor = db.rawQuery(sql, new String[]{address});
+        TokenVo vo;
+        while (cursor.moveToNext()) {
+            vo = new TokenVo();
+            vo.setTokenSymbol(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
+            vo.setTokenName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA2)));
+            vo.setTokenLogo(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
+            vo.setTokenBalance(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
+            vo.setTokenPrice(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
+            vo.setTokenTotalPrice(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
+            vo.setContactAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
+            vo.setChecked(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)) == 1);
+            vo.setWalletAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
+            vo.setFixed(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) == 1);
+            list.add(vo);
+        }
+        cursor.close();
+        return list;
+    }
+
+    /**
+     * get the token list all
+     */
+    public ArrayList<TokenVo> getOpenTokenList(String address) {
+        ArrayList<TokenVo> list = new ArrayList<>();
+        String sql = "select * from " + TableField.TABLE_TOKEN_LIST + " where " + TableField.FIELD_RESERVED_DATA9 + "=? and (" + TableField.FIELD_RESERVED_DATA8 + "=1 or " + TableField.FIELD_RESERVED_DATA10 + "=1)" ;
+        Cursor cursor = db.rawQuery(sql, new String[]{address});
+        TokenVo vo;
+        while (cursor.moveToNext()) {
+            vo = new TokenVo();
+            vo.setTokenSymbol(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
+            vo.setTokenName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA2)));
+            vo.setTokenLogo(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
+            vo.setTokenBalance(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
+            vo.setTokenPrice(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
+            vo.setTokenTotalPrice(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
+            vo.setContactAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
+            vo.setChecked(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)) == 1);
+            vo.setFixed(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) == 1);
+            vo.setWalletAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
+            list.add(vo);
+        }
+        cursor.close();
+        return list;
+    }
+
 
     /**
      * Save the trans list all
@@ -1174,6 +1253,10 @@ public class FinalUserDataBase {
         values.put(TableField.FIELD_RESERVED_DATA7, vo.getTxBlockNumber());
         values.put(TableField.FIELD_RESERVED_DATA8, vo.getTxurl() );
         values.put(TableField.FIELD_RESERVED_DATA9, vo.getNoticeType());
+        values.put(TableField.FIELD_RESERVED_DATA11, vo.getSymbol());
+        values.put(TableField.FIELD_RESERVED_DATA12, vo.getName());
+        values.put(TableField.FIELD_RESERVED_DATA13, vo.getTokenAddress());
+        values.put(TableField.FIELD_RESERVED_DATA14, vo.getLogo());
         if (isTemp){
             values.put(TableField.FIELD_RESERVED_DATA10, vo.getState() - 1);
             db.insert(TableField.TABLE_TRANS_TEMP, TableField._ID, values);
