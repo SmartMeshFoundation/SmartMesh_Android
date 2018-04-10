@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.login.LoginUI;
 import com.lingtuan.firefly.login.RegistUI;
 import com.lingtuan.firefly.service.UpdateVersionService;
@@ -117,6 +118,7 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
         if (TextUtils.isEmpty(isFirst) && NextApplication.myInfo != null){
             WalletStorage.getInstance(NextApplication.mContext).firstLoadAllWallet(NextApplication.mContext);
         }
+        FinalUserDataBase.getInstance().close();
         if (walletMode != 0){
             startActivity(new Intent(SplashActivity.this, MainFragmentUI.class));
             Utils.openNewActivityAnim(SplashActivity.this,true);
@@ -165,6 +167,7 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
                     startActivity(new Intent(SplashActivity.this, LoginUI.class));
                     Utils.openNewActivityAnim(SplashActivity.this, false);
                 } else {
+                    FinalUserDataBase.getInstance().close();
                     XmppUtils.loginXmppForNextApp(SplashActivity.this);
                     startActivity(new Intent(SplashActivity.this, MainFragmentUI.class));
                     Utils.openNewActivityAnim(SplashActivity.this, true);
