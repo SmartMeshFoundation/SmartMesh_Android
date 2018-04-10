@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/textColor"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/app_title_rela"
+        android:layout_width="fill_parent"
+        android:layout_height="48dp"
+        android:background="@color/colorPrimary">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:background="@drawable/shape_round_hintcolor_solid_5"
+            android:orientation="horizontal">
+            <EditText
+                android:id="@+id/searchEdit"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:paddingRight="9dp"
+                android:paddingLeft="9dp"
+                android:drawableLeft="@drawable/search"
+                android:drawablePadding="5dp"
+                android:imeOptions="actionSearch"
+                android:scaleType="center"
+                android:gravity="center_vertical"
+                android:layout_gravity="center_vertical"
+                android:singleLine="true"
+                android:background="@null" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/icon_white_close"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/searchCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:ellipsize="marquee"
+            android:gravity="center_vertical"
+            android:text="@string/cancel"
+            android:singleLine="true"
+            android:textColor="@color/wallet_transfer_bg"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+
+
+        <include layout="@layout/include_empty_view" />
+
+        <ListView
+            android:id="@+id/tokenListView"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="#00000000"
+            android:divider="@null"
+            android:fadingEdge="none"
+            android:fadingEdgeLength="0dp"
+            android:footerDividersEnabled="false"
+            android:headerDividersEnabled="false"
+            android:listSelector="@drawable/scrollview_item_bg"
+            android:scrollbars="none" >
+        </ListView>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/submitToken"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:gravity="center"
+        android:textColor="@color/wallet_transfer_bg"
+        android:textSize="16sp"
+        android:text="向我们提交新Token"/>
+</LinearLayout>
