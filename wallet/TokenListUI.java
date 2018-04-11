@@ -96,7 +96,7 @@ public class TokenListUI extends BaseActivity implements SwipeRefreshLayout.OnRe
         setTitle("添加新资产");
         swipeLayout.setColorSchemeResources(R.color.black);
         searchToken.setVisibility(View.VISIBLE);
-        searchToken.setImageResource(R.drawable.search);
+        searchToken.setImageResource(R.drawable.icon_token_search);
         source = new ArrayList<>();
         tokenListAdapter = new TokenListAdapter(this, source,address);
         tokenListView.setAdapter(tokenListAdapter);
@@ -109,6 +109,7 @@ public class TokenListUI extends BaseActivity implements SwipeRefreshLayout.OnRe
             if (intent != null && (Constants.WALLET_ADD_TOKEN.equals(intent.getAction()))) {
                 TokenVo tokenVo = (TokenVo) intent.getSerializableExtra("tokenVo");
                 if (tokenVo != null){
+                    tokenVo.setChecked(false);
                     source.add(tokenVo);
                 }
                 tokenListAdapter.resetSource(source);

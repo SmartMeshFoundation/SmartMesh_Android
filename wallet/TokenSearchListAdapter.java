@@ -77,7 +77,7 @@ public class TokenSearchListAdapter extends BaseAdapter {
 
         holder.tokenSymbol.setText(tokenVo.getTokenSymbol());
         holder.tokenName.setText(tokenVo.getTokenName());
-        NextApplication.displayCircleImage(holder.tokenImg,tokenVo.getTokenLogo());
+        NextApplication.displayCircleToken(holder.tokenImg,tokenVo.getTokenLogo());
 
         if (tokenVo.isFixed()){
             holder.tokenHasAdd.setVisibility(View.GONE);

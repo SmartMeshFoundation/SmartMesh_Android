@@ -11,7 +11,8 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
-import com.lingtuan.firefly.custom.switchbutton.SwitchButton;
+import com.lingtuan.firefly.custom.SwitchButton;
+import com.lingtuan.firefly.custom.SwitchView;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.setting.SettingUI;
@@ -69,48 +70,41 @@ public class TokenListAdapter extends BaseAdapter {
             holder.tokenImg = (ImageView) convertView.findViewById(R.id.tokenImg);
             holder.tokenName = (TextView) convertView.findViewById(R.id.tokenName);
             holder.tokenSymbol = (TextView) convertView.findViewById(R.id.tokenSymbol);
-            holder.tokenHasCheck = (SwitchButton) convertView.findViewById(R.id.tokenHasCheck);
+            holder.tokenHasCheck = (SwitchView) convertView.findViewById(R.id.tokenHasCheck);
             convertView.setTag(holder);
         }else{
             holder = (ViewHolder) convertView.getTag();
         }
         final TokenVo tokenVo = tokenVos.get(position);
-        holder.tokenHasCheck.setOnCheckedChangeListener(null);
-        if (tokenVo.isChecked()){
-            holder.tokenHasCheck.setChecked(true);
-        }else{
-            holder.tokenHasCheck.setChecked(false);
-        }
-//        holder.tokenHasCheck.setChecked(tokenVo.isChecked());
         holder.tokenSymbol.setText(tokenVo.getTokenSymbol());
         holder.tokenName.setText(tokenVo.getTokenName());
-        NextApplication.displayCircleImage(holder.tokenImg,tokenVo.getTokenLogo());
-
+        NextApplication.displayCircleToken(holder.tokenImg,tokenVo.getTokenLogo());
         if (tokenVo.isFixed()){
             holder.tokenHasCheck.setVisibility(View.GONE);
         }else{
             holder.tokenHasCheck.setVisibility(View.VISIBLE);
         }
-
         if (tokenVo.isChecked()){
-            holder.tokenHasCheck.setBackColor(context.getResources().getColorStateList(R.color.wallet_transfer_bg));
+            holder.tokenHasCheck.setOpened(true);
         }else{
-            holder.tokenHasCheck.setBackColor(context.getResources().getColorStateList(R.color.switch_button_gray));
+            holder.tokenHasCheck.setOpened(false);
         }
-        holder.tokenHasCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+        holder.tokenHasCheck.setOnStateChangedListener(new SwitchView.OnStateChangedListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked){
-                    holder.tokenHasCheck.setBackColor(context.getResources().getColorStateList(R.color.wallet_transfer_bg));
-                    tokenVo.setChecked(true);
-                    FinalUserDataBase.getInstance().updateTokenList(tokenVo,address,false);
-                    Utils.sendBroadcastReceiver(context,  new Intent(Constants.WALLET_BIND_TOKEN), false);
-                }else{
-                    holder.tokenHasCheck.setBackColor(context.getResources().getColorStateList(R.color.switch_button_gray));
-                    tokenVo.setChecked(false);
-                    FinalUserDataBase.getInstance().updateTokenList(tokenVo,address,false);
-                    Utils.sendBroadcastReceiver(context,  new Intent(Constants.WALLET_BIND_TOKEN), false);
-                }
+            public void toggleToOn(SwitchView view) {
+                holder.tokenHasCheck.setOpened(true);
+                tokenVo.setChecked(true);
+                FinalUserDataBase.getInstance().updateTokenList(tokenVo,address,false);
+                Utils.sendBroadcastReceiver(context,  new Intent(Constants.WALLET_BIND_TOKEN), false);
+            }
+
+            @Override
+            public void toggleToOff(SwitchView view) {
+                holder.tokenHasCheck.setOpened(false);
+                tokenVo.setChecked(false);
+                FinalUserDataBase.getInstance().updateTokenList(tokenVo,address,false);
+                Utils.sendBroadcastReceiver(context,  new Intent(Constants.WALLET_BIND_TOKEN), false);
             }
         });
         return convertView;
@@ -120,6 +114,6 @@ public class TokenListAdapter extends BaseAdapter {
         private ImageView tokenImg;
         private TextView tokenName;
         private TextView tokenSymbol;
-        private SwitchButton tokenHasCheck;
+        private SwitchView tokenHasCheck;
     }
 }
