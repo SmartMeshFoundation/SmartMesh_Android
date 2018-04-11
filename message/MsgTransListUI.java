@@ -105,8 +105,13 @@ public class MsgTransListUI extends BaseActivity implements OnItemClickListener,
 		transVo.setToAddress(chatmsg.getToAddress());
 		transVo.setState(chatmsg.getInviteType() + 1);
 		transVo.setNoticeType(chatmsg.getNoticeType());
+		transVo.setTokenAddress(chatmsg.getTokenAddress());
+		transVo.setName(chatmsg.getTokenName());
+		transVo.setSymbol(chatmsg.getTokenSymbol());
+		transVo.setLogo(chatmsg.getTokenLogo());
 		intent.putExtra("transVo",transVo);
 		startActivity(intent);
+		Utils.openNewActivityAnim(MsgTransListUI.this, false);
 	}
 
 	@Override
