@@ -24,8 +24,10 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.MonIndicator;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
+import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.ui.WebViewUI;
 import com.lingtuan.firefly.util.Utils;
+import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.util.netutil.NetRequestUtils;
 import com.lingtuan.firefly.wallet.vo.TransVo;
 
@@ -120,7 +122,7 @@ public class TransactionDetailActivity extends BaseActivity{
             transDetailNumber.setText(transVo.getTx());
             transDetailTime.setText(Utils.transDetailTime(transVo.getTime()));
             transDetailQuickMark.setImageBitmap(createQRCodeBitmap(transVo.getTxurl(),Utils.dip2px(TransactionDetailActivity.this,120)));
-            transDetailFee.setText(getString(R.string.eth_er_lower,transVo.getFee()));
+            transDetailFee.setText(getString(R.string.smt_er_lower,transVo.getFee()));
 
             if (transVo.getTxBlockNumber() <= 0){
                 transDetailBlockNumber.setText(getString(R.string.wallet_trans_detail_block_none));
@@ -208,6 +210,7 @@ public class TransactionDetailActivity extends BaseActivity{
                     intent.putExtra("loadUrl", transVo.getTxurl());
                     intent.putExtra("title", getString(R.string.transcation_search));
                     startActivity(intent);
+                    Utils.openNewActivityAnim(TransactionDetailActivity.this,false);
                 }
                 break;
         }
@@ -239,83 +242,62 @@ public class TransactionDetailActivity extends BaseActivity{
      * @param transBlockNumber The block number where the transaction hash is located
      * */
     private void getBlockNumber(final int transBlockNumber){
-        try {
-            NetRequestUtils.getInstance().getBlockNumber(TransactionDetailActivity.this,new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
 
-                }
+        NetRequestImpl.getInstance().getBlockNumber(new RequestListener() {
+            @Override
+            public void start() {
 
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    try {
-                        String jsonString = response.body().string();
-                        JSONObject object = new JSONObject(jsonString);
-                        if (object.optInt("errcod") == 0){
-                            int blockNumber = object.optJSONObject("data").optInt("blockNumber",0);
-                            Message message = Message.obtain();
-                            message.what = 0;
-                            message.arg1 = blockNumber - transBlockNumber;
-                            mHandler.sendMessage(message);
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            }
+
+            @Override
+            public void success(JSONObject response) {
+                int blockNumber = response.optInt("number",0);
+                Message message = Message.obtain();
+                message.what = 0;
+                message.arg1 = blockNumber - transBlockNumber;
+                mHandler.sendMessage(message);
+            }
+
+            @Override
+            public void error(int errorCode, String errorMsg) {
+
+            }
+        });
     }
 
     /**
      * Get the block number of the transaction hash
      * */
     private void getTranscationBlock(){
-        try {
-            NetRequestUtils.getInstance().getTxBlockNumber(TransactionDetailActivity.this,transVo.getTx(),new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
 
+        NetRequestImpl.getInstance().getTxBlockNumber(transVo.getTx(), new RequestListener() {
+            @Override
+            public void start() {
+
+            }
+
+            @Override
+            public void success(JSONObject response) {
+                int transBlockNumber = response.optInt("blockNumber",0);
+                int state =  response.optInt("state",0);
+                transVo.setState(state);
+                transVo.setTxBlockNumber(transBlockNumber);
+                if (state == 0 || state == 1){
+                    Message message = Message.obtain();
+                    message.what = 1;
+                    mHandler.sendMessage(message);
+                }else if (state == 2){
+                    Message message = Message.obtain();
+                    message.what = 2;
+                    mHandler.sendMessage(message);
                 }
+            }
 
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    try {
-                        String jsonString = response.body().string();
-                        JSONObject object = new JSONObject(jsonString);
-                        if (object.optInt("errcod") == 0){
-                            int transBlockNumber = object.optJSONObject("data").optInt("blockNumber",0);
-                            transVo.setState(0);
-                            transVo.setTxBlockNumber(transBlockNumber);
-                            Message message = Message.obtain();
-                            message.what = 1;
-                            mHandler.sendMessage(message);
-                        }else if (object.optInt("errcod") == 1001222){
-                            int transBlockNumber = object.optJSONObject("data").optInt("blockNumber",0);
-                            transVo.setState(0);
-                            transVo.setTxBlockNumber(transBlockNumber);
-                            Message message = Message.obtain();
-                            message.what = 1;
-                            mHandler.sendMessage(message);
-                        }else if (object.optInt("errcod") == 1001221){
-                            int transBlockNumber = object.optJSONObject("data").optInt("blockNumber",0);
-                            transVo.setState(2);
-                            transVo.setTxBlockNumber(transBlockNumber);
-                            Message message = Message.obtain();
-                            message.what = 2;
-                            mHandler.sendMessage(message);
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            @Override
+            public void error(int errorCode, String errorMsg) {
+                showToast(errorMsg);
+            }
+        });
     }
 
     @SuppressLint("HandlerLeak")

@@ -74,24 +74,12 @@ public class TransAdapter extends BaseAdapter {
             holder.address.setText(transVo.getToAddress());
             holder.transIcon.setImageResource(R.drawable.icon_transfer_out);
             holder.value.setTextColor(context.getResources().getColor(R.color.colorRed));
-            if (transVo.getType() == 0){//eth
-                holder.value.setText("-" + context.getString(R.string.eth_er,transVo.getValue()));
-            }else if (transVo.getType() == 1){//smt
-                holder.value.setText("-" + context.getString(R.string.smt_er,transVo.getValue()));
-            }else if (transVo.getType() == 2){
-                holder.value.setText("-" + context.getString(R.string.mesh_er,transVo.getValue()));
-            }
+            holder.value.setText(context.getString(R.string.token_less,transVo.getValue(),transVo.getSymbol()));
         }else{
             holder.address.setText(transVo.getFromAddress());
             holder.transIcon.setImageResource(R.drawable.icon_transfer_in);
             holder.value.setTextColor(context.getResources().getColor(R.color.yellow_wallet));
-            if (transVo.getType() == 0){//eth
-                holder.value.setText("+" + context.getString(R.string.eth_er,transVo.getValue()));
-            }else if (transVo.getType() == 1){//smt
-                holder.value.setText("+" + context.getString(R.string.smt_er,transVo.getValue()));
-            }else if (transVo.getType() == 2){
-                holder.value.setText("+" + context.getString(R.string.mesh_er,transVo.getValue()));
-            }
+            holder.value.setText(context.getString(R.string.token_add,transVo.getValue(),transVo.getSymbol()));
         }
         holder.transFailed.setTextColor(context.getResources().getColor(R.color.colorRed));
         if (transVo.getState() == 2){
