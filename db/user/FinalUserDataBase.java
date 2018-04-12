@@ -651,6 +651,7 @@ public class FinalUserDataBase {
                 msg.setMoney(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
                 msg.setMode(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
                 msg.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA26)));
+                msg.setTokenSymbol(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA27)));
 
                 if (msg.isTop()) {
                     msg.setTopTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA16)));
@@ -1012,6 +1013,7 @@ public class FinalUserDataBase {
             msg.setTxBlockNumber(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA24)));
             msg.setShareUrl(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA25)));
             msg.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA26)));
+            msg.setTokenSymbol(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA27)));
             list.add(msg);
         }
         cursor.close();
@@ -1198,9 +1200,9 @@ public class FinalUserDataBase {
             vo.setTokenSymbol(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
             vo.setTokenName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA2)));
             vo.setTokenLogo(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
-            vo.setTokenBalance(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
-            vo.setTokenPrice(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
-            vo.setTokenTotalPrice(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
+            vo.setTokenBalance(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
+            vo.setTokenPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
+            vo.setTokenTotalPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
             vo.setContactAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
             vo.setChecked(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)) == 1);
             vo.setWalletAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
@@ -1224,9 +1226,9 @@ public class FinalUserDataBase {
             vo.setTokenSymbol(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
             vo.setTokenName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA2)));
             vo.setTokenLogo(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
-            vo.setTokenBalance(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
-            vo.setTokenPrice(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
-            vo.setTokenTotalPrice(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
+            vo.setTokenBalance(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
+            vo.setTokenPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
+            vo.setTokenTotalPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
             vo.setContactAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
             vo.setChecked(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)) == 1);
             vo.setFixed(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) == 1);
@@ -1475,6 +1477,7 @@ public class FinalUserDataBase {
         values.put(TableField.FIELD_RESERVED_DATA24, vo.getTxBlockNumber());
         values.put(TableField.FIELD_RESERVED_DATA25, vo.getShareUrl());
         values.put(TableField.FIELD_RESERVED_DATA26, vo.getNoticeType());
+        values.put(TableField.FIELD_RESERVED_DATA27, vo.getTokenSymbol());
         db.insert(TableField.TABLE_CHAT_EVENT, TableField._ID, values);
 
     }
@@ -1584,6 +1587,7 @@ public class FinalUserDataBase {
             values.put(TableField.FIELD_RESERVED_DATA24, vo.getTxBlockNumber());
             values.put(TableField.FIELD_RESERVED_DATA25, vo.getShareUrl());
             values.put(TableField.FIELD_RESERVED_DATA26, vo.getNoticeType());
+            values.put(TableField.FIELD_RESERVED_DATA27, vo.getTokenSymbol());
 
 
             values.put(TableField.FIELD_CHAT_DISMISSGROUP, vo.isDismissGroup() ? 1 : 0);
@@ -1598,6 +1602,7 @@ public class FinalUserDataBase {
             values.put(TableField.FIELD_RESERVED_DATA9, vo.getMoney());
             values.put(TableField.FIELD_RESERVED_DATA19, vo.getInviteType());
             values.put(TableField.FIELD_RESERVED_DATA26, vo.getNoticeType());
+            values.put(TableField.FIELD_RESERVED_DATA27, vo.getTokenSymbol());
         }
         String[] whereArgs = null;
         whereArgs = new String[]{String.valueOf(vo.getChatId())};
