@@ -51,7 +51,6 @@ public class TokenListUI extends BaseActivity implements SwipeRefreshLayout.OnRe
 
     private TokenListAdapter tokenListAdapter = null;
 
-    private TextView submitToken;
     private ArrayList<TokenVo> source = null ;
 
     private String address;//wallet address
@@ -77,14 +76,12 @@ public class TokenListUI extends BaseActivity implements SwipeRefreshLayout.OnRe
 
         emptyRela = (RelativeLayout) findViewById(R.id.empty_like_rela);
         emptyTextView = (TextView) findViewById(R.id.empty_text);
-        submitToken = (TextView) findViewById(R.id.submitToken);
     }
 
     @Override
     protected void setListener() {
         tokenListView.setOnRefreshListener(this);
         swipeLayout.setOnRefreshListener(this);
-        submitToken.setOnClickListener(this);
         searchToken.setOnClickListener(this);
     }
 
@@ -103,7 +100,7 @@ public class TokenListUI extends BaseActivity implements SwipeRefreshLayout.OnRe
         loadTokenList();
     }
 
-    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver mBroadcastReceiver =  new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent != null && (Constants.WALLET_ADD_TOKEN.equals(intent.getAction()))) {
@@ -127,29 +124,6 @@ public class TokenListUI extends BaseActivity implements SwipeRefreshLayout.OnRe
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()){
-            case R.id.submitToken:
-                String result = "";
-                String language = MySharedPrefs.readString(TokenListUI.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_LANGUAFE);
-                if (TextUtils.isEmpty(language)){
-                    Locale locale = new Locale(Locale.getDefault().getLanguage());
-                    if (TextUtils.equals(locale.getLanguage(),"zh")){
-                        result = Constants.USE_AGREE_ZH;
-                    }else{
-                        result = Constants.USE_AGREE_EN;
-                    }
-                }else{
-                    if (TextUtils.equals(language,"zh")){
-                        result = Constants.USE_AGREE_ZH;
-                    }else{
-                        result = Constants.USE_AGREE_EN;
-                    }
-                }
-                Intent intent = new Intent(TokenListUI.this, WebViewUI.class);
-                intent.putExtra("loadUrl", result);
-                intent.putExtra("title", getString(R.string.use_agreement));
-                startActivity(intent);
-                Utils.openNewActivityAnim(TokenListUI.this,false);
-                break;
             case R.id.app_right:
                 Intent searchIntent = new Intent(TokenListUI.this,TokenSearchListUI.class);
                 searchIntent.putExtra("address",address);

@@ -369,12 +369,10 @@ public class TransactionDetailActivity extends BaseActivity{
             timerTask.cancel();
             timerTask = null;
         }
-        if (NextApplication.myInfo != null){
-            if (isSendTrans){
-                FinalUserDataBase.getInstance().insertTrans(transVo,true);
-            }else{
-                FinalUserDataBase.getInstance().updateTransTemp(transVo);
-            }
+        if (isSendTrans){
+            FinalUserDataBase.getInstance().insertTrans(transVo,true);
+        }else{
+            FinalUserDataBase.getInstance().updateTransTemp(transVo);
         }
     }
 }
