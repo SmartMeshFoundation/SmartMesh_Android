@@ -5,17 +5,13 @@ import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
-import com.lingtuan.firefly.custom.SwitchButton;
 import com.lingtuan.firefly.custom.SwitchView;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
-import com.lingtuan.firefly.offline.AppNetService;
-import com.lingtuan.firefly.setting.SettingUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.vo.TokenVo;

@@ -18,7 +18,10 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.setting.SettingUI;
+import com.lingtuan.firefly.ui.WebViewUI;
 import com.lingtuan.firefly.util.Constants;
+import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
@@ -27,6 +30,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Created on 2018/3/19.
@@ -46,6 +50,8 @@ public class TokenSearchListUI extends BaseActivity implements AdapterView.OnIte
     private EditText searchEdit;
     private String address;
     private TextView searchCancel;
+
+    private TextView submitToken;
 
     @Override
     protected void setContentView() {
@@ -67,11 +73,13 @@ public class TokenSearchListUI extends BaseActivity implements AdapterView.OnIte
         emptyTextViewTwo = (TextView) findViewById(R.id.empty_text_two);
         emptyImg = (ImageView) findViewById(R.id.empty_like_icon);
         searchCancel = (TextView) findViewById(R.id.searchCancel);
+        submitToken = (TextView) findViewById(R.id.submitToken);
     }
 
     @Override
     protected void setListener() {
         searchCancel.setOnClickListener(this);
+        submitToken.setOnClickListener(this);
         searchEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -117,6 +125,29 @@ public class TokenSearchListUI extends BaseActivity implements AdapterView.OnIte
         switch (v.getId()){
             case R.id.searchCancel:
                 Utils.exitActivityAndBackAnim(TokenSearchListUI.this,true);
+                break;
+            case R.id.submitToken:
+                String result = "";
+                String language = MySharedPrefs.readString(TokenSearchListUI.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_LANGUAFE);
+                if (TextUtils.isEmpty(language)){
+                    Locale locale = new Locale(Locale.getDefault().getLanguage());
+                    if (TextUtils.equals(locale.getLanguage(),"zh")){
+                        result = Constants.SUBMIT_TOKEN_ZH;
+                    }else{
+                        result = Constants.SUBMIT_TOKEN_EN;
+                    }
+                }else{
+                    if (TextUtils.equals(language,"zh")){
+                        result = Constants.SUBMIT_TOKEN_ZH;
+                    }else{
+                        result = Constants.SUBMIT_TOKEN_EN;
+                    }
+                }
+                Intent intent = new Intent(TokenSearchListUI.this, WebViewUI.class);
+                intent.putExtra("loadUrl", result);
+                intent.putExtra("title", getString(R.string.token_submit_token));
+                startActivity(intent);
+                Utils.openNewActivityAnim(TokenSearchListUI.this,false);
                 break;
         }
     }
@@ -169,8 +200,8 @@ public class TokenSearchListUI extends BaseActivity implements AdapterView.OnIte
             emptyImg.setVisibility(View.VISIBLE);
             emptyTextViewTwo.setVisibility(View.VISIBLE);
             emptyImg.setImageResource(R.drawable.icon_token_empty);
-            emptyTextView.setText("没找到匹配的结果？");
-            emptyTextViewTwo.setText("试试在页面底部提交新token");
+            emptyTextView.setText(getString(R.string.token_search_empty_hint));
+            emptyTextViewTwo.setText(getString(R.string.token_search_empty_submit));
         }else{
             emptyRela.setVisibility(View.GONE);
         }

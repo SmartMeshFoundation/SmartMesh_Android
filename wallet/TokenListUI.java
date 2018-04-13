@@ -90,7 +90,7 @@ public class TokenListUI extends BaseActivity implements SwipeRefreshLayout.OnRe
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.WALLET_ADD_TOKEN);
         registerReceiver(mBroadcastReceiver, filter);
-        setTitle("添加新资产");
+        setTitle(getString(R.string.token_add_assets));
         swipeLayout.setColorSchemeResources(R.color.black);
         searchToken.setVisibility(View.VISIBLE);
         searchToken.setImageResource(R.drawable.icon_token_search);
@@ -151,7 +151,7 @@ public class TokenListUI extends BaseActivity implements SwipeRefreshLayout.OnRe
     private void checkListEmpty() {
         if(source == null || source.size() == 0){
             emptyRela.setVisibility(View.VISIBLE);
-            emptyTextView.setText("暂时没有新的Token");
+            emptyTextView.setText(getString(R.string.token_submit_no_token));
         }else{
             emptyRela.setVisibility(View.GONE);
         }
