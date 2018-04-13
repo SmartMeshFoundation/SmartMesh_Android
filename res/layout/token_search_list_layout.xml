@@ -90,5 +90,5 @@
         android:gravity="center"
         android:textColor="@color/wallet_transfer_bg"
         android:textSize="16sp"
-        android:text="向我们提交新Token"/>
+        android:text="@string/token_submit_token"/>
 </LinearLayout>
