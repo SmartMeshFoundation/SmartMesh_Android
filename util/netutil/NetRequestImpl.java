@@ -761,4 +761,17 @@ public class NetRequestImpl {
         JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "token_list",false,params);
         requestUtils.requestJsonObject(jsonRequest, listener);
     }
+
+    /**
+     * Get the difference between the token name modification and the official default display list adjustment
+     * 获取token名字修改和官方默认展示列表调整的差异数据
+     * @param version         version
+     */
+    public void getChange(int version,RequestListener listener){
+        Map<String,String> params = new HashMap<>();
+        params.put("encrypt", "1");
+        params.put("version", version +"");
+        JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "get_change",false,params);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
 }
