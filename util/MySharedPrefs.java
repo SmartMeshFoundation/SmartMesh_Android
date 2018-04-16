@@ -29,12 +29,20 @@ public class MySharedPrefs {
     public static final String KEY_REQTIME = "key_reqtime";
 
 
+    /*wallet change version*/
+    public static final String KEY_WALLET_CHANGE_VERSION = "key_wallet_change_version";
+
     /*The wallet key values*/
     public static final String KEY_WALLET = "key_wallet";
 
+    /*The token price unit  0 default  1 usd*/
+    public static final String KEY_TOKEN_PRICE_UNIT = "key_token_price_unit";
 
     /*The all wallet key values*/
     public static final String KEY_ALL_WALLET = "key_all_wallet";
+
+    /*The all wallet key values*/
+    public static final String KEY_FIRST_GET_TOKEN_LIST = "key_first_get_token_list";
 
     /*Storing user information*/
     public static final String FILE_USER = "userinfo";
