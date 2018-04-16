@@ -23,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
@@ -83,6 +84,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private TextView walletManager;//Account management
     private TextView createWallet;//Create a wallet
     private TextView showQuicMark;//Flicking a
+    private TextView changeTokenUnit;//changeTokenUnit
 
     private ListView walletListView;//The wallet list
     private AccountAdapter mAdapter;
@@ -90,7 +92,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
     private CustomListView accountTokenList;//token list
     private AccountTokenAdapter mTokenAdapter;
-
     private ImageView walletImg;//The wallet picture
     private TextView walletName;//Name of the wallet
     private TextView walletBackup;//backup of the wallet
@@ -120,6 +121,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private int timerLine = 10;
 
     private PopupWindow homePop;
+
+    private String total;
+    private String usdTotal;
 
     public AccountFragment(){
 
@@ -166,6 +170,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         accountTokenList = (CustomListView) view.findViewById(R.id.accountTokenList);
         createWallet = (TextView) view.findViewById(R.id.createWallet);
         showQuicMark = (TextView) view.findViewById(R.id.showQuicMark);
+        changeTokenUnit = (TextView) view.findViewById(R.id.changeTokenUnit);
         walletManager = (TextView) view.findViewById(R.id.walletManager);
         walletGesture = (TextView) view.findViewById(R.id.walletGesture);
 
@@ -189,6 +194,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         walletAddress.setOnClickListener(this);
         createWallet.setOnClickListener(this);
         showQuicMark.setOnClickListener(this);
+        changeTokenUnit.setOnClickListener(this);
         walletListView.setOnItemClickListener(this);
 
         walletImg.setOnClickListener(this);
@@ -204,6 +210,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     }
 
     private void initData() {
+
+        accountTokenList.setFocusable(false);
+
         swipe_refresh.setColorSchemeResources(R.color.black);
         mAdapter = new AccountAdapter(getActivity());
         walletListView.setAdapter(mAdapter);
@@ -406,6 +415,17 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 startActivity(new Intent(getActivity(), CaptureActivity.class));
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
+            case R.id.changeTokenUnit://Flicking a
+                int priceUnit = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
+                if (priceUnit == 0){
+                    MySharedPrefs.writeInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT,1);
+                    walletBalanceNum.setText(getString(R.string.token_total_usd_price,usdTotal));
+                }else{
+                    MySharedPrefs.writeInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT,0);
+                    walletBalanceNum.setText(getString(R.string.token_total_price,total));
+                }
+                mTokenAdapter.notifyDataSetChanged();
+                break;
             case R.id.walletNameBody://Backup the purse
                 if (storableWallet == null){
                     return;
@@ -539,22 +559,17 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         }
 
         mAdapter.resetSource(WalletStorage.getInstance(NextApplication.mContext).get());
-
         new Handler().postDelayed(new Runnable(){
             public void run() {
                 swipe_refresh.setRefreshing(true);
                 loadData(true);
             }
-        }, 500);
+        }, 10);
     }
 
     @Override
     public void onRefresh() {
-        new Handler().postDelayed(new Runnable(){
-            public void run() {
-                loadData(true);
-            }
-        }, 500);
+        loadData(true);
     }
 
     /**
@@ -625,8 +640,14 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             public void success(JSONObject response) {
                 tokenVos.clear();
                 swipe_refresh.setRefreshing(false);
-                String total = response.optString("total");
-                walletBalanceNum.setText(total);
+                total = response.optString("total");
+                usdTotal = response.optString("usd_total");
+                int priceUnit = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
+                if (priceUnit == 0){
+                    walletBalanceNum.setText(getString(R.string.token_total_price,total));
+                }else{
+                    walletBalanceNum.setText(getString(R.string.token_total_usd_price,usdTotal));
+                }
                 JSONArray array = response.optJSONArray("data");
                 if (array != null){
                     for (int i = 0 ; i < array.length() ; i++){
@@ -665,6 +686,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             }
         }
     };
+
 
     /**
      * Control the popup countdown
