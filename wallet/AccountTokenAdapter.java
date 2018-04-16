@@ -1,6 +1,7 @@
 package com.lingtuan.firefly.wallet;
 
 import android.content.Context;
+import android.support.v7.widget.CardView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -10,11 +11,13 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
+import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 /**
@@ -27,9 +30,12 @@ public class AccountTokenAdapter extends BaseAdapter {
 
     private ArrayList<TokenVo> tokenVos;
 
-    public AccountTokenAdapter(Context context,ArrayList<TokenVo> tokenVos){
+    private TokenOnItemClick tokenOnItemClick;
+
+    public AccountTokenAdapter(Context context,ArrayList<TokenVo> tokenVos,TokenOnItemClick tokenOnItemClick){
         this.context = context;
         this.tokenVos = tokenVos;
+        this.tokenOnItemClick = tokenOnItemClick;
     }
 
 
@@ -58,7 +64,7 @@ public class AccountTokenAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null){
             holder = new ViewHolder();
@@ -68,16 +74,67 @@ public class AccountTokenAdapter extends BaseAdapter {
             holder.tokenSymbol = (TextView) convertView.findViewById(R.id.tokenSymbol);
             holder.tokenBalance = (TextView) convertView.findViewById(R.id.tokenBalance);
             holder.tokenTotalPrice = (TextView) convertView.findViewById(R.id.tokenTotalPrice);
+            holder.walletTokenBody = (CardView) convertView.findViewById(R.id.walletTokenBody);
             convertView.setTag(holder);
         }else{
             holder = (ViewHolder) convertView.getTag();
         }
         TokenVo tokenVo = tokenVos.get(position);
-        NextApplication.displayCircleImage(holder.tokenImg,Utils.buildThumb(tokenVo.getTokenLogo()));
-        holder.tokenPrice.setText(tokenVo.getTokenPrice());
+        NextApplication.displayCircleToken(holder.tokenImg,Utils.buildThumb(tokenVo.getTokenLogo()));
         holder.tokenSymbol.setText(tokenVo.getTokenSymbol());
-        holder.tokenBalance.setText(tokenVo.getTokenNumber());
+
+        int priceUnit = MySharedPrefs.readInt(context,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
+        if (priceUnit == 0){
+            if (tokenVo.getTokenPrice() > 0){
+                BigDecimal ethDecimal = new BigDecimal(tokenVo.getTokenPrice()).setScale(5,BigDecimal.ROUND_DOWN);
+                holder.tokenPrice.setText(context.getString(R.string.token_total_price,ethDecimal.toPlainString()));
+            }else{
+                holder.tokenPrice.setText(context.getString(R.string.token_total_price,tokenVo.getTokenPrice()+""));
+            }
+
+            if (tokenVo.getUnitPrice() > 0){
+                BigDecimal ethDecimal = new BigDecimal(tokenVo.getUnitPrice()).setScale(5,BigDecimal.ROUND_DOWN);
+                holder.tokenTotalPrice.setText(context.getString(R.string.token_total_price,ethDecimal.toPlainString()));
+            }else{
+                holder.tokenTotalPrice.setText(context.getString(R.string.token_total_price,tokenVo.getUnitPrice()+""));
+            }
+        }else{
+            if (tokenVo.getUsdPrice() > 0){
+                BigDecimal ethDecimal = new BigDecimal(tokenVo.getUsdPrice()).setScale(5,BigDecimal.ROUND_DOWN);
+                holder.tokenPrice.setText(context.getString(R.string.token_total_usd_price,ethDecimal.toPlainString()));
+            }else{
+                holder.tokenPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdPrice()+""));
+            }
+
+            if (tokenVo.getUsdUnitPrice() > 0){
+                BigDecimal ethDecimal = new BigDecimal(tokenVo.getUsdUnitPrice()).setScale(5,BigDecimal.ROUND_DOWN);
+                holder.tokenTotalPrice.setText(context.getString(R.string.token_total_usd_price,ethDecimal.toPlainString()));
+            }else{
+                holder.tokenTotalPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdUnitPrice()+""));
+            }
+        }
+
+        if (tokenVo.getTokenBalance() > 0){
+            BigDecimal ethDecimal = new BigDecimal(tokenVo.getTokenBalance()).setScale(5,BigDecimal.ROUND_DOWN);
+            holder.tokenBalance.setText(ethDecimal.toPlainString());
+        }else{
+            holder.tokenBalance.setText(tokenVo.getTokenBalance() +"");
+        }
+
+        holder.walletTokenBody.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (tokenOnItemClick != null){
+                    tokenOnItemClick.setTokenOnItemClick(position);
+                }
+            }
+        });
+
         return convertView;
+    }
+
+    public interface TokenOnItemClick{
+        void setTokenOnItemClick(int position);
     }
 
     static class ViewHolder{
@@ -86,5 +143,6 @@ public class AccountTokenAdapter extends BaseAdapter {
         TextView tokenSymbol;//token name
         TextView tokenBalance;//token balance
         TextView tokenTotalPrice;//token total price
+        CardView walletTokenBody;
     }
 }
