@@ -15,9 +15,12 @@ import com.lingtuan.firefly.db.TableField;
 import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
+import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.vo.ChatMsg;
 import com.lingtuan.firefly.vo.UserBaseVo;
 import com.lingtuan.firefly.vo.UserInfoVo;
+import com.lingtuan.firefly.wallet.util.WalletStorage;
+import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
 import com.lingtuan.firefly.wallet.vo.TransVo;
 
@@ -936,7 +939,7 @@ public class FinalUserDataBase {
                 + TableField.FIELD_RESERVED_DATA13 + "=? and ("
                 + TableField.FIELD_RESERVED_DATA5 + "=? or "
                 + TableField.FIELD_RESERVED_DATA6 + "=? )"
-                + " order by " + TableField.FIELD_CHAT_MSGTIME + " asc ";
+                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc ";
         Cursor cursor = db.rawQuery(sql, new String[]{tokenAddress,address,address});
         while (cursor.moveToNext()) {
             TransVo vo = new TransVo();
@@ -1140,27 +1143,79 @@ public class FinalUserDataBase {
         values.put(TableField.FIELD_RESERVED_DATA3, vo.getTokenLogo());
         values.put(TableField.FIELD_RESERVED_DATA4, vo.getTokenBalance());
         values.put(TableField.FIELD_RESERVED_DATA5, vo.getTokenPrice());
-        values.put(TableField.FIELD_RESERVED_DATA6, vo.getTokenTotalPrice());
+        values.put(TableField.FIELD_RESERVED_DATA6, vo.getUnitPrice());
         values.put(TableField.FIELD_RESERVED_DATA7, vo.getContactAddress());
         values.put(TableField.FIELD_RESERVED_DATA8, vo.isChecked());
         values.put(TableField.FIELD_RESERVED_DATA9, address);
         values.put(TableField.FIELD_RESERVED_DATA10, vo.isFixed());
+        values.put(TableField.FIELD_RESERVED_DATA11, vo.getUsdPrice());
+        values.put(TableField.FIELD_RESERVED_DATA12, vo.getUsdUnitPrice());
         db.insert(TableField.TABLE_TOKEN_LIST, TableField._ID, values);
     }
+
+    /**
+     * delete all address token
+     * @param contactAddress token address
+     */
+    public void deleteAllAddressToken(String contactAddress) {
+        db.delete(TableField.TABLE_TOKEN_LIST, TableField.FIELD_RESERVED_DATA7 + "=?", new String[]{contactAddress});
+    }
+
+    /**
+     * update all address token
+     * @param vo token bean
+     */
+    public void updateAllAddressToken(TokenVo vo) {
+        if (vo.getState() == 0){
+            deleteAllAddressToken(vo.getContactAddress());
+        }else if (vo.getState() == 1){
+            insertAllAddressToken(vo);
+        }else if (vo.getState() == 2){
+            ContentValues values = new ContentValues();
+            values.put(TableField.FIELD_RESERVED_DATA1, vo.getTokenSymbol());
+            values.put(TableField.FIELD_RESERVED_DATA3, vo.getTokenLogo());
+            values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenName());
+            db.update(TableField.TABLE_TOKEN_LIST,values,TableField.FIELD_RESERVED_DATA7 + "=?" ,new String[]{vo.getContactAddress()});
+        }
+    }
+
+    /**
+     * Save the token list all
+     * @param vo token bean
+     */
+    public void insertAllAddressToken(TokenVo vo) {
+        ArrayList<StorableWallet> storableWallets = WalletStorage.getInstance(NextApplication.mContext).get();
+        for (int i = 0 ; i < storableWallets.size(); i++){
+            String address = storableWallets.get(i).getPublicKey();
+            if (!address.startsWith("0x")){
+                address = "0x" + address;
+            }
+            ContentValues values = new ContentValues();
+            values.put(TableField.FIELD_RESERVED_DATA1, vo.getTokenSymbol());
+            values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenName());
+            values.put(TableField.FIELD_RESERVED_DATA3, vo.getTokenLogo());
+            values.put(TableField.FIELD_RESERVED_DATA7, vo.getContactAddress());
+            values.put(TableField.FIELD_RESERVED_DATA9, address);
+            db.insert(TableField.TABLE_TOKEN_LIST, TableField._ID, values);
+        }
+    }
+
 
     /**
      * update the token list all
      */
     public void updateTokenList(TokenVo vo,String address,boolean update) {
-        boolean result = hasToken(vo,address);
+        boolean result = hasToken(vo.getContactAddress(),address);
         if(result){
             ContentValues values = new ContentValues();
             values.put(TableField.FIELD_RESERVED_DATA1, vo.getTokenSymbol());
             values.put(TableField.FIELD_RESERVED_DATA3, vo.getTokenLogo());
             values.put(TableField.FIELD_RESERVED_DATA4, vo.getTokenBalance());
             values.put(TableField.FIELD_RESERVED_DATA5, vo.getTokenPrice());
-            values.put(TableField.FIELD_RESERVED_DATA6, vo.getTokenTotalPrice());
+            values.put(TableField.FIELD_RESERVED_DATA6, vo.getUnitPrice());
             values.put(TableField.FIELD_RESERVED_DATA8, vo.isChecked());
+            values.put(TableField.FIELD_RESERVED_DATA11, vo.getUsdPrice());
+            values.put(TableField.FIELD_RESERVED_DATA12, vo.getUsdUnitPrice());
             if (update){
                 values.put(TableField.FIELD_RESERVED_DATA9, address);
                 values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenName());
@@ -1175,9 +1230,9 @@ public class FinalUserDataBase {
     /**
      * check has token
      * */
-    private boolean hasToken(TokenVo vo,String address){
+    public boolean hasToken(String contactAddress,String address){
         String sql = "select * from " + TableField.TABLE_TOKEN_LIST + " where " + TableField.FIELD_RESERVED_DATA7 + "=? and " + TableField.FIELD_RESERVED_DATA9 + "=?";
-        Cursor cursor = db.rawQuery(sql, new String[]{vo.getContactAddress().trim(),address.trim()});
+        Cursor cursor = db.rawQuery(sql, new String[]{contactAddress,address.trim()});
         if (cursor.moveToNext()) {
             cursor.close();
             return true;
@@ -1202,11 +1257,13 @@ public class FinalUserDataBase {
             vo.setTokenLogo(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
             vo.setTokenBalance(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
             vo.setTokenPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
-            vo.setTokenTotalPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
+            vo.setUnitPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
             vo.setContactAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
             vo.setChecked(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)) == 1);
             vo.setWalletAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
             vo.setFixed(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) == 1);
+            vo.setUsdPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
+            vo.setUsdUnitPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
             list.add(vo);
         }
         cursor.close();
@@ -1228,11 +1285,13 @@ public class FinalUserDataBase {
             vo.setTokenLogo(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
             vo.setTokenBalance(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
             vo.setTokenPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
-            vo.setTokenTotalPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
+            vo.setUnitPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
             vo.setContactAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
             vo.setChecked(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)) == 1);
-            vo.setFixed(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) == 1);
             vo.setWalletAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
+            vo.setFixed(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) == 1);
+            vo.setUsdPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
+            vo.setUsdUnitPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
             list.add(vo);
         }
         cursor.close();
@@ -2191,7 +2250,7 @@ public class FinalUserDataBase {
      */
     public List<PhoneContactVo> getPhoneContactList(int type) {
 
-        List<PhoneContactVo> mList = new ArrayList<PhoneContactVo>();
+        List<PhoneContactVo> mList = new ArrayList<>();
         if (db == null) {
             return mList;
         }
@@ -2227,9 +2286,9 @@ public class FinalUserDataBase {
                 + " where " + TableField.FIELD_CHAT_TYPE + "=? "
                 + " order by " + TableField.FIELD_FRIEND_RELATION + "," + TableField.FIELD_FRIEND_UNAME;
         Cursor cursor = db.rawQuery(sql, new String[]{String.valueOf(type)});
-        List<PhoneContactGroupVo> mGList = new ArrayList<PhoneContactGroupVo>();
+        List<PhoneContactGroupVo> mGList = new ArrayList<>();
         PhoneContactGroupVo gVo = null;
-        List<PhoneContactVo> mCList = new ArrayList<PhoneContactVo>();
+        List<PhoneContactVo> mCList = new ArrayList<>();
         PhoneContactVo vo = null;
         int relation = 0;
 
