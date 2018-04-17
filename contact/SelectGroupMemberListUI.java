@@ -420,12 +420,14 @@ public class SelectGroupMemberListUI extends BaseActivity implements  OnItemClic
 		@Override
 		protected String doInBackground(String... params){
 			String keyword = params[0];
-			for (int i=0;i<mAdapter.getList().size();i++){
-				UserBaseVo vo = mAdapter.getList().get(i);
-				boolean isPinyin = PinYin.getPinYin(vo.getShowName()).toUpperCase().contains(keyword);
-				boolean isChinese = vo.getShowName().contains(keyword);
-				if (isPinyin || isChinese){
-					filterList.add(vo);
+			if (mAdapter != null && mAdapter.getList() != null){
+				for (int i=0;i<mAdapter.getList().size();i++){
+					UserBaseVo vo = mAdapter.getList().get(i);
+					boolean isPinyin = PinYin.getPinYin(vo.getShowName()).toUpperCase().contains(keyword);
+					boolean isChinese = vo.getShowName().contains(keyword);
+					if (isPinyin || isChinese){
+						filterList.add(vo);
+					}
 				}
 			}
 			return null;
