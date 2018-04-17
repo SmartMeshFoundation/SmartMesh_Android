@@ -23,7 +23,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
@@ -84,7 +83,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private TextView walletManager;//Account management
     private TextView createWallet;//Create a wallet
     private TextView showQuicMark;//Flicking a
-    private TextView changeTokenUnit;//changeTokenUnit
+    private ImageView changeTokenUnit;//changeTokenUnit
 
     private ListView walletListView;//The wallet list
     private AccountAdapter mAdapter;
@@ -170,7 +169,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         accountTokenList = (CustomListView) view.findViewById(R.id.accountTokenList);
         createWallet = (TextView) view.findViewById(R.id.createWallet);
         showQuicMark = (TextView) view.findViewById(R.id.showQuicMark);
-        changeTokenUnit = (TextView) view.findViewById(R.id.changeTokenUnit);
+        changeTokenUnit = (ImageView) view.findViewById(R.id.changeTokenUnit);
         walletManager = (TextView) view.findViewById(R.id.walletManager);
         walletGesture = (TextView) view.findViewById(R.id.walletGesture);
 
@@ -238,6 +237,13 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         filter.addAction(XmppAction.ACTION_TRANS);//trans
         filter.addAction(Constants.WALLET_BIND_TOKEN);
         getActivity().registerReceiver(mBroadcastReceiver, filter);
+
+        int priceUnit = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
+        if (priceUnit == 0){
+            changeTokenUnit.setImageResource(R.drawable.icon_unit_cny);
+        }else{
+            changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
+        }
 
 //        writePassToSdcard();
 //        new Thread(new Runnable() {
@@ -420,9 +426,11 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 if (priceUnit == 0){
                     MySharedPrefs.writeInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT,1);
                     walletBalanceNum.setText(getString(R.string.token_total_usd_price,usdTotal));
+                    changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
                 }else{
                     MySharedPrefs.writeInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT,0);
                     walletBalanceNum.setText(getString(R.string.token_total_price,total));
+                    changeTokenUnit.setImageResource(R.drawable.icon_unit_cny);
                 }
                 mTokenAdapter.notifyDataSetChanged();
                 break;
@@ -645,8 +653,10 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 int priceUnit = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
                 if (priceUnit == 0){
                     walletBalanceNum.setText(getString(R.string.token_total_price,total));
+                    changeTokenUnit.setImageResource(R.drawable.icon_unit_cny);
                 }else{
                     walletBalanceNum.setText(getString(R.string.token_total_usd_price,usdTotal));
+                    changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
                 }
                 JSONArray array = response.optJSONArray("data");
                 if (array != null){
