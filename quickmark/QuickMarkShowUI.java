@@ -29,18 +29,22 @@ import com.lingtuan.firefly.util.BitmapUtils;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
+import com.lingtuan.firefly.wallet.vo.TokenVo;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import static org.jivesoftware.smackx.pubsub.ConfigureNodeFields.type;
+
 public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 
 	private ImageView mQuickMark;
 	private EditText mAmount;
-	private int type;//Qr code 0, 1 ETH qr code, 2 FFT qr code
     private String address;
 	private int index = -1;//Which one is selected
+
+	private TokenVo tokenVo;
 
 	private ImageView walletImg;
 	private TextView walletAddress;
@@ -79,21 +83,12 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 	@Override
 	protected void initData() {
 		setTitle(getString(R.string.gathering));
-		type = getIntent().getIntExtra("type",0);
+		tokenVo = (TokenVo) getIntent().getSerializableExtra("tokenVo");
 		address = getIntent().getStringExtra("address");
 		if(!TextUtils.isEmpty(address) && !address.startsWith("0x")){
 			address = "0x"+address;
 		}
-		String content = address;
-		if(type == 0){
-
-		}else if (type == 1){
-			content = address+"?amount=&token=ETH";
-		}else if (type == 2){
-			content = address+"?amount=&token=SMT";
-		}else if (type == 3){
-			content = address+"?amount=&token=MESH";
-		}
+		String content = address+"?amount=&token=" + tokenVo.getTokenSymbol();
 		initWalletInfo();
 		qrBitmap= createQRCodeBitmap(content ,getResources().getDisplayMetrics().widthPixels);
 		mQuickMark.setImageBitmap(qrBitmap);
@@ -116,7 +111,7 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 				break;
 			case R.id.app_btn_right:
 				try {
-					String qrPath = BitmapUtils.uploadZxing(QuickMarkShowUI.this,qrBitmap,true,true);
+					String qrPath = BitmapUtils.uploadZxing(QuickMarkShowUI.this,qrBitmap,true,false);
 					showToast(qrPath);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -185,17 +180,7 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 
 	//Change the qr code
 	private void chengeQrCode(Editable s){
-		String content = address;
-		if(type == 0){
-			content = address+"?amount="+s.toString();
-		}else if (type == 1){
-			content = address+"?amount="+s.toString()+"&token=ETH";
-		}
-		else if (type == 2){
-			content = address+"?amount="+s.toString()+"&token=SMT";
-		}else if (type == 3){
-			content = address+"?amount="+s.toString()+"&token=MESH";
-		}
+		String content = address+"?amount="+s.toString()+"&token=" + tokenVo.getTokenSymbol();
 		qrBitmap= createQRCodeBitmap(content ,getResources().getDisplayMetrics().widthPixels);
 		mQuickMark.setImageBitmap(qrBitmap);
 	}
@@ -228,6 +213,16 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 				address = "0x"+address;
 			}
 			walletAddress.setText(address);
+		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+
+		if(qrBitmap != null  && !qrBitmap.isRecycled()){
+			qrBitmap.recycle();
+			qrBitmap = null ;
 		}
 	}
 }
