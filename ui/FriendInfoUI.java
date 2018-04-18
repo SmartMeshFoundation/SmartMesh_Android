@@ -45,7 +45,7 @@ import java.util.List;
 public class FriendInfoUI extends BaseActivity {
 
     private CharAvatarView friendImg;
-    private TextView addFriends,sendMsg,friendNote,friendMid;
+    private TextView addFriends,sendMsg,friendNote,friendMid,friendName;
     private TextView friendSignature;//The signature
 
     private LinearLayout addFriendsBody,sendMsgBody;
@@ -100,6 +100,7 @@ public class FriendInfoUI extends BaseActivity {
         addFriends = (TextView) findViewById(R.id.addFriends);
         sendMsg = (TextView) findViewById(R.id.sendMsg);
         friendNote = (TextView) findViewById(R.id.friendNote);
+        friendName = (TextView) findViewById(R.id.friendName);
         friendMid = (TextView) findViewById(R.id.friendMid);
         friendSignature = (TextView) findViewById(R.id.friendSignature);
         app_right = (ImageView) findViewById(R.id.app_right);
@@ -187,7 +188,6 @@ public class FriendInfoUI extends BaseActivity {
                 info.setFriendLog(-1);
             }
 
-            setTitle(info.getUsername());
             if (!info.getThumb().startsWith("http:")){
                 friendImg.setText(info.getUsername(),friendImg,"file://".concat(info.getThumb()));
             }else{
@@ -200,12 +200,21 @@ public class FriendInfoUI extends BaseActivity {
                 friendNote.setVisibility(View.VISIBLE);
                 friendNote.setText(info.getNote());
             }
+
             if (TextUtils.isEmpty(info.getMid())){
                 friendMid.setVisibility(View.INVISIBLE);
             }else{
                 friendMid.setVisibility(View.VISIBLE);
                 friendMid.setText(getString(R.string.mid_user,info.getMid()));
             }
+
+            if (TextUtils.isEmpty(info.getUsername())){
+                friendName.setVisibility(View.INVISIBLE);
+            }else{
+                friendName.setVisibility(View.VISIBLE);
+                friendName.setText(info.getUsername());
+            }
+
             friendSignature.setText(info.getSightml());
             if (info.getFriendLog() == -1){
                 app_right.setVisibility(View.GONE);

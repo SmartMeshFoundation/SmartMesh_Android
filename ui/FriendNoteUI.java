@@ -70,10 +70,10 @@ public class FriendNoteUI extends BaseActivity{
         switch (v.getId()){
             case R.id.app_btn_right:
                 String note = friendNote.getText().toString().trim();
-                if (TextUtils.isEmpty(note)){
-                    showToast(getString(R.string.friend_note_not_empty));
-                    return;
-                }
+//                if (TextUtils.isEmpty(note)){
+//                    showToast(getString(R.string.friend_note_not_empty));
+//                    return;
+//                }
                 updateFriendNote(note);
                 break;
             default:
@@ -98,9 +98,9 @@ public class FriendNoteUI extends BaseActivity{
                 intentBrocad.putExtra("showname",note);
                 sendBroadcast(intentBrocad);
 
-                if (!TextUtils.isEmpty(note)) {
+//                if (!TextUtils.isEmpty(note)) {
                     MySharedPrefs.write(FriendNoteUI.this, MySharedPrefs.KEY_FRIEND_NOTE + NextApplication.myInfo.getLocalId(), localId, note);
-                }
+//                }
 
                 showToast(response.optString("msg"));
                 Intent intent = new Intent();
