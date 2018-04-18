@@ -89,17 +89,17 @@ public class TokenListAdapter extends BaseAdapter {
         holder.tokenHasCheck.setOnStateChangedListener(new SwitchView.OnStateChangedListener() {
             @Override
             public void toggleToOn(SwitchView view) {
-                holder.tokenHasCheck.setOpened(true);
                 tokenVo.setChecked(true);
-                FinalUserDataBase.getInstance().updateTokenList(tokenVo,address,false);
+                FinalUserDataBase.getInstance().updateTokenCheck(tokenVo,address);
+                holder.tokenHasCheck.setOpened(true);
                 Utils.sendBroadcastReceiver(context,  new Intent(Constants.WALLET_BIND_TOKEN), false);
             }
 
             @Override
             public void toggleToOff(SwitchView view) {
-                holder.tokenHasCheck.setOpened(false);
                 tokenVo.setChecked(false);
-                FinalUserDataBase.getInstance().updateTokenList(tokenVo,address,false);
+                FinalUserDataBase.getInstance().updateTokenCheck(tokenVo,address);
+                holder.tokenHasCheck.setOpened(false);
                 Utils.sendBroadcastReceiver(context,  new Intent(Constants.WALLET_BIND_TOKEN), false);
             }
         });
