@@ -304,7 +304,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 }else if (Constants.WALLET_BIND_TOKEN.equals(intent.getAction())){
                     tokenVos = FinalUserDataBase.getInstance().getOpenTokenList(walletAddress.getText().toString());
                     mTokenAdapter.resetSource(tokenVos);
-                    getBalance(false);
                 }
             }
         }
