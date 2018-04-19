@@ -7,6 +7,7 @@ import android.text.TextUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lingtuan.firefly.NextApplication;
+import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.setting.GesturePasswordLoginActivity;
 import com.lingtuan.firefly.util.Constants;
@@ -17,7 +18,9 @@ import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.util.OwnWalletUtils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
+import com.lingtuan.firefly.wallet.vo.TransVo;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
@@ -114,6 +117,8 @@ public class WalletThread extends Thread {
 				storableWallet.setPwdInfo(pwdInfo);
 				if (type == 0){
 					storableWallet.setCanExportPrivateKey(1);
+				}else{
+					storableWallet.setBackup(true);
 				}
 				if (WalletStorage.getInstance(context).get().size() <= 0){
 					storableWallet.setSelect(true);
@@ -131,6 +136,7 @@ public class WalletThread extends Thread {
 				}
 				mHandler.sendEmptyMessage(WalletHandler.WALLET_SUCCESS);
 				addAddressMethod(walletAddress);
+				getAllTransactionList(walletAddress);
 			}
 			return;
 		} catch (CipherException e) {
@@ -156,6 +162,44 @@ public class WalletThread extends Thread {
 			e.printStackTrace();
 		}
 		mHandler.sendEmptyMessage(WalletHandler.WALLET_ERROR);
+	}
+
+	/**
+	 * Get all transaction records for the specified address
+	 * @param address   wallet address
+	 * */
+	private void getAllTransactionList(String address) {
+
+		if (!address.startsWith("0x")){
+			address = "0x" + address;
+		}
+
+		NetRequestImpl.getInstance().getAllTransactionList(address, new RequestListener() {
+			@Override
+			public void start() {
+
+			}
+
+			@Override
+			public void success(JSONObject response) {
+				JSONArray array = response.optJSONArray("data");
+				if (array != null){
+//					FinalUserDataBase.getInstance().beginTransaction();
+					for (int i = 0 ; i < array.length() ; i++){
+						JSONObject obiect = array.optJSONObject(i);
+						TransVo transVo = new TransVo().parse(obiect);
+						transVo.setState(0);
+						FinalUserDataBase.getInstance().updateTrans(transVo);
+					}
+//					FinalUserDataBase.getInstance().endTransaction();
+				}
+			}
+
+			@Override
+			public void error(int errorCode, String errorMsg) {
+
+			}
+		});
 	}
 
 	/**
