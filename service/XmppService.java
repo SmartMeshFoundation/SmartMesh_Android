@@ -35,6 +35,10 @@ import com.lingtuan.firefly.vo.ChatMsg;
 import com.lingtuan.firefly.contact.vo.FriendRecommentVo;
 import com.lingtuan.firefly.contact.vo.GroupMemberAvatarVo;
 import com.lingtuan.firefly.contact.vo.PhoneContactVo;
+import com.lingtuan.firefly.wallet.util.WalletStorage;
+import com.lingtuan.firefly.wallet.vo.StorableWallet;
+import com.lingtuan.firefly.wallet.vo.TokenVo;
+import com.lingtuan.firefly.wallet.vo.TransVo;
 import com.lingtuan.firefly.xmpp.LoginThread;
 import com.lingtuan.firefly.xmpp.XmppAction;
 import com.lingtuan.firefly.xmpp.XmppHandler;
@@ -184,7 +188,6 @@ public class XmppService extends Service {
         }
     }
 
-    
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
@@ -220,9 +223,6 @@ public class XmppService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    /**
-    * message listener
-    */
     class NextPacketListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
@@ -233,15 +233,45 @@ public class XmppService extends Service {
                     ChatMsg chatmsg = null;
                     try {
                         ackMsg(msg);
-                        if(msg.getFrom().contains("everyone"))
+                        if(msg.getFrom().contains(Constants.APP_EVERYONE))
                         {
                             msg.setMsgtype(MsgType.normalchat);
                         }
+                        String number = "";
+                        String noticetype = "";
+                        if (msg.getMsgtype() == Message.MsgType.system) {
+                            //Group chat
+                            ChatMsg chatmsgT = parseBody(msg);
+                            number = chatmsgT.getNumber();
+                            noticetype = String.valueOf(chatmsgT.getNoticeType());
+                            int tempType = chatmsgT.getType();
+                            String fromAddress = chatmsgT.getFromAddress();
+                            String toAddress = chatmsgT.getToAddress();
+                            if (tempType == 300){
+                                boolean isAddressExist = false;
+                                int length = WalletStorage.getInstance(getApplicationContext()).get().size();
+                                for (int i = 0 ; i < length; i++){
+                                    StorableWallet storableWallet = WalletStorage.getInstance(getApplicationContext()).get().get(i);
+                                    String address = "";
+                                    if(!TextUtils.isEmpty(storableWallet.getPublicKey()) && !storableWallet.getPublicKey().startsWith("0x")) {
+                                        address= "0x"+ storableWallet.getPublicKey();
+                                    }
+                                    if ((TextUtils.equals("0",noticetype) && TextUtils.equals(fromAddress,address)) || (TextUtils.equals("1",noticetype) && TextUtils.equals(toAddress,address))){
+                                        isAddressExist = true;
+                                        break;
+                                    }
+                                }
+                                if (!isAddressExist){
+                                    return;
+                                }
+                            }
+                        }
                         boolean isMsgExit = FinalUserDataBase.getInstance()
-                                .checkMsgExist(msg.getPacketID(),msg.getMsgtype(),parseBody(msg).getType());
+                                .checkMsgExist(msg.getPacketID(),msg.getMsgtype(),parseBody(msg).getType(),number,noticetype);
                         if (isMsgExit) {
                             return;
                         }
+
                     } catch (Exception e1) {
                         e1.printStackTrace();
                     }
@@ -295,7 +325,7 @@ public class XmppService extends Service {
                 }
                 else if (packet instanceof Presence) {
                     Presence presence = (Presence)packet;
-                    if(presence.getType() == Presence.Type.available && presence.getFrom().contains("everyone"))
+                    if(presence.getType() == Presence.Type.available && presence.getFrom().contains(Constants.APP_EVERYONE))
                     {
                         Intent intent = new Intent(XmppAction.ACTION_ENTER_EVERYONE_LISTENER);
                         Utils.intentAction(getApplicationContext(), intent);
@@ -362,7 +392,7 @@ public class XmppService extends Service {
                 try {
                     JSONObject obj = (JSONObject) msgs.getOfflinmsgList().get(index);
                     int msgtype = obj.optInt("type");
-                    boolean isMsgExit = FinalUserDataBase.getInstance().checkMsgExist(obj.optString("msgid"), type, msgtype);
+                    boolean isMsgExit = FinalUserDataBase.getInstance().checkMsgExist(obj.optString("msgid"), type, msgtype,"","");
                     if (isMsgExit) {//To repeat
                         continue;
                     }
@@ -493,9 +523,7 @@ public class XmppService extends Service {
                             chatmsg.setContent(chatmsg.getShareTitle());
                         }
 
-                        if (chatmsg.getGroupMask() && !TextUtils.equals("system-0", chatmsg.getChatId()) && !TextUtils.equals("system-1", chatmsg.getChatId()) && !TextUtils.equals("system-3", chatmsg.getChatId()) && !TextUtils.equals("system-4", chatmsg.getChatId())) {//屏蔽的信息不与管理
-
-                        } else if ("system-2".equals(chatmsg.getChatId())) {
+                        if (chatmsg.getGroupMask() && !TextUtils.equals("system-0", chatmsg.getChatId()) && !TextUtils.equals("system-1", chatmsg.getChatId()) && !TextUtils.equals("system-3", chatmsg.getChatId()) && !TextUtils.equals("system-4", chatmsg.getChatId())  && !TextUtils.equals("system-5", chatmsg.getChatId())) {//屏蔽的信息不与管理
 
                         } else {
                             totalCount++;
@@ -573,14 +601,15 @@ public class XmppService extends Service {
                                     LoadDataService.ACTION_FILE_DOWNLOAD,
                                     downloadBundle);
                         }
-                        chatmsg.setUserImage(url.toString());
+                        ChatMsg chatMsgT = new ChatMsg();
+                        chatMsgT.parseChatMsgVo(chatmsg);
+                        chatMsgT.setUserImage(url.toString());
                         if (chatmsg.getType() == 103 && !TextUtils.isEmpty(content)) {
                             chatmsg.setContent(chatmsg.getShareTitle());
+                            chatMsgT.setContent(chatMsgT.getShareTitle());
                         }
 
-                        if (chatmsg.getGroupMask() && !TextUtils.equals("system-0", chatmsg.getChatId()) && !TextUtils.equals("system-1", chatmsg.getChatId()) && !TextUtils.equals("system-3", chatmsg.getChatId()) && !TextUtils.equals("system-4", chatmsg.getChatId())) {//屏蔽的信息不与管理
-
-                        } else if ("system-2".equals(chatmsg.getChatId())) {
+                        if (chatmsg.getGroupMask() && !TextUtils.equals("system-0", chatmsg.getChatId()) && !TextUtils.equals("system-1", chatmsg.getChatId()) && !TextUtils.equals("system-3", chatmsg.getChatId()) && !TextUtils.equals("system-4", chatmsg.getChatId()) && !TextUtils.equals("system-5", chatmsg.getChatId())) {//屏蔽的信息不与管理
 
                         } else {
                             totalCount++;
@@ -588,7 +617,7 @@ public class XmppService extends Service {
                         if (index == offlinemsgList.length() - 1)//Collection of traverse after send to unity
                         {
                             Intent intent = new Intent(XmppAction.ACTION_OFFLINE_MESSAGE_LIST_EVENT_LISTENER);
-                            intent.putExtra("chat", chatmsg);
+                            intent.putExtra("chat", chatMsgT);
                             intent.putExtra("totalCount", totalCount);
                             Utils.intentAction(getApplicationContext(), intent);
                         }
@@ -669,9 +698,7 @@ public class XmppService extends Service {
                             chatmsg.setContent(chatmsg.getShareTitle());
                         }
 
-                        if (chatmsg.getGroupMask() && !TextUtils.equals("system-0", chatmsg.getChatId()) && !TextUtils.equals("system-1", chatmsg.getChatId()) && !TextUtils.equals("system-3", chatmsg.getChatId()) && !TextUtils.equals("system-4", chatmsg.getChatId())) {//屏蔽的信息不与管理
-
-                        } else if ("system-2".equals(chatmsg.getChatId())) {
+                        if (chatmsg.getGroupMask() && !TextUtils.equals("system-0", chatmsg.getChatId()) && !TextUtils.equals("system-1", chatmsg.getChatId()) && !TextUtils.equals("system-3", chatmsg.getChatId()) && !TextUtils.equals("system-4", chatmsg.getChatId()) && !TextUtils.equals("system-5", chatmsg.getChatId())) {//屏蔽的信息不与管理
 
                         } else {
                             totalCount++;
@@ -783,7 +810,7 @@ public class XmppService extends Service {
                     ChatMsg chatmsg = parseBody(msg);
                     chatmsg.setSend(1);
                     chatmsg.setMsgType(msg.getMsgtype());
-                    chatmsg.setChatId("everyone");
+                    chatmsg.setChatId(Constants.APP_EVERYONE);
                     {
                         if (!checkChatType(chatmsg.getType())) {
                             chatmsg.setType(50000);
@@ -941,11 +968,14 @@ public class XmppService extends Service {
                             LoadDataService.ACTION_FILE_DOWNLOAD,
                             downloadBundle);
                 }
-                chatmsg.setUserImage(url.toString());
+                ChatMsg chatMsgT =  new ChatMsg();
+                chatMsgT.parseChatMsgVo(chatmsg);
+                chatMsgT.setUserImage(url.toString());
                 if (chatmsg.getType() == 103 && !TextUtils.isEmpty(content)) {
                     chatmsg.setContent(chatmsg.getShareTitle());
+                    chatMsgT.setContent(chatMsgT.getShareTitle());
                 }
-                return chatmsg;
+                return chatMsgT;
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1144,7 +1174,9 @@ public class XmppService extends Service {
             return true;
         } else if (type == 500) {//Single system messages
             return true;
-        } else //The payment information
+        } else if (type == 300) {//transaction system messages
+            return true;
+        }else //The payment information
             return type > 199 && type < 211;
     }
 
@@ -1163,22 +1195,16 @@ public class XmppService extends Service {
                 Utils.intentAction(getApplicationContext(), XmppAction.ACTION_MAIN_OFFLINE_LISTENER, bundle);
                 return null;
             }
-            if (chatmsg.getType() == 20000 && Utils.getIMEI(XmppService.this).equals(msg.getTo().split("/")[1])) {//Anchor force
-                //Forced offline
-                Bundle bundle = new Bundle();
-                bundle.putString("livingofflineContent", chatmsg.getContent());
-                Utils.intentAction(getApplicationContext(), XmppAction.ACTION_MAIN_LIVING_OFFLINE_LISTENER, bundle);
-                return null;
-            }
+
             if (!checkSystemType(chatmsg.getType())) {
                 return null;
             }
+
             if (chatmsg.getType() == 23) {//Friend recommended information
                 FriendRecommentVo vo = parseFriendRecommentVo(msg);
                 vo.setUnread(1);
                 boolean saved = FinalUserDataBase.getInstance().saveFriendsReComment(vo);
-                if(saved)
-                {
+                if(saved){
                     Intent intent = new Intent(XmppAction.ACTION_FRIEND_RECOMMENT);
                     Bundle bundle = new Bundle();
                     bundle.putParcelable(XmppAction.ACTION_FRIEND_RECOMMENT, vo);
@@ -1192,14 +1218,10 @@ public class XmppService extends Service {
                 FinalUserDataBase.getInstance().deleteFriendsRecommentByUid(chatmsg.getUserId());
                 return null;
             }
+
             int type = 0;
-            if (chatmsg.getType() > 2 && chatmsg.getType() < 12 || chatmsg.getType() == 21) {//invitation
-                chatmsg.setGroupMask(!TextUtils.isEmpty(chatmsg.getGroupId()) ? true : false);//Use this field labeled invitation is a group activity
-                Bundle bundle = new Bundle();
-                bundle.putSerializable(XmppAction.ACTION_MESSAGE_ADDINVITE, chatmsg);
-                Utils.intentAction(getApplicationContext(), XmppAction.ACTION_MESSAGE_ADDINVITE, bundle);
-                type = 1;
-            } else if ((chatmsg.getType() > 11 && chatmsg.getType() < 19) || chatmsg.getType() == 22) {//Group chat
+
+            if ((chatmsg.getType() > 11 && chatmsg.getType() < 19) || chatmsg.getType() == 22) {//Group chat
                 return parseGroupChat(msg, true);//Group chat chat system information with unified handling
             } else if ((chatmsg.getType() > 100 && chatmsg.getType() < 120) || chatmsg.getType() == 1000) {//Group system information
                 switch (chatmsg.getType()) {//Group chat window notification
@@ -1242,16 +1264,73 @@ public class XmppService extends Service {
                 bundle.putSerializable(XmppAction.ACTION_MESSAGE_ADDGROUP, chatmsg);
                 Utils.intentAction(getApplicationContext(), XmppAction.ACTION_MESSAGE_ADDGROUP, bundle);
 
-            } else if (chatmsg.getType() > 199 && chatmsg.getType() < 211)//Payment message
-            {
-                type = 4;
-                Bundle bundle = new Bundle();
-                bundle.putSerializable(XmppAction.ACTION_MESSAGE_ADDMONEY, chatmsg);
-                Utils.intentAction(getApplicationContext(), XmppAction.ACTION_MESSAGE_ADDMONEY, bundle);
-
-            } else if (chatmsg.getType() == 500)//Single system messages
+            }else if (chatmsg.getType() == 500)//Single system messages
             {
                 return parseNormalChat(msg, true);
+            }else if (chatmsg.getType() == 300){//transaction message
+                boolean found = false;
+                for(int i=0;i<WalletStorage.getInstance(NextApplication.mContext).get().size();i++)
+                {
+                    StorableWallet wallet = WalletStorage.getInstance(NextApplication.mContext).get().get(i);
+                    String walletAddress = wallet.getPublicKey();
+                    if (!walletAddress.startsWith("0x")){
+                        walletAddress = "0x" + walletAddress;
+                    }
+                    if(TextUtils.equals(walletAddress,chatmsg.getFromAddress()) && chatmsg.getNoticeType() == 0)
+                    {
+                        found = true;
+                        break;
+                    }
+                    else if(TextUtils.equals(walletAddress,chatmsg.getToAddress()) && chatmsg.getNoticeType() == 1)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found)
+                {
+                    return null;
+                }
+                type = 5;
+                TransVo transVo = new TransVo();
+                transVo.setTime(chatmsg.getCreateTime());
+                transVo.setType(Integer.parseInt(chatmsg.getMode()));
+                transVo.setTxBlockNumber(Integer.parseInt(chatmsg.getTxBlockNumber()));
+                transVo.setFee(chatmsg.getFee());
+                transVo.setValue(chatmsg.getMoney());
+                transVo.setTxurl(chatmsg.getShareUrl());
+                transVo.setTx(chatmsg.getNumber());
+                transVo.setFromAddress(chatmsg.getFromAddress());
+                transVo.setToAddress(chatmsg.getToAddress());
+                transVo.setState(chatmsg.getInviteType());
+                transVo.setNoticeType(chatmsg.getNoticeType());
+                transVo.setName(chatmsg.getTokenName());
+                transVo.setLogo(chatmsg.getTokenLogo());
+                transVo.setSymbol(chatmsg.getTokenSymbol());
+                transVo.setTokenAddress(chatmsg.getTokenAddress());
+                if (transVo.getState() == 1){
+                    FinalUserDataBase.getInstance().insertTrans(transVo,false);
+                }else{
+                    FinalUserDataBase.getInstance().insertTrans(transVo,true);
+                }
+
+
+                if (chatmsg.getNoticeType() != 0){// ==0 sender
+                    boolean hasFound = FinalUserDataBase.getInstance().hasToken(chatmsg.getTokenAddress(),chatmsg.getToAddress());
+                    if (!hasFound){
+                        TokenVo tokenVo = new TokenVo();
+                        tokenVo.setChecked(true);
+                        tokenVo.setTokenLogo(transVo.getLogo());
+                        tokenVo.setTokenSymbol(transVo.getSymbol());
+                        tokenVo.setTokenName(transVo.getName());
+                        tokenVo.setContactAddress(transVo.getTokenAddress());
+                        FinalUserDataBase.getInstance().insertToken(tokenVo,transVo.getToAddress());
+                    }
+                }
+
+                Bundle bundle = new Bundle();
+                bundle.putSerializable(XmppAction.ACTION_TRANS, chatmsg);
+                Utils.intentAction(getApplicationContext(), XmppAction.ACTION_TRANS, bundle);
             }
 
             if (chatmsg.getType() == 0) {//Add buddy information to heavy or not deleted!
@@ -1466,6 +1545,9 @@ public class XmppService extends Service {
                     }
                     case 105:
                         notifyTicker = getString(R.string.chat_notify_have_join,sysmsg.getGroupName());
+                        break;
+                    case 300:
+                        notifyTicker = getString(R.string.chat_notify_have_new_trans);
                         break;
                     default:
                         return;
