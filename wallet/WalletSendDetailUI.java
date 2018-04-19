@@ -128,7 +128,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         new Thread(new Runnable() {
             @Override
             public void run() {
-                List<TransVo> mlist =  FinalUserDataBase.getInstance().getTransList(tokenVo.getContactAddress(),address);
+                List<TransVo> mlist =  FinalUserDataBase.getInstance().getTransTempList(tokenVo.getContactAddress(),address);
                 transVos.clear();
                 transVos.addAll(mlist);
                 mHandler.sendEmptyMessage(0);
@@ -163,5 +163,6 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         Intent intent = new Intent(WalletSendDetailUI.this,TransactionDetailActivity.class);
         intent.putExtra("transVo",transVos.get(position));
         startActivity(intent);
+        Utils.openNewActivityAnim(WalletSendDetailUI.this, false);
     }
 }
