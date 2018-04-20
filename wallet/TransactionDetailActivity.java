@@ -31,6 +31,7 @@ import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.util.netutil.NetRequestUtils;
 import com.lingtuan.firefly.wallet.vo.TransVo;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -226,43 +227,11 @@ public class TransactionDetailActivity extends BaseActivity{
             timerTask = new TimerTask() {
                 @Override
                 public void run() {
-                    if (transVo.getState() == -1){
-                        getTranscationBlock();
-                    }else if (transVo.getState() == 0){
-                        getBlockNumber(transVo.getTxBlockNumber());
-                    }
+                    getTranscationBlock();
                 }
             };
             timer.schedule(timerTask,0,10000);
         }
-    }
-
-    /**
-     * Get the latest block number
-     * @param transBlockNumber The block number where the transaction hash is located
-     * */
-    private void getBlockNumber(final int transBlockNumber){
-
-        NetRequestImpl.getInstance().getBlockNumber(new RequestListener() {
-            @Override
-            public void start() {
-
-            }
-
-            @Override
-            public void success(JSONObject response) {
-                int blockNumber = response.optInt("number",0);
-                Message message = Message.obtain();
-                message.what = 0;
-                message.arg1 = blockNumber - transBlockNumber;
-                mHandler.sendMessage(message);
-            }
-
-            @Override
-            public void error(int errorCode, String errorMsg) {
-
-            }
-        });
     }
 
     /**
@@ -278,18 +247,24 @@ public class TransactionDetailActivity extends BaseActivity{
 
             @Override
             public void success(JSONObject response) {
-                int transBlockNumber = response.optInt("blockNumber",0);
-                int state =  response.optInt("state",0);
-                transVo.setState(state);
-                transVo.setTxBlockNumber(transBlockNumber);
-                if (state == 0 || state == 1){
-                    Message message = Message.obtain();
-                    message.what = 1;
-                    mHandler.sendMessage(message);
-                }else if (state == 2){
-                    Message message = Message.obtain();
-                    message.what = 2;
-                    mHandler.sendMessage(message);
+                JSONArray array = response.optJSONArray("data");
+                int lastBlockNumber = response.optInt("blockNumber",0);
+                if (array != null){
+                    JSONObject object = array.optJSONObject(0);
+                    int transBlockNumber = object.optInt("txBlockNumber",0);
+                    int state =  object.optInt("state",0);
+                    transVo.setState(state);
+                    transVo.setTxBlockNumber(transBlockNumber);
+                    transVo.setBlockNumber(lastBlockNumber);
+                    if (state == 0 || state == 1){
+                        Message message = Message.obtain();
+                        message.what = 1;
+                        mHandler.sendMessage(message);
+                    }else if (state == 2){
+                        Message message = Message.obtain();
+                        message.what = 2;
+                        mHandler.sendMessage(message);
+                    }
                 }
             }
 
@@ -304,28 +279,6 @@ public class TransactionDetailActivity extends BaseActivity{
     private Handler mHandler = new Handler(){
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case 0:
-                    int blockNumber = msg.arg1;
-                    transTypeBody.setVisibility(View.VISIBLE);
-                    monindIcator.setVisibility(View.GONE);
-                    if (blockNumber >= 11){
-                        transTypeBody.setVisibility(View.GONE);
-                        transDetailImg.setImageResource(R.drawable.trans_detail_success);
-                        transVo.setState(1);
-                        if (timer  != null){
-                            timer.cancel();
-                            timer = null;
-                        }
-                        if (timerTask != null){
-                            timerTask.cancel();
-                            timerTask = null;
-                        }
-                    }else{
-                        transTypeBody.setVisibility(View.VISIBLE);
-                        transDetailType.setVisibility(View.VISIBLE);
-                        transDetailType.setText(getString(R.string.wallet_trans_detail_type_1,blockNumber + 1));
-                    }
-                    break;
                 case 1:
                     transTypeBody.setVisibility(View.VISIBLE);
                     transDetailType.setVisibility(View.VISIBLE);
@@ -334,7 +287,25 @@ public class TransactionDetailActivity extends BaseActivity{
                     if (transVo.getTxBlockNumber() <= 0){
                         transDetailBlockNumber.setText(getString(R.string.wallet_trans_detail_block_none));
                     }else{
+                        int blockNumberDifference = transVo.getBlockNumber() - transVo.getTxBlockNumber();
                         transDetailBlockNumber.setText(transVo.getTxBlockNumber() + "");
+                        if (blockNumberDifference >= 11){
+                            transTypeBody.setVisibility(View.GONE);
+                            transDetailImg.setImageResource(R.drawable.trans_detail_success);
+                            transVo.setState(1);
+                            if (timer  != null){
+                                timer.cancel();
+                                timer = null;
+                            }
+                            if (timerTask != null){
+                                timerTask.cancel();
+                                timerTask = null;
+                            }
+                        }else{
+                            transTypeBody.setVisibility(View.VISIBLE);
+                            transDetailType.setVisibility(View.VISIBLE);
+                            transDetailType.setText(getString(R.string.wallet_trans_detail_type_1,blockNumberDifference + 1));
+                        }
                     }
                     break;
                 case 2:

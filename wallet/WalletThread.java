@@ -183,12 +183,14 @@ public class WalletThread extends Thread {
 			@Override
 			public void success(JSONObject response) {
 				JSONArray array = response.optJSONArray("data");
+				int blockNumber = response.optInt("blockNumber");
 				if (array != null){
 //					FinalUserDataBase.getInstance().beginTransaction();
 					for (int i = 0 ; i < array.length() ; i++){
 						JSONObject obiect = array.optJSONObject(i);
 						TransVo transVo = new TransVo().parse(obiect);
-						transVo.setState(0);
+						transVo.setBlockNumber(blockNumber);
+						transVo.setState(1);
 						FinalUserDataBase.getInstance().updateTrans(transVo);
 					}
 //					FinalUserDataBase.getInstance().endTransaction();

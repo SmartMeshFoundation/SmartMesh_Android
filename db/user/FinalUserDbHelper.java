@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.db.TableField;
 
 /**
@@ -11,7 +12,7 @@ import com.lingtuan.firefly.db.TableField;
  */
 public class FinalUserDbHelper extends SQLiteOpenHelper {
 
-	public static final int DB_VERSION = 2;
+	public static final int DB_VERSION = 3;
 	
 	public FinalUserDbHelper(Context context, String dbName) {
 		super(context, dbName, null, DB_VERSION);
@@ -19,15 +20,100 @@ public class FinalUserDbHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		createTable(db);
-		createIndex(db);
+		if (NextApplication.myInfo != null){
+			createTable(db);
+			createIndex(db);
+		}
+		createTokenTable(db);
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		createTable(db);
-		createIndex(db);
+		if (NextApplication.myInfo != null){
+			createTable(db);
+			createIndex(db);
+		}
+		createTokenTable(db);
+		alertTable(db,oldVersion);
 	}
+
+	private void alertTable(SQLiteDatabase db,int oldVersion){
+		if(oldVersion < 3){
+			String sql1 = "alter table " + TableField.TABLE_TRANS
+					+ " add COLUMN " + TableField.FIELD_RESERVED_DATA11 + " text ";
+			String sql2 = "alter table " + TableField.TABLE_TRANS
+					+ " add COLUMN " + TableField.FIELD_RESERVED_DATA12 + " text ";
+			String sql3 = "alter table " + TableField.TABLE_TRANS
+					+ " add COLUMN " + TableField.FIELD_RESERVED_DATA13 + " text ";
+			String sql4 = "alter table " + TableField.TABLE_TRANS
+					+ " add COLUMN " + TableField.FIELD_RESERVED_DATA14 + " text ";
+			String sql5 = "alter table " + TableField.TABLE_TRANS
+					+ " add COLUMN " + TableField.FIELD_RESERVED_DATA15 + " text ";
+			String sql6 = "alter table " + TableField.TABLE_TRANS
+					+ " add COLUMN " + TableField.FIELD_RESERVED_DATA16 + " text ";
+
+			String sql7 = "alter table " + TableField.TABLE_TRANS_TEMP
+					+ " add COLUMN " + TableField.FIELD_RESERVED_DATA11 + " text ";
+			String sql8 = "alter table " + TableField.TABLE_TRANS_TEMP
+					+ " add COLUMN " + TableField.FIELD_RESERVED_DATA12 + " text ";
+			String sql9 = "alter table " + TableField.TABLE_TRANS_TEMP
+					+ " add COLUMN " + TableField.FIELD_RESERVED_DATA13 + " text ";
+			String sql10 = "alter table " + TableField.TABLE_TRANS_TEMP
+					+ " add COLUMN " + TableField.FIELD_RESERVED_DATA14 + " text ";
+			String sql11 = "alter table " + TableField.TABLE_TRANS_TEMP
+					+ " add COLUMN " + TableField.FIELD_RESERVED_DATA15 + " text ";
+			String sql12 = "alter table " + TableField.TABLE_TRANS_TEMP
+					+ " add COLUMN " + TableField.FIELD_RESERVED_DATA16 + " text ";
+
+			if (NextApplication.myInfo != null){
+				String sql13 = "alter table " + TableField.TABLE_CHAT_EVENT
+						+ " add COLUMN " + TableField.FIELD_RESERVED_DATA27 + " text ";
+				db.execSQL(sql13);
+			}
+
+			db.execSQL(sql1);
+			db.execSQL(sql2);
+			db.execSQL(sql3);
+			db.execSQL(sql4);
+			db.execSQL(sql5);
+			db.execSQL(sql6);
+			db.execSQL(sql7);
+			db.execSQL(sql8);
+			db.execSQL(sql9);
+			db.execSQL(sql10);
+			db.execSQL(sql11);
+			db.execSQL(sql12);
+
+			if (oldVersion == 2){
+
+				String sql14 = "alter table " + TableField.TABLE_TOKEN_LIST
+						+ " add COLUMN " + TableField.FIELD_RESERVED_DATA8 + " text ";
+				String sql15 = "alter table " + TableField.TABLE_TOKEN_LIST
+						+ " add COLUMN " + TableField.FIELD_RESERVED_DATA9 + " text ";
+				String sql16 = "alter table " + TableField.TABLE_TOKEN_LIST
+						+ " add COLUMN " + TableField.FIELD_RESERVED_DATA10 + " text ";
+				String sql17 = "alter table " + TableField.TABLE_TOKEN_LIST
+						+ " add COLUMN " + TableField.FIELD_RESERVED_DATA11 + " integer ";
+				String sql18 = "alter table " + TableField.TABLE_TOKEN_LIST
+						+ " add COLUMN " + TableField.FIELD_RESERVED_DATA12 + " integer ";
+
+				String sql19 = "alter table " + TableField.TABLE_TOKEN_LIST
+						+ " add COLUMN " + TableField.FIELD_RESERVED_DATA13 + " text ";
+				String sql20 = "alter table " + TableField.TABLE_TOKEN_LIST
+						+ " add COLUMN " + TableField.FIELD_RESERVED_DATA14 + " text ";
+
+				db.execSQL(sql14);
+				db.execSQL(sql15);
+				db.execSQL(sql16);
+				db.execSQL(sql17);
+				db.execSQL(sql18);
+				db.execSQL(sql19);
+				db.execSQL(sql20);
+			}
+
+		}
+	}
+
 
 	//Increase the part of the index, improve the query speed
 	private void createIndex(SQLiteDatabase db){
@@ -47,6 +133,76 @@ public class FinalUserDbHelper extends SQLiteOpenHelper {
 		db.execSQL(sql5);
 	}
 
+	private void createTokenTable(SQLiteDatabase db){
+		//trams table
+		String sql_trans  = "CREATE TABLE IF NOT EXISTS "
+				+ TableField.TABLE_TRANS			 + "("
+				+ TableField._ID					 + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ TableField.FIELD_CHAT_MSGTIME		 + " long,"         //time
+				+ TableField.FIELD_RESERVED_DATA1	 + " integer,"      // MODE
+				+ TableField.FIELD_RESERVED_DATA2	 + " text,"      	//MONEY
+				+ TableField.FIELD_RESERVED_DATA3	 + " text,"         //FEE
+				+ TableField.FIELD_RESERVED_DATA4	 + " text,"         //NUMBER
+				+ TableField.FIELD_RESERVED_DATA5	 + " text,"         //FRIMADDRESS
+				+ TableField.FIELD_RESERVED_DATA6	 + " text,"         //TOADDRESS
+				+ TableField.FIELD_RESERVED_DATA7	 + " text,"         //txblocknumber
+				+ TableField.FIELD_RESERVED_DATA8	 + " text,"         //url
+				+ TableField.FIELD_RESERVED_DATA9	 + " integer,"      //noticetype
+				+ TableField.FIELD_RESERVED_DATA10	 + " integer,"      //msgtype
+				+ TableField.FIELD_RESERVED_DATA11	 + " text,"      //symbol
+				+ TableField.FIELD_RESERVED_DATA12	 + " text,"      //name
+				+ TableField.FIELD_RESERVED_DATA13	 + " text,"      //token_address
+				+ TableField.FIELD_RESERVED_DATA14	 + " text,"      //logo
+				+ TableField.FIELD_RESERVED_DATA15	 + " text,"      //blocknumber
+				+ TableField.FIELD_RESERVED_DATA16	 + " text)"      //
+				;
+		//trams temp table
+		String sql_trans_temp  = "CREATE TABLE IF NOT EXISTS "
+				+ TableField.TABLE_TRANS_TEMP			 + "("
+				+ TableField._ID					 + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ TableField.FIELD_CHAT_MSGTIME		 + " long,"         //time
+				+ TableField.FIELD_RESERVED_DATA1	 + " integer,"      // MODE
+				+ TableField.FIELD_RESERVED_DATA2	 + " text,"      	//MONEY
+				+ TableField.FIELD_RESERVED_DATA3	 + " text,"         //FEE
+				+ TableField.FIELD_RESERVED_DATA4	 + " text,"         //NUMBER
+				+ TableField.FIELD_RESERVED_DATA5	 + " text,"         //FRIMADDRESS
+				+ TableField.FIELD_RESERVED_DATA6	 + " text,"         //TOADDRESS
+				+ TableField.FIELD_RESERVED_DATA7	 + " text,"         //txblocknumber
+				+ TableField.FIELD_RESERVED_DATA8	 + " text,"         //url
+				+ TableField.FIELD_RESERVED_DATA9	 + " integer,"      //noticetype
+				+ TableField.FIELD_RESERVED_DATA10	 + " integer,"      //msgtype
+				+ TableField.FIELD_RESERVED_DATA11	 + " text,"      //symbol
+				+ TableField.FIELD_RESERVED_DATA12	 + " text,"      //name
+				+ TableField.FIELD_RESERVED_DATA13	 + " text,"      //token_address
+				+ TableField.FIELD_RESERVED_DATA14	 + " text,"      //logo
+				+ TableField.FIELD_RESERVED_DATA15	 + " text,"      //blocknumber
+				+ TableField.FIELD_RESERVED_DATA16	 + " text)"      //
+				;
+
+		//trams token list table
+		String sql_token_list  = "CREATE TABLE IF NOT EXISTS "
+				+ TableField.TABLE_TOKEN_LIST		 + "("
+				+ TableField._ID					 + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ TableField.FIELD_RESERVED_DATA1	 + " text,"         //symbol
+				+ TableField.FIELD_RESERVED_DATA2	 + " text,"         //name
+				+ TableField.FIELD_RESERVED_DATA3	 + " text,"      	//pic
+				+ TableField.FIELD_RESERVED_DATA4	 + " integer,"      //balance
+				+ TableField.FIELD_RESERVED_DATA5	 + " integer,"      //price
+				+ TableField.FIELD_RESERVED_DATA6	 + " integer,"       //unit_price
+				+ TableField.FIELD_RESERVED_DATA7	 + " text,"         //contact address
+				+ TableField.FIELD_RESERVED_DATA8	 + " text,"         //has checked 0 false  1 true
+				+ TableField.FIELD_RESERVED_DATA9	 + " text,"         //wallet address
+				+ TableField.FIELD_RESERVED_DATA10	 + " text,"         //fixed
+				+ TableField.FIELD_RESERVED_DATA11	 + " integer,"      //usd_price
+				+ TableField.FIELD_RESERVED_DATA12	 + " integer,"      //usd_unit_price
+				+ TableField.FIELD_RESERVED_DATA13	 + " text,"         //
+				+ TableField.FIELD_RESERVED_DATA14	 + " text)"         //
+				;
+
+		db.execSQL(sql_trans);
+		db.execSQL(sql_trans_temp);
+		db.execSQL(sql_token_list);
+	}
 
 	private void createTable(SQLiteDatabase db) {
 		//The contact
@@ -224,10 +380,10 @@ public class FinalUserDbHelper extends SQLiteOpenHelper {
 				+ TableField.FIELD_RESERVED_DATA24	 + " text,"
 				+ TableField.FIELD_RESERVED_DATA25	 + " text,"
 				+ TableField.FIELD_RESERVED_DATA26	 + " integer,"
+				+ TableField.FIELD_RESERVED_DATA27	 + " text,"//symbol
 				+ TableField.FIELD_CHAT_GROUP_IMAGE	 + " text,"
 				+ TableField.FIELD_CHAT_OBJECT	 	 + " text)"
 				;
-		
 		//The dynamic new message
 		String sql_dynamic_notif = "CREATE TABLE IF NOT EXISTS "
 				+ TableField.TABLE_DYNAMIC_NOTIF	 + "("
@@ -398,50 +554,6 @@ public class FinalUserDbHelper extends SQLiteOpenHelper {
 		        + TableField.FIELD_RESERVED_DATA2	 + " text,"
 				+ TableField.FIELD_RESERVED_DATA3	 + " integer)"
 				;
-        //trams table
-		String sql_trans  = "CREATE TABLE IF NOT EXISTS "
-				+ TableField.TABLE_TRANS			 + "("
-				+ TableField._ID					 + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-				+ TableField.FIELD_CHAT_MSGTIME		 + " long,"         //time
-				+ TableField.FIELD_RESERVED_DATA1	 + " integer,"      // MODE
-				+ TableField.FIELD_RESERVED_DATA2	 + " text,"      	//MONEY
-				+ TableField.FIELD_RESERVED_DATA3	 + " text,"         //FEE
-				+ TableField.FIELD_RESERVED_DATA4	 + " text,"         //NUMBER
-				+ TableField.FIELD_RESERVED_DATA5	 + " text,"         //FRIMADDRESS
-				+ TableField.FIELD_RESERVED_DATA6	 + " text,"         //TOADDRESS
-				+ TableField.FIELD_RESERVED_DATA7	 + " text,"         //txblocknumber
-				+ TableField.FIELD_RESERVED_DATA8	 + " text,"         //url
-				+ TableField.FIELD_RESERVED_DATA9	 + " integer,"      //noticetype
-				+ TableField.FIELD_RESERVED_DATA10	 + " integer)"      //msgtype
-				;
-		   //trams temp table
-		String sql_trans_temp  = "CREATE TABLE IF NOT EXISTS "
-				+ TableField.TABLE_TRANS_TEMP			 + "("
-				+ TableField._ID					 + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-				+ TableField.FIELD_CHAT_MSGTIME		 + " long,"         //time
-				+ TableField.FIELD_RESERVED_DATA1	 + " integer,"      // MODE
-				+ TableField.FIELD_RESERVED_DATA2	 + " text,"      	//MONEY
-				+ TableField.FIELD_RESERVED_DATA3	 + " text,"         //FEE
-				+ TableField.FIELD_RESERVED_DATA4	 + " text,"         //NUMBER
-				+ TableField.FIELD_RESERVED_DATA5	 + " text,"         //FRIMADDRESS
-				+ TableField.FIELD_RESERVED_DATA6	 + " text,"         //TOADDRESS
-				+ TableField.FIELD_RESERVED_DATA7	 + " text,"         //txblocknumber
-				+ TableField.FIELD_RESERVED_DATA8	 + " text,"         //url
-				+ TableField.FIELD_RESERVED_DATA9	 + " integer,"      //noticetype
-				+ TableField.FIELD_RESERVED_DATA10	 + " integer)"      //msgtype
-				;
-
-		//trams token list table
-		String sql_token_list  = "CREATE TABLE IF NOT EXISTS "
-				+ TableField.TABLE_TOKEN_LIST		 + "("
-				+ TableField._ID					 + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-				+ TableField.FIELD_RESERVED_DATA1	 + " text,"         //title
-				+ TableField.FIELD_RESERVED_DATA2	 + " text,"      	//pic
-				+ TableField.FIELD_RESERVED_DATA3	 + " text,"         //number
-				+ TableField.FIELD_RESERVED_DATA4	 + " text,"         //price
-				+ TableField.FIELD_RESERVED_DATA5	 + " text)"         //total price
-				;
-
 		db.execSQL(sql_user_info);
 		db.execSQL(sql_friend);
 		db.execSQL(sql_chat);
@@ -454,8 +566,5 @@ public class FinalUserDbHelper extends SQLiteOpenHelper {
 		db.execSQL(sql_contact);
 		db.execSQL(sql_giffav);
 		db.execSQL(sql_groupupload);
-		db.execSQL(sql_trans);
-		db.execSQL(sql_trans_temp);
-		db.execSQL(sql_token_list);
 	}
 }

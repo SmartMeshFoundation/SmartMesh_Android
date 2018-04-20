@@ -104,17 +104,25 @@ public class TransAdapter extends BaseAdapter {
                 holder.transProgressBar.setProgress(1);
             }else{
                 int blockNumber = transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1;
-                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_1,blockNumber));
-                holder.transProgressBar.setProgress(blockNumber);
+                if (blockNumber > 11){
+                    holder.transFailed.setVisibility(View.INVISIBLE);
+                    holder.transProgressBar.setVisibility(View.GONE);
+                }else{
+                    holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_1,blockNumber));
+                    holder.transProgressBar.setProgress(blockNumber);
+                }
             }
         }else{
             int blockNumber = transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1;
-            holder.transFailed.setVisibility(View.INVISIBLE);
             if (blockNumber > 11){
+                holder.transFailed.setVisibility(View.INVISIBLE);
                 holder.transProgressBar.setVisibility(View.GONE);
             }else{
+                holder.transFailed.setVisibility(View.VISIBLE);
                 holder.transProgressBar.setVisibility(View.VISIBLE);
                 holder.transProgressBar.setProgress(blockNumber);
+                holder.transFailed.setTextColor(context.getResources().getColor(R.color.yellow_wallet));
+                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_1,blockNumber));
             }
         }
 
