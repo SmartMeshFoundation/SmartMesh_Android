@@ -503,7 +503,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
     @Override
     public void setTokenOnItemClick(int position) {
-        if (storableWallet == null || tokenVos == null){
+        if (storableWallet == null || tokenVos == null || tokenVos.size() <= 0){
             return;
         }
         Intent ethIntent = new Intent(getActivity(),WalletSendDetailUI.class);
