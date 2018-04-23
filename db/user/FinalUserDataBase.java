@@ -11,6 +11,7 @@ import com.lingtuan.firefly.contact.vo.FriendRecommentVo;
 import com.lingtuan.firefly.contact.vo.GroupMemberAvatarVo;
 import com.lingtuan.firefly.contact.vo.PhoneContactGroupVo;
 import com.lingtuan.firefly.contact.vo.PhoneContactVo;
+import com.lingtuan.firefly.custom.LoadMoreListView;
 import com.lingtuan.firefly.db.TableField;
 import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
 import com.lingtuan.firefly.util.Constants;
@@ -933,7 +934,7 @@ public class FinalUserDataBase {
         }
         cursor.close();
         if (!onlyTemp){
-            getTransList(list,tokenAddress,address);
+            getTransList(list,tokenAddress,address,0,10);
         }
         return list;
     }
@@ -941,12 +942,13 @@ public class FinalUserDataBase {
     /**
      * Add trans list
      */
-    public void getTransList(List<TransVo> transVoList,String tokenAddress,String address) {
+    public void getTransList(List<TransVo> transVoList,String tokenAddress,String address,int limit,int count) {
         String sql = "select * from " + TableField.TABLE_TRANS + " where "
                 + TableField.FIELD_RESERVED_DATA13 + "=? and ("
                 + TableField.FIELD_RESERVED_DATA5 + "=? or "
                 + TableField.FIELD_RESERVED_DATA6 + "=? )"
-                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc ";
+                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc "
+                + " limit " + limit + "," + count;
         Cursor cursor = db.rawQuery(sql, new String[]{tokenAddress,address,address});
         while (cursor.moveToNext()) {
             TransVo vo = new TransVo();
@@ -982,6 +984,61 @@ public class FinalUserDataBase {
         }
         cursor.close();
     }
+
+    /**
+     * Add trans list
+     */
+    public ArrayList<TransVo> getTransListLimit(String tokenAddress, String address, int limit, int count) {
+        if (!address.startsWith("0x")){
+            address = "0x" + address;
+        }
+        if (limit < 0){
+            limit = 0;
+        }
+        String sql = "select * from " + TableField.TABLE_TRANS + " where "
+                + TableField.FIELD_RESERVED_DATA13 + "=? and ("
+                + TableField.FIELD_RESERVED_DATA5 + "=? or "
+                + TableField.FIELD_RESERVED_DATA6 + "=? )"
+                + " order by " + TableField.FIELD_CHAT_MSGTIME + " desc "
+                + " limit " + limit + "," + count;
+        Cursor cursor = db.rawQuery(sql, new String[]{tokenAddress,address,address});
+        ArrayList<TransVo> list = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            TransVo vo = new TransVo();
+            vo.setTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
+            vo.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
+            vo.setValue(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA2)));
+            vo.setFee(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
+            vo.setTx(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
+            vo.setFromAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
+            vo.setToAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
+            vo.setTxBlockNumber(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
+            vo.setTxurl(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)));
+            vo.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
+            vo.setState(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)));
+            vo.setSymbol(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
+            vo.setName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
+            vo.setTokenAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA13)));
+            vo.setLogo(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA14)));
+            vo.setBlockNumber(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA15)));
+            if(vo.getNoticeType() == 0)//send
+            {
+                if(TextUtils.equals(address,vo.getToAddress()) && !TextUtils.equals(address,vo.getFromAddress()))
+                {
+                    continue;
+                }
+            }else{  //rec
+                if(TextUtils.equals(address,vo.getFromAddress()) && !TextUtils.equals(address,vo.getToAddress()))
+                {
+                    continue;
+                }
+            }
+            list.add(vo);
+        }
+        cursor.close();
+        return list;
+    }
+
 
 
     /**
@@ -1357,7 +1414,9 @@ public class FinalUserDataBase {
             }else{
                 ContentValues values = new ContentValues();
                 values.put(TableField.FIELD_RESERVED_DATA7, vo.getTxBlockNumber());
-                values.put(TableField.FIELD_RESERVED_DATA15, vo.getBlockNumber());
+                if (vo.getBlockNumber() > 0){
+                    values.put(TableField.FIELD_RESERVED_DATA15, vo.getBlockNumber());
+                }
                 values.put(TableField.FIELD_RESERVED_DATA10, vo.getState());
                 db.update(TableField.TABLE_TRANS_TEMP,values,TableField.FIELD_RESERVED_DATA4 + "=?  and " + TableField.FIELD_RESERVED_DATA9 + "=?", new String[]{vo.getTx(),String.valueOf(vo.getNoticeType())});
             }
@@ -1366,7 +1425,9 @@ public class FinalUserDataBase {
             if (resultFinal){
                 ContentValues values = new ContentValues();
                 values.put(TableField.FIELD_RESERVED_DATA7, vo.getTxBlockNumber());
-                values.put(TableField.FIELD_RESERVED_DATA15, vo.getBlockNumber());
+                if (vo.getBlockNumber() > 0){
+                    values.put(TableField.FIELD_RESERVED_DATA15, vo.getBlockNumber());
+                }
                 values.put(TableField.FIELD_RESERVED_DATA10, vo.getState());
                 db.update(TableField.TABLE_TRANS,values,TableField.FIELD_RESERVED_DATA4 + "=? and " + TableField.FIELD_RESERVED_DATA9 + "=?", new String[]{vo.getTx(),String.valueOf(vo.getNoticeType())});
             }
@@ -1404,8 +1465,10 @@ public class FinalUserDataBase {
             values.put(TableField.FIELD_RESERVED_DATA11, vo.getSymbol());
             values.put(TableField.FIELD_RESERVED_DATA12, vo.getName());
             values.put(TableField.FIELD_RESERVED_DATA13, vo.getTokenAddress());
-            values.put(TableField.FIELD_RESERVED_DATA15, vo.getBlockNumber());
             values.put(TableField.FIELD_RESERVED_DATA10, vo.getState());
+            if (vo.getBlockNumber() > 0){
+                values.put(TableField.FIELD_RESERVED_DATA15, vo.getBlockNumber());
+            }
             db.update(TableField.TABLE_TRANS,values,TableField.FIELD_RESERVED_DATA4 + "=?  and " + TableField.FIELD_RESERVED_DATA9 + "=?",new String[]{vo.getTx(),String.valueOf(vo.getNoticeType())});
         }else{
             insertTrans(vo,false);
