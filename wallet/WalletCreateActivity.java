@@ -21,25 +21,25 @@ import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
 /**
  * Created  on 2017/8/18.
- * 
+ * Create a wallet
  */
 
 public class WalletCreateActivity extends BaseActivity {
 
-    EditText walletName;
-    EditText walletPwd;
-    EditText walletAgainPwd;
-    EditText walletPwdInfo;
+    EditText walletName;//Name of the wallet
+    EditText walletPwd;//The wallet password
+    EditText walletAgainPwd;//Input the purse close again
+    EditText walletPwdInfo;//Password prompt information
 
-    private TextView createWallet;
+    private TextView createWallet;//Create a wallet
 
-  
+    //Remove the wallet name Show the password
     private ImageView clearWalletName,isShowPass;
 
     private WalletHandler mHandler;
 
     /**
-     *
+     * Show the password
      */
     boolean isShowPassWorld = false;
 
@@ -78,19 +78,19 @@ public class WalletCreateActivity extends BaseActivity {
         registerReceiver(mBroadcastReceiver, filter);
     }
 
-    //
+    //Create a wallet 、import the purse
     @Override
     public void onClick(View v){
         switch (v.getId()){
-            case R.id.clearWalletName:
+            case R.id.clearWalletName://Remove the name
                 walletName.setText("");
                 break;
-            case R.id.isShowPass:
+            case R.id.isShowPass://Show or hide the password
                 isShowPassWorld = !isShowPassWorld;
-                if (isShowPassWorld) { /*  */
+                if (isShowPassWorld) { /* Set the EditText content is visible */
                     walletPwd.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
                     isShowPass.setImageResource(R.drawable.eye_open);
-                } else {/* */
+                } else {/* The content of the EditText set as hidden*/
                     walletPwd.setTransformationMethod(PasswordTransformationMethod.getInstance());
                     isShowPass.setImageResource(R.drawable.eye_close);
                 }
@@ -115,7 +115,7 @@ public class WalletCreateActivity extends BaseActivity {
                         }
                     }
                     LoadingDialog.show(WalletCreateActivity.this,getString(R.string.wallet_create_ing));
-                    new WalletThread(mHandler,getApplicationContext(),name,password,pwdInfo,null,0).start();
+                    new WalletThread(mHandler,getApplicationContext(),name,password,pwdInfo,null,0,false).start();
                 }else{
                     showToast(getString(R.string.account_pwd_again_warning));
                 }
@@ -153,7 +153,7 @@ public class WalletCreateActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        
+        // Cancellation of radio
         if (mBroadcastReceiver != null) {
             unregisterReceiver(mBroadcastReceiver);
         }

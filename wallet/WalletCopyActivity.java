@@ -228,7 +228,7 @@ public class WalletCopyActivity extends BaseActivity {
                     BigInteger privateKey = keys.getEcKeyPair().getPrivateKey();
                     Message message = Message.obtain();
                     message.what = type;
-                    message.obj = privateKey;
+                    message.obj = privateKey.toString(16);
                     mHandler.sendMessage(message);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -288,7 +288,6 @@ public class WalletCopyActivity extends BaseActivity {
                     LoadingDialog.close();
                     storableWallet.setCanExportPrivateKey(0);
                     storableWallet.setBackup(true);
-//                    walletCopyKey.setEnabled(false);
                     ArrayList<StorableWallet> list = WalletStorage.getInstance(getApplicationContext()).get();
                     for (int i = 0 ; i < list.size() ; i++){
                         if (list.get(i).getPublicKey().equals(storableWallet.getPublicKey())){
@@ -297,12 +296,11 @@ public class WalletCopyActivity extends BaseActivity {
                             break;
                         }
                     }
+                    String privateKey = (String)msg.obj;
                     WalletStorage.getInstance(getApplicationContext()).updateWalletToList(WalletCopyActivity.this,storableWallet.getPublicKey(),true);
                     Utils.sendBroadcastReceiver(WalletCopyActivity.this, new Intent(Constants.WALLET_REFRESH_BACKUP), false);
-
-                    BigInteger privateKey = (BigInteger) msg.obj;
                     Intent showPrivateKey = new Intent(WalletCopyActivity.this,WalletPrivateKeyActivity.class);
-                    showPrivateKey.putExtra(Constants.PRIVATE_KEY,privateKey.toString());
+                    showPrivateKey.putExtra(Constants.PRIVATE_KEY,privateKey);
                     startActivity(showPrivateKey);
                     break;
                 case 1://keystore

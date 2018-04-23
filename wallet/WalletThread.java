@@ -48,8 +48,9 @@ public class WalletThread extends Thread {
 	private String source;//Type 1 is a privatekey 2 is a keyStore
 	private int type;//Type 0 create wallets, 1 private key import wallet, 2 keyStore into the purse
 	private Context context;
+	private boolean isPrivateHex;
 
-	public WalletThread(WalletHandler mHandler, Context context,String walletName, String password,String pwdInfo,String source,int type){
+	public WalletThread(WalletHandler mHandler, Context context,String walletName, String password,String pwdInfo,String source,int type,boolean isPrivateHex){
 		this.mHandler = mHandler;
 		this.context = context;
 		this.walletName = walletName;
@@ -57,6 +58,7 @@ public class WalletThread extends Thread {
 		this.pwdInfo = pwdInfo;
 		this.source = source;
 		this.type = type;
+		this.isPrivateHex = isPrivateHex;
 	}
 
 	@Override
@@ -72,7 +74,13 @@ public class WalletThread extends Thread {
 				objectMapper.writeValue(destination, walletFile);
 
 			} else if (type == 1){ // By private key into the new address
-				ECKeyPair keys = ECKeyPair.create(new BigInteger(source));
+				ECKeyPair keys;
+				if (isPrivateHex){
+					keys = ECKeyPair.create(new BigInteger(source));
+				}else{
+					String bigInteger = new BigInteger(source,16).toString(10);
+					keys = ECKeyPair.create(new BigInteger(bigInteger));
+				}
 				WalletFile  walletFile = OwnWalletUtils.generateWalletFile(password, keys, false);
 				walletAddress = OwnWalletUtils.getWalletFileName(walletFile);
 				boolean exists = WalletStorage.getInstance(context).checkExists(walletAddress);
@@ -185,7 +193,7 @@ public class WalletThread extends Thread {
 				JSONArray array = response.optJSONArray("data");
 				int blockNumber = response.optInt("blockNumber");
 				if (array != null){
-//					FinalUserDataBase.getInstance().beginTransaction();
+					FinalUserDataBase.getInstance().beginTransaction();
 					for (int i = 0 ; i < array.length() ; i++){
 						JSONObject obiect = array.optJSONObject(i);
 						TransVo transVo = new TransVo().parse(obiect);
@@ -193,7 +201,7 @@ public class WalletThread extends Thread {
 						transVo.setState(1);
 						FinalUserDataBase.getInstance().updateTrans(transVo);
 					}
-//					FinalUserDataBase.getInstance().endTransaction();
+					FinalUserDataBase.getInstance().endTransactionSuccessful();
 				}
 			}
 
