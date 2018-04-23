@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -12,22 +13,30 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.custom.LoadMoreListView;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
+import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
 import com.lingtuan.firefly.util.Utils;
+import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
 import com.lingtuan.firefly.wallet.vo.TransVo;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created on 2018/3/16.
  * Transfers or receipts
  */
 
-public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayout.OnRefreshListener, AdapterView.OnItemClickListener {
+public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayout.OnRefreshListener, AdapterView.OnItemClickListener, LoadMoreListView.RefreshListener {
 
     private TextView walletTransfer;
     private TextView walletReceipt;
@@ -36,10 +45,16 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
     private double smtBalance;
 
     private SwipeRefreshLayout refreshLayout;
-    private ListView transListView;
+    private LoadMoreListView transListView;
     private TransAdapter mAdapter;
     private ArrayList<TransVo> transVos;
     private TextView emptyView;
+
+    private Timer timer;
+    private TimerTask timerTask;
+
+    private boolean isFirstLoad = true;
+
 
     @Override
     protected void setContentView() {
@@ -58,7 +73,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         walletTransfer = (TextView) findViewById(R.id.walletTransfer);
         walletReceipt = (TextView) findViewById(R.id.walletReceipt);
         emptyView = (TextView) findViewById(R.id.emptyView);
-        transListView = (ListView) findViewById(R.id.transListView);
+        transListView = (LoadMoreListView) findViewById(R.id.transListView);
         refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
     }
 
@@ -68,17 +83,21 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         walletReceipt.setOnClickListener(this);
         refreshLayout.setOnRefreshListener(this);
         transListView.setOnItemClickListener(this);
+        transListView.setOnRefreshListener(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        new Handler().postDelayed(new Runnable(){
-            public void run() {
-                getTransMethod(storableWallet.getPublicKey());
-                refreshLayout.setRefreshing(true);
-            }
-        }, 200);
+        if (!isFirstLoad){
+            new Handler().postDelayed(new Runnable(){
+                public void run() {
+                    getTransMethod(storableWallet.getPublicKey());
+                    refreshLayout.setRefreshing(true);
+                    transDetailState();
+                }
+            }, 200);
+        }
     }
 
     @Override
@@ -91,8 +110,12 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         transListView.setAdapter(mAdapter);
         new Handler().postDelayed(new Runnable(){
             public void run() {
-                getTransMethod(storableWallet.getPublicKey());
-                refreshLayout.setRefreshing(true);
+                if (isFirstLoad){
+                    isFirstLoad = false;
+                    getTransMethod(storableWallet.getPublicKey());
+                    refreshLayout.setRefreshing(true);
+                    transDetailState();
+                }
             }
         }, 200);
     }
@@ -125,22 +148,26 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
      * To obtain transfer record interface
      * */
     private void getTransMethod(final String address) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                List<TransVo> mlist =  FinalUserDataBase.getInstance().getTransTempList(tokenVo.getContactAddress(),address);
-                transVos.clear();
-                transVos.addAll(mlist);
-                mHandler.sendEmptyMessage(0);
-            }
-        }).start();
+        List<TransVo> mlist =  FinalUserDataBase.getInstance().getTransTempList(tokenVo.getContactAddress(),address,false);
+        transVos.clear();
+        transVos.addAll(mlist);
+        Message message = Message.obtain();
+        message.arg1 = mlist.size();
+        message.what = 0;
+        mHandler.sendMessage(message);
     }
 
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler(){
         public void handleMessage(Message msg) {
+            int size = msg.arg1;
             refreshLayout.setRefreshing(false);
             mAdapter.resetSource(transVos,storableWallet.getPublicKey());
+            if (size >= 10){
+                transListView.resetFooterState(true);
+            }else{
+                transListView.resetFooterState(false);
+            }
             checkEmpty();
         }
     };
@@ -156,6 +183,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
     @Override
     public void onRefresh() {
         getTransMethod(storableWallet.getPublicKey());
+        transDetailState();
     }
 
     @Override
@@ -164,5 +192,113 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         intent.putExtra("transVo",transVos.get(position));
         startActivity(intent);
         Utils.openNewActivityAnim(WalletSendDetailUI.this, false);
+    }
+
+    @Override
+    public void loadMore() {
+        int limit;
+        List<TransVo> tempList =  FinalUserDataBase.getInstance().getTransTempList(tokenVo.getContactAddress(),storableWallet.getPublicKey(),true);
+        if (tempList != null && tempList.size() > 0){
+            limit = mAdapter.getCount() - tempList.size();
+        }else{
+            limit = mAdapter.getCount();
+        }
+        ArrayList<TransVo> mlist = FinalUserDataBase.getInstance().getTransListLimit(tokenVo.getContactAddress(),storableWallet.getPublicKey(),limit,10);
+        if (mlist.size() >= 10){
+            transListView.resetFooterState(true);
+        }else{
+            transListView.resetFooterState(false);
+        }
+        transVos.addAll(mlist);
+        mAdapter.resetSource(transVos,storableWallet.getPublicKey());
+    }
+    final StringBuilder builder = new StringBuilder();
+    /**
+     * Turn on the timer to call the interface every 12 seconds
+     * */
+    private void transDetailState(){
+        if(timer == null){
+            timer = new Timer();
+            timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    List<TransVo> mlist =  FinalUserDataBase.getInstance().getTransTempList(tokenVo.getContactAddress(),storableWallet.getPublicKey(),true);
+                    if (mlist == null || mlist.size() <= 0){
+                        if (timer != null){
+                            timer.cancel();
+                            timer = null;
+                        }
+                        if (timerTask != null){
+                            timerTask.cancel();
+                            timerTask = null;
+                        }
+                        return;
+                    }
+                    builder.delete(0,builder.length());
+                    for (int i = 0 ; i < mlist.size(); i++){
+                        builder.append(mlist.get(i).getTx()).append(",");
+                    }
+                    if (builder.length() > 0){
+                        builder.deleteCharAt(builder.length() - 1);
+                    }
+                    getTranscationBlock(builder.toString());
+                }
+            };
+            timer.schedule(timerTask,0,10000);
+        }
+    }
+
+    /**
+     * Get the block number of the transaction hash
+     * */
+    private void getTranscationBlock(String txList){
+        NetRequestImpl.getInstance().getTxBlockNumber(txList, new RequestListener() {
+            @Override
+            public void start() {
+
+            }
+
+            @Override
+            public void success(JSONObject response) {
+                JSONArray array = response.optJSONArray("data");
+                int lastBlockNumber = response.optInt("blockNumber",0);
+                if (array != null){
+                    for (int i = 0 ; i < array.length() ; i++){
+                        JSONObject object = array.optJSONObject(i);
+                        int transBlockNumber = object.optInt("txBlockNumber",0);
+                        int state =  object.optInt("state",0);
+                        String tx =  object.optString("tx");
+                        for (int j = 0 ; j < transVos.size() ; j++){
+                            if (TextUtils.equals(tx,transVos.get(j).getTx())){
+                                transVos.get(j).setTxBlockNumber(transBlockNumber);
+                                transVos.get(j).setBlockNumber(lastBlockNumber);
+                                transVos.get(j).setState(state);
+                                FinalUserDataBase.getInstance().updateTransTemp(transVos.get(j));
+                                break;
+                            }
+                        }
+                    }
+                    mAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void error(int errorCode, String errorMsg) {
+                showToast(errorMsg);
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (timer  != null){
+            timer.cancel();
+            timer = null;
+        }
+        if (timerTask != null){
+            timerTask.cancel();
+            timerTask = null;
+        }
     }
 }
