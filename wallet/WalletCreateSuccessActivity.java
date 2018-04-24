@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 /**
  * Created on 2017/8/22.
- * 
+ * The purse to create success page
  */
 
 public class WalletCreateSuccessActivity extends BaseActivity {
@@ -73,6 +73,10 @@ public class WalletCreateSuccessActivity extends BaseActivity {
     protected void initData() {
         setTitle(getString(R.string.notification_wallgen_success));
         ArrayList<StorableWallet> list = WalletStorage.getInstance(getApplicationContext()).get();
-        walletImg.setImageResource(Utils.getWalletImg(WalletCreateSuccessActivity.this,list.size() - 1));
+        int imgId = Utils.getWalletImg(WalletCreateSuccessActivity.this,list.size() - 1);
+        if (list.get(list.size() - 1).getImgId() == 0){
+            list.get(list.size() - 1).setImgId(imgId);
+        }
+        walletImg.setImageResource(list.get(list.size() - 1).getImgId());
     }
 }

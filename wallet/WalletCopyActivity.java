@@ -93,7 +93,10 @@ public class WalletCopyActivity extends BaseActivity {
                 findViewById(R.id.walletCopyPwdInfoLine).setVisibility(View.VISIBLE);
             }
         }
-        icon.setImageResource(iconId);
+        if (storableWallet.getImgId() == 0){
+            storableWallet.setImgId(iconId);
+        }
+        icon.setImageResource(storableWallet.getImgId());
         if(type==1)
         {
             success.setVisibility(View.GONE);

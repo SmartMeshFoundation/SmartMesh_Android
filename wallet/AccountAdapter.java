@@ -65,7 +65,12 @@ public class AccountAdapter extends BaseAdapter {
         }else{
             holder = (ViewHolder) convertView.getTag();
         }
-        holder.walletImg.setImageResource(Utils.getWalletImg(context,position));
+        if (walletStorages.get(position).getImgId() == 0){
+            holder.walletImg.setImageResource(Utils.getWalletImg(context,position));
+        }else{
+            holder.walletImg.setImageResource(walletStorages.get(position).getImgId());
+        }
+
         if (walletStorages.get(position).isSelect()){
             holder.walletItemBg.setBackgroundColor(context.getResources().getColor(R.color.item_selected));
         }else{
