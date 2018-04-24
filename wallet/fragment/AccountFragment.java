@@ -54,6 +54,7 @@ import com.lingtuan.firefly.wallet.WalletSendDetailUI;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
+import com.lingtuan.firefly.wallet.vo.TransVo;
 import com.lingtuan.firefly.xmpp.XmppAction;
 
 import org.json.JSONArray;
@@ -448,6 +449,14 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 if (storableWallet == null || tokenVos == null){
                     return;
                 }
+                if (!storableWallet.isBackup()){
+                    Intent intent = new Intent(getActivity(), AlertActivity.class);
+                    intent.putExtra("type", 5);
+                    intent.putExtra("strablewallet", storableWallet);
+                    startActivity(intent);
+                    getActivity().overridePendingTransition(0, 0);
+                    return;
+                }
                 Intent qrCodeIntent = new Intent(getActivity(),QuickMarkShowUI.class);
                 qrCodeIntent.putExtra("tokenVo", tokenVos.get(0));
                 qrCodeIntent.putExtra("address", storableWallet.getPublicKey());
@@ -489,16 +498,69 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (!WalletStorage.getInstance(getActivity().getApplicationContext()).get().get(position).isSelect()){
+            String address = "";
             for (int i = 0 ; i < WalletStorage.getInstance(getActivity().getApplicationContext()).get().size(); i++){
                 if (i != position){
                     WalletStorage.getInstance(getActivity().getApplicationContext()).get().get(i).setSelect(false);
                 }else{
                     WalletStorage.getInstance(getActivity().getApplicationContext()).get().get(i).setSelect(true);
+                    address = WalletStorage.getInstance(getActivity().getApplicationContext()).get().get(i).getPublicKey();
                 }
             }
             initWalletInfo();
             mDrawerLayout.closeDrawer(GravityCompat.END);
+            if (!TextUtils.isEmpty(address)){
+                if (!address.startsWith("0x")){
+                    address = "0x" + address;
+                }
+                boolean hasGetTrans =  MySharedPrefs.readBooleanNormal(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_WALLET_ALL_TRANS + address);
+                if (!hasGetTrans){
+                    getAllTransactionList(address);
+                }
+            }
         }
+    }
+
+
+    /**
+     * Get all transaction records for the specified address
+     * @param address   wallet address
+     * */
+    private void getAllTransactionList(String address) {
+
+        if (!address.startsWith("0x")){
+            address = "0x" + address;
+        }
+        final String finalAddress = address;
+        NetRequestImpl.getInstance().getAllTransactionList(address, new RequestListener() {
+            @Override
+            public void start() {
+
+            }
+
+            @Override
+            public void success(JSONObject response) {
+                MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_WALLET_ALL_TRANS + finalAddress,true);
+                JSONArray array = response.optJSONArray("data");
+                int blockNumber = response.optInt("blockNumber");
+                if (array != null){
+                    FinalUserDataBase.getInstance().beginTransaction();
+                    for (int i = 0 ; i < array.length() ; i++){
+                        JSONObject obiect = array.optJSONObject(i);
+                        TransVo transVo = new TransVo().parse(obiect);
+                        transVo.setBlockNumber(blockNumber);
+                        transVo.setState(1);
+                        FinalUserDataBase.getInstance().updateTrans(transVo);
+                    }
+                    FinalUserDataBase.getInstance().endTransactionSuccessful();
+                }
+            }
+
+            @Override
+            public void error(int errorCode, String errorMsg) {
+
+            }
+        });
     }
 
     @Override
@@ -536,17 +598,25 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 WalletStorage.getInstance(NextApplication.mContext).updateWalletToList(NextApplication.mContext,storableWallets.get(i).getPublicKey(),false);
                 index = i;
                 int imgId = Utils.getWalletImg(getActivity(),i);
-                walletImg.setImageResource(imgId);
                 storableWallet = storableWallets.get(i);
-                storableWallet.setImgId(imgId);
+                if (storableWallet.getImgId() == 0){
+                    storableWallet.setImgId(imgId);
+                    walletImg.setImageResource(imgId);
+                }else{
+                    walletImg.setImageResource(storableWallet.getImgId());
+                }
                 break;
             }
         }
         if (index == -1 && storableWallets.size() > 0){
             int imgId = Utils.getWalletImg(getActivity(),0);
-            walletImg.setImageResource(imgId);
             storableWallet = storableWallets.get(0);
-            storableWallet.setImgId(imgId);
+            if (storableWallet.getImgId() == 0){
+                storableWallet.setImgId(imgId);
+                walletImg.setImageResource(imgId);
+            }else{
+                walletImg.setImageResource(storableWallet.getImgId());
+            }
         }
 
         if (storableWallet != null){
