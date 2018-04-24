@@ -86,28 +86,28 @@ public class AccountTokenAdapter extends BaseAdapter {
         int priceUnit = MySharedPrefs.readInt(context,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
         if (priceUnit == 0){
             if (tokenVo.getTokenPrice() > 0){
-                BigDecimal ethDecimal = new BigDecimal(tokenVo.getTokenPrice()).setScale(5,BigDecimal.ROUND_DOWN);
+                BigDecimal ethDecimal = new BigDecimal(tokenVo.getTokenPrice()).setScale(2,BigDecimal.ROUND_DOWN);
                 holder.tokenPrice.setText(context.getString(R.string.token_total_price,ethDecimal.toPlainString()));
             }else{
                 holder.tokenPrice.setText(context.getString(R.string.token_total_price,tokenVo.getTokenPrice()+""));
             }
 
             if (tokenVo.getUnitPrice() > 0){
-                BigDecimal ethDecimal = new BigDecimal(tokenVo.getUnitPrice()).setScale(5,BigDecimal.ROUND_DOWN);
+                BigDecimal ethDecimal = new BigDecimal(tokenVo.getUnitPrice()).setScale(2,BigDecimal.ROUND_DOWN);
                 holder.tokenTotalPrice.setText(context.getString(R.string.token_total_price,ethDecimal.toPlainString()));
             }else{
                 holder.tokenTotalPrice.setText(context.getString(R.string.token_total_price,tokenVo.getUnitPrice()+""));
             }
         }else{
             if (tokenVo.getUsdPrice() > 0){
-                BigDecimal ethDecimal = new BigDecimal(tokenVo.getUsdPrice()).setScale(5,BigDecimal.ROUND_DOWN);
+                BigDecimal ethDecimal = new BigDecimal(tokenVo.getUsdPrice()).setScale(2,BigDecimal.ROUND_DOWN);
                 holder.tokenPrice.setText(context.getString(R.string.token_total_usd_price,ethDecimal.toPlainString()));
             }else{
                 holder.tokenPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdPrice()+""));
             }
 
             if (tokenVo.getUsdUnitPrice() > 0){
-                BigDecimal ethDecimal = new BigDecimal(tokenVo.getUsdUnitPrice()).setScale(5,BigDecimal.ROUND_DOWN);
+                BigDecimal ethDecimal = new BigDecimal(tokenVo.getUsdUnitPrice()).setScale(2,BigDecimal.ROUND_DOWN);
                 holder.tokenTotalPrice.setText(context.getString(R.string.token_total_usd_price,ethDecimal.toPlainString()));
             }else{
                 holder.tokenTotalPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdUnitPrice()+""));
