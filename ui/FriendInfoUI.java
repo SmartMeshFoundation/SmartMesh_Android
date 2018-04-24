@@ -195,21 +195,21 @@ public class FriendInfoUI extends BaseActivity {
             }
 
             if (TextUtils.isEmpty(info.getNote())){
-                friendNote.setVisibility(View.INVISIBLE);
+                friendNote.setVisibility(View.GONE);
             }else{
                 friendNote.setVisibility(View.VISIBLE);
                 friendNote.setText(info.getNote());
             }
 
             if (TextUtils.isEmpty(info.getMid())){
-                friendMid.setVisibility(View.INVISIBLE);
+                friendMid.setVisibility(View.GONE);
             }else{
                 friendMid.setVisibility(View.VISIBLE);
                 friendMid.setText(getString(R.string.mid_user,info.getMid()));
             }
 
             if (TextUtils.isEmpty(info.getUsername())){
-                friendName.setVisibility(View.INVISIBLE);
+                friendName.setVisibility(View.GONE);
             }else{
                 friendName.setVisibility(View.VISIBLE);
                 friendName.setText(info.getUsername());
