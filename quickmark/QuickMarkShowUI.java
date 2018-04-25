@@ -1,18 +1,13 @@
 package com.lingtuan.firefly.quickmark;
 
 
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Rect;
-import android.os.Handler;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.zxing.BarcodeFormat;
@@ -24,18 +19,14 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
-import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.util.BitmapUtils;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Hashtable;
-
-import static org.jivesoftware.smackx.pubsub.ConfigureNodeFields.type;
 
 public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 
@@ -99,14 +90,6 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 		super.onClick(v);
 		switch (v.getId()){
 			case R.id.copyAddress:
-				if (storableWallet != null && !storableWallet.isBackup()){
-					Intent intent = new Intent(QuickMarkShowUI.this, AlertActivity.class);
-					intent.putExtra("type", 5);
-					intent.putExtra("strablewallet", storableWallet);
-					startActivity(intent);
-					overridePendingTransition(0, 0);
-					return;
-				}
 				Utils.copyText(QuickMarkShowUI.this,walletAddress.getText().toString());
 				break;
 			case R.id.app_btn_right:
@@ -195,17 +178,25 @@ public class QuickMarkShowUI extends BaseActivity implements TextWatcher {
 				WalletStorage.getInstance(NextApplication.mContext).updateWalletToList(NextApplication.mContext,storableWallets.get(i).getPublicKey(),false);
 				index = i;
 				int imgId = Utils.getWalletImg(QuickMarkShowUI.this,i);
-				walletImg.setImageResource(imgId);
 				storableWallet = storableWallets.get(i);
-				storableWallet.setImgId(imgId);
+				if (storableWallet.getImgId() == 0){
+					storableWallet.setImgId(imgId);
+					walletImg.setImageResource(imgId);
+				}else{
+					walletImg.setImageResource(storableWallet.getImgId());
+				}
 				break;
 			}
 		}
 		if (index == -1 && storableWallets.size() > 0){
 			int imgId = Utils.getWalletImg(QuickMarkShowUI.this,0);
-			walletImg.setImageResource(imgId);
 			storableWallet = storableWallets.get(0);
-			storableWallet.setImgId(imgId);
+			if (storableWallet.getImgId() == 0){
+				storableWallet.setImgId(imgId);
+				walletImg.setImageResource(imgId);
+			}else{
+				walletImg.setImageResource(storableWallet.getImgId());
+			}
 		}
 		if (storableWallet != null){
 			String address = storableWallet.getPublicKey();
