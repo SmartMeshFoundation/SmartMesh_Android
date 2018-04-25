@@ -53,8 +53,9 @@
     <TextView
         android:id="@+id/importWallet"
         style="@style/WalletStyle"
+        android:textColor="@color/black"
         android:text="@string/wallet_import_start"
-        android:background="@drawable/selector_round_black_30"
+        android:background="@drawable/selector_round_yellow_30"
         />
    </LinearLayout>
   </ScrollView>

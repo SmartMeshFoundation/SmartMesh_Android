@@ -44,7 +44,8 @@
         android:id="@+id/importWallet"
         style="@style/WalletStyle"
         android:text="@string/wallet_import_start"
-        android:background="@drawable/selector_round_black_30"
+        android:textColor="@color/black"
+        android:background="@drawable/selector_round_yellow_30"
         />
 
 </LinearLayout>

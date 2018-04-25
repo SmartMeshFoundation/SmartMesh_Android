@@ -11,28 +11,53 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-    <EditText
-        android:id="@+id/keyStoreInfo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/shape_round_hintcolor_5"
-        android:textColor="@color/black"
-        android:layout_margin="20dp"
-        android:hint="@string/wallet_private_key_clear"
-        android:textSize="14sp"
-        android:gravity="top|left"
-        android:padding="5dp"
-        android:minLines="6"
-        android:maxLines="6"/>
 
-    <include layout="@layout/wallet_include_pwd"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <ImageView
+                    android:id="@+id/walletPrivateHex"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:src="@drawable/checkbox_unselected"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:text="@string/wallet_copy_private_key_hint"/>
+            </LinearLayout>
 
-    <TextView
-        android:id="@+id/importWallet"
-        style="@style/WalletStyle"
-        android:text="@string/wallet_import_start"
-        android:background="@drawable/selector_round_black_30"/>
+            <EditText
+                android:id="@+id/keyStoreInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shape_round_hintcolor_5"
+                android:textColor="@color/black"
+                android:layout_margin="20dp"
+                android:hint="@string/wallet_private_key_clear"
+                android:textSize="14sp"
+                android:gravity="top|left"
+                android:padding="5dp"
+                android:minLines="6"
+                android:maxLines="6"/>
 
-  </LinearLayout>
+            <include layout="@layout/wallet_include_pwd"/>
+
+            <TextView
+                android:id="@+id/importWallet"
+                style="@style/WalletStyle"
+                android:text="@string/wallet_import_start"
+                android:textColor="@color/black"
+                android:background="@drawable/selector_round_yellow_30"/>
+
+         </LinearLayout>
     </ScrollView>
 </LinearLayout>
