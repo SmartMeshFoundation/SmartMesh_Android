@@ -54,7 +54,11 @@ public class DropTextViewAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         holder.textView.setText(list.get(position).getWalletName());
-        holder.imageview.setImageResource(Utils.getWalletImg(context,position));
+        if (list.get(position).getImgId() == 0){
+            holder.imageview.setImageResource(Utils.getWalletImg(context,position));
+        }else{
+            holder.imageview.setImageResource(list.get(position).getImgId());
+        }
         return convertView;
     }
 

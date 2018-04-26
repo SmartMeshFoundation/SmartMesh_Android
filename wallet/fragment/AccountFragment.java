@@ -55,6 +55,7 @@ import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
 import com.lingtuan.firefly.wallet.vo.TransVo;
+import com.lingtuan.firefly.walletold.OldAccountUI;
 import com.lingtuan.firefly.xmpp.XmppAction;
 
 import org.json.JSONArray;
@@ -125,6 +126,8 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private String total;
     private String usdTotal;
 
+    private TextView oldWallet;
+
     public AccountFragment(){
 
     }
@@ -185,6 +188,8 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         transRecord = (TextView) view.findViewById(R.id.transRecord);
         copyAddress = (TextView) view.findViewById(R.id.copyAddress);
         walletBalanceNum = (TextView) view.findViewById(R.id.walletBalanceNum);
+
+        oldWallet = (TextView) view.findViewById(R.id.oldWallet);
 //        raidenTransfer = (LinearLayout) view.findViewById(R.id.raidenTransfer);
     }
 
@@ -203,6 +208,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         qrCode.setOnClickListener(this);
         transRecord.setOnClickListener(this);
         copyAddress.setOnClickListener(this);
+        oldWallet.setOnClickListener(this);
 
 //        raidenTransfer.setOnClickListener(this);
 
@@ -491,6 +497,12 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                     return;
                 }
                 Utils.copyText(getActivity(),walletAddress.getText().toString());
+                break;
+            case R.id.oldWallet://Copy the address
+                Intent intent = new Intent(getActivity(), OldAccountUI.class);
+                intent.putExtra("strablewallet", storableWallet);
+                startActivity(intent);
+                Utils.openNewActivityAnim(getActivity(),false);
                 break;
         }
     }
