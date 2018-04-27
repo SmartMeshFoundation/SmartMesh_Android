@@ -1,6 +1,7 @@
 package com.lingtuan.firefly.walletold;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -79,7 +80,12 @@ public class OldTransAdapter extends BaseAdapter {
             holder.value.setTextColor(context.getResources().getColor(R.color.yellow_wallet));
         }
         holder.address.setText(transVo.getToAddress());
-        holder.value.setText(transVo.getValue());
+        if (!TextUtils.isEmpty(transVo.getSymbol())){
+            holder.value.setText(context.getString(R.string.token_trans,transVo.getValue(),transVo.getSymbol()));
+        }else{
+            holder.value.setText(context.getString(R.string.token_trans,transVo.getValue(),transVo.getSymbol()));
+        }
+
         holder.transFailed.setTextColor(context.getResources().getColor(R.color.colorRed));
         if (transVo.getState() == 2){
             holder.transFailed.setVisibility(View.VISIBLE);

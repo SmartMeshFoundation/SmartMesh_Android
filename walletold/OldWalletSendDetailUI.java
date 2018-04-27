@@ -174,6 +174,7 @@ public class OldWalletSendDetailUI extends BaseActivity implements SwipeRefreshL
             switch (msg.what){
                 case 0:
                     refreshLayout.setRefreshing(false);
+                    checkEmpty();
                     break;
                 case 1:
                     refreshLayout.setRefreshing(false);
@@ -208,6 +209,13 @@ public class OldWalletSendDetailUI extends BaseActivity implements SwipeRefreshL
                 }
                 for (int i = 0 ; i < array.length() ; i++){
                     TransVo transVo = new TransVo().parse(array.optJSONObject(i));
+                    if (type == 0){
+                        transVo.setSymbol(getString(R.string.eth));
+                    }else if (type == 1){
+                        transVo.setSymbol(getString(R.string.smt));
+                    }else if (type == 2){
+                        transVo.setSymbol(getString(R.string.mesh));
+                    }
                     transVos.add(transVo);
                 }
                 mHandler.sendEmptyMessage(1);
