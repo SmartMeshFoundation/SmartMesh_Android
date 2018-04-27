@@ -31,6 +31,7 @@ import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.contact.adapter.ContactSearchAdapter;
 import com.lingtuan.firefly.contact.adapter.NewContactListAdapter;
 import com.lingtuan.firefly.contact.vo.NewContactVO;
+import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.custom.contact.ContactItemComparator;
 import com.lingtuan.firefly.custom.contact.ContactItemInterface;
 import com.lingtuan.firefly.custom.contact.PinYin;
@@ -54,6 +55,8 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 
 	private List<ContactItemInterface> mContactList=new ArrayList<>();
 
+	private ImageView emptyImg;
+	private TextView emptyText;
 
     /*
      * Search for related
@@ -113,6 +116,7 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 		mHorizontalScrollView = (HorizontalScrollView) findViewById(R.id.contact_horizontalscrollview);
 		mHorizontalScrollViewContent  = (LinearLayout) findViewById(R.id.contact_horizontalscrollview_content);
 		mFinishBtn = (TextView) findViewById(R.id.contact_select_finish);
+
 		if(isMultipleChoice)
 		{
 			mSelectContactBg.setVisibility(View.VISIBLE);
@@ -131,7 +135,10 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 	    mNewListView.addHeaderView(headerView0);
 
 		View footerView = View.inflate(this, R.layout.include_friends_footer, null);
+
 		contactNum=(TextView) footerView.findViewById(R.id.include_contact_num);
+		emptyImg=(ImageView) footerView.findViewById(R.id.empty_like_icon);
+		emptyText=(TextView) footerView.findViewById(R.id.empty_like_text);
 		mNewListView.addFooterView(footerView);
 		contactNum.setText(getString(R.string.contact_num, 0));
 
@@ -177,7 +184,7 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 			    	mSearchAdapter.notifyDataSetChanged();
 			    	mNewContactListAdapter.notifyDataSetChanged();
 			    	if(baseVo.isChecked()){
-			    		 final ImageView imageView=new ImageView(SelectContactUI.this);
+			    		 final CharAvatarView imageView=new CharAvatarView(SelectContactUI.this);
 			    		 imageView.setTag(baseVo.getLocalId());
 			    		 imageView.setOnClickListener(new OnClickListener() {
 							@Override
@@ -188,7 +195,7 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 			 			 LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(Utils.dip2px(SelectContactUI.this,40), Utils.dip2px(SelectContactUI.this, 40));
 			 			 lp.setMargins(Utils.dip2px(SelectContactUI.this, 10), Utils.dip2px(SelectContactUI.this, 5), 0, 0);
 			 			 mHorizontalScrollViewContent.addView(imageView,lp);
-			 			 NextApplication.displayCircleImage(imageView, baseVo.getThumb());
+						 imageView.setText(baseVo.getUsername(),imageView,baseVo.getThumb());
 			             selectList.add(baseVo);
 			             new Handler().postDelayed(new Runnable(){
 			                 public void run() {
@@ -463,16 +470,20 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 				mContactList.clear();
 				for(UserBaseVo voT : mFriendInfoList){
 					boolean cantSelect=false;
-					if(cantSelectList!=null&&!cantSelectList.isEmpty()){
-						for(String uid :cantSelectList){
-							String uidT = voT.getLocalId();
-							if(uid.equals(uidT)){//Eliminate the user cannot choose
-								cantSelect=true;
-								break;
+					if(NextApplication.myInfo.getLocalId().equals(voT.getLocalId())){//Eliminate the user cannot choose
+						cantSelect=true;
+					}
+					else{
+						if(cantSelectList!=null&&!cantSelectList.isEmpty()){
+							for(String uid :cantSelectList){
+								String uidT = voT.getLocalId();
+								if(uid.equals(uidT)){//Eliminate the user cannot choose
+									cantSelect=true;
+									break;
+								}
 							}
 						}
 					}
-
 					boolean hasSelect=false;
 					if(hasSelectList!=null&&!hasSelectList.isEmpty())
 					{
@@ -493,7 +504,7 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 					}
 					if(hasSelect){//hasSelect
 						info.setChecked(true);
-						final ImageView imageView=new ImageView(SelectContactUI.this);
+						final CharAvatarView imageView=new CharAvatarView(SelectContactUI.this);
 						imageView.setTag(voT.getLocalId());
 						imageView.setOnClickListener(new OnClickListener() {
 							@Override
@@ -504,7 +515,7 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 						LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(Utils.dip2px(SelectContactUI.this,40), Utils.dip2px(SelectContactUI.this, 40));
 						lp.setMargins(Utils.dip2px(SelectContactUI.this, 10), Utils.dip2px(SelectContactUI.this, 5), 0 , 0);
 						mHorizontalScrollViewContent.addView(imageView,lp);
-						NextApplication.displayCircleImage(imageView, voT.getThumb());
+						imageView.setText(voT.getUsername(),imageView,voT.getThumb());
 					}
 					info.setAge(voT.getAge());
 					info.setDistance(voT.getDistance());
@@ -530,6 +541,7 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 					Collections.sort(mContactList, new ContactItemComparator());
 					mNewContactListAdapter.updateList(mContactList);
 					contactNum.setText(getString(R.string.contact_num, mContactList.size()));
+					checkListEmpty();
 			}
 		};
 
@@ -627,7 +639,7 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 			baseVo.setChecked(!baseVo.isChecked());
 			mNewContactListAdapter.notifyDataSetChanged();
 			if(baseVo.isChecked()){
-				final ImageView imageView=new ImageView(SelectContactUI.this);
+				final CharAvatarView imageView=new CharAvatarView(SelectContactUI.this);
 				imageView.setTag(baseVo.getLocalId());
 				imageView.setOnClickListener(new OnClickListener() {
 					@Override
@@ -638,8 +650,7 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 				LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(Utils.dip2px(SelectContactUI.this,40), Utils.dip2px(SelectContactUI.this, 40));
 				lp.setMargins(Utils.dip2px(SelectContactUI.this, 10), Utils.dip2px(SelectContactUI.this, 5), 0 , 0);
 				mHorizontalScrollViewContent.addView(imageView,lp);
-				NextApplication.displayCircleImage(imageView, baseVo.getThumb());
-
+				imageView.setText(baseVo.getUsername(),imageView,baseVo.getThumb());
 				selectList.add(baseVo);
 				new Handler().postDelayed(new Runnable(){
 					public void run() {
@@ -767,7 +778,7 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 
 				mHorizontalScrollViewContent.removeAllViews();
 				for(int i=0;i<selectList.size();i++){
-					final ImageView imageView=new ImageView(SelectContactUI.this);
+					final CharAvatarView imageView=new CharAvatarView(SelectContactUI.this);
 					imageView.setTag(selectList.get(i).getLocalId());
 					imageView.setOnClickListener(new OnClickListener() {
 						@Override
@@ -778,7 +789,7 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 					LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(Utils.dip2px(SelectContactUI.this,40), Utils.dip2px(SelectContactUI.this, 40));
 					lp.setMargins(Utils.dip2px(SelectContactUI.this, 10), Utils.dip2px(SelectContactUI.this, 5), 0, 0);
 					mHorizontalScrollViewContent.addView(imageView, lp);
-					NextApplication.displayCircleImage(imageView, selectList.get(i).getThumb());
+					imageView.setText(selectList.get(i).getUsername(),imageView,selectList.get(i).getThumb());
 				}
 
 				new Handler().postDelayed(new Runnable() {
@@ -789,6 +800,23 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 			}
 		}
 		super.onActivityResult(requestCode, resultCode, data);
+	}
+
+	/**
+	 * To test whether the current list is empty
+	 */
+	private void checkListEmpty() {
+		if(mContactList == null || mContactList.size() <= 1){
+			emptyImg.setVisibility(View.VISIBLE);
+			emptyText.setVisibility(View.VISIBLE);
+			contactNum.setVisibility(View.GONE);
+			emptyText.setText(getString(R.string.contact_default_empty));
+			emptyImg.setImageResource(R.drawable.icon_contact_empty);
+		}else {
+			emptyImg.setVisibility(View.GONE);
+			emptyText.setVisibility(View.GONE);
+			contactNum.setVisibility(View.VISIBLE);
+		}
 	}
 
 }
