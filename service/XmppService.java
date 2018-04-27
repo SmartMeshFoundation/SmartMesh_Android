@@ -1309,8 +1309,10 @@ public class XmppService extends Service {
                 transVo.setSymbol(chatmsg.getTokenSymbol());
                 transVo.setTokenAddress(chatmsg.getTokenAddress());
                 if (transVo.getState() == 1){
+                    transVo.setState(2);
                     FinalUserDataBase.getInstance().insertTrans(transVo,false);
                 }else{
+                    transVo.setState(1);
                     FinalUserDataBase.getInstance().insertTrans(transVo,true);
                 }
 
@@ -1336,8 +1338,8 @@ public class XmppService extends Service {
             if (chatmsg.getType() == 0) {//Add buddy information to heavy or not deleted!
                 String messageid = FinalUserDataBase.getInstance().hasFriendAddMsg(chatmsg.getChatId());
                 if (!TextUtils.isEmpty(messageid)) {
-                    cantAddUnreadCount = true;
-                    chatmsg.setUnread(0);
+//                    cantAddUnreadCount = true;
+                    chatmsg.setUnread(1);
                     FinalUserDataBase.getInstance().deleteChatEventAddContactByMessageId(messageid);
                 }
                 Bundle bundle = new Bundle();
