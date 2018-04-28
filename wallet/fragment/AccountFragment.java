@@ -37,6 +37,7 @@ import com.lingtuan.firefly.quickmark.CaptureActivity;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
 import com.lingtuan.firefly.setting.CreateGestureActivity;
 import com.lingtuan.firefly.setting.GestureLoginActivity;
+import com.lingtuan.firefly.setting.SettingUI;
 import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.ui.WalletModeLoginUI;
 import com.lingtuan.firefly.util.Constants;
@@ -61,7 +62,9 @@ import com.lingtuan.firefly.xmpp.XmppAction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -122,11 +125,16 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private int timerLine = 10;
 
     private PopupWindow homePop;
+    private PopupWindow ethPop;
+    private PopupWindow windowPop;
+
+    private LinearLayout ethWindow;
 
     private String total;
     private String usdTotal;
 
     private TextView oldWallet;
+    private ImageView ethWarningImg;
 
     public AccountFragment(){
 
@@ -190,6 +198,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         walletBalanceNum = (TextView) view.findViewById(R.id.walletBalanceNum);
 
         oldWallet = (TextView) view.findViewById(R.id.oldWallet);
+        ethWarningImg = (ImageView) view.findViewById(R.id.ethWarningImg);
 //        raidenTransfer = (LinearLayout) view.findViewById(R.id.raidenTransfer);
     }
 
@@ -209,6 +218,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         transRecord.setOnClickListener(this);
         copyAddress.setOnClickListener(this);
         oldWallet.setOnClickListener(this);
+        ethWarningImg.setOnClickListener(this);
 
 //        raidenTransfer.setOnClickListener(this);
 
@@ -251,6 +261,11 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         }else{
             changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
         }
+//        boolean isFirstShowWindow = MySharedPrefs.readBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_WINDOW);
+//        if (isFirstShowWindow){
+//            MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_WINDOW,false);
+            initWindowPop();
+//        }
 
 //        writePassToSdcard();
 //        new Thread(new Runnable() {
@@ -343,6 +358,84 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         }
     }
 
+    /**
+     * Initialize the Pop layout
+     */
+    private void initEthereumPop() {
+        LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.eth_more_popup_layout, null);
+        ethPop = new PopupWindow(view, Utils.dip2px(getActivity(), 320), LinearLayout.LayoutParams.WRAP_CONTENT);
+        ethPop.setBackgroundDrawable(new BitmapDrawable());
+        ethPop.setOutsideTouchable(true);
+        ethPop.setFocusable(true);
+        if (ethPop.isShowing()) {
+            ethPop.dismiss();
+        } else {
+            boolean isChinese;
+            String language = MySharedPrefs.readString(getActivity(),MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_LANGUAFE);
+            if (TextUtils.isEmpty(language)){
+                Locale locale = new Locale(Locale.getDefault().getLanguage());
+                if (TextUtils.equals(locale.getLanguage(),"zh")){
+                    isChinese = true;
+                }else{
+                    isChinese = false;
+                }
+            }else{
+                if (TextUtils.equals(language,"zh")){
+                    isChinese = true;
+                }else{
+                    isChinese = false;
+                }
+            }
+            if (isChinese){
+                ethPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), -25), Utils.dip2px(getActivity(), -230));
+            }else{
+                ethPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), -25), Utils.dip2px(getActivity(), -280));
+            }
+
+        }
+    }
+
+    /**
+     * Initialize the Pop layout
+     */
+    private void initWindowPop() {
+        LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.eth_window_popup_layout, null);
+        windowPop = new PopupWindow(view, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+        windowPop.setBackgroundDrawable(new BitmapDrawable());
+        windowPop.setOutsideTouchable(true);
+        windowPop.setFocusable(true);
+        ethWindow = (LinearLayout) view.findViewById(R.id.ethWindow);
+        ethWindow.setOnClickListener(this);
+        boolean isChinese;
+        String language = MySharedPrefs.readString(getActivity(),MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_LANGUAFE);
+        if (TextUtils.isEmpty(language)){
+            Locale locale = new Locale(Locale.getDefault().getLanguage());
+            if (TextUtils.equals(locale.getLanguage(),"zh")){
+                isChinese = true;
+            }else{
+                isChinese = false;
+            }
+        }else{
+            if (TextUtils.equals(language,"zh")){
+                isChinese = true;
+            }else{
+                isChinese = false;
+            }
+        }
+        if (isChinese){
+            ethWindow.setBackgroundResource(R.drawable.icon_eth_window_zh);
+        }else{
+            ethWindow.setBackgroundResource(R.drawable.icon_eth_window_en);
+        }
+        if (windowPop.isShowing()) {
+            windowPop.dismiss();
+        } else {
+            windowPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), 0), Utils.dip2px(getActivity(), 0));
+        }
+
+    }
 
 
     @Override
@@ -503,6 +596,15 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 intent.putExtra("strablewallet", storableWallet);
                 startActivity(intent);
                 Utils.openNewActivityAnim(getActivity(),false);
+                break;
+            case R.id.ethWarningImg://Copy the address
+                initEthereumPop();
+                break;
+            case R.id.ethWindow://Copy the address
+                if (windowPop != null && windowPop.isShowing()) {
+                    windowPop.dismiss();
+                    windowPop = null;
+                }
                 break;
         }
     }
@@ -729,8 +831,10 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             public void success(JSONObject response) {
                 tokenVos.clear();
                 swipe_refresh.setRefreshing(false);
-                total = response.optString("total");
-                usdTotal = response.optString("usd_total");
+                BigDecimal totalDecimal = new BigDecimal(response.optString("total")).setScale(2,BigDecimal.ROUND_DOWN);
+                BigDecimal usdTotalDecimal = new BigDecimal(response.optString("usd_total")).setScale(2,BigDecimal.ROUND_DOWN);
+                total = totalDecimal.toPlainString();
+                usdTotal = usdTotalDecimal.toPlainString();
                 int priceUnit = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
                 if (priceUnit == 0){
                     walletBalanceNum.setText(getString(R.string.token_total_price,total));
@@ -816,6 +920,5 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             timerTask = null;
         }
     }
-
 
 }
