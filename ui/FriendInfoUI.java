@@ -56,6 +56,8 @@ public class FriendInfoUI extends BaseActivity {
 
     private boolean dataHasLoad;
 
+    private LinearLayout friendBody;
+
     //Radio chat page
     private NoteReceiverListener noteReceiverListener;
 
@@ -97,6 +99,7 @@ public class FriendInfoUI extends BaseActivity {
         friendImg = (CharAvatarView) findViewById(R.id.friendImg);
         addFriendsBody = (LinearLayout) findViewById(R.id.addFriendsBody);
         sendMsgBody = (LinearLayout) findViewById(R.id.sendMsgBody);
+        friendBody = (LinearLayout) findViewById(R.id.friendBody);
         addFriends = (TextView) findViewById(R.id.addFriends);
         sendMsg = (TextView) findViewById(R.id.sendMsg);
         friendNote = (TextView) findViewById(R.id.friendNote);
@@ -137,10 +140,23 @@ public class FriendInfoUI extends BaseActivity {
         public void onReceive(Context context, Intent intent) {
             if (intent != null && Constants.ACTION_CHATTING_FRIEND_NOTE.equals(intent.getAction())) {
                 String showname = intent.getExtras().getString("showname");
-                if (!TextUtils.isEmpty(showname)){
+
+                if (TextUtils.isEmpty(showname)){
+                    friendNote.setVisibility(View.VISIBLE);
+                    friendName.setVisibility(View.GONE);
+                    friendNote.setText(info.getUsername());
+                }else{
                     friendNote.setVisibility(View.VISIBLE);
                     friendNote.setText(showname);
+
+                    if (TextUtils.isEmpty(info.getUsername()) || TextUtils.equals(info.getUsername(),showname)){
+                        friendName.setVisibility(View.GONE);
+                    }else{
+                        friendName.setVisibility(View.VISIBLE);
+                        friendName.setText(getString(R.string.friend_info_name,info.getUsername()));
+                    }
                 }
+
             }
         }
     }
@@ -208,11 +224,11 @@ public class FriendInfoUI extends BaseActivity {
                 friendMid.setText(getString(R.string.mid_user,info.getMid()));
             }
 
-            if (TextUtils.isEmpty(info.getUsername())){
+            if (TextUtils.isEmpty(info.getUsername()) || TextUtils.equals(info.getUsername(),info.getNote())){
                 friendName.setVisibility(View.GONE);
             }else{
                 friendName.setVisibility(View.VISIBLE);
-                friendName.setText(info.getUsername());
+                friendName.setText(getString(R.string.friend_info_name,info.getUsername()));
             }
 
             friendSignature.setText(info.getSightml());
@@ -220,6 +236,7 @@ public class FriendInfoUI extends BaseActivity {
                 app_right.setVisibility(View.GONE);
                 addFriends.setVisibility(View.GONE);
                 sendMsg.setVisibility(View.GONE);
+                friendBody.setVisibility(View.GONE);
             }else if (info.getFriendLog() == 1){
                 addFriends.setText(getString(R.string.contact_default));
                 addFriends.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(R.drawable.icon_has_friend),null,null,null);
