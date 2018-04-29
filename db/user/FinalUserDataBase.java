@@ -610,7 +610,7 @@ public class FinalUserDataBase {
      * @return
      */
     public List<ChatMsg> getChatMsgEventList() {
-        List<ChatMsg> list = new ArrayList<ChatMsg>();
+        List<ChatMsg> list = new ArrayList<>();
         if (db != null) {
             String sql = "select * from " + TableField.TABLE_CHAT_EVENT +  /*" where "  +TableField.FIELD_RESERVED_DATA7 + " is not 1*/ " order by " + TableField.FIELD_CHAT_MSGTIME + " desc ";
             Cursor cursor = db.rawQuery(sql, null);
@@ -656,7 +656,9 @@ public class FinalUserDataBase {
                 msg.setMode(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
                 msg.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA26)));
                 msg.setTokenSymbol(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA27)));
-
+                if (msg.getType() == 300 && TextUtils.isEmpty(msg.getTokenSymbol())){
+                    continue;
+                }
                 if (msg.isTop()) {
                     msg.setTopTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA16)));
                 }
@@ -1071,7 +1073,9 @@ public class FinalUserDataBase {
             msg.setShareUrl(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA25)));
             msg.setNoticeType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA26)));
             msg.setTokenSymbol(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA27)));
-            list.add(msg);
+            if (!TextUtils.isEmpty(msg.getTokenSymbol())){
+                list.add(msg);
+            }
         }
         cursor.close();
         return list;
@@ -1191,6 +1195,11 @@ public class FinalUserDataBase {
      * @param vo token bean
      */
     public void insertToken(TokenVo vo,String address) {
+
+        if (!address.startsWith("0x")){
+            address = "0x" + address;
+        }
+
         ContentValues values = new ContentValues();
         values.put(TableField.FIELD_RESERVED_DATA1, vo.getTokenSymbol());
         values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenName());
@@ -1239,19 +1248,24 @@ public class FinalUserDataBase {
      */
     public void insertAllAddressToken(TokenVo vo) {
         ArrayList<StorableWallet> storableWallets = WalletStorage.getInstance(NextApplication.mContext).get();
+        beginTransaction();
         for (int i = 0 ; i < storableWallets.size(); i++){
             String address = storableWallets.get(i).getPublicKey();
             if (!address.startsWith("0x")){
                 address = "0x" + address;
             }
-            ContentValues values = new ContentValues();
-            values.put(TableField.FIELD_RESERVED_DATA1, vo.getTokenSymbol());
-            values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenName());
-            values.put(TableField.FIELD_RESERVED_DATA3, vo.getTokenLogo());
-            values.put(TableField.FIELD_RESERVED_DATA7, vo.getContactAddress());
-            values.put(TableField.FIELD_RESERVED_DATA9, address);
-            db.insert(TableField.TABLE_TOKEN_LIST, TableField._ID, values);
+            boolean result = hasToken(vo.getContactAddress(),address);
+            if (!result){
+                ContentValues values = new ContentValues();
+                values.put(TableField.FIELD_RESERVED_DATA1, vo.getTokenSymbol());
+                values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenName());
+                values.put(TableField.FIELD_RESERVED_DATA3, vo.getTokenLogo());
+                values.put(TableField.FIELD_RESERVED_DATA7, vo.getContactAddress());
+                values.put(TableField.FIELD_RESERVED_DATA9, address);
+                db.insert(TableField.TABLE_TOKEN_LIST, TableField._ID, values);
+            }
         }
+        endTransactionSuccessful();
     }
 
     /**
@@ -1268,6 +1282,11 @@ public class FinalUserDataBase {
      * update the token list all
      */
     public void updateTokenList(TokenVo vo,String address,boolean update) {
+
+        if (!address.startsWith("0x")){
+            address = "0x" + address;
+        }
+
         boolean result = hasToken(vo.getContactAddress(),address);
         if(result){
             ContentValues values = new ContentValues();
@@ -1280,8 +1299,10 @@ public class FinalUserDataBase {
             values.put(TableField.FIELD_RESERVED_DATA11, vo.getUsdPrice());
             values.put(TableField.FIELD_RESERVED_DATA12, vo.getUsdUnitPrice());
             if (update){
+                if (!TextUtils.isEmpty(vo.getTokenName())){
+                    values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenName());
+                }
                 values.put(TableField.FIELD_RESERVED_DATA9, address);
-                values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenName());
                 values.put(TableField.FIELD_RESERVED_DATA10, vo.isFixed());
             }
             db.update(TableField.TABLE_TOKEN_LIST,values,TableField.FIELD_RESERVED_DATA7 + "=? and " + TableField.FIELD_RESERVED_DATA9 + "=?",new String[]{vo.getContactAddress(),address});
@@ -1294,8 +1315,13 @@ public class FinalUserDataBase {
      * check has token
      * */
     public boolean hasToken(String contactAddress,String address){
+
+        if (!address.startsWith("0x")){
+            address = "0x" + address;
+        }
+
         String sql = "select * from " + TableField.TABLE_TOKEN_LIST + " where " + TableField.FIELD_RESERVED_DATA7 + "=? and " + TableField.FIELD_RESERVED_DATA9 + "=?";
-        Cursor cursor = db.rawQuery(sql, new String[]{contactAddress,address.trim()});
+        Cursor cursor = db.rawQuery(sql, new String[]{contactAddress,address});
         if (cursor.moveToNext()) {
             cursor.close();
             return true;
@@ -1327,7 +1353,14 @@ public class FinalUserDataBase {
             vo.setFixed(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) == 1);
             vo.setUsdPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
             vo.setUsdUnitPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
-            list.add(vo);
+            if (TextUtils.isEmpty(vo.getContactAddress())){
+                continue;
+            }
+            if (TextUtils.equals(vo.getContactAddress(),"smt")){
+                list.add(0,vo);
+            }else{
+                list.add(vo);
+            }
         }
         cursor.close();
         return list;
@@ -1355,7 +1388,14 @@ public class FinalUserDataBase {
             vo.setFixed(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) == 1);
             vo.setUsdPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
             vo.setUsdUnitPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
-            list.add(vo);
+            if (TextUtils.isEmpty(vo.getContactAddress())){
+                continue;
+            }
+            if (TextUtils.equals(vo.getContactAddress(),"smt")){
+                list.add(0,vo);
+            }else{
+                list.add(vo);
+            }
         }
         cursor.close();
         return list;

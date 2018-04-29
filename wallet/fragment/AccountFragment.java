@@ -5,7 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -112,6 +114,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
     private TextView walletBalanceNum;
 
+    private ImageView cnyUsdChangeGif;
+    private LinearLayout currencyBg;
+
 //    private LinearLayout raidenTransfer;//raiden
 
     private int index = -1;//Which one is selected
@@ -135,6 +140,8 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
     private TextView oldWallet;
     private ImageView ethWarningImg;
+
+    private View windowBg;
 
     public AccountFragment(){
 
@@ -199,6 +206,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
         oldWallet = (TextView) view.findViewById(R.id.oldWallet);
         ethWarningImg = (ImageView) view.findViewById(R.id.ethWarningImg);
+        cnyUsdChangeGif = (ImageView) view.findViewById(R.id.cnyUsdChangeGif);
+        currencyBg = (LinearLayout) view.findViewById(R.id.currencyBg);
+        windowBg = view.findViewById(R.id.windowBg);
 //        raidenTransfer = (LinearLayout) view.findViewById(R.id.raidenTransfer);
     }
 
@@ -261,11 +271,12 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         }else{
             changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
         }
-//        boolean isFirstShowWindow = MySharedPrefs.readBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_WINDOW);
-//        if (isFirstShowWindow){
-//            MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_WINDOW,false);
+
+        boolean isFirstShowWindow = MySharedPrefs.readBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_WINDOW);
+        if (isFirstShowWindow){
+            MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_WINDOW,false);
             initWindowPop();
-//        }
+        }
 
 //        writePassToSdcard();
 //        new Thread(new Runnable() {
@@ -432,7 +443,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         if (windowPop.isShowing()) {
             windowPop.dismiss();
         } else {
-            windowPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), 0), Utils.dip2px(getActivity(), 0));
+            windowPop.showAsDropDown(windowBg, Utils.dip2px(getActivity(), 0), Utils.dip2px(getActivity(), 0));
         }
 
     }
@@ -521,6 +532,10 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 Utils.openNewActivityAnim(getActivity(),false);
                 break;
             case R.id.changeTokenUnit://Flicking a
+
+                MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF,false);
+                currencyBg.setVisibility(View.GONE);
+
                 int priceUnit = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
                 if (priceUnit == 0){
                     MySharedPrefs.writeInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT,1);
@@ -604,6 +619,18 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 if (windowPop != null && windowPop.isShowing()) {
                     windowPop.dismiss();
                     windowPop = null;
+                }
+                boolean isFirstShowGif = MySharedPrefs.readBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF);
+                if (isFirstShowGif){
+                        currencyBg.setVisibility(View.VISIBLE);
+                        MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF,false);
+                        cnyUsdChangeGif.setImageResource(R.drawable.cny_usd_change);
+                        if ( cnyUsdChangeGif.getDrawable() instanceof AnimationDrawable) {
+                            ((AnimationDrawable) cnyUsdChangeGif.getDrawable()).start();
+                            ((AnimationDrawable) cnyUsdChangeGif.getDrawable()).setOneShot(false);
+                        }
+                }else{
+                    currencyBg.setVisibility(View.GONE);
                 }
                 break;
         }
@@ -814,6 +841,11 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
      * get token balance
      * */
     private void getBalance(final boolean isShowToast){
+
+        if (tokenVos == null || tokenVos.size() <= 0){
+            return;
+        }
+
         StringBuilder builder = new StringBuilder();
         for (int i = 0 ; i < tokenVos.size() ; i++){
             builder.append(tokenVos.get(i).getContactAddress()).append(",");
