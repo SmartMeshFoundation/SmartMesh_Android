@@ -1,9 +1,13 @@
 package com.lingtuan.firefly.wallet;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.View;
@@ -17,14 +21,18 @@ import com.lingtuan.firefly.custom.LoadMoreListView;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
+import com.lingtuan.firefly.ui.AlertActivity;
+import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
 import com.lingtuan.firefly.wallet.vo.TransVo;
+import com.lingtuan.firefly.xmpp.XmppAction;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.web3j.crypto.Wallet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,6 +113,12 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         if (tokenVo != null){
             setTitle(tokenVo.getTokenSymbol());
         }
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.WALLET_REFRESH_BACKUP);//Refresh the page
+        registerReceiver(mBroadcastReceiver, filter);
+
+
         transVos = new ArrayList<>();
         mAdapter = new TransAdapter(WalletSendDetailUI.this,transVos,storableWallet.getPublicKey());
         transListView.setAdapter(mAdapter);
@@ -133,6 +147,14 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
                 break;
             case R.id.walletReceipt:
                 if (storableWallet == null){
+                    return;
+                }
+                if (!storableWallet.isBackup()){
+                    Intent intent = new Intent(WalletSendDetailUI.this, AlertActivity.class);
+                    intent.putExtra("type", 5);
+                    intent.putExtra("strablewallet", storableWallet);
+                    startActivity(intent);
+                    overridePendingTransition(0, 0);
                     return;
                 }
                 Intent qrEthIntent = new Intent(WalletSendDetailUI.this,QuickMarkShowUI.class);
@@ -292,6 +314,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(mBroadcastReceiver);
         if (timer  != null){
             timer.cancel();
             timer = null;
@@ -301,4 +324,19 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
             timerTask = null;
         }
     }
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null){
+                if (Constants.WALLET_REFRESH_BACKUP.equals(intent.getAction()) ) {
+                    if (storableWallet != null){
+                        storableWallet.setBackup(true);
+                    }
+                }
+            }
+        }
+    };
+
+
 }
