@@ -250,8 +250,9 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                 {
                     msg.setSend(0);
                 }
-                mAdapter.addChatMsg(msg, true);
                 FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
+                msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                mAdapter.addChatMsg(msg, true);
             }
             else{
                 ChatMsg msg = createAudioChatMsg(uid, SDCardCtrl.getAudioPath() + File.separator + audioName, userName, avatarUrl, second + "", isSend);
@@ -317,6 +318,8 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                 cardInfo.setThumb(path);
 
                 ChatMsg msg = new ChatMsg();
+                msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                msg.setChatId(uid);
                 msg.setType(6);
                 msg.setThirdId(cardInfo.getLocalId());
                 msg.setThirdImage(cardInfo.getThumb());
@@ -332,8 +335,9 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                 {
                     msg.setSend(0);
                 }
-                mAdapter.addChatMsg(msg, true);
                 FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
+                msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                mAdapter.addChatMsg(msg, true);
             }
             else{
                 ChatMsg msg = XmppMessageUtil.getInstance().sendCard(uid, userName, avatarUrl, cardVo.getShowName(), cardVo.getSightml(), cardVo.getThumb(), cardVo.getLocalId(), isGroup, isSend);
@@ -527,9 +531,6 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             }
             mAdapter.addChatMsg(msg, true);
 
-        }else if(uid.equals(Constants.APP_MESH)){// send mesh picture
-            ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
-            mAdapter.addChatMsg(msg, true);
         }else if(isGroup){
             ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
             mAdapter.addChatMsg(msg, true);
@@ -564,8 +565,9 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                 {
                     msg.setSend(0);
                 }
-                mAdapter.addChatMsg(msg, true);
                 FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
+                msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                mAdapter.addChatMsg(msg, true);
             }
             else{
                 ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
@@ -694,11 +696,11 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                     {
                         msg.setSend(0);
                     }
+                    FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
+                    msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
                     android.os.Message m = android.os.Message.obtain();
                     m.obj = msg;
                     mHandler.sendMessage(m);
-
-                    FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
                 }
                 else{
                     ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
@@ -796,10 +798,11 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                     {
                         msg.setSend(0);
                     }
+                    FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
+                    msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
                     android.os.Message m = android.os.Message.obtain();
                     m.obj = msg;
                     mHandler.sendMessage(m);
-                    FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
                 }
                 else{
                     mHandler.sendEmptyMessage(1);
