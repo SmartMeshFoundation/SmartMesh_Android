@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -39,7 +38,6 @@ import com.lingtuan.firefly.quickmark.CaptureActivity;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
 import com.lingtuan.firefly.setting.CreateGestureActivity;
 import com.lingtuan.firefly.setting.GestureLoginActivity;
-import com.lingtuan.firefly.setting.SettingUI;
 import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.ui.WalletModeLoginUI;
 import com.lingtuan.firefly.util.Constants;
@@ -140,6 +138,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
     private TextView oldWallet;
     private ImageView ethWarningImg;
+    private ImageView oldWalletImg;
 
     private View windowBg;
 
@@ -206,6 +205,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
         oldWallet = (TextView) view.findViewById(R.id.oldWallet);
         ethWarningImg = (ImageView) view.findViewById(R.id.ethWarningImg);
+        oldWalletImg = (ImageView) view.findViewById(R.id.oldWalletImg);
         cnyUsdChangeGif = (ImageView) view.findViewById(R.id.cnyUsdChangeGif);
         currencyBg = (LinearLayout) view.findViewById(R.id.currencyBg);
         windowBg = view.findViewById(R.id.windowBg);
@@ -228,6 +228,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         transRecord.setOnClickListener(this);
         copyAddress.setOnClickListener(this);
         oldWallet.setOnClickListener(this);
+        oldWalletImg.setOnClickListener(this);
         ethWarningImg.setOnClickListener(this);
 
 //        raidenTransfer.setOnClickListener(this);
@@ -399,9 +400,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 }
             }
             if (isChinese){
-                ethPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), -25), Utils.dip2px(getActivity(), -230));
+                ethPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), -25), Utils.dip2px(getActivity(), -265));
             }else{
-                ethPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), -25), Utils.dip2px(getActivity(), -280));
+                ethPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), -25), Utils.dip2px(getActivity(), -326));
             }
 
         }
@@ -607,6 +608,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 Utils.copyText(getActivity(),walletAddress.getText().toString());
                 break;
             case R.id.oldWallet://Copy the address
+            case R.id.oldWalletImg://Copy the address
                 Intent intent = new Intent(getActivity(), OldAccountUI.class);
                 intent.putExtra("strablewallet", storableWallet);
                 startActivity(intent);
