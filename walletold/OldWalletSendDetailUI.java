@@ -1,7 +1,10 @@
 package com.lingtuan.firefly.walletold;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -13,6 +16,7 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.LoadMoreListView;
 import com.lingtuan.firefly.ui.AlertActivity;
+import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestUtils;
@@ -102,6 +106,10 @@ public class OldWalletSendDetailUI extends BaseActivity implements SwipeRefreshL
             setTitle(getString(R.string.mesh));
         }
 
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.WALLET_REFRESH_BACKUP);//Refresh the page
+        registerReceiver(mBroadcastReceiver, filter);
+
         transVos = new ArrayList<>();
         mAdapter = new OldTransAdapter(OldWalletSendDetailUI.this,transVos,storableWallet.getPublicKey());
         transListView.setAdapter(mAdapter);
@@ -115,6 +123,19 @@ public class OldWalletSendDetailUI extends BaseActivity implements SwipeRefreshL
             }
         }, 200);
     }
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null){
+                if (Constants.WALLET_REFRESH_BACKUP.equals(intent.getAction()) ) {
+                    if (storableWallet != null){
+                        storableWallet.setBackup(true);
+                    }
+                }
+            }
+        }
+    };
 
     @Override
     public void onClick(View v) {
@@ -252,5 +273,6 @@ public class OldWalletSendDetailUI extends BaseActivity implements SwipeRefreshL
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(mBroadcastReceiver);
     }
 }
