@@ -127,6 +127,10 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private TimerTask timerTask;
     private int timerLine = 10;
 
+    private Timer cnytimer;
+    private TimerTask cnytimerTask;
+    private int cnytimerLine = 5;
+
     private PopupWindow homePop;
     private PopupWindow ethPop;
     private PopupWindow windowPop;
@@ -266,7 +270,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         filter.addAction(Constants.WALLET_BIND_TOKEN);
         getActivity().registerReceiver(mBroadcastReceiver, filter);
 
-        int priceUnit = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
+        int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
         if (priceUnit == 0){
             changeTokenUnit.setImageResource(R.drawable.icon_unit_cny);
         }else{
@@ -534,10 +538,11 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 break;
             case R.id.changeTokenUnit://Flicking a
 
+                cancelCnyTimer();
                 MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF,false);
                 currencyBg.setVisibility(View.GONE);
 
-                int priceUnit = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
+                int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
                 if (priceUnit == 0){
                     MySharedPrefs.writeInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT,1);
                     walletBalanceNum.setText(getString(R.string.token_total_usd_price,usdTotal));
@@ -624,13 +629,14 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 }
                 boolean isFirstShowGif = MySharedPrefs.readBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF);
                 if (isFirstShowGif){
-                        currencyBg.setVisibility(View.VISIBLE);
-                        MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF,false);
-                        cnyUsdChangeGif.setImageResource(R.drawable.cny_usd_change);
-                        if ( cnyUsdChangeGif.getDrawable() instanceof AnimationDrawable) {
-                            ((AnimationDrawable) cnyUsdChangeGif.getDrawable()).start();
-                            ((AnimationDrawable) cnyUsdChangeGif.getDrawable()).setOneShot(false);
-                        }
+                    showCnyTimer();
+                    currencyBg.setVisibility(View.VISIBLE);
+                    MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF,false);
+                    cnyUsdChangeGif.setImageResource(R.drawable.cny_usd_change);
+                    if ( cnyUsdChangeGif.getDrawable() instanceof AnimationDrawable) {
+                        ((AnimationDrawable) cnyUsdChangeGif.getDrawable()).start();
+                        ((AnimationDrawable) cnyUsdChangeGif.getDrawable()).setOneShot(false);
+                    }
                 }else{
                     currencyBg.setVisibility(View.GONE);
                 }
@@ -869,7 +875,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 BigDecimal usdTotalDecimal = new BigDecimal(response.optString("usd_total")).setScale(2,BigDecimal.ROUND_DOWN);
                 total = totalDecimal.toPlainString();
                 usdTotal = usdTotalDecimal.toPlainString();
-                int priceUnit = MySharedPrefs.readInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
+                int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
                 if (priceUnit == 0){
                     walletBalanceNum.setText(getString(R.string.token_total_price,total));
                     changeTokenUnit.setImageResource(R.drawable.icon_unit_cny);
@@ -912,6 +918,10 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 case 2:
                     dismissHomePop();
                     break;
+                case 3:
+                    MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF,false);
+                    currencyBg.setVisibility(View.GONE);
+                    break;
             }
         }
     };
@@ -929,14 +939,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                     timerLine--;
                     if(timerLine < 0){
                         mHandler.sendEmptyMessage(2);
-                        if (timer != null){
-                            timer.cancel();
-                            timer = null;
-                        }
-                        if (timerTask != null){
-                            timerTask.cancel();
-                            timerTask = null;
-                        }
+                        cancelTimer();
                     }
                 }
             };
@@ -952,6 +955,37 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         if (timerTask != null){
             timerTask.cancel();
             timerTask = null;
+        }
+    }
+
+    /**
+     * Control the popup countdown
+     * */
+    private void showCnyTimer(){
+        if(cnytimer == null){
+            cnytimer = new Timer();
+            cnytimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    cnytimerLine--;
+                    if(cnytimerLine < 0){
+                        mHandler.sendEmptyMessage(3);
+                        cancelCnyTimer();
+                    }
+                }
+            };
+            cnytimer.schedule(cnytimerTask,1000,1000);
+        }
+    }
+
+    private void cancelCnyTimer(){
+        if (cnytimer != null){
+            cnytimer.cancel();
+            cnytimer = null;
+        }
+        if (cnytimerTask != null){
+            cnytimerTask.cancel();
+            cnytimerTask = null;
         }
     }
 
