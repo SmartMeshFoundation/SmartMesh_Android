@@ -166,42 +166,30 @@ public class MessageEventAdapter extends BaseAdapter {
                 if (msg.getNoticeType() == 0){
                     if (TextUtils.equals("0",msg.getMode())){//eth
                         if (msg.getInviteType() == 0){
-                            content = mContext.getString(R.string.wallet_trans_msg_eth,msg.getMoney());
+                            content = mContext.getString(R.string.wallet_trans_msg,msg.getMoney(),msg.getTokenSymbol());
                         }else{
-                            content = mContext.getString(R.string.wallet_trans_msg_eth_failed,msg.getMoney());
+                            content = mContext.getString(R.string.wallet_trans_msg_failed,msg.getMoney(),msg.getTokenSymbol());
                         }
 
-                    }else if (TextUtils.equals("1",msg.getMode())){
+                    }else{
                         if (msg.getInviteType() == 0){
-                            content = mContext.getString(R.string.wallet_trans_msg_smt,msg.getMoney());
+                            content = mContext.getString(R.string.wallet_trans_msg,msg.getMoney(),msg.getTokenSymbol());
                         }else{
-                            content = mContext.getString(R.string.wallet_trans_msg_smt_failed,msg.getMoney());
-                        }
-                    }else if (TextUtils.equals("2",msg.getMode())){
-                        if (msg.getInviteType() == 0){
-                            content = mContext.getString(R.string.wallet_trans_msg_mesh,msg.getMoney());
-                        }else{
-                            content = mContext.getString(R.string.wallet_trans_msg_mesh_failed,msg.getMoney());
+                            content = mContext.getString(R.string.wallet_trans_msg_failed,msg.getMoney(),msg.getTokenSymbol());
                         }
                     }
                 }else{
                     if (TextUtils.equals("0",msg.getMode())){//eth
                         if (msg.getInviteType() == 0){
-                            content = mContext.getString(R.string.wallet_trans_collect_eth,msg.getMoney());
+                            content = mContext.getString(R.string.wallet_trans_collect,msg.getMoney(),msg.getTokenSymbol());
                         }else{
-                            content = mContext.getString(R.string.wallet_trans_collect_eth_failed,msg.getMoney());
+                            content = mContext.getString(R.string.wallet_trans_collect_failed,msg.getMoney(),msg.getTokenSymbol());
                         }
-                    }else  if (TextUtils.equals("1",msg.getMode())){
+                    }else{
                         if (msg.getInviteType() == 0){
-                            content = mContext.getString(R.string.wallet_trans_collect_smt,msg.getMoney());
+                            content = mContext.getString(R.string.wallet_trans_collect,msg.getMoney(),msg.getTokenSymbol());
                         }else{
-                            content = mContext.getString(R.string.wallet_trans_collect_smt_failed,msg.getMoney());
-                        }
-                    }else if (TextUtils.equals("2",msg.getMode())){
-                        if (msg.getInviteType() == 0){
-                            content = mContext.getString(R.string.wallet_trans_collect_mesh,msg.getMoney());
-                        }else{
-                            content = mContext.getString(R.string.wallet_trans_collect_mesh_failed,msg.getMoney());
+                            content = mContext.getString(R.string.wallet_trans_collect_failed,msg.getMoney(),msg.getTokenSymbol());
                         }
                     }
                 }
@@ -248,10 +236,18 @@ public class MessageEventAdapter extends BaseAdapter {
                     NextApplication.displayCircleImage(h.avatarShape, null);
                     h.avatarShape.setImageResource(resId);
                 } else {
-                    h.avatarShape.setText(msg.getUsername(),h.avatarShape,url);
+                    if (TextUtils.isEmpty(msg.getRealname())){
+                        h.avatarShape.setText(msg.getUsername(),h.avatarShape,url);
+                    }else{
+                        h.avatarShape.setText(msg.getRealname(),h.avatarShape,url);
+                    }
                 }
             }else{
-                h.avatarShape.setText(msg.getUsername(),h.avatarShape,url);
+                if (TextUtils.isEmpty(msg.getRealname())){
+                    h.avatarShape.setText(msg.getUsername(),h.avatarShape,url);
+                }else{
+                    h.avatarShape.setText(msg.getRealname(),h.avatarShape,url);
+                }
             }
         }
         h.nickname.setText(nickname);
