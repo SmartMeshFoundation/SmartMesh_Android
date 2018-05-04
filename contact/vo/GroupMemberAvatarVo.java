@@ -13,6 +13,7 @@ public class GroupMemberAvatarVo implements Serializable {
 
 	private int gender;
 	private String image;
+	private String username;
 
 	public int getGender() {
 		return gender;
@@ -30,6 +31,14 @@ public class GroupMemberAvatarVo implements Serializable {
 		this.image = image;
 	}
 
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 	public GroupMemberAvatarVo parse(JSONObject obj){
 		if(obj == null){
 			return null;
@@ -37,7 +46,8 @@ public class GroupMemberAvatarVo implements Serializable {
 		
 		setGender(obj.optInt("gender"));
 		setImage(obj.optString("image"));
-		
+		setUsername(obj.optString("username"));
+
 		return this;
 	}
 	
@@ -48,6 +58,7 @@ public class GroupMemberAvatarVo implements Serializable {
 		UserBaseVo vo = new UserBaseVo();
 		vo.setThumb(image);
 		vo.setGender(gender + "");
+		vo.setUsername(username);
 		return vo;
 	}
 	
