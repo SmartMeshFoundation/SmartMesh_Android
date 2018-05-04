@@ -4,19 +4,16 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.contact.vo.FriendRecommentVo;
 import com.lingtuan.firefly.contact.vo.GroupMemberAvatarVo;
 import com.lingtuan.firefly.contact.vo.PhoneContactGroupVo;
 import com.lingtuan.firefly.contact.vo.PhoneContactVo;
-import com.lingtuan.firefly.custom.LoadMoreListView;
 import com.lingtuan.firefly.db.TableField;
 import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
-import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.vo.ChatMsg;
 import com.lingtuan.firefly.vo.UserBaseVo;
 import com.lingtuan.firefly.vo.UserInfoVo;
@@ -26,7 +23,6 @@ import com.lingtuan.firefly.wallet.vo.TokenVo;
 import com.lingtuan.firefly.wallet.vo.TransVo;
 
 import org.jivesoftware.smack.packet.Message.MsgType;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -197,12 +193,12 @@ public class FinalUserDataBase {
         boolean showTime = isShowTime(chatId, vo.getMsgTime());
         values.put(TableField.FIELD_CHAT_SHOWTIME, showTime ? 1 : 0);
         vo.setShowTime(showTime);
-
         db.insert(TableField.TABLE_CHAT, TableField._ID, values);
         vo.setUsername(uname);
         vo.setUserImage(avatarUrl);
         saveChatEvent(vo);
     }
+
 
     /**
      * Save chat messages
@@ -627,9 +623,9 @@ public class FinalUserDataBase {
                 msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
                 msg.setUserId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
                 msg.setUserImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-                msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
+                msg.setRealname(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
                 msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
-
+                msg.setUsername(msg.getRealname());
                 msg.setHidden(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_HIDDEN)) == 1 ? true : false);
                 msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
                 msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1 ? true : false);
@@ -659,6 +655,12 @@ public class FinalUserDataBase {
                 if (msg.getType() == 300 && TextUtils.isEmpty(msg.getTokenSymbol())){
                     continue;
                 }
+
+//                if (msg.getChatId().equals("mesh")){
+//                    continue;
+//                }
+
+
                 if (msg.isTop()) {
                     msg.setTopTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA16)));
                 }
@@ -685,6 +687,7 @@ public class FinalUserDataBase {
                             }
                             vo.setGender(gender);
                             vo.setImage(image);
+                            vo.setUsername(msg.getRealname());
                             lists.add(vo);
                         }
                         msg.setMemberAvatarList(lists);
@@ -746,7 +749,8 @@ public class FinalUserDataBase {
             msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
             msg.setUserId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
             msg.setUserImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
+            msg.setRealname(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
+            msg.setUsername(msg.getRealname());
             msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
             msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
             msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1);
@@ -864,7 +868,8 @@ public class FinalUserDataBase {
             msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
             msg.setUserId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
             msg.setUserImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
+            msg.setRealname(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
+            msg.setUsername(msg.getRealname());
             msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
             msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
             msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1 );
@@ -1106,7 +1111,8 @@ public class FinalUserDataBase {
             msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
             msg.setUserId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UID)));
             msg.setUserImage(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_PIC)));
-            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
+            msg.setRealname(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
+            msg.setUsername(msg.getRealname());
             msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
             msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
             msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1);
@@ -1142,7 +1148,8 @@ public class FinalUserDataBase {
             msg.setId(cursor.getInt(cursor.getColumnIndex(TableField._ID)));
             msg.setMsgTime(cursor.getLong(cursor.getColumnIndex(TableField.FIELD_CHAT_MSGTIME)));
             msg.setType(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_TYPE)));
-            msg.setUsername(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
+            msg.setRealname(cursor.getString(cursor.getColumnIndex(TableField.FIELD_FRIEND_UNAME)));
+            msg.setUsername(msg.getRealname());
             msg.setChatId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_CHAT_ID)));
             msg.setUnread(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_UNREAD)));
             msg.setSystem(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_CHAT_SYSTEM)) == 1);
