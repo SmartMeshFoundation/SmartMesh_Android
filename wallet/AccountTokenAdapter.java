@@ -74,7 +74,7 @@ public class AccountTokenAdapter extends BaseAdapter {
             holder.tokenSymbol = (TextView) convertView.findViewById(R.id.tokenSymbol);
             holder.tokenBalance = (TextView) convertView.findViewById(R.id.tokenBalance);
             holder.tokenTotalPrice = (TextView) convertView.findViewById(R.id.tokenTotalPrice);
-            holder.walletTokenBody = (CardView) convertView.findViewById(R.id.walletTokenBody);
+            holder.walletTokenBody = (LinearLayout) convertView.findViewById(R.id.walletTokenBody);
             convertView.setTag(holder);
         }else{
             holder = (ViewHolder) convertView.getTag();
@@ -83,43 +83,17 @@ public class AccountTokenAdapter extends BaseAdapter {
         NextApplication.displayCircleToken(holder.tokenImg,Utils.buildThumb(tokenVo.getTokenLogo()));
         holder.tokenSymbol.setText(tokenVo.getTokenSymbol());
 
-        int priceUnit = MySharedPrefs.readInt(context,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
+        int priceUnit = MySharedPrefs.readIntDefaultUsd(context,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
         if (priceUnit == 0){
-            if (tokenVo.getTokenPrice() > 0){
-                BigDecimal ethDecimal = new BigDecimal(tokenVo.getTokenPrice()).setScale(2,BigDecimal.ROUND_DOWN);
-                holder.tokenPrice.setText(context.getString(R.string.token_total_price,ethDecimal.toPlainString()));
-            }else{
-                holder.tokenPrice.setText(context.getString(R.string.token_total_price,tokenVo.getTokenPrice()+""));
-            }
-
-            if (tokenVo.getUnitPrice() > 0){
-                BigDecimal ethDecimal = new BigDecimal(tokenVo.getUnitPrice()).setScale(2,BigDecimal.ROUND_DOWN);
-                holder.tokenTotalPrice.setText(context.getString(R.string.token_total_price,ethDecimal.toPlainString()));
-            }else{
-                holder.tokenTotalPrice.setText(context.getString(R.string.token_total_price,tokenVo.getUnitPrice()+""));
-            }
+            holder.tokenPrice.setText(context.getString(R.string.token_total_price,tokenVo.getTokenPrice()));
+            holder.tokenTotalPrice.setText(context.getString(R.string.token_total_price,tokenVo.getUnitPrice()));
         }else{
-            if (tokenVo.getUsdPrice() > 0){
-                BigDecimal ethDecimal = new BigDecimal(tokenVo.getUsdPrice()).setScale(2,BigDecimal.ROUND_DOWN);
-                holder.tokenPrice.setText(context.getString(R.string.token_total_usd_price,ethDecimal.toPlainString()));
-            }else{
-                holder.tokenPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdPrice()+""));
-            }
-
-            if (tokenVo.getUsdUnitPrice() > 0){
-                BigDecimal ethDecimal = new BigDecimal(tokenVo.getUsdUnitPrice()).setScale(2,BigDecimal.ROUND_DOWN);
-                holder.tokenTotalPrice.setText(context.getString(R.string.token_total_usd_price,ethDecimal.toPlainString()));
-            }else{
-                holder.tokenTotalPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdUnitPrice()+""));
-            }
+            holder.tokenPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdPrice()));
+            holder.tokenTotalPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdUnitPrice()));
         }
 
-        if (tokenVo.getTokenBalance() > 0){
-            BigDecimal ethDecimal = new BigDecimal(tokenVo.getTokenBalance()).setScale(5,BigDecimal.ROUND_DOWN);
-            holder.tokenBalance.setText(ethDecimal.toPlainString());
-        }else{
-            holder.tokenBalance.setText(tokenVo.getTokenBalance() +"");
-        }
+        BigDecimal tokenBalanceDecimal = new BigDecimal(tokenVo.getTokenBalance()).setScale(6,BigDecimal.ROUND_CEILING);
+        holder.tokenBalance.setText(tokenBalanceDecimal.toPlainString());
 
         holder.walletTokenBody.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,6 +117,6 @@ public class AccountTokenAdapter extends BaseAdapter {
         TextView tokenSymbol;//token name
         TextView tokenBalance;//token balance
         TextView tokenTotalPrice;//token total price
-        CardView walletTokenBody;
+        LinearLayout walletTokenBody;
     }
 }
