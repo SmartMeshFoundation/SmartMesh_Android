@@ -196,6 +196,12 @@ public class FinalUserDataBase {
         db.insert(TableField.TABLE_CHAT, TableField._ID, values);
         vo.setUsername(uname);
         vo.setUserImage(avatarUrl);
+        if (!TextUtils.isEmpty(chatId)){
+            UserBaseVo baseVo = FinalUserDataBase.getInstance().getUserBaseVoByUid(chatId);
+            if(baseVo!=null&&!TextUtils.isEmpty(baseVo.getShowName())){
+                vo.setRealname(baseVo.getUsername());
+            }
+        }
         saveChatEvent(vo);
     }
 
@@ -687,7 +693,6 @@ public class FinalUserDataBase {
                             }
                             vo.setGender(gender);
                             vo.setImage(image);
-                            vo.setUsername(msg.getRealname());
                             lists.add(vo);
                         }
                         msg.setMemberAvatarList(lists);
@@ -710,6 +715,7 @@ public class FinalUserDataBase {
                if (!msg.isGroup() && msg.getMsgTypeInt() != 3 && !TextUtils.isEmpty(msg.getChatId()) && !TextUtils.equals(Constants.APP_EVERYONE,msg.getChatId())  && !msg.getChatId().startsWith("system")) {
                     UserBaseVo baseVo = FinalUserDataBase.getInstance().getUserBaseVoByUid(msg.getChatId());
                     if(baseVo!=null&&!TextUtils.isEmpty(baseVo.getShowName())){
+                        msg.setRealname(TextUtils.isEmpty(msg.getRealname()) ? msg.getUsername() : msg.getRealname());
                         msg.setUsername(baseVo.getShowName());
                     }
                 }
@@ -1352,14 +1358,14 @@ public class FinalUserDataBase {
             vo.setTokenName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA2)));
             vo.setTokenLogo(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
             vo.setTokenBalance(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
-            vo.setTokenPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
-            vo.setUnitPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
+            vo.setTokenPrice(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
+            vo.setUnitPrice(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
             vo.setContactAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
             vo.setChecked(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)) == 1);
             vo.setWalletAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
             vo.setFixed(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) == 1);
-            vo.setUsdPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
-            vo.setUsdUnitPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
+            vo.setUsdPrice(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
+            vo.setUsdUnitPrice(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
             if (TextUtils.isEmpty(vo.getContactAddress())){
                 continue;
             }
@@ -1387,14 +1393,14 @@ public class FinalUserDataBase {
             vo.setTokenName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA2)));
             vo.setTokenLogo(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)));
             vo.setTokenBalance(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
-            vo.setTokenPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
-            vo.setUnitPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
+            vo.setTokenPrice(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)));
+            vo.setUnitPrice(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
             vo.setContactAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
             vo.setChecked(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA8)) == 1);
             vo.setWalletAddress(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA9)));
             vo.setFixed(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) == 1);
-            vo.setUsdPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
-            vo.setUsdUnitPrice(cursor.getDouble(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
+            vo.setUsdPrice(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
+            vo.setUsdUnitPrice(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
             if (TextUtils.isEmpty(vo.getContactAddress())){
                 continue;
             }
@@ -1762,7 +1768,9 @@ public class FinalUserDataBase {
      */
     public void updateChatEventMsg(ChatMsg vo, boolean isSystem, boolean isNewMsg) {
         ContentValues values = new ContentValues();
-        if (!TextUtils.isEmpty(vo.getUsername())) {
+        if (!TextUtils.isEmpty(vo.getRealname())) {
+            values.put(TableField.FIELD_FRIEND_UNAME, vo.getRealname());
+        }else{
             values.put(TableField.FIELD_FRIEND_UNAME, vo.getUsername());
         }
         if (!TextUtils.isEmpty(vo.getUserImage())) {
