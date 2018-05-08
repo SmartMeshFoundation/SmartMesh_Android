@@ -691,6 +691,15 @@ public class FinalUserDataBase {
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+                            if (splitVo.length > 2){
+                                String username = "";
+                                try {
+                                    username = splitVo[2];
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                vo.setUsername(username);
+                            }
                             vo.setGender(gender);
                             vo.setImage(image);
                             lists.add(vo);
@@ -800,6 +809,15 @@ public class FinalUserDataBase {
                             image = splitVo[0];
                         } catch (Exception e) {
                             e.printStackTrace();
+                        }
+                        if (splitVo.length > 2){
+                            String username = "";
+                            try {
+                                username = splitVo[2];
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            vo.setUsername(username);
                         }
                         vo.setGender(gender);
                         vo.setImage(image);
