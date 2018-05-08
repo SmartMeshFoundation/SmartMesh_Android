@@ -691,7 +691,8 @@ public class ChatAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
                     UserBaseVo vo = new UserBaseVo();
-                    vo.setUsername(msg.getUsername());
+                    vo.setUsername(msg.getRealname());
+                    vo.setNote(msg.getUsername());
                     vo.setLocalId(msg.getUserId());
                     vo.setThumb(msg.getUserImage());
                     vo.setFriendLog(msg.getFriendLog());
@@ -701,7 +702,7 @@ public class ChatAdapter extends BaseAdapter {
         h.avatar.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                if ((isGroup || TextUtils.equals(Constants.APP_EVERYONE,msg.getChatId()) || TextUtils.equals(Constants.APP_MESH,msg.getChatId()))&& !msg.isMe() && mInputContent != null && mChattingManager != null) {//Long press head @ function
+                if ((isGroup || TextUtils.equals(Constants.APP_EVERYONE,msg.getChatId()))&& !msg.isMe() && mInputContent != null && mChattingManager != null) {//Long press head @ function
                     int selectIndex = mInputContent.getSelectionStart();
                     Editable mEditable = mInputContent.getEditableText();
                     mEditable.insert(selectIndex, "@" + msg.getRealname() + " ");
@@ -734,11 +735,15 @@ public class ChatAdapter extends BaseAdapter {
                 url = tempAvatar.get(msg.getUserId());
             }
         }
-        h.avatar.setText(msg.getUsername(),h.avatar,url);
+        if (TextUtils.isEmpty(msg.getRealname())){
+            h.avatar.setText(msg.getUsername(),h.avatar,url);
+        }else{
+            h.avatar.setText(msg.getRealname(),h.avatar,url);
+        }
         h.time.setVisibility(msg.isShowTime() ? View.VISIBLE : View.GONE);
         Utils.setLoginTime(mContext, h.time, msg.getMsgTime());
         if (h.mNickname != null) {
-            if (!isGroup && !TextUtils.equals(Constants.APP_EVERYONE,msg.getChatId()) && !TextUtils.equals(Constants.APP_MESH,msg.getChatId())) {
+            if (!isGroup && !TextUtils.equals(Constants.APP_EVERYONE,msg.getChatId())) {
                 h.mNickname.setVisibility(View.GONE);
             } else {//group
                 h.mNickname.setVisibility(View.VISIBLE);
