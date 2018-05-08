@@ -569,7 +569,7 @@ public class XmppService extends Service {
                         StringBuilder url = new StringBuilder();
                         if (chatmsg.getMemberAvatarList() != null) {
                             for (GroupMemberAvatarVo vo : chatmsg.getMemberAvatarList()) {
-                                url.append(vo.getImage()).append("___").append(vo.getGender()).append("#");
+                                url.append(vo.getImage()).append("___").append(vo.getGender()).append("___").append(vo.getUsername()).append("#");
                             }
                             url.deleteCharAt(url.lastIndexOf("#"));
                         }
@@ -577,6 +577,7 @@ public class XmppService extends Service {
                         String uName = chatmsg.getUsername();
                         FinalUserDataBase.getInstance().saveChatMsgNew(chatmsg, chatmsg.getChatId(), chatmsg.getGroupName(), url.toString(), index == offlinemsgList.length() - 1 ? true : false);
                         chatmsg.setUsername(uName);
+                        chatmsg.setRealname(uName);
                         chatmsg.setUserImage(avatarUrl);
                         if (chatmsg.getType() == 103 && !TextUtils.isEmpty(content)) {
                             chatmsg.setContent(content);
@@ -936,7 +937,7 @@ public class XmppService extends Service {
                 StringBuilder url = new StringBuilder();
                 if (chatmsg.getMemberAvatarList() != null) {
                     for (GroupMemberAvatarVo vo : chatmsg.getMemberAvatarList()) {
-                        url.append(vo.getImage()).append("___").append(vo.getGender()).append("#");
+                        url.append(vo.getImage()).append("___").append(vo.getGender()).append("___").append(vo.getUsername()).append("#");
                     }
                     url.deleteCharAt(url.lastIndexOf("#"));
                 }
@@ -948,6 +949,7 @@ public class XmppService extends Service {
                     FinalUserDataBase.getInstance().saveChatMsg(chatmsg, chatmsg.getChatId(), chatmsg.getGroupName(), url.toString());
                 }
                 chatmsg.setUsername(uName);
+                chatmsg.setRealname(uName);
                 chatmsg.setUserImage(avatarUrl);
                 if (chatmsg.getType() == 103 && !TextUtils.isEmpty(content)) {
                     chatmsg.setContent(content);
@@ -1287,10 +1289,11 @@ public class XmppService extends Service {
                         break;
                     }
                 }
-                if(!found)
-                {
+
+                if(!found || TextUtils.isEmpty(chatmsg.getTokenAddress())){
                     return null;
                 }
+
                 type = 5;
                 TransVo transVo = new TransVo();
                 transVo.setTime(chatmsg.getCreateTime());
