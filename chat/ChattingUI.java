@@ -20,7 +20,6 @@ import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -43,13 +42,17 @@ import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.chat.adapter.ChatAdapter;
 import com.lingtuan.firefly.contact.ContactSelectedUI;
 import com.lingtuan.firefly.contact.DiscussGroupSettingUI;
-import com.lingtuan.firefly.contact.MeshSettingUI;
 import com.lingtuan.firefly.contact.SelectGroupMemberListUI;
 import com.lingtuan.firefly.custom.LoadMoreListView;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.ChattingItemCallBack;
+import com.lingtuan.firefly.mesh.MeshMessageConfig;
+import com.lingtuan.firefly.mesh.MeshService;
+import com.lingtuan.firefly.mesh.MeshUtils;
+import com.lingtuan.firefly.mesh.MessageVo;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
+import com.lingtuan.firefly.util.BitmapUtils;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyToast;
@@ -66,12 +69,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.lingtuan.firefly.NextApplication.mContext;
+import static com.lingtuan.firefly.mesh.MeshMessageConfig.MESSAGE_TEXT;
+
 /**
  * The chat page
  */
-public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter.SceneListener, OnRefreshListener, OnGlobalLayoutListener,ChattingItemCallBack {
-
-
+public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter.SceneListener, OnRefreshListener, OnGlobalLayoutListener, ChattingItemCallBack {
+    
+    
     private EditText mInputContent;//A chat
     private ImageView mAudioBtn;//Voice button
     private ImageView mFaceBtn;//Expression button
@@ -86,29 +92,29 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
     private View mAudioView;//Voice button
     private ViewStub mAudioStub;
     private View stubBottomBg;//At the bottom of the view control expression and voice switch not flashing
-
+    
     private ImageView chattingSet = null;  //Stranger Settings button
     private ImageView deleteTV;//Forward the delete button
     private TextView mLeftSelected;
-
+    
     /**
      * Delete or forwarding     true is delete
      */
     private boolean isSceneDelete;
-
+    
     //Chat list related
     private ListView listView;
     private ChatAdapter mAdapter;
     private int listViewHeight = 0;
-
+    
     /**
      * Refresh the controls
      */
     private SwipeRefreshLayout swipeLayout;
-
+    
     //Radio chat page
     private MsgReceiverListener msgReceiverListener;
-
+    
     //The user name
     private String userName;
     //Head portrait
@@ -117,26 +123,27 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
     private String gender;
     //uid
     private String uid;
-
+    
     //The chat box at the bottom of the layout
     private LinearLayout chattingBottomRela;
     private RelativeLayout chattingBottomLayout;
-
+    
     //Chat management class
     private ChattingManager chattingManager;
-
+    
     private boolean isGroup = false;//Whether the group chat
     private boolean isDismissGroup = false;//Whether has disbanded group chat
     private boolean isKickGroup = false;//Whether be T in addition to the group chat
-
+    
     //Chat unread messages
     private TextView unreadNum;
     private int unread;
     private int unreadStartIndex;
     private int unreadOffset;
     private boolean hasHideunreadNum;
-
+    
     private AppNetService appNetService;
+    
     @Override
     protected void setContentView() {
         setContentView(R.layout.chatting);
@@ -154,10 +161,10 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         }
         listView = (LoadMoreListView) findViewById(R.id.refreshListView);
     }
-
+    
     @Override
     protected void findViewById() {
-
+        
         unreadNum = (TextView) findViewById(R.id.unreadNum);
         mInputContent = (EditText) findViewById(R.id.chatting_bottom_input);
         mAudioBtn = (ImageView) findViewById(R.id.chatting_bottom_audio);
@@ -166,16 +173,16 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         mCamera = (ImageView) findViewById(R.id.chatting_bottom_camera);
         mCard = (ImageView) findViewById(R.id.chatting_bottom_card);
         mFile = (ImageView) findViewById(R.id.chatting_bottom_file);
-
+        
         mFaceBtn = (ImageView) findViewById(R.id.chatting_bottom_face);
         mSendBtn = (TextView) findViewById(R.id.chatting_bottom_send);
         swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
-
+        
         mFaceStub = (ViewStub) findViewById(R.id.include_chatting_face_stub);
         mAudioStub = (ViewStub) findViewById(R.id.include_chatting_audio_stub);
         stubBottomBg = findViewById(R.id.stubBottomBg);
-
-
+        
+        
         chattingSet = (ImageView) findViewById(R.id.app_right);
         deleteTV = (ImageView) findViewById(R.id.detail_set);
         mLeftSelected = (TextView) findViewById(R.id.app_title_left);
@@ -183,7 +190,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         chattingBottomLayout = (RelativeLayout) findViewById(R.id.chatting_bottom_rela);
         chattingBottomLayout.setVisibility(View.VISIBLE);
     }
-
+    
     @Override
     protected void setListener() {
         chattingSet.setOnClickListener(this);
@@ -200,11 +207,11 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         swipeLayout.setOnRefreshListener(this);
         try {
             listView.getViewTreeObserver().addOnGlobalLayoutListener(this);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         mInputContent.addTextChangedListener(this);
-
+        
         mInputContent.setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -234,12 +241,11 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                 return false;
             }
         });
-
-
-
+        
+        
     }
-
-
+    
+    
     // The Activity and netService2 connection
     private ServiceConnection serviceConn = new ServiceConnection() {
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -248,46 +254,69 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             appNetService = binder.getService();
             chattingManager.setAppNetService(appNetService);
         }
+        
         public void onServiceDisconnected(ComponentName name) {
         }
     };
+    
     @Override
     protected void initData() {
-
-        if (uid.equals(Constants.APP_EVERYONE)){
+        
+        if (uid.equals(Constants.APP_EVERYONE)) {
             setTitle(getString(R.string.everyone));
             chattingSet.setVisibility(View.GONE);
             mMeshPhoto.setVisibility(View.GONE);
-        }else if (uid.equals(Constants.APP_MESH)){
+        } else if (uid.equals(Constants.APP_MESH)) {
             setTitle(getString(R.string.wifimesh));
             chattingSet.setImageResource(R.drawable.icon_friend_info);
             chattingSet.setVisibility(View.VISIBLE);
-            mMeshPhoto.setVisibility(View.VISIBLE);
-        }else{
+            mMeshPhoto.setVisibility(View.GONE);
+            chattingBottomRela.setVisibility(View.VISIBLE);
+            mAudioBtn.setVisibility(View.GONE);
+            mCard.setVisibility(View.GONE);
+            mFile.setVisibility(View.GONE);
+        } else if (MeshUtils.getInatance().isConnectWifiSsid()) {
+            setTitle(userName);
+            chattingSet.setImageResource(R.drawable.icon_friend_info);
+            chattingSet.setVisibility(View.VISIBLE);
+            mMeshPhoto.setVisibility(View.GONE);
+            chattingBottomRela.setVisibility(View.VISIBLE);
+            mAudioBtn.setVisibility(View.GONE);
+            mCard.setVisibility(View.GONE);
+            mFile.setVisibility(View.GONE);
+        } else {
             setTitle(userName);
             chattingSet.setImageResource(R.drawable.icon_friend_info);
             chattingSet.setVisibility(View.VISIBLE);
             mMeshPhoto.setVisibility(View.GONE);
         }
-
-        if (uid.equals(Constants.APP_EVERYONE) || isGroup){
+        
+        if (uid.equals(Constants.APP_EVERYONE) || isGroup) {
             mFile.setVisibility(View.GONE);
-        }else if (uid.equals(Constants.APP_MESH)){
-            chattingBottomRela.setVisibility(View.GONE);
-        }else{
+        } else if (uid.equals(Constants.APP_MESH)) {
+            chattingBottomRela.setVisibility(View.VISIBLE);
+            mAudioBtn.setVisibility(View.GONE);
+            mCard.setVisibility(View.GONE);
+            mFile.setVisibility(View.GONE);
+        } else if (MeshUtils.getInatance().isConnectWifiSsid()) {
+            chattingBottomRela.setVisibility(View.VISIBLE);
+            mAudioBtn.setVisibility(View.GONE);
+            mCard.setVisibility(View.GONE);
+            mFile.setVisibility(View.GONE);
+        } else {
             mFile.setVisibility(View.VISIBLE);
         }
-
+        
         swipeLayout.setColorSchemeResources(R.color.black);
         //Remove notification bar
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
         ChattingManager.getInstance(this).destory();
         chattingManager = ChattingManager.getInstance(this);
-        if (NextApplication.myInfo != null){
-            int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
-            if (openSmartMesh == 1){
-                bindService(new Intent(this, AppNetService.class), serviceConn,BIND_AUTO_CREATE);
+        if (NextApplication.myInfo != null) {
+            int openSmartMesh = MySharedPrefs.readInt1(mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+            if (openSmartMesh == 1) {
+                bindService(new Intent(this, AppNetService.class), serviceConn, BIND_AUTO_CREATE);
             }
         }
         IntentFilter filter = new IntentFilter(XmppAction.ACTION_MESSAGE_LISTENER);//message broadcast distribution
@@ -297,22 +326,27 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         filter.addAction(XmppAction.ACTION_MESSAGE_IMAGE_PERCENT);//message sending pictures percentage
         filter.addAction(Constants.ACTION_CHATTING_FRIEND_NOTE);//More pictures to send
         filter.addAction(XmppAction.ACTION_ENTER_EVERYONE_LISTENER);//More pictures to send
-
+        
         //chat
         filter.addAction(Constants.MSG_REPORT_SEND_MSG_RESULT);
         filter.addAction(Constants.MSG_REPORT_SEND_MSG_PROGRESS);
         filter.addAction(Constants.MSG_REPORT_START_RECV_FILE);
         filter.addAction(Constants.MSG_REPORT_CANCEL_SEND_FILE);
         filter.addAction(Constants.MSG_REPORT_CANCEL_RECV_FILE);
+        
+        //mesh
+        filter.addAction(MeshMessageConfig.ACTION_MESH_UPDATE_ME);
+        filter.addAction(MeshMessageConfig.ACTION_MESH_UPDATE_RECEEIVE);
+        
         msgReceiverListener = new MsgReceiverListener();
         registerReceiver(msgReceiverListener, filter);
-
+        
         //Choose picture sends the message
         IntentFilter filterVideo = new IntentFilter(Constants.ACTION_CHATTING_PHOTO_LIST);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filterVideo);
         XmppMessageUtil.getInstance().setGroupDismiss(isDismissGroup);
         XmppMessageUtil.getInstance().setGroupKick(isKickGroup);
-
+        
         chattingManager.setGroup(isGroup);
         chattingManager.setSend(!(isDismissGroup || isKickGroup));
         chattingManager.setmInputContent(mInputContent);
@@ -331,7 +365,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         if (unread > 0) {
             showunreadNum();
         }
-
+        
         for (ChatMsg msg : mList) {
             if (msg.getSend() == 2)//Is sending images, voice, video because of the need to upload, is if it is sent every time into the state, send again
             {
@@ -358,14 +392,14 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         chattingManager.setUserInfo(userName, avatarUrl, uid, mAdapter, listView);
         listView.setAdapter(mAdapter);
         listView.setSelection(mList.size());
-
+        
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 finishTempActivity();
             }
         }, 100);
-
+        
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -374,9 +408,9 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                 }
             }
         }, 500);
-
+        
     }
-
+    
     @Override
     protected void onResume() {
         super.onResume();
@@ -384,41 +418,41 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         Editor editor = preferences.edit();
         editor.putString("chatuid", uid);
         editor.commit();
-
+        
         if (ChattingManager.getInstance(this).isFinish()) {
             ChattingManager.getInstance(this).setFinish(false);
             Utils.exitActivityAndBackAnim(this, true);
         }
     }
-
-
+    
+    
     private boolean setViewGone() {
         boolean result = false;
         if (mFaceView != null) {
-            if (mFaceView.getVisibility() == View.VISIBLE){
+            if (mFaceView.getVisibility() == View.VISIBLE) {
                 result = true;
             }
             mFaceView.setVisibility(View.GONE);
         }
         if (mAudioView != null) {
-            if (mAudioView.getVisibility() == View.VISIBLE){
+            if (mAudioView.getVisibility() == View.VISIBLE) {
                 result = true;
             }
             mAudioView.setVisibility(View.GONE);
         }
         if (stubBottomBg != null) {
-            if (stubBottomBg.getVisibility() == View.VISIBLE){
+            if (stubBottomBg.getVisibility() == View.VISIBLE) {
                 result = true;
             }
             stubBottomBg.setVisibility(View.GONE);
         }
         return result;
     }
-
+    
     private void showContentInput() {
         mInputContent.setVisibility(View.VISIBLE);
     }
-
+    
     @Override
     protected void onPause() {
         super.onPause();
@@ -431,24 +465,24 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         FinalUserDataBase.getInstance().updateChatEventMsgGender(uid, gender);
         FinalUserDataBase.getInstance().updateUnreadEventChat(uid);
         FinalUserDataBase.getInstance().updateAtGroupMe(uid);
-
+        
     }
-
+    
     @Override
     protected void onDestroy() {
         super.onDestroy();
         try {
-            int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
-            if (openSmartMesh == 1 && serviceConn != null){
+            int openSmartMesh = MySharedPrefs.readInt1(mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+            if (openSmartMesh == 1 && serviceConn != null) {
                 unbindService(serviceConn);
             }
-            if(uid.equals(Constants.APP_EVERYONE)){
-                XmppMessageUtil.getInstance().sendEnterLeaveEveryOne(0,true);
+            if (uid.equals(Constants.APP_EVERYONE)) {
+                XmppMessageUtil.getInstance().sendEnterLeaveEveryOne(0, true);
             }
             unregisterReceiver(msgReceiverListener);
             LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
             mAdapter.destory();
-
+            
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
                 listView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
             } else {
@@ -457,16 +491,13 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        
     }
-
+    
     @Override
     public void onBackPressed() {
         if (setViewGone()) {
             return;
-        }
-        if (uid.equals(Constants.APP_MESH) && !(deleteTV.getVisibility() == View.VISIBLE)){
-            super.onBackPressed();
         }
         if (!chattingBottomRela.isShown()) {
             rollbackScene();
@@ -474,9 +505,9 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         }
         super.onBackPressed();
     }
-
+    
     private void showunreadNum() {
-        unreadNum.setText(getString(R.string.chat_unread_num,unread));
+        unreadNum.setText(getString(R.string.chat_unread_num, unread));
         if (unread > 0) {
             new Handler().postDelayed(new Runnable() {
                 public void run() {
@@ -488,29 +519,29 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                         unreadNum.setVisibility(View.VISIBLE);
                         Animation transanimIn = new Animation() {
                             @Override
-                            protected void applyTransformation(float interpolatedTime,Transformation t) {
+                            protected void applyTransformation(float interpolatedTime, Transformation t) {
                                 {
                                     RelativeLayout.LayoutParams lp = (android.widget.RelativeLayout.LayoutParams) unreadNum.getLayoutParams();
                                     lp.setMargins(0, Utils.dip2px(ChattingUI.this, 50), -width + (int) (width * interpolatedTime), 0);
                                     unreadNum.requestLayout();
                                 }
                             }
-
+                            
                             @Override
                             public boolean willChangeBounds() {
                                 return true;
                             }
-
+                            
                         };
                         transanimIn.setDuration(300);
                         unreadNum.startAnimation(transanimIn);
                         listView.setOnScrollListener(new AbsListView.OnScrollListener() {
-
+                            
                             @Override
                             public void onScrollStateChanged(AbsListView view, int scrollState) {
-
+                                
                             }
-
+                            
                             @Override
                             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                                 if (!hasHideunreadNum && listView.getFirstVisiblePosition() <= unreadStartIndex + 1) {
@@ -525,7 +556,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             }, 500);
         }
     }
-
+    
     private void hideunreadNum(final boolean gotoTop) {
         hasHideunreadNum = true;
         if (gotoTop) {
@@ -540,14 +571,14 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                 }
                 mAdapter.resetSource(mList);
             }
-
+            
             ChatMsg msg = new ChatMsg();
             msg.setType(12);
             msg.setContent(getString(R.string.chatting_new_message));
             mAdapter.insertSystemChatMsg(unreadStartIndex, msg);
             listView.setSelection(unreadStartIndex + 1);
         }
-
+        
         final int width = unreadNum.getWidth();
         Animation transanimOut = new Animation() {
             @Override
@@ -558,33 +589,33 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                     unreadNum.requestLayout();
                 }
             }
-
+            
             @Override
             public boolean willChangeBounds() {
                 return true;
             }
-
+            
         };
         transanimOut.setDuration(300);
         transanimOut.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-
+                
             }
-
+            
             @Override
             public void onAnimationEnd(Animation animation) {
                 unreadNum.setVisibility(View.INVISIBLE);
             }
-
+            
             @Override
             public void onAnimationRepeat(Animation animation) {
-
+                
             }
         });
         unreadNum.startAnimation(transanimOut);
     }
-
+    
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -622,10 +653,10 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                 break;
         }
     }
-
+    
     /**
      * Send the file method
-     * */
+     */
     private void sendFileMethod() {
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -636,10 +667,10 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         setViewGone();
         Utils.hiddenKeyBoard(this);
     }
-
+    
     /**
      * Sending card method
-     * */
+     */
     private void sendCardMethod() {
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -650,10 +681,10 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         setViewGone();
         Utils.hiddenKeyBoard(this);
     }
-
+    
     /**
      * Camera photo sending pictures method
-     * */
+     */
     private void sendCameraMethod() {
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -664,10 +695,10 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         setViewGone();
         Utils.hiddenKeyBoard(this);
     }
-
+    
     /**
      * Sending pictures method
-     * */
+     */
     private void sendPhotoMethod() {
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -678,10 +709,10 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         setViewGone();
         Utils.hiddenKeyBoard(this);
     }
-
+    
     /**
      * Send expression method
-     * */
+     */
     private void sendFaceMethod() {
         showContentInput();
         Utils.hiddenKeyBoard(this);
@@ -695,14 +726,14 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                chattingManager.showFaceView(mFaceView, mInputContent,stubBottomBg);
+                chattingManager.showFaceView(mFaceView, mInputContent, stubBottomBg);
             }
         }, 100);
     }
-
+    
     /**
      * Send voice method
-     * */
+     */
     private void sendAudioMethod() {
         Utils.hiddenKeyBoard(this);
         if (mFaceView != null) {
@@ -715,14 +746,14 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                chattingManager.showAudioView(mAudioView,stubBottomBg);
+                chattingManager.showAudioView(mAudioView, stubBottomBg);
             }
         }, 100);
     }
-
+    
     /**
      * Forward delete methods
-     * */
+     */
     private void deleteMethod() {
         if (mAdapter.getSelectedList() == null || mAdapter.getSelectedList().size() == 0) {
             showToast(getString(R.string.chat_file_empty));
@@ -733,7 +764,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             MyViewDialogFragment mdf = new MyViewDialogFragment();
             mdf.setTitleAndContentText(getString(titleIds), null);
             mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
-
+                
                 @Override
                 public void okBtn() {
                     if (isSceneDelete) {//Delete
@@ -759,13 +790,13 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                         FinalUserDataBase.getInstance().updateChatEventContent(uid, msg);
                         MyToast.showToast(ChattingUI.this, getString(R.string.delete_success));
                     } else {//Forwarding
-
+                        
                     }
                     rollbackScene();
                 }
             });
             mdf.show(getSupportFragmentManager(), "mdf");
-
+            
         } else {//Forwarding
             ArrayList<ChatMsg> list = new ArrayList<>();
             for (Map.Entry<String, ChatMsg> s : mAdapter.getSelectedList().entrySet()) {
@@ -777,10 +808,10 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             Utils.openNewActivityAnim(this, false);
         }
     }
-
+    
     /**
      * Set method
-     * */
+     */
     private void settingMethod() {
         if (isGroup) {
             if (isDismissGroup || isKickGroup) {
@@ -793,11 +824,9 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             i.putExtra("avatarurl", avatarUrl);
             startActivity(i);
             Utils.openNewActivityAnim(this, false);
-        } else if (TextUtils.equals(Constants.APP_MESH,uid)){
-            Intent i = new Intent(this, MeshSettingUI.class);
-            startActivity(i);
-            Utils.openNewActivityAnim(this, false);
-        }else {
+        } else if (TextUtils.equals(Constants.APP_MESH, uid)) {
+            Utils.intentService(mContext, MeshService.class, MeshMessageConfig.ACTION_MESH_SHOW_NUMBER, null, null);
+        } else {
             Intent intent = new Intent(this, ChattingSetUI.class);
             intent.putExtra("avatarurl", avatarUrl);
             intent.putExtra("username", userName);
@@ -810,86 +839,88 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             Utils.openNewActivityAnim(this, false);
         }
     }
-
+    
     /**
      * Send text
-     * */
+     */
     private void sentTextMethod() {
         final String content = mInputContent.getText().toString().trim();
         String atIds = chattingManager.getSbAtGroupSelectIds();
-
+        
         Editable mEditable = mInputContent.getText();
         boolean isAtAll = chattingManager.isAtAll(mEditable.toString());
         boolean successed = true;
-        if(uid.equals(Constants.APP_EVERYONE)){
+        if (uid.equals(Constants.APP_EVERYONE)) {
             ChatMsg msg = XmppMessageUtil.getInstance().sendText(uid, content, isAtAll, atIds, userName, avatarUrl, isGroup, !(isDismissGroup || isKickGroup));
-            if (appNetService != null){
+            if (appNetService != null) {
                 successed = appNetService.handleSendString(content, true, "", msg.getMessageId());
             }
-            if(msg.getSend() ==0 && !successed)
-            {
+            if (msg.getSend() == 0 && !successed) {
                 msg.setSend(0);
             }
             mAdapter.addChatMsg(msg, true);
-        }else if(uid.equals(Constants.APP_MESH)){// send mesh text
+        } else if (uid.equals(Constants.APP_MESH)) {// send mesh text
+            showMeshNumber(content);
+        } else if (isGroup) {
             ChatMsg msg = XmppMessageUtil.getInstance().sendText(uid, content, isAtAll, atIds, userName, avatarUrl, isGroup, !(isDismissGroup || isKickGroup));
             mAdapter.addChatMsg(msg, true);
-        }else if(isGroup){
-            ChatMsg msg = XmppMessageUtil.getInstance().sendText(uid, content, isAtAll, atIds, userName, avatarUrl, isGroup, !(isDismissGroup || isKickGroup));
-            mAdapter.addChatMsg(msg, true);
-        }
-        else{
-            boolean foundPeople  = false;
-            if(appNetService!=null && appNetService.getwifiPeopleList()!=null)
-            {
-                for (WifiPeopleVO vo : appNetService.getwifiPeopleList())//All users need to traverse, find out the corresponding touid users
-                {
-                    if (uid.equals(vo.getLocalId())) {
-                        foundPeople=true;
-                        break;
+        } else {
+            if (MeshUtils.getInatance().isConnectWifiSsid()) {//mesh++
+                Bundle bundle = new Bundle();
+                bundle.putString(MeshMessageConfig.MESH_MESSAGE_BUNDLE_LOCALID, uid);
+                bundle.putString(MeshMessageConfig.MESH_MESSAGE_BUNDLE_MSG, content);
+                Utils.intentService(mContext, MeshService.class, MeshMessageConfig.ACTION_MESH_SEND_CHECK, MeshMessageConfig.MESH_MESSAGE_BUNDLE, bundle);
+            } else {
+                boolean foundPeople = false;
+                if (appNetService != null && appNetService.getwifiPeopleList() != null) {
+                    for (WifiPeopleVO vo : appNetService.getwifiPeopleList())//All users need to traverse, find out the corresponding touid users
+                    {
+                        if (uid.equals(vo.getLocalId())) {
+                            foundPeople = true;
+                            break;
+                        }
                     }
                 }
-            }
-            if(foundPeople)//With no net with no net send messages
-            {
-                ChatMsg msg = new ChatMsg();
-                msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
-                msg.setChatId(uid);
-                msg.setType(0);
-                msg.setSend(1);
-                msg.setMsgTime(System.currentTimeMillis() / 1000);
-                msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
-                msg.setContent(content);
-                msg.setOffLineMsg(true);
-                msg.setMessageId(UUID.randomUUID().toString());
-                if (appNetService != null){
-                    successed = appNetService.handleSendString(content, false, uid, msg.getMessageId());
-                }
-                if(!successed)
+                if (foundPeople)//With no net with no net send messages
                 {
-                    msg.setSend(0);
+                    ChatMsg msg = new ChatMsg();
+                    msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                    msg.setChatId(uid);
+                    msg.setType(0);
+                    msg.setSend(1);
+                    msg.setMsgTime(System.currentTimeMillis() / 1000);
+                    msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
+                    msg.setContent(content);
+                    msg.setOffLineMsg(true);
+                    msg.setMessageId(UUID.randomUUID().toString());
+                    if (appNetService != null) {
+                        successed = appNetService.handleSendString(content, false, uid, msg.getMessageId());
+                    }
+                    if (!successed) {
+                        msg.setSend(0);
+                    }
+                    File recvFile = new File(SDCardCtrl.getOfflinePath() + File.separator + uid + ".jpg");
+                    String imageAvatar = "file://" + recvFile.getAbsolutePath();
+                    FinalUserDataBase.getInstance().saveChatMsg(msg, uid, isGroup ? "offline" : userName, imageAvatar);
+                    msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                    mAdapter.addChatMsg(msg, true);
+                } else {
+                    ChatMsg msg = XmppMessageUtil.getInstance().sendText(uid, content, isAtAll, atIds, userName, avatarUrl, isGroup, !(isDismissGroup || isKickGroup));
+                    mAdapter.addChatMsg(msg, true);
                 }
-                mAdapter.addChatMsg(msg, true);
-                File recvFile = new File(SDCardCtrl.getOfflinePath()+File.separator + uid + ".jpg");
-                String imageAvatar = "file://"+recvFile.getAbsolutePath();
-                FinalUserDataBase.getInstance().saveChatMsg(msg,uid, isGroup ? "offline" : userName,imageAvatar);
-            }
-            else{
-                ChatMsg msg = XmppMessageUtil.getInstance().sendText(uid, content, isAtAll, atIds, userName, avatarUrl, isGroup, !(isDismissGroup || isKickGroup));
-                mAdapter.addChatMsg(msg, true);
             }
         }
         mInputContent.setText("");
         listView.setSelection(mAdapter.getCount() - 1);
     }
-
+    
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
     }
-
+    
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-       if (isGroup && count == 1 && s != null) {//Is chatting to enter
+        if (isGroup && count == 1 && s != null) {//Is chatting to enter
             try {
                 if (s.toString().substring(start, start + 1).equals("@")) {//输入@
                     if (AtGroupParser.getInstance() != null) {
@@ -925,7 +956,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             chattingManager.updateAtGroupIds(ids);
         }
     }
-
+    
     @Override
     public void afterTextChanged(Editable s) {
         if (TextUtils.isEmpty(s) || TextUtils.isEmpty(s.toString().trim())) {
@@ -934,13 +965,13 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             mSendBtn.setEnabled(true);
         }
     }
-
-
+    
+    
     @Override
     public void onRefresh() {
-
+        
         new Handler().postDelayed(new Runnable() {
-
+            
             @Override
             public void run() {
                 List<ChatMsg> mTempList = FinalUserDataBase.getInstance().getChatMsgListByChatId(uid, mAdapter.getCount(), 20);
@@ -971,7 +1002,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             }
         }, 1000);
     }
-
+    
     BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -980,37 +1011,37 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             }
         }
     };
-
+    
     @Override
     public void clickItem() {
     }
-
+    
     class MsgReceiverListener extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent != null && XmppAction.ACTION_MESSAGE_LISTENER.equals(intent.getAction())) {
                 Bundle bundle = intent.getBundleExtra(XmppAction.ACTION_MESSAGE_LISTENER);
-
+                
                 ChatMsg chatMsg = (ChatMsg) bundle.getSerializable(XmppAction.ACTION_MESSAGE_LISTENER);
-
+                
                 if (chatMsg != null && uid.equals(chatMsg.getChatId())) {//I chat with the friends
-
-                    if (mAdapter != null){
+                    
+                    if (mAdapter != null) {
                         int count = mAdapter.getList().size();
-                        if (count > 0 && TextUtils.equals(mAdapter.getList().get(count -1).getMessageId(),chatMsg.getMessageId())){
+                        if (count > 0 && TextUtils.equals(mAdapter.getList().get(count - 1).getMessageId(), chatMsg.getMessageId())) {
                             return;
                         }
                     }
-
+                    
                     if (chatMsg.getType() == 1010 && chatMsg.getUnread() == 1) {
                         chatMsg.setUnread(0);
                         FinalUserDataBase.getInstance().updateChatMsgUrneadBymessageId(chatMsg.getMessageId());
                     }
-
+                    
                     if (chatMsg.getChatId().startsWith("group-") && chatMsg.getType() == 17) {
                         setTitle(chatMsg.getGroupName());
                     }
-
+                    
                     //With a nickname
                     if (!TextUtils.isEmpty(chatMsg.getUserId())) {
                         chatMsg.setRealname(chatMsg.getUsername());
@@ -1019,7 +1050,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                             chatMsg.setUsername(note);
                         }
                     }
-                    if (mAdapter != null){
+                    if (mAdapter != null) {
                         mAdapter.addChatMsg(chatMsg, true);
                         if (listView.getLastVisiblePosition() >= mAdapter.getCount() - 2)//Only in the bottom, to the new message to scroll to the bottom
                         {
@@ -1027,13 +1058,12 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                         }
                     }
                 }
-            }
-            else if (intent != null && XmppAction.ACTION_OFFLINE_MESSAGE_LIST_LISTENER.equals(intent.getAction())) {
+            } else if (intent != null && XmppAction.ACTION_OFFLINE_MESSAGE_LIST_LISTENER.equals(intent.getAction())) {
                 List<ChatMsg> list = (List<ChatMsg>) intent.getSerializableExtra("array");
                 if (list != null) {
                     for (int i = 0; i < list.size(); i++) {
                         ChatMsg chatMsg = list.get(i);
-
+                        
                         if (chatMsg != null && uid.equals(chatMsg.getChatId())) {   //I chat with the friends
                             if (chatMsg.getType() == 1010 && chatMsg.getUnread() == 1) {
                                 chatMsg.setUnread(0);
@@ -1047,7 +1077,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                                     chatMsg.setUsername(note);
                                 }
                             }
-                            if (mAdapter != null){
+                            if (mAdapter != null) {
                                 mAdapter.addChatMsg(chatMsg, i == list.size() - 1);
                                 if (i == list.size() - 1) {
                                     if (listView.getLastVisiblePosition() >= mAdapter.getCount() - 1 - list.size())//Only in the bottom, to the new message to scroll to the bottom
@@ -1057,7 +1087,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                                 }
                             }
                         }
-
+                        
                     }
                 }
             } else if (intent != null && XmppAction.ACTION_MESSAGE_UPDATE_LISTENER.equals(intent.getAction())) {
@@ -1098,33 +1128,31 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                 } else {
                     linear.setVisibility(View.VISIBLE);
                 }
-            }else if (intent != null && Constants.ACTION_CHATTING_PHOTO_LIST.equals(intent.getAction())) {//Choose image correction
-
+            } else if (intent != null && Constants.ACTION_CHATTING_PHOTO_LIST.equals(intent.getAction())) {//Choose image correction
+                
                 chattingManager.onActivityResult(ChattingManager.ACTION_PHOTO_MORE_RESULT, Activity.RESULT_OK, intent);
-
-            }else if (intent != null && Constants.ACTION_CHATTING_FRIEND_NOTE.equals(intent.getAction())) {    //Choose image correction
+                
+            } else if (intent != null && Constants.ACTION_CHATTING_FRIEND_NOTE.equals(intent.getAction())) {    //Choose image correction
                 String showname = intent.getExtras().getString("showname");
                 String showuid = intent.getExtras().getString("showuid");
-                if (!isGroup && !TextUtils.equals(Constants.APP_EVERYONE,uid)) {
+                if (!isGroup && !TextUtils.equals(Constants.APP_EVERYONE, uid)) {
                     //With a nickname
                     if (showuid.equals(uid)) {
                         setTitle(showname);
                     }
                 } else {
                     for (int i = 0; i < mAdapter.getList().size(); i++) {
-                        if (TextUtils.equals(showuid,mAdapter.getList().get(i).getUserId())) {
+                        if (TextUtils.equals(showuid, mAdapter.getList().get(i).getUserId())) {
                             mAdapter.getList().get(i).setUsername(showname);
                         }
                     }
                     mAdapter.modifyNickName(showuid, showname);
                     mAdapter.notifyDataSetChanged();
                 }
-            }
-            else if(intent != null && XmppAction.ACTION_ENTER_EVERYONE_LISTENER.equals(intent.getAction()))//进入evertone
+            } else if (intent != null && XmppAction.ACTION_ENTER_EVERYONE_LISTENER.equals(intent.getAction()))//进入evertone
             {
                 ChatMsg chatMsg = new ChatMsg();
-                if(uid.equals(Constants.APP_EVERYONE))
-                {
+                if (uid.equals(Constants.APP_EVERYONE)) {
                     chatMsg.setType(12);
                     chatMsg.setContent(getString(R.string.chat_welcome_to_everyone));
                     mAdapter.addChatMsg(chatMsg, true);
@@ -1138,10 +1166,10 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             /*The following five without a net*/
             else if (intent != null && intent.getAction().equals(Constants.MSG_REPORT_SEND_MSG_RESULT)) {
                 boolean result = intent.getExtras().getBoolean("result");
-                int  state = intent.getExtras().getInt("state");
+                int state = intent.getExtras().getInt("state");
                 String msgId = intent.getExtras().getString("msgid");
-                mAdapter.updateOfflineSendStatus(result, state,msgId);
-            }else if(intent != null && intent.getAction().equals(Constants.MSG_REPORT_SEND_MSG_PROGRESS)){
+                mAdapter.updateOfflineSendStatus(result, state, msgId);
+            } else if (intent != null && intent.getAction().equals(Constants.MSG_REPORT_SEND_MSG_PROGRESS)) {
                 long currentLength = intent.getExtras().getLong("currentLength");
                 String msgId = intent.getExtras().getString("msgid");
                 for (int m = mAdapter.getCount() - 1; m > -1; m--) {
@@ -1152,63 +1180,117 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                 }
                 int first = listView.getFirstVisiblePosition();
                 int last = listView.getLastVisiblePosition();
-
+                
                 for (int m = first; m <= last; m++) {
                     View convertView = listView.getChildAt(m - first);
-                    if (convertView == null || m  >= mAdapter.getCount()) {
+                    if (convertView == null || m >= mAdapter.getCount()) {
                         continue;
                     }
-                    if (mAdapter.getItem(m).getType() == 1009 &&  mAdapter.getItem(m).getMessageId().equals(msgId)) {
+                    if (mAdapter.getItem(m).getType() == 1009 && mAdapter.getItem(m).getMessageId().equals(msgId)) {
                         ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.file_send_progress);
                         int percent = (int) ((mAdapter.getItem(m).getNewprogress() * 100) / (Long.parseLong(mAdapter.getItem(m).getNumber())) * 1.0f);
                         progressBar.setProgress(percent);
                         break;
                     }
                 }
-            }else if(intent != null && intent.getAction().equals(Constants.MSG_REPORT_START_RECV_FILE))//Begin to receive files
+            } else if (intent != null && intent.getAction().equals(Constants.MSG_REPORT_START_RECV_FILE))//Begin to receive files
             {
-                int  commend = intent.getExtras().getInt("commend");
+                int commend = intent.getExtras().getInt("commend");
                 String msgId = intent.getExtras().getString("msgid");
-                if (appNetService != null){
-                    appNetService.handleSendFileCommend(uid,msgId,commend);
-                }
-                mAdapter.updateOfflineSendStatus(true, 5,msgId);
-                FinalUserDataBase.getInstance().updateOfflineChatMsgState(msgId,5,1);
-            }
-            else if(intent.getAction().equals(Constants.MSG_REPORT_CANCEL_SEND_FILE))//Cancel sending files
-            {
-                int  commend = intent.getExtras().getInt("commend");
-                String msgId = intent.getExtras().getString("msgid");
-                if (appNetService != null){
-                    appNetService.handleSendFileCommend(uid,msgId,commend);
-                }
-                mAdapter.updateOfflineSendStatus(true, 3,msgId);
-                FinalUserDataBase.getInstance().updateOfflineChatMsgState(msgId, 3, 1);
-
-            }
-            else if(intent != null && intent.getAction().equals(Constants.MSG_REPORT_CANCEL_RECV_FILE))//Cancel the receiving
-            {
-                int  commend = intent.getExtras().getInt("commend");
-                String msgId = intent.getExtras().getString("msgid");
-                if (appNetService != null){
+                if (appNetService != null) {
                     appNetService.handleSendFileCommend(uid, msgId, commend);
                 }
-                mAdapter.updateOfflineSendStatus(true, 8,msgId);
+                mAdapter.updateOfflineSendStatus(true, 5, msgId);
+                FinalUserDataBase.getInstance().updateOfflineChatMsgState(msgId, 5, 1);
+            } else if (intent.getAction().equals(Constants.MSG_REPORT_CANCEL_SEND_FILE))//Cancel sending files
+            {
+                int commend = intent.getExtras().getInt("commend");
+                String msgId = intent.getExtras().getString("msgid");
+                if (appNetService != null) {
+                    appNetService.handleSendFileCommend(uid, msgId, commend);
+                }
+                mAdapter.updateOfflineSendStatus(true, 3, msgId);
+                FinalUserDataBase.getInstance().updateOfflineChatMsgState(msgId, 3, 1);
+                
+            } else if (intent != null && intent.getAction().equals(Constants.MSG_REPORT_CANCEL_RECV_FILE))//Cancel the receiving
+            {
+                int commend = intent.getExtras().getInt("commend");
+                String msgId = intent.getExtras().getString("msgid");
+                if (appNetService != null) {
+                    appNetService.handleSendFileCommend(uid, msgId, commend);
+                }
+                mAdapter.updateOfflineSendStatus(true, 8, msgId);
                 FinalUserDataBase.getInstance().updateOfflineChatMsgState(msgId, 8, 1);
+            } else if (intent != null && MeshMessageConfig.ACTION_MESH_UPDATE_ME.equals(intent.getAction())) {//update
+                try {
+                    Bundle bundle = intent.getBundleExtra(MeshMessageConfig.ACTION_MESH_UPDATE_ME);
+                    final ChatMsg chatMsg = (ChatMsg) bundle.getSerializable(MeshMessageConfig.ACTION_MESH_UPDATE_ME);
+                    chatMsg.setChatId(Constants.APP_MESH);
+                    if (null != chatMsg) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mAdapter.addChatMsg(chatMsg, true);
+                                listView.setSelection(mAdapter.getCount());
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                }
+            } else if (intent != null && MeshMessageConfig.ACTION_MESH_UPDATE_RECEEIVE.equals(intent.getAction())) {
+                try {
+                    Bundle bundle = intent.getBundleExtra(MeshMessageConfig.ACTION_MESH_UPDATE_RECEEIVE);
+                    final MessageVo msg = (MessageVo) bundle.getSerializable(MeshMessageConfig.ACTION_MESH_UPDATE_RECEEIVE);
+                    if (null != msg) {
+                        try {
+
+                            if ((uid.equals(Constants.APP_MESH) && MeshMessageConfig.MESH_CHAT_GROUP == msg.getChatType()) || (!uid.equals(Constants.APP_MESH) && MeshMessageConfig.MESH_CHAT_SINGLE == msg.getChatType() && uid.equals(msg.getLocalId()))) {
+                                final ChatMsg chatMsg = new ChatMsg();
+                                if (MESSAGE_TEXT == msg.getMessageType()) {
+                                    chatMsg.setType(0);
+                                } else if (MeshMessageConfig.MESSAGE_IMAGE == msg.getMessageType()) {
+                                    chatMsg.setType(1);
+                                    chatMsg.setCover(BitmapUtils.bitmapToString(msg.getData()));
+                                    chatMsg.setLocalUrl(msg.getImageLocalUrl());
+                                }
+                                chatMsg.setContent(msg.getData());
+                                chatMsg.setIsAtGroupAll(false);
+                                chatMsg.setUserId(msg.getLocalId());
+                                chatMsg.setRealname(msg.getFrom());
+                                chatMsg.setUsername(msg.getFrom());
+                                if (MeshMessageConfig.MESH_CHAT_SINGLE == msg.getChatType()) {
+                                    chatMsg.setChatId(msg.getLocalId());
+                                } else if (MeshMessageConfig.MESH_CHAT_GROUP == msg.getChatType()) {
+                                    chatMsg.setChatId(Constants.APP_MESH);
+                                }
+                                chatMsg.setMsgTime(System.currentTimeMillis() / 1000);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mAdapter.addChatMsg(chatMsg, true);
+                                        listView.setSelection(mAdapter.getCount());
+                                    }
+                                });
+                            }
+                        } catch (Exception e) {
+                        }
+                    }
+                } catch (Exception e) {
+                }
             }
         }
     }
-
-
+    
+    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         chattingManager.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
     }
-
+    
     /**
      * Delete or forwarding
-     * */
+     */
     @Override
     public void onSceneListener(boolean isDelete) {
         setViewGone();
@@ -1228,10 +1310,10 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         mAdapter.setSelectedTextView(mLeftSelected);
         chattingBottomRela.setVisibility(View.GONE);
     }
-
+    
     /**
      * According to the receiver model suggests
-     * */
+     */
     @Override
     public void onShow_mode_in_call_tip() {
         final LinearLayout layout = (LinearLayout) findViewById(R.id.mode_in_call_warning);
@@ -1240,26 +1322,29 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         text.setText(getResources().getString(R.string.tip_receiver_mode));
         text.setTextSize(16);
         new Handler().postDelayed(new Runnable() {
-
+            
             @Override
             public void run() {
                 layout.setVisibility(View.GONE);
             }
         }, 1500);
     }
-
-
+    
+    
     /**
      * Reducing state
-     * */
+     */
     private void rollbackScene() {
-        if (uid.equals(Constants.APP_EVERYONE)){
+        if (uid.equals(Constants.APP_EVERYONE)) {
             setTitle(getString(R.string.everyone));
             chattingBottomRela.setVisibility(View.VISIBLE);
-        }else if (uid.equals(Constants.APP_MESH)){
+        } else if (uid.equals(Constants.APP_MESH)) {
             setTitle(getString(R.string.wifimesh));
             chattingBottomRela.setVisibility(View.GONE);
-        }else{
+        } else if (MeshUtils.getInatance().isConnectWifiSsid()) {
+            setTitle(userName);
+            chattingBottomRela.setVisibility(View.GONE);
+        } else {
             setTitle(userName);
             chattingSet.setVisibility(View.VISIBLE);
             chattingBottomRela.setVisibility(View.VISIBLE);
@@ -1271,8 +1356,8 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         mBack.setVisibility(View.VISIBLE);
         mAdapter.rollbackSelected();
     }
-
-
+    
+    
     @Override
     public void onGlobalLayout() {
         try {
@@ -1280,8 +1365,17 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                 listViewHeight = listView.getHeight();
                 listView.setSelection(mAdapter.getCount());
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    private void showMeshNumber(String content) {
+        if (uid.equals(Constants.APP_MESH)) {
+            MeshUtils.getInatance().sendAllText(this, content);
+        } else {
+            MeshUtils.getInatance().sendText(this, content, uid);
+        }
+        
     }
 }
