@@ -130,9 +130,9 @@ public class ChatMsg implements Serializable {
 
 	private String redpacketId;//red packet id
 
-	private String money;//Top-up, refund amount
-	private String number;//The order number
-	private String mode;//Top-up way
+	private String money;//Top-up, refund amount、 Quota
+	private String number;//order number
+	private String mode;//Transfer type
 
 	private String vip_type; //Member types, personal
 	private String vip_level;//Membership grade, group and individual
@@ -186,6 +186,46 @@ public class ChatMsg implements Serializable {
 	private String toAddress;
 	private String txBlockNumber;
 	private int noticeType;//0 sender  1 receiver
+	private String tokenSymbol;//contact symbol
+	private String tokenName;//token name
+	private String tokenAddress;//token_address
+	private String tokenLogo;//token logo
+
+	public static long getSerialVersionUID() {
+		return serialVersionUID;
+	}
+
+	public String getTokenLogo() {
+		return tokenLogo;
+	}
+
+	public void setTokenLogo(String tokenLogo) {
+		this.tokenLogo = tokenLogo;
+	}
+
+	public String getTokenName() {
+		return tokenName;
+	}
+
+	public void setTokenName(String tokenName) {
+		this.tokenName = tokenName;
+	}
+
+	public String getTokenSymbol() {
+		return tokenSymbol;
+	}
+
+	public void setTokenSymbol(String tokenSymbol) {
+		this.tokenSymbol = tokenSymbol;
+	}
+
+	public String getTokenAddress() {
+		return tokenAddress;
+	}
+
+	public void setTokenAddress(String tokenAddress) {
+		this.tokenAddress = tokenAddress;
+	}
 
 	public int getNoticeType() {
 		return noticeType;
@@ -1154,7 +1194,7 @@ public class ChatMsg implements Serializable {
 		setUsersource(obj.optString("usersource"));
 		setUserfrom(obj.optString("userfrom"));
 		setType(obj.optInt("type"));
-		setGroupMask(obj.optInt("mask") == 1 ? true : false);
+		setGroupMask(obj.optInt("mask") == 1);
 		setFriendLog(obj.optInt("friend_log"));
 
 
@@ -1311,6 +1351,10 @@ public class ChatMsg implements Serializable {
 		setToAddress(obj.optString("toaddress"));
 		setTxBlockNumber(obj.optString("txblocknumber"));
 		setNoticeType(obj.optInt("noticetype"));
+		setTokenName(obj.optString("name"));
+		setTokenLogo(obj.optString("logo"));
+		setTokenAddress(obj.optString("token_address"));
+		setTokenSymbol(obj.optString("symbol"));
 		return this;
 	}
 
@@ -1332,10 +1376,10 @@ public class ChatMsg implements Serializable {
 		setGroupMask(msg.getGroupMask());
 		setFriendLog(msg.getFriendLog());
 		setMemberAvatarList(msg.getMemberAvatarList());
-		setAtGroupMe(msg.isAtGroupMe);
+		setAtGroupMe(msg.isAtGroupMe());
 
-		setVip_level(msg.vip_level);
-		setVip_type(msg.vip_type);
+		setVip_level(msg.getVip_level());
+		setVip_type(msg.getVip_type());
 		setIs_vip(msg.isIs_vip());
 
 		if (type == MsgType.groupchat)//Group chat
@@ -1449,6 +1493,10 @@ public class ChatMsg implements Serializable {
 		setToAddress(obj.optString("toaddress"));
 		setTxBlockNumber(obj.optString("txblocknumber"));
 		setNoticeType(obj.optInt("noticetype"));
+		setTokenName(obj.optString("name"));
+		setTokenLogo(obj.optString("logo"));
+		setTokenAddress(obj.optString("token_address"));
+		setTokenSymbol(obj.optString("symbol"));
 		return this;
 	}
 
@@ -1684,6 +1732,7 @@ public class ChatMsg implements Serializable {
 	}
 
 	public void parseUserBaseVo(UserBaseVo vo) {
+		setRealname(vo.getUsername());
 		setUsername(vo.getShowName());
 //		try {
 //			setGender(Integer.parseInt(vo.getGender()));
@@ -1692,6 +1741,132 @@ public class ChatMsg implements Serializable {
 //		}
 		setUserId(vo.getLocalId());
 		setUserImage(vo.getThumb());
+	}
+
+
+	public void parseChatMsgVo(ChatMsg msg) {
+		if (msg == null) {
+			return ;
+		}
+		setChatId(msg.getChatId());
+		setUserId(msg.getUserId());
+		setUsername(msg.getUsername());
+		setUserImage(msg.getUserImage());
+		setGender(msg.getGender());
+		setUsersource(msg.getUsersource());
+		setUserfrom(msg.getUserfrom());
+		setGroupName(msg.getGroupName());
+		setGroupImage(msg.getGroupImage());
+		setGroupId(msg.getGroupId());
+		setGroup(msg.isGroup());
+		setGroupMask(msg.getGroupMask());
+		setFriendLog(msg.getFriendLog());
+		setMemberAvatarList(msg.getMemberAvatarList());
+		setAtGroupMe(msg.isAtGroupMe());
+
+		setVip_level(msg.getVip_level());
+		setVip_type(msg.getVip_type());
+		setIs_vip(msg.isIs_vip());
+
+
+
+
+		setMsgTime(msg.getMsgTime());
+		setMessageId(msg.getMessageId());
+		setMsgType(msg.getMsgType());
+		setType(msg.getType());
+		setContent(msg.getContent());
+
+		setCover(msg.getCover());
+		setSecond(msg.getSecond());
+		setLon(msg.getLon());
+		setLat(msg.getLat());
+
+		setThirdName(msg.getThirdName());
+		setShopAddress(msg.getShopAddress());
+		setThirdImage(msg.getThirdImage());
+		setThirdId(msg.getThirdId());
+		setThirdGender(msg.getThirdGender());
+
+		setCardSign(msg.getCardSign());
+
+		setCreateAge(msg.getCreateAge());
+		setCreateGender(msg.getCreateGender());
+		setCreategSign(msg.getCreategSign());
+		setCreateId(msg.getCreateId());
+		setCreateImage(msg.getCreateImage());
+		setCreateName(msg.getCreateName());
+		setSort(msg.getSort());
+		setGuest(msg.getGuest());
+		setInviteMsg(msg.getInviteMsg());
+		setCreateTime(msg.getCreateTime());
+		setInviteId(msg.getInviteId());
+		setInviteSource(msg.getInviteSource());
+
+		setInviteImage(msg.getInviteImage());
+
+		setDatingSOSId(msg.getDatingSOSId());
+
+		setShareFriendName(msg.getShareFriendName());
+
+		setModifyType(msg.getModifyType());
+		setSceneType(msg.getSceneType());
+		setInviteType(msg.getInviteType());
+
+		//Share share news
+		setShareUrl(msg.getShareUrl());
+		setShareTitle(msg.getShareTitle());
+		setShareThumb(msg.getShareThumb());
+
+		//The url of the live
+		setVideotype(msg.getVideotype());
+		setLivingUrl(msg.getLivingUrl());
+
+		//Group name of the inviter
+		setInviteName(msg.getInviteName());
+
+		//Group by the name of the inviter
+		setBeinviteName(msg.getBeinviteName());
+
+
+		//Whether the administrator
+		setIs_manager(msg.getIs_manager());
+
+		//The total number can be modified
+		setLefttimes(msg.getLefttimes());
+
+		setMoney(msg.getMoney());
+		setNumber(msg.getNumber());
+		setMode(msg.getMode());
+
+		setRedpacketId(msg.getRedpacketId());
+
+		setMsgName(msg.getMsgName());
+
+		setLive_level(msg.getLive_level());
+
+		setSource(msg.getSource());
+		setRemoteSource(msg.getRemoteSource());
+		setSendName(msg.getSendName());
+		setPropName(msg.getPropName());
+		setPropNum(msg.getPropNum());
+		setPropId(msg.getPropId());
+		setFee(msg.getFee());
+		setFromAddress(msg.getFromAddress());
+		setToAddress(msg.getToAddress());
+		setTxBlockNumber(msg.getTxBlockNumber());
+		setNoticeType(msg.getNoticeType());
+		setTokenName(msg.getTokenName());
+		setTokenLogo(msg.getTokenLogo());
+		setTokenAddress(msg.getTokenAddress());
+		setTokenSymbol(msg.getTokenSymbol());
+
+		setUnread(msg.getUnread());
+		setOfflinmsgList(msg.getOfflinmsgList());
+		setExtra(msg.getExtra());
+
+		setDismissGroup(msg.isDismissGroup());
+		setKickGroup(msg.isKickGroup());
 	}
 
 
