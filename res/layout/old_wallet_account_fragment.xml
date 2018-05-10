@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/wallet_bg"
+                    android:orientation="vertical">
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:id="@+id/app_back"
+                            android:layout_width="wrap_content"
+                            android:layout_height="48dp"
+                            android:paddingRight="9dp"
+                            android:paddingLeft="8dp"
+                            android:scaleType="center"
+                            android:src="@drawable/icon_white_back" />
+
+                        <com.lingtuan.firefly.custom.AlwaysMarqueeTextView
+                            android:id="@+id/app_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="48dp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginLeft="70dp"
+                            android:layout_marginRight="70dp"
+                            android:ellipsize="marquee"
+                            android:gravity="center"
+                            android:singleLine="true"
+                            android:textColor="@color/textColor"
+                            android:textSize="19sp" />
+                    </RelativeLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:paddingLeft="10dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="10dp"
+                        android:paddingTop="30dp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:id="@+id/walletNameBody"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center">
+                                <TextView
+                                    android:id="@+id/walletName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:maxLines="1"
+                                    android:gravity="center"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/textColor"/>
+                                <com.lingtuan.firefly.custom.LanguageTextView
+                                    android:id="@+id/walletBackup"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginLeft="10dp"
+                                    android:visibility="gone"
+                                    android:layout_gravity="center_vertical"
+                                    android:maxLines="1"
+                                    android:paddingRight="5dp"
+                                    android:paddingLeft="5dp"
+                                    android:paddingTop="2dp"
+                                    android:paddingBottom="2dp"
+                                    android:gravity="bottom"
+                                    android:textSize="9sp"
+                                    android:text="@string/wallet_backup"
+                                    android:background="@drawable/selector_round_yellow_30"
+                                    android:textColor="@color/textColor"/>
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/walletAddress"
+                                android:layout_width="220dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:layout_marginRight="10dp"
+                                android:singleLine="true"
+                                android:drawableRight="@drawable/wallet_address_qrcode"
+                                android:drawablePadding="5dp"
+                                android:ellipsize="middle"
+                                android:gravity="center"
+                                android:textSize="12sp"
+                                android:textColor="@color/textColor"/>
+                        </LinearLayout>
+
+                        <RelativeLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+
+                            <ImageView
+                                android:id="@+id/walletImg"
+                                android:layout_width="50dp"
+                                android:layout_height="50dp"
+                                android:layout_marginRight="10dp"
+                                android:layout_gravity="right"/>
+                        </RelativeLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ethTokenBody"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/shape_white_border_round_5">
+
+                    <ImageView
+                        android:id="@+id/ethTokenImg"
+                        android:layout_height="50dp"
+                        android:layout_width="50dp"
+                        android:gravity="center"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="10dp"
+                        android:src="@drawable/icon_eth"/>
+
+                    <TextView
+                        android:id="@+id/etnTokenSymbol"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="10dp"
+                        android:textStyle="bold"
+                        android:text="@string/eth"
+                        android:gravity="center_vertical"/>
+
+                    <TextView
+                        android:id="@+id/ethTokenBalance"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:ellipsize="end"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center|right"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/smtTokenBody"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/shape_white_border_round_5">
+
+                    <ImageView
+                        android:id="@+id/smtTokenImg"
+                        android:layout_height="50dp"
+                        android:layout_width="50dp"
+                        android:gravity="center"
+                        android:layout_gravity="center"
+                        android:src="@drawable/icon_smt"
+                        android:layout_marginLeft="10dp"/>
+
+                    <TextView
+                        android:id="@+id/smtTokenSymbol"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="10dp"
+                        android:textStyle="bold"
+                        android:text="@string/smt"
+                        android:gravity="center_vertical"/>
+
+                    <TextView
+                        android:id="@+id/smtTokenBalance"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:ellipsize="end"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center|right"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/meshTokenBody"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/shape_white_border_round_5">
+
+                    <ImageView
+                        android:id="@+id/meshTokenImg"
+                        android:layout_height="50dp"
+                        android:layout_width="50dp"
+                        android:gravity="center"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="10dp"
+                        android:src="@drawable/icon_mesh"/>
+
+                    <TextView
+                        android:id="@+id/meshTokenSymbol"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="10dp"
+                        android:textStyle="bold"
+                        android:text="@string/mesh"
+                        android:gravity="center_vertical"/>
+
+                    <TextView
+                        android:id="@+id/meshTokenBalance"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:ellipsize="end"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center|right"/>
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+    </android.support.v4.widget.SwipeRefreshLayout>
+</LinearLayout>
