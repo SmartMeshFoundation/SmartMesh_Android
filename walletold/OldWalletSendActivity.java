@@ -29,6 +29,7 @@ import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestUtils;
+import com.lingtuan.firefly.wallet.util.Sign2;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.GasVo;
 import com.lingtuan.firefly.wallet.vo.TransVo;
@@ -38,8 +39,10 @@ import org.json.JSONObject;
 import org.spongycastle.util.encoders.Hex;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
+import org.web3j.crypto.Hash;
 import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.core.methods.request.RawTransaction;
+import org.web3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -49,6 +52,7 @@ import java.util.Locale;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+
 
 /**
  * send token
@@ -81,8 +85,10 @@ public class OldWalletSendActivity extends BaseActivity implements SeekBar.OnSee
     private String address;
     private int walletType;//0 ordinary wallets 1 observation wallet
     private double ethBalance,smtBalance,meshBalance;
-    private GasVo ethVo,fftVo,meshVo;
+    private GasVo ethVo,smtVo,meshVo;
     private boolean meshTransferLock;//mesh transfer is lock   true or false
+    private double smtProxy;//smt proxy
+    private double meshProxy;//mesh proxy
     @Override
     protected void setContentView() {
         setContentView(R.layout.old_wallet_send_layout);
@@ -301,26 +307,14 @@ public class OldWalletSendActivity extends BaseActivity implements SeekBar.OnSee
     private void setBalanceMethod(){
         balance.setVisibility(View.GONE);
         if (sendtype == 0){
-            if (ethBalance > 0){
-                BigDecimal ethDecimal = new BigDecimal(ethBalance).setScale(10,BigDecimal.ROUND_DOWN);
-                balance.setText(getString(R.string.balance_er,ethDecimal.toPlainString()));
-            }else{
-                balance.setText(getString(R.string.balance_er,ethBalance + ""));
-            }
+            BigDecimal ethDecimal = new BigDecimal(ethBalance).setScale(10,BigDecimal.ROUND_CEILING);
+            balance.setText(getString(R.string.balance_er,ethDecimal.toPlainString()));
         }else if (sendtype == 1){
-            if (smtBalance > 0){
-                BigDecimal fftDecimal = new BigDecimal(smtBalance).setScale(5,BigDecimal.ROUND_DOWN);
-                balance.setText(getString(R.string.balance_er,fftDecimal.toPlainString()));
-            }else{
-                balance.setText(getString(R.string.balance_er,smtBalance + ""));
-            }
+            BigDecimal fftDecimal = new BigDecimal(smtBalance).setScale(5,BigDecimal.ROUND_CEILING);
+            balance.setText(getString(R.string.balance_er,fftDecimal.toPlainString()));
         }else if (sendtype == 2){
-            if (meshBalance > 0){
-                BigDecimal meshDecimal = new BigDecimal(meshBalance).setScale(5,BigDecimal.ROUND_DOWN);
-                balance.setText(getString(R.string.balance_er,meshDecimal.toPlainString()));
-            }else{
-                balance.setText(getString(R.string.balance_er,meshBalance + ""));
-            }
+            BigDecimal meshDecimal = new BigDecimal(meshBalance).setScale(5,BigDecimal.ROUND_CEILING);
+            balance.setText(getString(R.string.balance_er,meshDecimal.toPlainString()));
         }
     }
 
@@ -348,11 +342,13 @@ public class OldWalletSendActivity extends BaseActivity implements SeekBar.OnSee
                             JSONObject ethObj = obj.optJSONObject("eth");
                             JSONObject fftObj = obj.optJSONObject("smt");
                             JSONObject meshObj = obj.optJSONObject("mesh");
+                            smtProxy = obj.optDouble("smt_proxy");
+                            meshProxy = obj.optDouble("mesh_proxy");
                             meshTransferLock = obj.optInt("mesh_transfer_lock",0) == 1;
                             ethVo = new GasVo().parse(ethObj);//eth  gas
-                            fftVo = new GasVo().parse(fftObj);//smt gas
+                            smtVo = new GasVo().parse(fftObj);//smt gas
                             meshVo = new GasVo().parse(meshObj);//mesh gas
-                            if ((sendtype == 0 && ethVo == null) || (sendtype == 1 && fftVo == null) || (sendtype == 2 && meshVo == null)){
+                            if ((sendtype == 0 && ethVo == null) || (sendtype == 1 && smtVo == null) || (sendtype == 2 && meshVo == null)){
                                 mHandler.sendEmptyMessage(4);
                             }else{
                                 mHandler.sendEmptyMessage(5);
@@ -419,6 +415,7 @@ public class OldWalletSendActivity extends BaseActivity implements SeekBar.OnSee
 
     }
 
+
     //send trans
     private void  sendtrans(){
         String address = toAddress.getText().toString();
@@ -483,7 +480,7 @@ public class OldWalletSendActivity extends BaseActivity implements SeekBar.OnSee
                 return;
             }
         }else if(sendtype == 1){//smt gas
-            if(gasChangeMethod(progress,fftVo)){
+            if(gasChangeMethod(progress,smtVo)){
                 return;
             }
         }else if (sendtype == 2){//mesh gas
@@ -609,9 +606,9 @@ public class OldWalletSendActivity extends BaseActivity implements SeekBar.OnSee
                             seekbar.setProgress(ethVo.getDefaultPrice() - ethVo.getMinPrice());
                         }
                     }else if (sendtype == 1){//smt gas
-                        seekbar.setMax(fftVo.getMaxPrice() - fftVo.getMinPrice());
-                        if (fftVo.getDefaultPrice() - fftVo.getMinPrice() > 0){
-                            seekbar.setProgress(fftVo.getDefaultPrice() - fftVo.getMinPrice());
+                        seekbar.setMax(smtVo.getMaxPrice() - smtVo.getMinPrice());
+                        if (smtVo.getDefaultPrice() - smtVo.getMinPrice() > 0){
+                            seekbar.setProgress(smtVo.getDefaultPrice() - smtVo.getMinPrice());
                         }
                     }else if (sendtype == 2){//mesh gas
                         if (meshVo != null){
@@ -671,7 +668,7 @@ public class OldWalletSendActivity extends BaseActivity implements SeekBar.OnSee
                 setGasMethod(ethVo);
             }else if (sendtype == 1){//smt
                 setTitle(getString(R.string.send_blance_title,getString(R.string.smt)));
-                setGasMethod(fftVo);
+                setGasMethod(smtVo);
             }else if (sendtype == 2){//mesh
                 setTitle(getString(R.string.send_blance_title,getString(R.string.mesh)));
                 setGasMethod(meshVo);
@@ -746,7 +743,7 @@ public class OldWalletSendActivity extends BaseActivity implements SeekBar.OnSee
             if (sendtype == 0){
                 setGasMethod(ethVo);
             }else if (sendtype == 1){
-                setGasMethod(fftVo);
+                setGasMethod(smtVo);
             }else if (sendtype == 2){
                 setGasMethod(meshVo);
             }
@@ -953,6 +950,121 @@ public class OldWalletSendActivity extends BaseActivity implements SeekBar.OnSee
             e.printStackTrace();
         }
     }
+
+    /**
+     * send trans token with proxy
+     * */
+    private void sendTransTokenWithProxy(final Credentials keys){
+        final String valueOld =  new BigDecimal(toValue.getText().toString()).multiply(ONE_ETHER).setScale(0,BigDecimal.ROUND_DOWN).toPlainString();
+        final String feeSmtOld = new BigDecimal(smtProxy).multiply(ONE_ETHER).setScale(0,BigDecimal.ROUND_DOWN).toPlainString();
+        final String from = fromAddress.getText().toString();
+        final String to = toAddress.getText().toString();
+        String value  =  new BigDecimal(valueOld).toBigInteger().toString(16);
+        for(int i=0;i<64;i++){
+            if(value.length()>=64){
+                break;
+            }else{
+                value = "0"+ value;
+            }
+        }
+        final String newvalue = value;
+        String feeSmt =  new BigDecimal(feeSmtOld).toBigInteger().toString(16);
+        for(int i=0;i<64;i++){
+            if(feeSmt.length()>=64){
+                break;
+            }else{
+                feeSmt = "0"+ feeSmt;
+            }
+        }
+        final String newfeeFft = feeSmt;
+        try {
+            NetRequestUtils.getInstance().getNonce(OldWalletSendActivity.this,fromAddress.getText().toString(), new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Message message = Message.obtain();
+                    message.obj = "Error";
+                    message.what = 3;
+                    mHandler.sendMessage(message);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    try {
+                        String body = response.body().string();
+                        JSONObject object = new JSONObject(body);
+                        int errcod = object.optInt("errcod");
+                        String msg = object.optString("msg");
+                        if (errcod != 0){//error
+                            Message message = Message.obtain();
+                            message.obj = msg;
+                            message.what = 3;
+                            mHandler.sendMessage(message);
+                        }else{
+
+                            String nonce = new BigDecimal(object.optJSONObject("data").optString("nonce")).toBigInteger().toString(16);
+                            for(int i=0;i<64;i++){
+                                if(nonce.length()>=64){
+                                    break;
+                                }else{
+                                    nonce = "0"+ nonce;
+                                }
+                            }
+                            //mesh to hex 4d657368426f78   smt to hex 21f15966e07a10554c364b988e91dab01d32794a
+                            String smtHex = Constants.GLOBAL_SWITCH_OPEN ? "21f15966e07a10554c364b988e91dab01d32794a" : "b1f2464fc8564533a114a879fb1348fc095381b8";
+                            String message = from.substring(2) + to.substring(2) + newvalue + newfeeFft + nonce + smtHex;
+                            byte[] srtbyte = Hash.sha3(Numeric.hexStringToByteArray(message));
+                            Sign2.SignatureData data = Sign2.signMessage(srtbyte,keys.getEcKeyPair());
+                            String R = "0x" + Hex.toHexString(data.getR());
+                            String S = "0x" + Hex.toHexString(data.getS());
+                            byte V = data.getV();
+                            NetRequestUtils.getInstance().sendTransferProxy(OldWalletSendActivity.this,from,to,valueOld,feeSmtOld,R,S,V, new Callback() {
+                                @Override
+                                public void onFailure(Call call, IOException e) {
+                                    Message message = Message.obtain();
+                                    message.obj = "Error";
+                                    message.what = 3;
+                                    mHandler.sendMessage(message);
+                                }
+
+                                @Override
+                                public void onResponse(Call call, Response response) throws IOException {
+                                    try {
+                                        String body = response.body().string();
+                                        JSONObject object = new JSONObject(body);
+                                        int errcod = object.optInt("errcod");
+                                        String msg = object.optString("msg");
+                                        String txurl = object.optJSONObject("data").optString("txurl");
+                                        String tx = object.optJSONObject("data").optString("tx");
+                                        if (errcod != 0){//error
+                                            Message message = Message.obtain();
+                                            message.obj = msg;
+                                            message.what = 3;
+                                            mHandler.sendMessage(message);
+                                        }else{
+                                            Message message = Message.obtain();
+                                            Bundle bundle = new Bundle();
+                                            bundle.putString("tx",tx);
+                                            bundle.putString("txurl",txurl);
+                                            message.setData(bundle);
+                                            message.what = 2;
+                                            mHandler.sendMessage(message);
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * show dialog single button
