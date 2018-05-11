@@ -149,16 +149,6 @@
                                 android:paddingTop="13dp"
                                 android:textSize="12sp"
                                 android:textColor="@color/textColorHint"/>
-
-                            <TextView
-                                android:id="@+id/gasSelect"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:padding="10dp"
-                                android:text="@string/eth"
-                                android:drawableRight="@drawable/down_flg"
-                                android:drawablePadding="5dp"
-                                android:layout_gravity="center_vertical" />
                         </LinearLayout>
 
                         <TextView
