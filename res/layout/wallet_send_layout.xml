@@ -155,9 +155,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:padding="10dp"
-                                android:text="@string/eth"
+                                android:text="@string/smt"
                                 android:drawableRight="@drawable/down_flg"
                                 android:drawablePadding="5dp"
+                                android:visibility="gone"
                                 android:layout_gravity="center_vertical" />
                         </LinearLayout>
 
