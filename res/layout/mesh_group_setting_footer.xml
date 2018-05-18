@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/gray_sep_bg"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/mesh_group_all_member"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="@drawable/scrollview_item_bg">
+        <TextView
+            android:id="@+id/mesh_group_all_num"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            style="@style/main_title"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:text="@string/discuss_all"
+            android:textColor="@color/textColorHintPrimary"
+            android:drawableRight="@drawable/icon_go"
+            android:drawablePadding="5dp"
+            android:padding="15dp"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/mesh_group_setting_dissmiss"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="15dip"
+        android:padding="10dp"
+        android:background="@drawable/selector_round_black_5"
+        android:gravity="center"
+        android:text="@string/group_dismiss_discussion"
+        android:textColor="@color/textColor"
+        android:textSize="16sp" />
+
+  </LinearLayout>
