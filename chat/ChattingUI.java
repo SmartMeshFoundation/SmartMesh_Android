@@ -46,8 +46,10 @@ import com.lingtuan.firefly.contact.SelectGroupMemberListUI;
 import com.lingtuan.firefly.custom.LoadMoreListView;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.ChattingItemCallBack;
+import com.lingtuan.firefly.mesh.MeshDiscover;
 import com.lingtuan.firefly.mesh.MeshMessageConfig;
 import com.lingtuan.firefly.mesh.MeshService;
+import com.lingtuan.firefly.mesh.MeshUserInfo;
 import com.lingtuan.firefly.mesh.MeshUtils;
 import com.lingtuan.firefly.mesh.MessageVo;
 import com.lingtuan.firefly.offline.AppNetService;
@@ -68,6 +70,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.lingtuan.firefly.NextApplication.mContext;
 import static com.lingtuan.firefly.mesh.MeshMessageConfig.MESSAGE_TEXT;
@@ -860,16 +863,67 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             }
             mAdapter.addChatMsg(msg, true);
         } else if (uid.equals(Constants.APP_MESH)) {// send mesh text
-            showMeshNumber(content);
+            if (MeshUtils.getInatance().isConnectWifiSsid()) {
+                showMeshNumber(content);
+            } else {
+                showToast(getString(R.string.mesh_chat_no_send_hint));
+            }
         } else if (isGroup) {
             ChatMsg msg = XmppMessageUtil.getInstance().sendText(uid, content, isAtAll, atIds, userName, avatarUrl, isGroup, !(isDismissGroup || isKickGroup));
             mAdapter.addChatMsg(msg, true);
         } else {
             if (MeshUtils.getInatance().isConnectWifiSsid()) {//mesh++
-                Bundle bundle = new Bundle();
-                bundle.putString(MeshMessageConfig.MESH_MESSAGE_BUNDLE_LOCALID, uid);
-                bundle.putString(MeshMessageConfig.MESH_MESSAGE_BUNDLE_MSG, content);
-                Utils.intentService(mContext, MeshService.class, MeshMessageConfig.ACTION_MESH_SEND_CHECK, MeshMessageConfig.MESH_MESSAGE_BUNDLE, bundle);
+                ConcurrentHashMap<String, MeshUserInfo> mServiceMap = MeshDiscover.getInatance().mServiceMap;
+                boolean has = false;
+                for (final String key : mServiceMap.keySet()) {
+                    if (key.equals(uid)) {
+                        has = true;
+                    }
+                }
+                if (has) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString(MeshMessageConfig.MESH_MESSAGE_BUNDLE_LOCALID, uid);
+                    bundle.putString(MeshMessageConfig.MESH_MESSAGE_BUNDLE_MSG, content);
+                    Utils.intentService(mContext, MeshService.class, MeshMessageConfig.ACTION_MESH_SEND_CHECK, MeshMessageConfig.MESH_MESSAGE_BUNDLE, bundle);
+                } else {
+                    boolean foundPeople = false;
+                    if (appNetService != null && appNetService.getwifiPeopleList() != null) {
+                        for (WifiPeopleVO vo : appNetService.getwifiPeopleList())//All users need to traverse, find out the corresponding touid users
+                        {
+                            if (uid.equals(vo.getLocalId())) {
+                                foundPeople = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (foundPeople)//With no net with no net send messages
+                    {
+                        ChatMsg msg = new ChatMsg();
+                        msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                        msg.setChatId(uid);
+                        msg.setType(0);
+                        msg.setSend(1);
+                        msg.setMsgTime(System.currentTimeMillis() / 1000);
+                        msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
+                        msg.setContent(content);
+                        msg.setOffLineMsg(true);
+                        msg.setMessageId(UUID.randomUUID().toString());
+                        if (appNetService != null) {
+                            successed = appNetService.handleSendString(content, false, uid, msg.getMessageId());
+                        }
+                        if (!successed) {
+                            msg.setSend(0);
+                        }
+                        File recvFile = new File(SDCardCtrl.getOfflinePath() + File.separator + uid + ".jpg");
+                        String imageAvatar = "file://" + recvFile.getAbsolutePath();
+                        FinalUserDataBase.getInstance().saveChatMsg(msg, uid, isGroup ? "offline" : userName, imageAvatar);
+                        msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                        mAdapter.addChatMsg(msg, true);
+                    } else {
+                        ChatMsg msg = XmppMessageUtil.getInstance().sendText(uid, content, isAtAll, atIds, userName, avatarUrl, isGroup, !(isDismissGroup || isKickGroup));
+                        mAdapter.addChatMsg(msg, true);
+                    }
+                }
             } else {
                 boolean foundPeople = false;
                 if (appNetService != null && appNetService.getwifiPeopleList() != null) {
@@ -1225,7 +1279,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                 try {
                     Bundle bundle = intent.getBundleExtra(MeshMessageConfig.ACTION_MESH_UPDATE_ME);
                     final ChatMsg chatMsg = (ChatMsg) bundle.getSerializable(MeshMessageConfig.ACTION_MESH_UPDATE_ME);
-                    chatMsg.setChatId(Constants.APP_MESH);
+                    chatMsg.setChatId(uid);
                     if (null != chatMsg) {
                         runOnUiThread(new Runnable() {
                             @Override
@@ -1243,7 +1297,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                     final MessageVo msg = (MessageVo) bundle.getSerializable(MeshMessageConfig.ACTION_MESH_UPDATE_RECEEIVE);
                     if (null != msg) {
                         try {
-
+                            
                             if ((uid.equals(Constants.APP_MESH) && MeshMessageConfig.MESH_CHAT_GROUP == msg.getChatType()) || (!uid.equals(Constants.APP_MESH) && MeshMessageConfig.MESH_CHAT_SINGLE == msg.getChatType() && uid.equals(msg.getLocalId()))) {
                                 final ChatMsg chatMsg = new ChatMsg();
                                 if (MESSAGE_TEXT == msg.getMessageType()) {
@@ -1258,12 +1312,14 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                                 chatMsg.setUserId(msg.getLocalId());
                                 chatMsg.setRealname(msg.getFrom());
                                 chatMsg.setUsername(msg.getFrom());
+                                chatMsg.setMsgTime(System.currentTimeMillis() / 1000);
+                                chatMsg.setShowTime(FinalUserDataBase.getInstance().isShowTime(uid, chatMsg.getMsgTime()));
                                 if (MeshMessageConfig.MESH_CHAT_SINGLE == msg.getChatType()) {
                                     chatMsg.setChatId(msg.getLocalId());
                                 } else if (MeshMessageConfig.MESH_CHAT_GROUP == msg.getChatType()) {
                                     chatMsg.setChatId(Constants.APP_MESH);
                                 }
-                                chatMsg.setMsgTime(System.currentTimeMillis() / 1000);
+                                
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
