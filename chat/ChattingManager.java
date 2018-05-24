@@ -16,6 +16,7 @@ import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -29,6 +30,11 @@ import com.lingtuan.firefly.chat.audio.RecordAudioView;
 import com.lingtuan.firefly.chat.vo.FileChildVo;
 import com.lingtuan.firefly.contact.SelectContactUI;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
+import com.lingtuan.firefly.mesh.MeshDiscover;
+import com.lingtuan.firefly.mesh.MeshMessageConfig;
+import com.lingtuan.firefly.mesh.MeshUserInfo;
+import com.lingtuan.firefly.mesh.MeshUtils;
+import com.lingtuan.firefly.mesh.MessageVo;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
 import com.lingtuan.firefly.service.LoadDataService;
@@ -57,6 +63,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import me.iwf.photopicker.PhotoPicker;
 
@@ -66,12 +73,12 @@ import static android.app.Activity.RESULT_OK;
  * Chat management class
  */
 public class ChattingManager implements RecordAudioView.IRecordAudioListener, LineWaveVoiceView.ILineWaveVoiceListener {
-
+    
     private static final int ACTION_PHOTO_RESULT = 1000;
     private static final int ACTION_CAMERA_RESULT = 1001;
     public static final int ACTION_PHOTO_MORE_RESULT = 1002;
     public static final int ACTION_MANY_FILE_RESULT = 1004;
-
+    
     private static ChattingManager instance;
     private Context mContext;
     private String userName;
@@ -84,12 +91,14 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
     private boolean isGroup = false;
     private boolean isSend = true;
     private AppNetService appNetService;
-
+    
     public Set<String> sbAtGroupSelectIds = new HashSet<>();
-
+    
     private View mAduioView;
-
-    /**Voice related*/
+    
+    /**
+     * Voice related
+     */
     private long recordTotalTime;//The recording time
     private Timer timer;
     private TimerTask timerTask;
@@ -106,27 +115,27 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
     public static final int PERMISSIONS_REQUEST_AUDIO = 0x2;
     private long maxRecordTime = DEFAULT_MAX_RECORD_TIME;
     private long minRecordTime = DEFAULT_MIN_RECORD_TIME;
-
+    
     private EditText mInputContent;
-
+    
     private int groupAtSelectIndex = 0;
-
+    
     private ChattingManager(Context mContext) {
         this.mContext = mContext;
     }
-
+    
     public void setmInputContent(EditText mInputContent) {
         this.mInputContent = mInputContent;
     }
-
+    
     public void setGroupAtSelectIndex(int groupAtSelectIndex) {
         this.groupAtSelectIndex = groupAtSelectIndex;
     }
-
+    
     public void setAppNetService(AppNetService appNetService) {
         this.appNetService = appNetService;
     }
-
+    
     public void updateAtGroupIds(String ids) {
         if (ids == null || ids.isEmpty()) {
             sbAtGroupSelectIds.clear();
@@ -146,7 +155,7 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             }
         }
     }
-
+    
     public String getSbAtGroupSelectIds() {
         StringBuilder sb = new StringBuilder();
         if (!sbAtGroupSelectIds.isEmpty()) {
@@ -157,41 +166,41 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         }
         return sb.toString();
     }
-
+    
     public boolean isAtAll(String content) {
         if (content.contains(mContext.getString(R.string.chat_at_all_two))) {
             return true;
         } else {
             return false;
         }
-
+        
     }
-
-
+    
+    
     public boolean isFinish() {
         return isFinish;
     }
-
+    
     public void setFinish(boolean isFinish) {
         this.isFinish = isFinish;
     }
-
-
+    
+    
     public void setSend(boolean isSend) {
         this.isSend = isSend;
     }
-
+    
     public static ChattingManager getInstance(Context mContext) {
         if (instance == null) {
             instance = new ChattingManager(mContext);
         }
         return instance;
     }
-
+    
     public void setGroup(boolean isGroup) {
         this.isGroup = isGroup;
     }
-
+    
     public void setUserInfo(String userName, String avatarUrl, String uid, ChatAdapter mAdapter, ListView listView) {
         this.userName = userName;
         this.avatarUrl = avatarUrl;
@@ -199,37 +208,34 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         this.mAdapter = mAdapter;
         this.listView = listView;
     }
-
+    
     public void setVoiceInfo(int second) {
         boolean successed = true;
-        if(uid.equals(Constants.APP_EVERYONE)){
+        if (uid.equals(Constants.APP_EVERYONE)) {
             ChatMsg msg = createAudioChatMsg(uid, SDCardCtrl.getAudioPath() + File.separator + audioName, userName, avatarUrl, second + "", isSend);
             if (appNetService != null) {
-                successed = appNetService.handleSendVoice(second, SDCardCtrl.getAudioPath() + File.separator + audioName,true, uid, msg.getMessageId());
+                successed = appNetService.handleSendVoice(second, SDCardCtrl.getAudioPath() + File.separator + audioName, true, uid, msg.getMessageId());
             }
-            if(msg.getSend() ==0 && !successed)
-            {
+            if (msg.getSend() == 0 && !successed) {
                 msg.setSend(0);
             }
             mAdapter.addChatMsg(msg, true);
-
-        }else if(isGroup){
+            
+        } else if (isGroup) {
             ChatMsg msg = createAudioChatMsg(uid, SDCardCtrl.getAudioPath() + File.separator + audioName, userName, avatarUrl, second + "", isSend);
             mAdapter.addChatMsg(msg, true);
-        }
-        else{
-            boolean foundPeople  = false;
-            if(appNetService!=null && appNetService.getwifiPeopleList()!=null)
-            {
+        } else {
+            boolean foundPeople = false;
+            if (appNetService != null && appNetService.getwifiPeopleList() != null) {
                 for (WifiPeopleVO vo : appNetService.getwifiPeopleList())// All users need to traverse, find out the corresponding touid users
                 {
                     if (uid.equals(vo.getLocalId())) {
-                        foundPeople=true;
+                        foundPeople = true;
                         break;
                     }
                 }
             }
-            if(foundPeople)//With no net with no net send messages
+            if (foundPeople)//With no net with no net send messages
             {
                 ChatMsg msg = new ChatMsg();
                 msg.setType(2);
@@ -243,28 +249,26 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                 msg.setMessageId(UUID.randomUUID().toString());
                 msg.setMsgTime(System.currentTimeMillis() / 1000);
                 msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
-                if (appNetService != null){
-                    successed = appNetService.handleSendVoice(second,SDCardCtrl.getAudioPath() + File.separator + audioName, false, uid, msg.getMessageId());
+                if (appNetService != null) {
+                    successed = appNetService.handleSendVoice(second, SDCardCtrl.getAudioPath() + File.separator + audioName, false, uid, msg.getMessageId());
                 }
-                if(!successed)
-                {
+                if (!successed) {
                     msg.setSend(0);
                 }
                 FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
                 msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
                 mAdapter.addChatMsg(msg, true);
-            }
-            else{
+            } else {
                 ChatMsg msg = createAudioChatMsg(uid, SDCardCtrl.getAudioPath() + File.separator + audioName, userName, avatarUrl, second + "", isSend);
                 mAdapter.addChatMsg(msg, true);
             }
         }
         listView.setSelection(mAdapter.getCount());
     }
-
+    
     public void setCardInfo(UserBaseVo cardVo) {
         boolean successed = true;
-        if(uid.equals(Constants.APP_EVERYONE)){
+        if (uid.equals(Constants.APP_EVERYONE)) {
             ChatMsg msg = XmppMessageUtil.getInstance().sendCard(uid, userName, avatarUrl, cardVo.getShowName(), cardVo.getSightml(), cardVo.getThumb(), cardVo.getLocalId(), isGroup, isSend);
             if (appNetService != null) {
                 WifiPeopleVO cardInfo = new WifiPeopleVO();
@@ -272,51 +276,48 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                 cardInfo.setUsername(cardVo.getUsername());
                 cardInfo.setSightml(cardVo.getSightml());
                 String path;
-                if (cardVo.getThumb().startsWith("http") || cardVo.getThumb().startsWith("www")){
+                if (cardVo.getThumb().startsWith("http") || cardVo.getThumb().startsWith("www")) {
                     path = NextApplication.mImageLoader.getDiscCache().get(cardVo.getThumb()).getPath();
-                }else{
+                } else {
                     path = cardVo.getThumb();
                 }
                 cardInfo.setThumb(path);
                 successed = appNetService.handleSendCard(cardInfo, true, uid, msg.getMessageId());
             }
-            if(msg.getSend() ==0 && !successed)
-            {
+            if (msg.getSend() == 0 && !successed) {
                 msg.setSend(0);
             }
             mAdapter.addChatMsg(msg, true);
-
-        }else if(isGroup){
+            
+        } else if (isGroup) {
             ChatMsg msg = XmppMessageUtil.getInstance().sendCard(uid, userName, avatarUrl, cardVo.getShowName(), cardVo.getSightml(), cardVo.getThumb(), cardVo.getLocalId(), isGroup, isSend);
             mAdapter.addChatMsg(msg, true);
-        }
-        else{
-            boolean foundPeople  = false;
-            if(appNetService!=null && appNetService.getwifiPeopleList()!=null)
-            {
+        } else {
+            boolean foundPeople = false;
+            if (appNetService != null && appNetService.getwifiPeopleList() != null) {
                 for (WifiPeopleVO vo : appNetService.getwifiPeopleList())// All users need to traverse, find out the corresponding touid users
                 {
                     if (uid.equals(vo.getLocalId())) {
-                        foundPeople=true;
+                        foundPeople = true;
                         break;
                     }
                 }
             }
-            if(foundPeople)//With no net with no net send messages
+            if (foundPeople)//With no net with no net send messages
             {
-
+                
                 WifiPeopleVO cardInfo = new WifiPeopleVO();
                 cardInfo.setLocalId(cardVo.getLocalId());
                 cardInfo.setUsername(cardVo.getUsername());
                 cardInfo.setSightml(cardVo.getSightml());
                 String path;
-                if (cardVo.getThumb().startsWith("http") || cardVo.getThumb().startsWith("www")){
+                if (cardVo.getThumb().startsWith("http") || cardVo.getThumb().startsWith("www")) {
                     path = NextApplication.mImageLoader.getDiscCache().get(cardVo.getThumb()).getPath();
-                }else{
+                } else {
                     path = cardVo.getThumb();
                 }
                 cardInfo.setThumb(path);
-
+                
                 ChatMsg msg = new ChatMsg();
                 msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
                 msg.setChatId(uid);
@@ -331,67 +332,60 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                 msg.setMsgTime(System.currentTimeMillis() / 1000);
                 msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
                 successed = appNetService.handleSendCard(cardInfo, false, uid, msg.getMessageId());
-                if(!successed)
-                {
+                if (!successed) {
                     msg.setSend(0);
                 }
                 FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
                 msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
                 mAdapter.addChatMsg(msg, true);
-            }
-            else{
+            } else {
                 ChatMsg msg = XmppMessageUtil.getInstance().sendCard(uid, userName, avatarUrl, cardVo.getShowName(), cardVo.getSightml(), cardVo.getThumb(), cardVo.getLocalId(), isGroup, isSend);
                 mAdapter.addChatMsg(msg, true);
-            }}
+            }
+        }
         listView.setSelection(mAdapter.getCount());
     }
-
+    
     /**
      * Send the face
-     * */
-    public void showFaceView(View faceView, EditText mInputContent,View stubBottomBg) {
-        FaceUtils.getInstance(mContext).showFaceView(faceView, mInputContent,stubBottomBg);
+     */
+    public void showFaceView(View faceView, EditText mInputContent, View stubBottomBg) {
+        FaceUtils.getInstance(mContext).showFaceView(faceView, mInputContent, stubBottomBg);
     }
-
-
+    
+    
     /**
      * Choose photos
-     * */
+     */
     public void showPhotoView() {
-        PhotoPicker.builder()
-                .setPhotoCount(9)
-                .setShowCamera(false)
-                .setShowGif(false)
-                .setPreviewEnabled(true)
-                .setGridColumnCount(4)
-                .start((Activity) mContext, PhotoPicker.REQUEST_CODE);
+        PhotoPicker.builder().setPhotoCount(9).setShowCamera(false).setShowGif(false).setPreviewEnabled(true).setGridColumnCount(4).start((Activity) mContext, PhotoPicker.REQUEST_CODE);
     }
-
-
+    
+    
     /**
      * Taking pictures
-     * */
+     */
     public void showCameraView() {
         Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE); //调用系统相机
         imageUri = Uri.fromFile(new File(SDCardCtrl.getChatImagePath() + "/", System.currentTimeMillis() + ".jpg"));
         camera.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
         ((Activity) mContext).startActivityForResult(camera, ACTION_CAMERA_RESULT);
     }
-
-
+    
+    
     /**
      * Choose a business card
-     * */
+     */
     public void showCardView() {
         Intent intent = new Intent(mContext, SelectContactUI.class);
         ((Activity) mContext).startActivityForResult(intent, 0);
         Utils.openNewActivityAnim((Activity) mContext, false);
     }
-
+    
     /**
      * Send voice
-     * */
-    public void showAudioView(View audioView,View stubBottomBg) {
+     */
+    public void showAudioView(View audioView, View stubBottomBg) {
         mainHandler = new Handler();
         if (mAduioView == null) {
             mAduioView = audioView;
@@ -406,30 +400,30 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         mHorVoiceView = (LineWaveVoiceView) mAduioView.findViewById(R.id.horvoiceview);
         record_tips = (TextView) mAduioView.findViewById(R.id.record_tips);
         record_tips.setText(mContext.getString(R.string.chatting_audio_normal));
-        if (mHorVoiceView.getVisibility() == View.VISIBLE){
+        if (mHorVoiceView.getVisibility() == View.VISIBLE) {
             mHorVoiceView.setVisibility(View.INVISIBLE);
         }
-
+        
         recordAudioView.setRecordAudioListener(this);
         mHorVoiceView.setLineWaveVoiceListener(this);
     }
-
+    
     /**
      * Select the file
-     * */
+     */
     public void showFileView() {
-        boolean foundPeople  = false;
-        if(appNetService!=null && appNetService.getwifiPeopleList()!=null){
+        boolean foundPeople = false;
+        if (appNetService != null && appNetService.getwifiPeopleList() != null) {
             for (WifiPeopleVO wifiPeopleVO : appNetService.getwifiPeopleList())// All users need to traverse, find out the corresponding touid users
             {
                 if (uid.equals(wifiPeopleVO.getLocalId())) {
-                    foundPeople=true;
+                    foundPeople = true;
                     break;
                 }
             }
         }
-        if(!foundPeople){
-            MyToast.showToast(mContext,mContext.getString(R.string.offline_file_send_tip));
+        if (!foundPeople) {
+            MyToast.showToast(mContext, mContext.getString(R.string.offline_file_send_tip));
             return;
         }
         MySharedPrefs.writeBoolean(mContext, MySharedPrefs.FILE_USER, Constants.CHAT_SEND_FILE, true);
@@ -437,14 +431,14 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         ((Activity) mContext).startActivityForResult(i, ACTION_MANY_FILE_RESULT);
         Utils.openNewActivityAnim((Activity) mContext, false);
     }
-
+    
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 0 && resultCode == RESULT_OK) {
             ArrayList<UserBaseVo> selectList = (ArrayList<UserBaseVo>) data.getSerializableExtra("selectList");
             if (selectList != null && !selectList.isEmpty()) {
                 setCardInfo(selectList.get(0));
             }
-        }else if (requestCode == ACTION_PHOTO_RESULT && resultCode == RESULT_OK && null != data) {
+        } else if (requestCode == ACTION_PHOTO_RESULT && resultCode == RESULT_OK && null != data) {
             Uri selectedImage = data.getData();
             String[] filePathColumns = {MediaStore.Images.Media.DATA};
             Cursor c = mContext.getContentResolver().query(selectedImage, filePathColumns, null, null, null);
@@ -494,22 +488,23 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
 //                }
 //
 //            } else {
-                UserBaseVo vo = (UserBaseVo) data.getSerializableExtra("data");
-                Editable editable = mInputContent.getText();
-                editable.insert(groupAtSelectIndex, vo.getUserName() + " ");
-                sbAtGroupSelectIds.add(vo.getLocalId());
+            UserBaseVo vo = (UserBaseVo) data.getSerializableExtra("data");
+            Editable editable = mInputContent.getText();
+            editable.insert(groupAtSelectIndex, vo.getUserName() + " ");
+            sbAtGroupSelectIds.add(vo.getLocalId());
 //            }
             Utils.showKeyBoard(mInputContent);
         }
-
+        
     }
-
-
+    
+    
     /**
      * Sending pictures method
+     *
      * @param picturePath Image path
-     * */
-    private void sendImgMethod(String picturePath){
+     */
+    private void sendImgMethod(String picturePath) {
         float density = mContext.getResources().getDisplayMetrics().density;
         int screenWidth = Constants.MAX_IMAGE_WIDTH;//mContext.getResources().getDisplayMetrics().widthPixels;
         int screenHeight = Constants.MAX_IMAGE_HEIGHT;//mContext.getResources().getDisplayMetrics().heightPixels;
@@ -520,58 +515,115 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         String uploadPath = BitmapUtils.saveBitmap2SD(bmpUpload, screenWidth, true).getPath();
         String url = uploadPath;
         boolean successed = true;
-        if(uid.equals(Constants.APP_EVERYONE)){
+        if (uid.equals(Constants.APP_EVERYONE)) {
             ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
             if (appNetService != null) {
                 successed = appNetService.handleSendPicutre(url, true, uid, msg.getMessageId());
             }
-            if(msg.getSend() ==0 && !successed)
-            {
+            if (msg.getSend() == 0 && !successed) {
                 msg.setSend(0);
             }
             mAdapter.addChatMsg(msg, true);
-
-        }else if(isGroup){
+            
+        } else if (uid.equals(Constants.APP_MESH)) {// send mesh picture
+            if (MeshUtils.getInatance().isConnectWifiSsid()) {
+                ChatMsg msg = createMeshImageChatMsg(uid, 1, url, userName, avatarUrl, picturePath, isGroup, isSend);
+                if (!TextUtils.isEmpty(msg.getCover())) {
+                    mAdapter.addChatMsg(msg, true);
+                }
+            } else {
+                MyToast.showToast(mContext, mContext.getString(R.string.mesh_chat_no_send_hint));
+            }
+        } else if (isGroup) {
             ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
             mAdapter.addChatMsg(msg, true);
-        }else{
-            boolean foundPeople  = false;
-            if(appNetService!=null && appNetService.getwifiPeopleList()!=null)
-            {
-                for (WifiPeopleVO vo : appNetService.getwifiPeopleList())// All users need to traverse, find out the corresponding touid users
-                {
-                    if (uid.equals(vo.getLocalId())) {
-                        foundPeople=true;
-                        break;
+        } else {
+            if (MeshUtils.getInatance().isConnectWifiSsid()) {//mesh++
+                ConcurrentHashMap<String, MeshUserInfo> mServiceMap = MeshDiscover.getInatance().mServiceMap;
+                boolean has = false;
+                for (final String key : mServiceMap.keySet()) {
+                    if (key.equals(uid)) {
+                        has = true;
                     }
                 }
-            }
-            if(foundPeople)//With no net with no net send messages
-            {
-                ChatMsg msg = new ChatMsg();
-                msg.setType(1);
-                msg.setContent(url);
-                msg.setLocalUrl(url);
-                msg.setCover(BitmapUtils.BitmapToBase64String(bmp));
-                msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
-                msg.setChatId(uid);
-                msg.setOffLineMsg(true);
-                msg.setSend(1);
-                msg.setMessageId(UUID.randomUUID().toString());
-                msg.setMsgTime(System.currentTimeMillis() / 1000);
-                msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
-                successed = appNetService.handleSendPicutre(url, false, uid, msg.getMessageId());
-                if(!successed)
-                {
-                    msg.setSend(0);
+                if (has) {
+                    ChatMsg msg = createMeshImageChatMsg(uid, 1, url, userName, avatarUrl, picturePath, isGroup, isSend);
+                    if (!TextUtils.isEmpty(msg.getCover())) {
+                        mAdapter.addChatMsg(msg, true);
+                    }
+                } else {
+                    boolean foundPeople = false;
+                    if (appNetService != null && appNetService.getwifiPeopleList() != null) {
+                        for (WifiPeopleVO vo : appNetService.getwifiPeopleList())// All users need to traverse, find out the corresponding touid users
+                        {
+                            if (uid.equals(vo.getLocalId())) {
+                                foundPeople = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (foundPeople)//With no net with no net send messages
+                    {
+                        ChatMsg msg = new ChatMsg();
+                        msg.setType(1);
+                        msg.setContent(url);
+                        msg.setLocalUrl(url);
+                        msg.setCover(BitmapUtils.BitmapToBase64String(bmp));
+                        msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                        msg.setChatId(uid);
+                        msg.setOffLineMsg(true);
+                        msg.setSend(1);
+                        msg.setMessageId(UUID.randomUUID().toString());
+                        msg.setMsgTime(System.currentTimeMillis() / 1000);
+                        msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
+                        successed = appNetService.handleSendPicutre(url, false, uid, msg.getMessageId());
+                        if (!successed) {
+                            msg.setSend(0);
+                        }
+                        FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
+                        msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                        mAdapter.addChatMsg(msg, true);
+                    } else {
+                        ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
+                        mAdapter.addChatMsg(msg, true);
+                    }
                 }
-                FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
-                msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
-                mAdapter.addChatMsg(msg, true);
-            }
-            else{
-                ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
-                mAdapter.addChatMsg(msg, true);
+            } else {
+                boolean foundPeople = false;
+                if (appNetService != null && appNetService.getwifiPeopleList() != null) {
+                    for (WifiPeopleVO vo : appNetService.getwifiPeopleList())// All users need to traverse, find out the corresponding touid users
+                    {
+                        if (uid.equals(vo.getLocalId())) {
+                            foundPeople = true;
+                            break;
+                        }
+                    }
+                }
+                if (foundPeople)//With no net with no net send messages
+                {
+                    ChatMsg msg = new ChatMsg();
+                    msg.setType(1);
+                    msg.setContent(url);
+                    msg.setLocalUrl(url);
+                    msg.setCover(BitmapUtils.BitmapToBase64String(bmp));
+                    msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                    msg.setChatId(uid);
+                    msg.setOffLineMsg(true);
+                    msg.setSend(1);
+                    msg.setMessageId(UUID.randomUUID().toString());
+                    msg.setMsgTime(System.currentTimeMillis() / 1000);
+                    msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
+                    successed = appNetService.handleSendPicutre(url, false, uid, msg.getMessageId());
+                    if (!successed) {
+                        msg.setSend(0);
+                    }
+                    FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
+                    msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                    mAdapter.addChatMsg(msg, true);
+                } else {
+                    ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
+                    mAdapter.addChatMsg(msg, true);
+                }
             }
         }
         listView.setSelection(mAdapter.getCount());
@@ -582,34 +634,35 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             bmpUpload.recycle();
         }
     }
-
+    
     @Override
     public float getMaxAmplitude() {
-        if(startRecordTIme > 0) {
+        if (startRecordTIme > 0) {
             return mRecorder.getMaxAmplitude() * 1.0f / 32768;
         }
         return 0;
     }
-
-
+    
+    
     /**
-     *Sending pictures thread
-     * */
+     * Sending pictures thread
+     */
     class SendImageThread extends Thread {
         private ArrayList<String> pathList;
+        
         public SendImageThread(ArrayList<String> list) {
             this.pathList = list;
             start();
         }
-
+        
         private Handler mHandler = new Handler() {
             public void handleMessage(android.os.Message msg) {
                 mAdapter.addChatMsg((ChatMsg) msg.obj, true);
                 listView.setSelection(mAdapter.getCount());
             }
         };
-
-
+        
+        
         @Override
         public void run() {
             int count = pathList.size();
@@ -631,11 +684,12 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                 }
             }
         }
-
+        
         /**
          * Sending pictures method
+         *
          * @param imageUrl Pictures of local path
-         * */
+         */
         private void sendImage(String imageUrl) {
             float density = mContext.getResources().getDisplayMetrics().density;
             int screenWidth = Constants.MAX_IMAGE_WIDTH;//mContext.getResources().getDisplayMetrics().widthPixels;
@@ -646,102 +700,162 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             String uploadPath = BitmapUtils.saveBitmap2SD(bmpUpload, screenWidth, true).getPath();
             String url = uploadPath;
             boolean successed = true;
-            if(uid.equals(Constants.APP_EVERYONE)){
+            if (uid.equals(Constants.APP_EVERYONE)) {
                 ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
                 if (appNetService != null) {
                     successed = appNetService.handleSendPicutre(url, true, uid, msg.getMessageId());
                 }
-                if(msg.getSend() ==0 && !successed)
-                {
+                if (msg.getSend() == 0 && !successed) {
                     msg.setSend(0);
                 }
                 android.os.Message m = android.os.Message.obtain();
                 m.obj = msg;
                 mHandler.sendMessage(m);
-
-            }else if(isGroup){
+                
+            } else if (uid.equals(Constants.APP_MESH)) {
+                if (MeshUtils.getInatance().isConnectWifiSsid()) {
+                    ChatMsg msg = createMeshImageChatMsg(uid, 1, url, userName, avatarUrl, imageUrl, isGroup, isSend);
+                    if (!TextUtils.isEmpty(msg.getCover())) {
+                        android.os.Message m = android.os.Message.obtain();
+                        m.obj = msg;
+                        mHandler.sendMessage(m);
+                    }
+                } else {
+                    MyToast.showToast(mContext, mContext.getString(R.string.mesh_chat_no_send_hint));
+                }
+            } else if (isGroup) {
                 ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
                 android.os.Message m = android.os.Message.obtain();
                 m.obj = msg;
                 mHandler.sendMessage(m);
-            }
-            else{
-                boolean foundPeople  = false;
-                if(appNetService!=null && appNetService.getwifiPeopleList()!=null)
-                {
-                    for (WifiPeopleVO vo : appNetService.getwifiPeopleList())
-                    {
-                        if (uid.equals(vo.getLocalId())) {
-                            foundPeople=true;
-                            break;
+            } else {
+                if (MeshUtils.getInatance().isConnectWifiSsid()) {//mesh++
+                    ConcurrentHashMap<String, MeshUserInfo> mServiceMap = MeshDiscover.getInatance().mServiceMap;
+                    boolean has = false;
+                    for (final String key : mServiceMap.keySet()) {
+                        if (key.equals(uid)) {
+                            has = true;
                         }
                     }
-                }
-                if(foundPeople)
-                {
-                    ChatMsg msg = new ChatMsg();
-                    msg.setType(1);
-                    msg.setContent(url);
-                    msg.setLocalUrl(url);
-                    msg.setCover(BitmapUtils.BitmapToBase64String(bmp));
-                    msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
-                    msg.setChatId(uid);
-                    msg.setOffLineMsg(true);
-                    msg.setSend(1);
-                    msg.setMessageId(UUID.randomUUID().toString());
-                    msg.setMsgTime(System.currentTimeMillis() / 1000);
-                    msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
-                    successed = appNetService.handleSendPicutre(url, false, uid, msg.getMessageId());
-                    if(!successed)
-                    {
-                        msg.setSend(0);
+                    if (has) {
+                        ChatMsg msg = createMeshImageChatMsg(uid, 1, url, userName, avatarUrl, imageUrl, isGroup, isSend);
+                        if (!TextUtils.isEmpty(msg.getCover())) {
+                            android.os.Message m = android.os.Message.obtain();
+                            m.obj = msg;
+                            mHandler.sendMessage(m);
+                        }
+                    } else {
+                        boolean foundPeople = false;
+                        if (appNetService != null && appNetService.getwifiPeopleList() != null) {
+                            for (WifiPeopleVO vo : appNetService.getwifiPeopleList()) {
+                                if (uid.equals(vo.getLocalId())) {
+                                    foundPeople = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (foundPeople) {
+                            ChatMsg msg = new ChatMsg();
+                            msg.setType(1);
+                            msg.setContent(url);
+                            msg.setLocalUrl(url);
+                            msg.setCover(BitmapUtils.BitmapToBase64String(bmp));
+                            msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                            msg.setChatId(uid);
+                            msg.setOffLineMsg(true);
+                            msg.setSend(1);
+                            msg.setMessageId(UUID.randomUUID().toString());
+                            msg.setMsgTime(System.currentTimeMillis() / 1000);
+                            msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
+                            successed = appNetService.handleSendPicutre(url, false, uid, msg.getMessageId());
+                            if (!successed) {
+                                msg.setSend(0);
+                            }
+                            FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
+                            msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                            android.os.Message m = android.os.Message.obtain();
+                            m.obj = msg;
+                            mHandler.sendMessage(m);
+                        } else {
+                            ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
+                            android.os.Message m = android.os.Message.obtain();
+                            m.obj = msg;
+                            mHandler.sendMessage(m);
+                        }
                     }
-                    FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
-                    msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
-                    android.os.Message m = android.os.Message.obtain();
-                    m.obj = msg;
-                    mHandler.sendMessage(m);
+                } else {
+                    boolean foundPeople = false;
+                    if (appNetService != null && appNetService.getwifiPeopleList() != null) {
+                        for (WifiPeopleVO vo : appNetService.getwifiPeopleList()) {
+                            if (uid.equals(vo.getLocalId())) {
+                                foundPeople = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (foundPeople) {
+                        ChatMsg msg = new ChatMsg();
+                        msg.setType(1);
+                        msg.setContent(url);
+                        msg.setLocalUrl(url);
+                        msg.setCover(BitmapUtils.BitmapToBase64String(bmp));
+                        msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                        msg.setChatId(uid);
+                        msg.setOffLineMsg(true);
+                        msg.setSend(1);
+                        msg.setMessageId(UUID.randomUUID().toString());
+                        msg.setMsgTime(System.currentTimeMillis() / 1000);
+                        msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
+                        successed = appNetService.handleSendPicutre(url, false, uid, msg.getMessageId());
+                        if (!successed) {
+                            msg.setSend(0);
+                        }
+                        FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
+                        msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+                        android.os.Message m = android.os.Message.obtain();
+                        m.obj = msg;
+                        mHandler.sendMessage(m);
+                    } else {
+                        ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
+                        android.os.Message m = android.os.Message.obtain();
+                        m.obj = msg;
+                        mHandler.sendMessage(m);
+                    }
                 }
-                else{
-                    ChatMsg msg = createImageChatMsg(uid, url, userName, avatarUrl, BitmapUtils.BitmapToBase64String(bmp), isGroup, isSend);
-                    android.os.Message m = android.os.Message.obtain();
-                    m.obj = msg;
-                    mHandler.sendMessage(m);
-                }
-                if (bmp != null && !bmp.isRecycled()) {
-                    bmp.recycle();
-                }
-                if (bmpUpload != null && !bmpUpload.isRecycled()) {
-                    bmpUpload.recycle();
-                }
+            }
+            if (bmp != null && !bmp.isRecycled()) {
+                bmp.recycle();
+            }
+            if (bmpUpload != null && !bmpUpload.isRecycled()) {
+                bmpUpload.recycle();
             }
         }
     }
-
+    
     /**
      * The child thread of ordinary sending files
      */
     class SendFileThread extends Thread {
-
+        
         private ArrayList<FileChildVo> fileList;
-
+        
         public SendFileThread(ArrayList<FileChildVo> list) {
             this.fileList = list;
             start();
         }
-
+        
         private Handler mHandler = new Handler() {
             public void handleMessage(android.os.Message msg) {
-                if(msg.what == 1){
-                    MyToast.showToast(mContext,mContext.getString(R.string.offline_file_send_tip));
-                }else{
+                if (msg.what == 1) {
+                    MyToast.showToast(mContext, mContext.getString(R.string.offline_file_send_tip));
+                } else {
                     mAdapter.addChatMsg((ChatMsg) msg.obj, true);
                     listView.setSelection(mAdapter.getCount());
                 }
-
+                
             }
         };
-
+        
         @Override
         public void run() {
             int count = fileList.size();
@@ -763,23 +877,21 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                 }
             }
         }
-
+        
         private void sendFile(FileChildVo vo) {
             boolean successed = true;
-            if(!uid.equals(Constants.APP_EVERYONE) && !isGroup){
-                boolean foundPeople  = false;
-                if(appNetService!=null && appNetService.getwifiPeopleList()!=null)
-                {
+            if (!uid.equals(Constants.APP_EVERYONE) && !isGroup) {
+                boolean foundPeople = false;
+                if (appNetService != null && appNetService.getwifiPeopleList() != null) {
                     for (WifiPeopleVO wifiPeopleVO : appNetService.getwifiPeopleList())// All users need to traverse, find out the corresponding touid users
                     {
                         if (uid.equals(wifiPeopleVO.getLocalId())) {
-                            foundPeople=true;
+                            foundPeople = true;
                             break;
                         }
                     }
                 }
-                if(foundPeople)
-                {
+                if (foundPeople) {
                     ChatMsg msg = new ChatMsg();
                     msg.setType(1009);
                     msg.setContent(vo.getFilePath());
@@ -794,8 +906,7 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                     msg.setMsgTime(System.currentTimeMillis() / 1000);
                     msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
                     successed = appNetService.handleSendFile(vo.getFilePath(), uid, msg.getMessageId());
-                    if(!successed)
-                    {
+                    if (!successed) {
                         msg.setSend(0);
                     }
                     FinalUserDataBase.getInstance().saveChatMsg(msg, uid, userName, avatarUrl);
@@ -803,23 +914,22 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
                     android.os.Message m = android.os.Message.obtain();
                     m.obj = msg;
                     mHandler.sendMessage(m);
-                }
-                else{
+                } else {
                     mHandler.sendEmptyMessage(1);
                 }
             }
         }
     }
-
+    
     public void destory() {
         instance = null;
     }
-
+    
     /**
      * Create photo chat entity class
      */
     private ChatMsg createImageChatMsg(String uid, String content, String uName, String avatarUrl, String cover, boolean isGroup, boolean isSend) {
-
+        
         ChatMsg chatMsg = new ChatMsg();
         chatMsg.setType(1);
         chatMsg.setContent(content);//
@@ -830,8 +940,8 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         if (isGroup) {
             jid = uid.replace("group-", "") + "@group." + XmppUtils.SERVER_NAME;
         }
-
-
+        
+        
         Message msg = new Message(jid, Type.chat);
         chatMsg.setMessageId(msg.getPacketID());
         if (isGroup) {//
@@ -845,7 +955,7 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         } else {
             chatMsg.setSource(mContext.getString(R.string.app_name));
             msg.setBody(chatMsg.toChatJsonObject());
-
+            
         }
         chatMsg.setMsgTime(System.currentTimeMillis() / 1000);
         if (isSend) {
@@ -860,18 +970,12 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             bundle.putString("username", uName);
             bundle.putString("avatarurl", avatarUrl);
             bundle.putSerializable("chatmsg", chatMsg);
-            Utils.intentService(
-                    mContext,
-                    LoadDataService.class,
-                    LoadDataService.ACTION_FILE_UPLOAD_CHAT,
-                    LoadDataService.ACTION_FILE_UPLOAD_CHAT,
-                    bundle);
+            Utils.intentService(mContext, LoadDataService.class, LoadDataService.ACTION_FILE_UPLOAD_CHAT, LoadDataService.ACTION_FILE_UPLOAD_CHAT, bundle);
         }
         return chatMsg;
     }
-
-
-
+    
+    
     /**
      * Resend video
      */
@@ -881,14 +985,9 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         bundle.putString("username", chatMsg.getUsername());
         bundle.putString("avatarurl", chatMsg.getUserImage());
         bundle.putSerializable("chatmsg", chatMsg);
-        Utils.intentService(
-                mContext,
-                LoadDataService.class,
-                LoadDataService.ACTION_VIDEO_UPLOAD_CHAT,
-                LoadDataService.ACTION_VIDEO_UPLOAD_CHAT,
-                bundle);
+        Utils.intentService(mContext, LoadDataService.class, LoadDataService.ACTION_VIDEO_UPLOAD_CHAT, LoadDataService.ACTION_VIDEO_UPLOAD_CHAT, bundle);
     }
-
+    
     /**
      * Chat resend file
      */
@@ -901,13 +1000,10 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             bundle.putString("username", userName);
             bundle.putString("avatarurl", avatarUrl);
             bundle.putSerializable("chatmsg", chatMsg);
-            Utils.intentService(mContext, LoadDataService.class,
-                    LoadDataService.ACTION_UPLOAD_CHAT_FILE_DIR,
-                    LoadDataService.ACTION_UPLOAD_CHAT_FILE_DIR,
-                    bundle);
+            Utils.intentService(mContext, LoadDataService.class, LoadDataService.ACTION_UPLOAD_CHAT_FILE_DIR, LoadDataService.ACTION_UPLOAD_CHAT_FILE_DIR, bundle);
         }
     }
-
+    
     /**
      * Resend image or voice
      */
@@ -920,31 +1016,26 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         bundle.putString("remoteSource", chatMsg.getRemoteSource());
         bundle.putSerializable("chatmsg", chatMsg);
         bundle.putBoolean("isSuperGroup", chatMsg.getChatId().startsWith("superGroup-"));
-        Utils.intentService(
-                mContext,
-                LoadDataService.class,
-                LoadDataService.ACTION_FILE_UPLOAD_CHAT,
-                LoadDataService.ACTION_FILE_UPLOAD_CHAT,
-                bundle);
+        Utils.intentService(mContext, LoadDataService.class, LoadDataService.ACTION_FILE_UPLOAD_CHAT, LoadDataService.ACTION_FILE_UPLOAD_CHAT, bundle);
     }
-
+    
     /**
      * Create a voice chat entity class
      */
     private ChatMsg createAudioChatMsg(String uid, String content, String uName, String avatarUrl, String second, boolean isSend) {
-
+        
         ChatMsg chatMsg = new ChatMsg();
         chatMsg.setType(2);
         chatMsg.setContent(content);
         chatMsg.setLocalUrl(content);
         chatMsg.setSecond(second);
-
+        
         chatMsg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
         String jid = uid + "@" + XmppUtils.SERVER_NAME;
         if (isGroup) {
             jid = uid.replace("group-", "") + "@group." + XmppUtils.SERVER_NAME;
         }
-
+        
         Message msg = new Message(jid, Type.chat);
         chatMsg.setMessageId(msg.getPacketID());
         if (isGroup) {//
@@ -958,7 +1049,7 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         } else {
             chatMsg.setSource(mContext.getString(R.string.app_name));
             msg.setBody(chatMsg.toChatJsonObject());
-
+            
         }
         chatMsg.setMsgTime(System.currentTimeMillis() / 1000);
         if (isSend) {
@@ -973,36 +1064,31 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             bundle.putString("username", uName);
             bundle.putString("avatarurl", avatarUrl);
             bundle.putSerializable("chatmsg", chatMsg);
-            Utils.intentService(
-                    mContext,
-                    LoadDataService.class,
-                    LoadDataService.ACTION_FILE_UPLOAD_CHAT,
-                    LoadDataService.ACTION_FILE_UPLOAD_CHAT,
-                    bundle);
+            Utils.intentService(mContext, LoadDataService.class, LoadDataService.ACTION_FILE_UPLOAD_CHAT, LoadDataService.ACTION_FILE_UPLOAD_CHAT, bundle);
         }
         return chatMsg;
     }
-
-
+    
+    
     @Override
     public boolean onRecordPrepare() {
         //Check the tape permissions
         try {
-            boolean hasPermission = mContext.checkPermission(Manifest.permission.RECORD_AUDIO, android.os.Process.myPid(), android.os.Process.myUid())== PackageManager.PERMISSION_GRANTED;
-            if(!hasPermission) {
-                String[] pp = new String[]{ Manifest.permission.RECORD_AUDIO};
+            boolean hasPermission = mContext.checkPermission(Manifest.permission.RECORD_AUDIO, android.os.Process.myPid(), android.os.Process.myUid()) == PackageManager.PERMISSION_GRANTED;
+            if (!hasPermission) {
+                String[] pp = new String[]{Manifest.permission.RECORD_AUDIO};
                 ActivityCompat.requestPermissions((Activity) mContext, pp, PERMISSIONS_REQUEST_AUDIO);
                 return false;
             }
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
     }
-
+    
     /**
      * Start recording
-     * */
+     */
     @Override
     public String onRecordStart() {
         recordTotalTime = 0;
@@ -1025,17 +1111,17 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         }
         mRecorder.start();
         initTimer();
-        timer.schedule(timerTask,0,DEFAULT_MIN_TIME_UPDATE_TIME);
+        timer.schedule(timerTask, 0, DEFAULT_MIN_TIME_UPDATE_TIME);
         startRecordTIme = System.currentTimeMillis();
         return audioName;
     }
-
+    
     /**
      * The end of the recording
-     * */
+     */
     @Override
     public boolean onRecordStop() {
-        if(recordTotalTime >= minRecordTime){
+        if (recordTotalTime >= minRecordTime) {
             timer.cancel();
             MediaPlayer mediaPlayer = new MediaPlayer();
             try {
@@ -1049,30 +1135,30 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             mHorVoiceView.stopRecord();
             startRecordTIme = 0;
             stopVoice();
-            if(timer != null){
+            if (timer != null) {
                 timer.cancel();
                 timer = null;
             }
-            if (timerTask != null){
+            if (timerTask != null) {
                 timerTask = null;
             }
             record_tips.setText(mContext.getString(R.string.chatting_audio_normal));
-        }else{
+        } else {
             onRecordCancel();
         }
         return false;
     }
-
+    
     /**
      * Cancel the recording
-     * */
+     */
     @Override
     public boolean onRecordCancel() {
-        if(timer != null){
+        if (timer != null) {
             timer.cancel();
             timer = null;
         }
-        if (timerTask != null){
+        if (timerTask != null) {
             timerTask = null;
         }
         startRecordTIme = 0;
@@ -1083,36 +1169,36 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
         deleteVoice();
         return false;
     }
-
+    
     /**
      * Slide to cancel
-     * */
+     */
     @Override
     public void onSlideTop() {
         record_tips.setText(mContext.getString(R.string.chatting_audio_down));
     }
-
+    
     /**
      * Finger to press the
-     * */
+     */
     @Override
     public void onFingerPress() {
         mHorVoiceView.setVisibility(View.VISIBLE);
         record_tips.setText(mContext.getString(R.string.chatting_audio_press));
     }
-
+    
     /**
      * Fingers sliding
-     * */
+     */
     @Override
     public void onFingerSlid() {
         record_tips.setText(mContext.getString(R.string.chatting_audio_press));
     }
-
+    
     /**
      * Initializes the timer is used to update the countdown
      */
-    private void initTimer(){
+    private void initTimer() {
         timer = new Timer();
         timerTask = new TimerTask() {
             @Override
@@ -1128,16 +1214,16 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             }
         };
     }
-
-    private void updateTimerUI(){
-        if(recordTotalTime >= maxRecordTime){
+    
+    private void updateTimerUI() {
+        if (recordTotalTime >= maxRecordTime) {
             recordAudioView.invokeStop();
-        }else{
-            String string = mContext.getString(R.string.chatting_audio_last_say_s ,Utils.formatRecordTime(recordTotalTime,maxRecordTime));
+        } else {
+            String string = mContext.getString(R.string.chatting_audio_last_say_s, Utils.formatRecordTime(recordTotalTime, maxRecordTime));
             mHorVoiceView.setText(string);
         }
     }
-
+    
     /**
      * Stop the recording
      */
@@ -1152,14 +1238,51 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
             e.printStackTrace();
         }
     }
-
+    
     public void deleteVoice() {
         try {
             File file = new File(SDCardCtrl.getAudioPath() + audioName);
             file.delete();
         } catch (Exception e) {
         }
-
+        
     }
-
+    
+    /**
+     * Create photo chat entity class
+     */
+    private ChatMsg createMeshImageChatMsg(String uid, int chatType, String content, String uName, String avatarUrl, String imageUrl, boolean isGroup, boolean isSend) {
+        ChatMsg chatMsg = new ChatMsg();
+        try {
+            String cover = BitmapUtils.bitmapToString(imageUrl);
+            chatMsg.setType(chatType);
+            chatMsg.setContent(content);
+            chatMsg.setLocalUrl(content);
+            chatMsg.setCover(cover);
+            chatMsg.setMessageId(UUID.randomUUID().toString());
+            chatMsg.setUsername(NextApplication.myInfo.getUsername());
+            chatMsg.setUserId(NextApplication.myInfo.getLocalId());
+            chatMsg.setMsgTime(System.currentTimeMillis() / 1000);
+            
+            FinalUserDataBase.getInstance().saveChatMsg(chatMsg, uid, uName, avatarUrl);
+            chatMsg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+            
+            MessageVo data = new MessageVo();
+            data.setChatType(chatType);
+            data.setRequest(MeshMessageConfig.REQUEST_CLIENT_DATA);
+            data.setFrom(MeshMessageConfig.SERVICE_NAME);
+            data.setLocalId(NextApplication.myInfo.getLocalId());
+            data.setMessageType(MeshMessageConfig.MESSAGE_IMAGE);
+            data.setMessageId(UUID.randomUUID().toString());
+            data.setImageLocalUrl(imageUrl);
+            if (uid.equals(Constants.APP_MESH)) {
+                MeshUtils.getInatance().sendAllImage(mContext, data);
+            } else {
+                MeshUtils.getInatance().sendImage(mContext, data, uid);
+            }
+        } catch (Exception e) {
+        }
+        
+        return chatMsg;
+    }
 }

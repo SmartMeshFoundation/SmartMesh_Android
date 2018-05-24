@@ -15,7 +15,6 @@ import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
@@ -38,6 +37,9 @@ import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.imagescan.ScanLargePic;
 import com.lingtuan.firefly.listener.DialogItemClickListener;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.mesh.MeshDiscover;
+import com.lingtuan.firefly.mesh.MeshUserInfo;
+import com.lingtuan.firefly.mesh.MeshUtils;
 import com.lingtuan.firefly.ui.ShowTextUI;
 import com.lingtuan.firefly.util.BitmapUtils;
 import com.lingtuan.firefly.util.Constants;
@@ -62,15 +64,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ChatAdapter extends BaseAdapter {
-
+    
     private List<ChatMsg> mList;
     private Context mContext;
-
+    
     private int TYPE_SIZE = 15;
-
+    
     private final int LEFT_TEXT = 0;
     private final int RIGHT_TEXT = 1;
     private final int LEFT_IMAGE = 2;
@@ -88,54 +91,54 @@ public class ChatAdapter extends BaseAdapter {
      */
     private final int LEFT_SEND_FILE = 12;
     private final int RIGHT_SEND_FILE = 13;
-
+    
     private MediaPlayer mPlayer;
-
+    
     private AnimationDrawable animationDrawable;
-
+    
     private ArrayList<String> imagePathList;
-
+    
     private long currentMsgTime;//Used for displaying text double-click
     private long clickTimes;//Used for displaying text double-click
-
+    
     private boolean kick;
     private boolean dismiss;
-
+    
     private boolean forwarding = false;//forwarding
     private boolean delete = false;//delete
     private boolean isUpload = false;//Upload the chat record
-
+    
     private boolean isGroup;
     private TextView selectedView;
-
+    
     private Map<String, ChatMsg> selectedList;
-
+    
     private Map<String, String> tempAvatar = new HashMap<>();
     private Map<String, String> tempName = new HashMap<>();
     private SceneListener listener;
-
+    
     private EditText mInputContent;
-
+    
     private ChattingManager mChattingManager;
-
+    
     private AudioManager audioManager;
-
+    
     private int source;
     private String sourceid;
     private Dialog mProgressDialog;
     private ListView listview;
-
+    
     public ChatAdapter(List<ChatMsg> mList, Context mContext, SceneListener listener, ListView listview) {
         if (mList == null) {
             mList = new ArrayList<>();
         }
         audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-
+        
         this.mList = mList;
         this.mContext = mContext;
         this.listener = listener;
         this.listview = listview;
-
+        
         mPlayer = new MediaPlayer();
         imagePathList = new ArrayList<>();
         if (mList != null) {
@@ -150,27 +153,27 @@ public class ChatAdapter extends BaseAdapter {
         }
         selectedList = new HashMap<>();
     }
-
+    
     public void resetSource(List<ChatMsg> mList) {
         this.mList = mList;
     }
-
+    
     public void setChatType(int source, String sourceid) {
         this.source = source;
         this.sourceid = sourceid;
     }
-
+    
     public void setGroup(boolean isGroup) {
         this.isGroup = isGroup;
     }
-
+    
     public void setInputEditText(EditText mInputContent, ChattingManager mChattingManager) {
         this.mInputContent = mInputContent;
         this.mChattingManager = mChattingManager;
     }
-
+    
     /**
-     *  remove
+     * remove
      */
     public void addSelectedItem(ChatMsg msg) {
         if (forwarding || delete || isUpload) {
@@ -178,14 +181,14 @@ public class ChatAdapter extends BaseAdapter {
             notifyDataSetChanged();
         }
     }
-
+    
     /**
      * Return to selected collection
      */
     public Map<String, ChatMsg> getSelectedList() {
         return selectedList;
     }
-
+    
     public void updateAgree(boolean agree, String messageId) {
         if (TextUtils.isEmpty(messageId)) {
             return;
@@ -200,10 +203,11 @@ public class ChatAdapter extends BaseAdapter {
             }
         }
     }
-
+    
     /**
      * Upload the chat record A separate interface If not please do not call
      * The result set, please call the interface{@link ChatAdapter#getSelectedList()}
+     *
      * @param mList    If there are data into not null
      * @param isUpload Whether to upload the chats
      */
@@ -216,18 +220,18 @@ public class ChatAdapter extends BaseAdapter {
             notifyDataSetChanged();
         }
     }
-
+    
     public synchronized void selectedItem(ChatMsg msg) {
         if (selectedList.containsKey(msg.getMessageId())) {
             removeSelectedItem(msg);
         } else {
             addSelectedItem(msg);
         }
-        if (selectedView != null){
+        if (selectedView != null) {
             selectedView.setText(mContext.getString(R.string.chatting_selected, selectedList.size()));
         }
     }
-
+    
     public synchronized void rollbackSelected() {
         delete = false;
         forwarding = false;
@@ -235,18 +239,18 @@ public class ChatAdapter extends BaseAdapter {
         selectedList.clear();
         notifyDataSetChanged();
     }
-
+    
     public void setSelectedTextView(TextView selectedView) {
         this.selectedView = selectedView;
     }
-
+    
     /**
      * Delete the selected item
      */
     public synchronized void removeSelectList() {
         if (!selectedList.isEmpty()) {
             for (Entry<String, ChatMsg> s : selectedList.entrySet()) {
-
+                
                 if (s.getValue().getType() == 1)//图片
                 {
                     String url = s.getValue().getLocalUrl();
@@ -260,7 +264,7 @@ public class ChatAdapter extends BaseAdapter {
                             url = s.getValue().getContent();
                         }
                     }
-
+                    
                     for (int i = 0; i < imagePathList.size(); i++) {
                         if (imagePathList.get(i).equals(url)) {
                             imagePathList.remove(i);
@@ -268,14 +272,14 @@ public class ChatAdapter extends BaseAdapter {
                         }
                     }
                 }
-
+                
                 mList.remove(s.getValue());
             }
         }
         rollbackSelected();
         notifyDataSetChanged();
     }
-
+    
     /**
      * remove
      */
@@ -285,7 +289,7 @@ public class ChatAdapter extends BaseAdapter {
             notifyDataSetChanged();
         }
     }
-
+    
     /**
      * @param kick
      * @param dismiss
@@ -294,7 +298,7 @@ public class ChatAdapter extends BaseAdapter {
         this.kick = kick;
         this.dismiss = dismiss;
     }
-
+    
     public void insertSystemChatMsg(int index, ChatMsg msg) {
         mList.add(index, msg);
         notifyDataSetChanged();
@@ -305,24 +309,23 @@ public class ChatAdapter extends BaseAdapter {
             }
         }
     }
-
+    
     public void addChatMsg(ChatMsg msg, boolean notify) {
         mList.add(msg);
-        if (notify)
-            notifyDataSetChanged();
+        if (notify) notifyDataSetChanged();
         addImageUrl(msg);
         addTempAvatar(msg.getUserId(), msg.getUserImage());
         addTempName(msg.getUserId(), msg.getUsername());
     }
-
+    
     private void addTempAvatar(String uid, String avaratUrl) {
         tempAvatar.put(uid, avaratUrl);
     }
-
+    
     private void addTempName(String uid, String userName) {
         tempName.put(uid, userName);
     }
-
+    
     public void updateChatMsg(ChatMsg msg) {
         int count = mList.size();
         for (int i = count - 1; i > -1; i--) {
@@ -341,7 +344,7 @@ public class ChatAdapter extends BaseAdapter {
         }
         notifyDataSetChanged();
     }
-
+    
     /*No network chat to update the delivery status*/
     public void updateOfflineSendStatus(boolean send, int state, String msgId) {
         if (mList == null) {
@@ -360,7 +363,7 @@ public class ChatAdapter extends BaseAdapter {
             }
         }
     }
-
+    
     /*A web chat to update the delivery status*/
     public ChatMsg updateSendStatus(int send, int state, String msgId, String localUrl, int collectState) {
         if (mList == null) {
@@ -389,7 +392,7 @@ public class ChatAdapter extends BaseAdapter {
         }
         return chatMsg;
     }
-
+    
     public void updateList(List<ChatMsg> mList) {
         this.mList = mList;
         notifyDataSetChanged();
@@ -400,7 +403,7 @@ public class ChatAdapter extends BaseAdapter {
             }
         }
     }
-
+    
     private void addImageUrl(ChatMsg msg) {
         if (msg.getType() == 1) {
             String url = msg.getLocalUrl();
@@ -417,15 +420,15 @@ public class ChatAdapter extends BaseAdapter {
             imagePathList.add(url);
         }
     }
-
+    
     public List<ChatMsg> getList() {
         return mList;
     }
-
+    
     public void modifyNickName(String uid, String nickName) {
         tempName.put(uid, nickName);
     }
-
+    
     @Override
     public int getCount() {
         if (mList == null) {
@@ -433,18 +436,18 @@ public class ChatAdapter extends BaseAdapter {
         }
         return mList.size();
     }
-
+    
     @Override
     public ChatMsg getItem(int position) {
         return mList.get(position);
     }
-
+    
     @Override
     public long getItemId(int position) {
-
+        
         return position;
     }
-
+    
     @Override
     public int getItemViewType(int position) {
         int type = 0;
@@ -516,15 +519,15 @@ public class ChatAdapter extends BaseAdapter {
         }
         return type;
     }
-
+    
     @Override
     public int getViewTypeCount() {
         return TYPE_SIZE;
     }
-
+    
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
+        
         Holder h;
         final ChatMsg msg = mList.get(position);
         final int type = getItemViewType(position);
@@ -536,16 +539,16 @@ public class ChatAdapter extends BaseAdapter {
                     break;
                 case LEFT_IMAGE://The other side of the picture information
                     convertView = View.inflate(mContext, R.layout.item_chatting_left_image, null);
-
+                    
                     break;
                 case LEFT_AUDIO://Each other's voice messages
                     convertView = View.inflate(mContext, R.layout.item_chatting_left_audio, null);
                     break;
-
+                
                 case LEFT_CARD://The other side of the business card information
                     convertView = View.inflate(mContext, R.layout.item_chatting_left_card, null);
                     break;
-
+                
                 case LEFT_SHARE://Share information
                     convertView = View.inflate(mContext, R.layout.item_chatting_left_share, null);
                     break;
@@ -553,36 +556,36 @@ public class ChatAdapter extends BaseAdapter {
                 case RIGHT_TEXT://His text message
                     convertView = View.inflate(mContext, R.layout.item_chatting_right_text, null);
                     break;
-
+                
                 case RIGHT_IMAGE://His picture information
                     convertView = View.inflate(mContext, R.layout.item_chatting_right_image, null);
                     break;
-
+                
                 case RIGHT_AUDIO://His voice messages
                     convertView = View.inflate(mContext, R.layout.item_chatting_right_audio, null);
                     break;
-
+                
                 case RIGHT_CARD://Your business card information
                     convertView = View.inflate(mContext, R.layout.item_chatting_right_card, null);
                     break;
-
+                
                 case RIGHT_SHARE://Share information
                     convertView = View.inflate(mContext, R.layout.item_chatting_right_share, null);
                     break;
-
+                
                 case NOTIF://The system informs the information
                     convertView = View.inflate(mContext, R.layout.item_chatting_notif, null);
                     break;
-
+                
                 case LEFT_SEND_FILE:    //Received the documents
                     convertView = View.inflate(mContext, R.layout.item_chatting_left_file, null);
                     break;
-
+                
                 case RIGHT_SEND_FILE:   //From the file
                     convertView = View.inflate(mContext, R.layout.item_chatting_right_file, null);
                     break;
             }
-
+            
             h.leftLinear = (LinearLayout) convertView.findViewById(R.id.item_chatting_body_linear);
             h.imageUploadLinear = (LinearLayout) convertView.findViewById(R.id.item_chatting_image_upload_linear);
             h.avatar = (CharAvatarView) convertView.findViewById(R.id.item_chatting_avatar);
@@ -593,17 +596,17 @@ public class ChatAdapter extends BaseAdapter {
             h.msgWarnning = (ImageView) convertView.findViewById(R.id.item_chatting_warnning);
             h.msgImage = (ImageView) convertView.findViewById(R.id.item_chatting_image);
             h.mNotifBar = (ProgressBar) convertView.findViewById(R.id.item_chatting_notif);
-
+            
             h.shopAddress = (TextView) convertView.findViewById(R.id.item_chatting_third_address);
             h.shopName = (TextView) convertView.findViewById(R.id.item_chatting_third_name);
             h.shopImage = (CharAvatarView) convertView.findViewById(R.id.item_chatting_third_avatar);
             h.audioTimes = (TextView) convertView.findViewById(R.id.item_chatting_audio_times);
             h.audioIcon = (ImageView) convertView.findViewById(R.id.item_chatting_audio_icon);
-
+            
             h.selectBox = (ImageView) convertView.findViewById(R.id.item_chatting_select_iv);
             h.relativeLayout = (RelativeLayout) convertView.findViewById(R.id.relativelayout);
-
-
+            
+            
             /**************************Documents related to*****************************************/
             h.imgFileLogo = (ImageView) convertView.findViewById(R.id.img_file_logo);
             h.txtFileName = (TextView) convertView.findViewById(R.id.txt_file_name);
@@ -614,7 +617,7 @@ public class ChatAdapter extends BaseAdapter {
         } else {
             h = (Holder) convertView.getTag();
         }
-
+        
         if (h.selectBox != null) {
             if (delete || forwarding || isUpload) {
                 h.selectBox.setVisibility(View.VISIBLE);
@@ -634,11 +637,11 @@ public class ChatAdapter extends BaseAdapter {
                                 }
                             }
                             //Voice is selected //Except upload chat logs
-                            if (isUpload || !(forwarding && (type == LEFT_AUDIO || type == RIGHT_AUDIO || type == LEFT_DATIONG_SOS))){
+                            if (isUpload || !(forwarding && (type == LEFT_AUDIO || type == RIGHT_AUDIO || type == LEFT_DATIONG_SOS))) {
                                 selectedItem(msg);
                             }
                         }
-
+                        
                     });
                 }
             } else {
@@ -647,49 +650,66 @@ public class ChatAdapter extends BaseAdapter {
                 }
                 h.selectBox.setVisibility(View.GONE);
             }
-
+            
         }
         switch (type) {
             case LEFT_TEXT://The other side of the text information
             case RIGHT_TEXT://His text message
-                showTextMsg(h,msg,type);
+                showTextMsg(h, msg, type);
                 break;
             case LEFT_IMAGE://The other side of the picture information
             case RIGHT_IMAGE://His picture information
-                showImgMsg(h,msg);
+                showImgMsg(h, msg);
                 break;
             case LEFT_AUDIO://Each other's voice messages
             case RIGHT_AUDIO://His voice messages
                 setAudioContent(h, position, type);
                 break;
-
+            
             case LEFT_CARD://The other side of the business card information
             case RIGHT_CARD://Your business card information
-                showCardMsg(h,msg);
+                showCardMsg(h, msg);
                 break;
-
+            
             case RIGHT_SEND_FILE:   //Send the file
                 showFileInfo(h, msg, true);
                 break;
-
+            
             case LEFT_SEND_FILE:   //Received the documents
                 showFileInfo(h, msg, true);
                 break;
-
+            
             case LEFT_SHARE://Share information
             case RIGHT_SHARE:
                 showShareMsg(h, msg);
                 break;
-
+            
             case NOTIF://The system informs the information
                 showSystemMsg(h, msg);
-
+                
                 return convertView;
         }
-
+        
         h.avatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (MeshUtils.getInatance().isConnectWifiSsid()) {
+                    String localId = msg.getUserId();
+                    ConcurrentHashMap<String, MeshUserInfo> mServiceMap = MeshDiscover.getInatance().mServiceMap;
+                    for (final String key : mServiceMap.keySet()) {
+                        if(key.equals(localId)){
+                            if(!msg.getUsername().equals(key)){
+                                UserBaseVo vo = new UserBaseVo();
+                                vo.setUsername(msg.getRealname());
+                                vo.setNote(msg.getUsername());
+                                vo.setLocalId(msg.getUserId());
+                                vo.setThumb(msg.getUserImage());
+                                vo.setFriendLog(msg.getFriendLog());
+                                intentPeopleDetailUI(vo);
+                            }
+                        }
+                    }
+                } else {
                     UserBaseVo vo = new UserBaseVo();
                     vo.setUsername(msg.getRealname());
                     vo.setNote(msg.getUsername());
@@ -698,11 +718,13 @@ public class ChatAdapter extends BaseAdapter {
                     vo.setFriendLog(msg.getFriendLog());
                     intentPeopleDetailUI(vo);
                 }
+            }
         });
-        h.avatar.setOnLongClickListener(new OnLongClickListener() {
+        
+        h.avatar.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                if ((isGroup || TextUtils.equals(Constants.APP_EVERYONE,msg.getChatId()))&& !msg.isMe() && mInputContent != null && mChattingManager != null) {//Long press head @ function
+                if ((isGroup || TextUtils.equals(Constants.APP_EVERYONE, msg.getChatId())) && !msg.isMe() && mInputContent != null && mChattingManager != null) {//Long press head @ function
                     int selectIndex = mInputContent.getSelectionStart();
                     Editable mEditable = mInputContent.getEditableText();
                     mEditable.insert(selectIndex, "@" + msg.getRealname() + " ");
@@ -735,15 +757,15 @@ public class ChatAdapter extends BaseAdapter {
                 url = tempAvatar.get(msg.getUserId());
             }
         }
-        if (TextUtils.isEmpty(msg.getRealname())){
-            h.avatar.setText(msg.getUsername(),h.avatar,url);
-        }else{
-            h.avatar.setText(msg.getRealname(),h.avatar,url);
+        if (TextUtils.isEmpty(msg.getRealname())) {
+            h.avatar.setText(msg.getUsername(), h.avatar, url);
+        } else {
+            h.avatar.setText(msg.getRealname(), h.avatar, url);
         }
         h.time.setVisibility(msg.isShowTime() ? View.VISIBLE : View.GONE);
         Utils.setLoginTime(mContext, h.time, msg.getMsgTime());
         if (h.mNickname != null) {
-            if (!isGroup && !TextUtils.equals(Constants.APP_EVERYONE,msg.getChatId())) {
+            if (!isGroup && !TextUtils.equals(Constants.APP_EVERYONE, msg.getChatId())) {
                 h.mNickname.setVisibility(View.GONE);
             } else {//group
                 h.mNickname.setVisibility(View.VISIBLE);
@@ -756,11 +778,12 @@ public class ChatAdapter extends BaseAdapter {
         }
         return convertView;
     }
-
+    
     /**
      * The message display and operating system
+     *
      * @param msg The message
-     * */
+     */
     private void showSystemMsg(Holder h, ChatMsg msg) {
         h.time.setVisibility(View.VISIBLE);
         if (msg.getType() == 50000) {
@@ -775,11 +798,12 @@ public class ChatAdapter extends BaseAdapter {
             h.time.setText(msg.getContent());
         }
     }
-
+    
     /**
      * Display and manipulate share information
+     *
      * @param msg message
-     * */
+     */
     private void showShareMsg(Holder h, final ChatMsg msg) {
         if (TextUtils.isEmpty(msg.getShareTitle())) {
             h.shopName.setVisibility(View.GONE);
@@ -789,8 +813,8 @@ public class ChatAdapter extends BaseAdapter {
             h.shopName.setText(msg.getShareTitle());
             h.shopAddress.setTextSize(12);
         }
-
-        h.shopImage.setText(msg.getShareFriendName(),h.shopImage, msg.getShareThumb());
+        
+        h.shopImage.setText(msg.getShareFriendName(), h.shopImage, msg.getShareThumb());
         h.shopAddress.setText(msg.getContent());
         h.leftLinear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -800,18 +824,19 @@ public class ChatAdapter extends BaseAdapter {
                 } catch (Exception e) {
                     Utils.clickUrl(msg.getShareUrl(), mContext);
                 }
-
+                
             }
         });
     }
-
+    
     /**
      * Display and operation business card message
-     * @param h ViewHolder
+     *
+     * @param h   ViewHolder
      * @param msg message
-     * */
+     */
     private void showCardMsg(Holder h, final ChatMsg msg) {
-        h.shopImage.setText(msg.getThirdName(),h.shopImage, msg.getThirdImage());
+        h.shopImage.setText(msg.getThirdName(), h.shopImage, msg.getThirdImage());
 //        h.shopAddress.setText(msg.getCardSign());
         h.shopAddress.setText(mContext.getString(R.string.chatting_card_hint));
         h.shopName.setText(msg.getThirdName());
@@ -825,16 +850,17 @@ public class ChatAdapter extends BaseAdapter {
                 vo.setGender(msg.getThirdGender());
                 vo.setFriendLog(msg.getFriendLog());
                 intentPeopleDetailUI(vo);
-
+                
             }
         });
     }
-
+    
     /**
      * The message display and manipulate images
-     * @param h ViewHolder
+     *
+     * @param h   ViewHolder
      * @param msg message
-     * */
+     */
     private void showImgMsg(Holder h, final ChatMsg msg) {
         Bitmap bitmap = BitmapFillet.fillet(BitmapFillet.ALL, BitmapUtils.Base64StringToBitmap(msg.getCover()), 15);
         h.msgImage.setImageBitmap(bitmap);
@@ -876,16 +902,17 @@ public class ChatAdapter extends BaseAdapter {
                 Utils.openNewActivityAnim((Activity) mContext, false);
             }
         });
-
+        
     }
-
+    
     /**
      * Display and manipulate text messages
-     * @param h ViewHolder
-     * @param msg message
+     *
+     * @param h    ViewHolder
+     * @param msg  message
      * @param type text
-     * */
-    private void showTextMsg(Holder h, final ChatMsg msg,int type) {
+     */
+    private void showTextMsg(Holder h, final ChatMsg msg, int type) {
         if (type == LEFT_TEXT) {
             h.leftLinear.setBackgroundResource(R.drawable.chatting_left_bg);
         } else {
@@ -915,9 +942,10 @@ public class ChatAdapter extends BaseAdapter {
             }
         });
     }
-
+    
     /**
      * In the chat list display file information
+     *
      * @param msg    message
      * @param isSend If the sender
      */
@@ -1010,7 +1038,7 @@ public class ChatAdapter extends BaseAdapter {
                         if (time <= 0) {      //Has the failure
                             h.txtFileSendState.setText(mContext.getString(R.string.file_outdate));
                         } else {
-                            h.txtFileSendState.setText(Utils.setExpireTime(mContext,time));
+                            h.txtFileSendState.setText(Utils.setExpireTime(mContext, time));
                         }
                     } else {      //Group group chat
                         h.txtFileSendState.setText(mContext.getString(R.string.permanent));
@@ -1018,7 +1046,7 @@ public class ChatAdapter extends BaseAdapter {
                 } else {
                     h.txtFileSendState.setText(state);
                 }
-
+                
             }
             h.leftLinear.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -1032,7 +1060,7 @@ public class ChatAdapter extends BaseAdapter {
                         intent.putExtra("msgid", msg.getMessageId());
                         intent.putExtra("currentLength", msg.getNewprogress());
                         intent.putExtra("number", Long.parseLong(msg.getNumber()));
-
+                        
                         mContext.startActivity(intent);
                         Utils.openNewActivityAnim((Activity) mContext, false);
                     } else {                            //A web chat
@@ -1056,8 +1084,8 @@ public class ChatAdapter extends BaseAdapter {
             });
         }
     }
-
-
+    
+    
     /**
      * Long press event
      */
@@ -1082,10 +1110,10 @@ public class ChatAdapter extends BaseAdapter {
             } else {
                 itemArrayId = R.array.receiver_mode_list;
             }
-        }  else {
+        } else {
             itemArrayId = R.array.copy_del_only_text;
         }
-
+        
         MyDialogFragment mdf = new MyDialogFragment(MyDialogFragment.DIALOG_LIST, itemArrayId);
         mdf.setItemClickCallback(new MyDialogFragment.ItemClickCallback() {
             @Override
@@ -1101,12 +1129,11 @@ public class ChatAdapter extends BaseAdapter {
                                 delete = true;
                                 selectedItem(msg);
                                 notifyDataSetChanged();
-                            }
-                            else{
+                            } else {
                                 requestFavFile(msg);
                             }
                             return;
-                        }else if (msg.getType() == 2){
+                        } else if (msg.getType() == 2) {
                             boolean is_mode_in_call = MySharedPrefs.readBooleanNormal(mContext, MySharedPrefs.FILE_USER, MySharedPrefs.AUDIO_MODE);
                             if (is_mode_in_call) {
                                 MySharedPrefs.writeBoolean(mContext, MySharedPrefs.FILE_USER, MySharedPrefs.AUDIO_MODE, false);
@@ -1116,14 +1143,12 @@ public class ChatAdapter extends BaseAdapter {
                                 MyToast.showToast(mContext, mContext.getString(R.string.change_receiver_mode));
                             }
                             return;
-                        }
-                        else if(msg.getType() == 0){
+                        } else if (msg.getType() == 0) {
                             ClipboardManager cmb = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
                             cmb.setText(msg.getContent().concat("  "));
                             MyToast.showToast(mContext, mContext.getString(R.string.copy_success));
                             return;
-                        }
-                        else{
+                        } else {
                             forwarding = false;
                             delete = true;
                             selectedItem(msg);
@@ -1140,19 +1165,19 @@ public class ChatAdapter extends BaseAdapter {
                 if (listener != null) {
                     listener.onSceneListener(delete);
                 }
-
+                
             }
         });
         mdf.show(((FragmentActivity) mContext).getSupportFragmentManager(), "mdf");
-
+        
         return true;
     }
-
+    
     /**
      * resend
      */
     private void reSend(final ChatMsg msg, final int type) {
-        MyPopupWindow.showDialogList(mContext, msg.getUsername(), new String[]{mContext.getString(R.string.resend)},new DialogItemClickListener(){
+        MyPopupWindow.showDialogList(mContext, msg.getUsername(), new String[]{mContext.getString(R.string.resend)}, new DialogItemClickListener() {
             @Override
             public void onItemClickListener(int position) {
                 if (kick || dismiss) {
@@ -1162,7 +1187,7 @@ public class ChatAdapter extends BaseAdapter {
                 msg.setSend(2);//Resend state
                 boolean status = XmppMessageUtil.getInstance().reSend(type, msg);
                 if (type == 3 || type == 11 || type == 19 || type == 29) {
-
+                    
                 } else {
                     msg.setSend(status ? 1 : 0);//Resend state
                 }
@@ -1170,12 +1195,13 @@ public class ChatAdapter extends BaseAdapter {
             }
         });
     }
-
+    
     /**
      * Voice broadcast logic
-     * @param h ViewHolder
+     *
+     * @param h        ViewHolder
      * @param position position
-     * @param type Message type
+     * @param type     Message type
      */
     private void setAudioContent(Holder h, final int position, final int type) {
         h.audioTimes.setText(mList.get(position).getSecond() + "''");
@@ -1188,12 +1214,12 @@ public class ChatAdapter extends BaseAdapter {
                     ((AnimationDrawable) audioIcon.getDrawable()).setOneShot(false);
                 }
             } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && audioIcon.getDrawable() instanceof AnimationDrawable &&((AnimationDrawable) audioIcon.getDrawable()).isRunning()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && audioIcon.getDrawable() instanceof AnimationDrawable && ((AnimationDrawable) audioIcon.getDrawable()).isRunning()) {
                     ((AnimationDrawable) audioIcon.getDrawable()).stop();
                 }
                 audioIcon.setImageResource(R.drawable.icon_audio_left3);
             }
-
+            
         } else {
             if (mList.get(position).isAudioPlaying()) {
                 audioIcon.setImageResource(R.drawable.anim_songs_voice_right_icon);
@@ -1202,24 +1228,24 @@ public class ChatAdapter extends BaseAdapter {
                     ((AnimationDrawable) audioIcon.getDrawable()).setOneShot(false);
                 }
             } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && audioIcon.getDrawable() instanceof AnimationDrawable &&((AnimationDrawable) audioIcon.getDrawable()).isRunning()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && audioIcon.getDrawable() instanceof AnimationDrawable && ((AnimationDrawable) audioIcon.getDrawable()).isRunning()) {
                     ((AnimationDrawable) audioIcon.getDrawable()).stop();
                 }
                 audioIcon.setImageResource(R.drawable.icon_audio_right3);
             }
-
+            
         }
         h.leftLinear.setOnClickListener(new View.OnClickListener() {
-
+            
             @Override
             public void onClick(View v) {
-
+                
                 try {
                     if (animationDrawable != null) {
                         animationDrawable.stop();
                         animationDrawable = null;
                     }
-
+                    
                     if (mList.get(position).isAudioPlaying())//Is there is the voice of click
                     {
                         mList.get(position).setAudioPlaying(false);
@@ -1231,7 +1257,7 @@ public class ChatAdapter extends BaseAdapter {
                         mPlayer.stop();
                         return;
                     }
-
+                    
                     boolean is_mode_in_call = MySharedPrefs.readBooleanNormal(mContext, MySharedPrefs.FILE_USER, MySharedPrefs.AUDIO_MODE);
                     if (is_mode_in_call) {
                         audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
@@ -1240,8 +1266,8 @@ public class ChatAdapter extends BaseAdapter {
                         audioManager.setMode(AudioManager.MODE_NORMAL);
                         audioManager.setSpeakerphoneOn(true);
                     }
-
-
+                    
+                    
                     mPlayer.reset();
                     if (audioManager.getMode() == AudioManager.MODE_IN_COMMUNICATION) {
                         if (listener != null) {
@@ -1267,7 +1293,7 @@ public class ChatAdapter extends BaseAdapter {
                     } else {
                         audioIcon.setImageResource(R.drawable.anim_songs_voice_right_icon);
                     }
-
+                    
                     animationDrawable = (AnimationDrawable) audioIcon.getDrawable();
                     if (animationDrawable != null) {
                         animationDrawable.start();
@@ -1293,18 +1319,18 @@ public class ChatAdapter extends BaseAdapter {
                             }
                             notifyDataSetChanged();
                         }
-
+                        
                     });
                 } catch (Exception e) {
                     e.printStackTrace();
                     MyToast.showToast(mContext, mContext.getString(R.string.chat_audio_failed));
                 }
-
+                
             }
         });
     }
-
-
+    
+    
     public void destory() {
         if (mPlayer != null) {
             if (audioManager != null) {
@@ -1313,27 +1339,28 @@ public class ChatAdapter extends BaseAdapter {
             }
             try {
                 mPlayer.reset();
-                if (mPlayer.isPlaying()){
+                if (mPlayer.isPlaying()) {
                     mPlayer.stop();
                 }
                 mPlayer.release();
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-
+    
     /**
      * Friends details page
+     *
      * @param vo The user information
-     * */
+     */
     private void intentPeopleDetailUI(final UserBaseVo vo) {
         if (TextUtils.isEmpty(vo.getLocalId()) || "0".equals(vo.getLocalId())) {
             return;
         }
         Utils.intentFriendUserInfo((Activity) mContext, vo, false);
     }
-
+    
     static class Holder {
         LinearLayout leftLinear;
         LinearLayout imageUploadLinear;
@@ -1345,22 +1372,22 @@ public class ChatAdapter extends BaseAdapter {
         ImageView icon;
         TextView content;
         ProgressBar mNotifBar;
-
+        
         CharAvatarView shopImage;
         TextView shopName;
         TextView shopAddress;
         TextView audioTimes;
         ImageView audioIcon;
-
+        
         ImageView selectBox;
         RelativeLayout relativeLayout;
-
+        
         //file
         ImageView imgFileLogo;
         TextView txtFileName, txtFileSize, txtFileSendState;
         ProgressBar progressbarFile;
     }
-
+    
     /**
      * Collect cancel collect file interface
      */
@@ -1374,9 +1401,9 @@ public class ChatAdapter extends BaseAdapter {
         NetRequestImpl.getInstance().fileCollect(msg.getThirdId(), msg.getCreateTime(), msg.getContent(), msg.getDatingSOSId(), new RequestListener() {
             @Override
             public void start() {
-
+                
             }
-
+            
             @Override
             public void success(JSONObject response) {
                 if (mProgressDialog != null) {
@@ -1392,7 +1419,7 @@ public class ChatAdapter extends BaseAdapter {
                     msg.setDatingSOSId(1);
                     FinalUserDataBase.getInstance().updateChatMsgCollectState(msg.getMessageId(), 1);
                 }
-
+                
                 if (msg.getDatingSOSId() == 1)//collection
                 {
                     if (msg.getInviteType() == 2 || msg.getInviteType() == 7)//Upload successfully, or download successful collection, keep the path, so as to collect the list into the don't have to download
@@ -1408,7 +1435,7 @@ public class ChatAdapter extends BaseAdapter {
                     }
                 }
             }
-
+            
             @Override
             public void error(int errorCode, String errorMsg) {
                 if (mProgressDialog != null) {
@@ -1419,7 +1446,7 @@ public class ChatAdapter extends BaseAdapter {
             }
         });
     }
-
+    
     /**
      * Chat page callback
      */
@@ -1428,11 +1455,12 @@ public class ChatAdapter extends BaseAdapter {
          * @param isDelete Whether to delete Otherwise the forwarding
          */
         void onSceneListener(boolean isDelete);
+        
         /**
          * When the receiver model play hints
          */
         void onShow_mode_in_call_tip();
-
+        
     }
-
+    
 }
