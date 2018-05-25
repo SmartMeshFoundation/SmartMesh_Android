@@ -26,6 +26,8 @@ import org.json.JSONObject;
 
 public class BindMobileUI extends BaseActivity {
 
+    private static final int BINDMOBLECODE = 100;
+
     private TextView btnRight;
 
     private TextView countyName,countyCode;
@@ -36,7 +38,9 @@ public class BindMobileUI extends BaseActivity {
 
     private String aeskey = null ;
 
-    private int type;//0 binding mobile phone number, 1 binding inbox, 2 phone number retrieve password, 3 retrieve password
+    private TextView bindMobileHint;
+
+    private int type;//0 binding mobile phone number, 1 binding email, 2 phone number retrieve password, 3 email retrieve password
 
     @Override
     protected void setContentView() {
@@ -53,6 +57,7 @@ public class BindMobileUI extends BaseActivity {
         btnRight = (TextView) findViewById(R.id.app_btn_right);
         countyName = (TextView) findViewById(R.id.countyName);
         countyCode = (TextView) findViewById(R.id.countyCode);
+        bindMobileHint = (TextView) findViewById(R.id.bindMobileHint);
         phoneEt = (EditText) findViewById(R.id.phoneEt);
     }
 
@@ -66,14 +71,16 @@ public class BindMobileUI extends BaseActivity {
     protected void initData() {
         if (type == 2){
             setTitle(getString(R.string.forgot_password_hint));
+            bindMobileHint.setVisibility(View.GONE);
         }else{
             setTitle(getString(R.string.bind_mobile));
+            bindMobileHint.setVisibility(View.VISIBLE);
         }
         btnRight.setVisibility(View.VISIBLE);
         btnRight.setText(getString(R.string.next));
         mCountryCode = new CountryCodeVo();
-        mCountryCode.setCode("1");
-        mCountryCode.setName(getString(R.string.usa));
+        mCountryCode.setCode("65");
+        mCountryCode.setName(getString(R.string.singapore));
 
     }
 
@@ -132,7 +139,7 @@ public class BindMobileUI extends BaseActivity {
                 Intent intent = new Intent(BindMobileUI.this,BindMobileCodeUI.class);
                 intent.putExtra("phonemubmer",phoneNumber);
                 intent.putExtra("type",type);
-                startActivity(intent);
+                startActivityForResult(intent,BINDMOBLECODE);
                 Utils.openNewActivityAnim(BindMobileUI.this,false);
             }
 
@@ -154,6 +161,10 @@ public class BindMobileUI extends BaseActivity {
                         countyName.setText(mCountryCode.getName());
                         countyCode.setText(getString(R.string.county_code,mCountryCode.getCode()));
                     }
+                    break;
+                case BINDMOBLECODE:
+                    setResult(RESULT_OK);
+                    finish();
                     break;
             }
         }

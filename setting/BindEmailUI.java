@@ -9,10 +9,12 @@ import android.widget.TextView;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
+import com.lingtuan.firefly.vo.CountryCodeVo;
 
 import org.json.JSONObject;
 
@@ -23,11 +25,15 @@ import org.json.JSONObject;
 
 public class BindEmailUI extends BaseActivity {
 
+    private static final int BINDMOBLECODE = 100;
+
     private TextView btnRight;
 
     private EditText emailEt;
 
     private String aeskey = null ;
+
+    private TextView bindEmailHint;
 
     private int type;//0 binding mobile phone number, 1 binding inbox, 2 phone number retrieve password, 3 retrieve password
 
@@ -44,6 +50,7 @@ public class BindEmailUI extends BaseActivity {
     @Override
     protected void findViewById() {
         btnRight = (TextView) findViewById(R.id.app_btn_right);
+        bindEmailHint = (TextView) findViewById(R.id.bindEmailHint);
         emailEt = (EditText) findViewById(R.id.emailEt);
     }
 
@@ -56,8 +63,10 @@ public class BindEmailUI extends BaseActivity {
     protected void initData() {
         if (type == 3){
             setTitle(getString(R.string.forgot_password_hint));
+            bindEmailHint.setVisibility(View.GONE);
         }else{
             setTitle(getString(R.string.bind_email));
+            bindEmailHint.setVisibility(View.VISIBLE);
         }
         btnRight.setVisibility(View.VISIBLE);
         btnRight.setText(getString(R.string.next));
@@ -83,7 +92,7 @@ public class BindEmailUI extends BaseActivity {
             return;
         }
         MyViewDialogFragment mdf = new MyViewDialogFragment();
-        mdf.setTitleAndContentText(getString(R.string.confirm_email_number), getString(R.string.send_verification_warning,phoneNumber));
+        mdf.setTitleAndContentText(getString(R.string.confirm_email_number), getString(R.string.send_verification_email_warning,phoneNumber));
         mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
             @Override
             public void okBtn() {
@@ -112,7 +121,7 @@ public class BindEmailUI extends BaseActivity {
                 Intent intent = new Intent(BindEmailUI.this,BindMobileCodeUI.class);
                 intent.putExtra("email",emailNumber);
                 intent.putExtra("type",type);
-                startActivity(intent);
+                startActivityForResult(intent,BINDMOBLECODE);
                 Utils.openNewActivityAnim(BindEmailUI.this,false);
             }
 
@@ -122,6 +131,15 @@ public class BindEmailUI extends BaseActivity {
                 showToast(errorMsg);
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK && requestCode == BINDMOBLECODE) {
+            setResult(RESULT_OK);
+            finish();
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
 }
