@@ -195,6 +195,7 @@ public class FinalUserDataBase {
         vo.setShowTime(showTime);
         db.insert(TableField.TABLE_CHAT, TableField._ID, values);
         vo.setUsername(uname);
+        vo.setRealname(uname);
         vo.setUserImage(avatarUrl);
         if (!TextUtils.isEmpty(chatId)){
             UserBaseVo baseVo = FinalUserDataBase.getInstance().getUserBaseVoByUid(chatId);
@@ -1671,7 +1672,11 @@ public class FinalUserDataBase {
      */
     public void insertChatEvent(ChatMsg vo) {
         ContentValues values = new ContentValues();
-        values.put(TableField.FIELD_FRIEND_UNAME, vo.getUsername());
+        if (!TextUtils.isEmpty(vo.getRealname())) {
+            values.put(TableField.FIELD_FRIEND_UNAME, vo.getRealname());
+        }else{
+            values.put(TableField.FIELD_FRIEND_UNAME, vo.getUsername());
+        }
         values.put(TableField.FIELD_FRIEND_UID, vo.getUserId());
         values.put(TableField.FIELD_FRIEND_PIC, vo.getUserImage());
         values.put(TableField.FIELD_FRIEND_GENDER, vo.getGender());
