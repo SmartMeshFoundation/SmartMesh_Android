@@ -15,27 +15,56 @@
     <string name="gesture_wallet_close">Gesture: Close</string>
 
     <!-- raiden pay -->
-    <string name="raiden_channel">Channel</string>
-    <string name="raiden_channel_create">Create Channel</string>
+    <string name="raiden_channel_name">%s Channel</string>
+    <string name="raiden_channel_create">Create</string>
     <string name="raiden_channel_add">Channel Add</string>
+    <string name="raiden_channel_add_content_top">Add</string>
+    <string name="raiden_channel_add_title">Add</string>
     <string name="raiden_channel_add_complete">Add to Complete</string>
     <string name="raiden_channel_create_enter">Enter Channel</string>
     <string name="raiden_channel_close">Sure to close the channel?</string>
+    <string name="raiden_channel_open">Sure to open the channel?</string>
     <string name="raiden_channel_raiden">Raiden</string>
     <string name="raiden_pay">Pay:</string>
     <string name="raiden_pay_1">Pay</string>
-    <string name="raiden_partner">Partner:</string>
+    <string name="raiden_partner">Partner</string>
+    <string name="raiden_address">Address</string>
+    <string name="raiden_create_balance">Balance %s</string>
     <string name="raiden_partner_1">Partner</string>
-    <string name="raiden_balance">Balance:</string>
+    <string name="raiden_balance">Balance</string>
+    <string name="raiden_channel_list_deposit">Deposit</string>
     <string name="raiden_balance_1">Balance</string>
-    <string name="raiden_deposit">Deposit</string>
+    <string name="raiden_deposit">Deposit：</string>
+    <string name="raiden_deposit_add">Add</string>
     <string name="raiden_token">Token:</string>
     <string name="raiden_token_1">Token</string>
-    <string name="raiden_state">State:</string>
+    <string name="raiden_state">State</string>
+    <string name="raiden_date">Date</string>
     <string name="raiden_to">To:</string>
     <string name="raiden_from">From:</string>
+    <string name="raiden_pay_hint">Use offline Pay</string>
+    <string name="raiden_channel_close_hint">Sure to close the channel？</string>
+    <string name="raiden_channel_close_content">*Using channels does not need to consume Gas：0.00001 SMT</string>
+
+    <!-- token -->
+    <string name="token_total_assets">Total Assets</string>
+    <string name="token_total_price">≈￥%s</string>
+    <string name="token_total_usd_price">≈$%s</string>
+    <string name="token_search_empty_hint">Did not find a match?</string>
+    <string name="token_search_empty_submit">Try submitting a new token at the bottom of the page</string>
+    <string name="token_submit_no_token">There are no new Tokens</string>
+    <string name="token_submit_token">Submit us a new Token</string>
+    <string name="token_add_assets">Add new assets</string>
 
 
+    <string name="wallet_old_balance">Ethereum Token Wallet</string>
+    <string name="eth_token_0">Wallet description</string>
+    <string name="eth_token_1">1. The main interface is Spectrum wallet</string>
+    <string name="eth_token_2">2. The chain wallet does not show Ethereum Token</string>
+    <string name="eth_token_3">3. The button at the bottom of the interface can enter the Ethereum Token wallet</string>
+    <string name="eth_token_4">4. Completing the mapping will close the Ethereum Token wallet</string>
+    <string name="eth_token_5">5. Map time please pay attention to the official website announcement</string>
+    <string name="eth_token_6">Currency switch</string>
     <string name="wallet_copy_disclaimer">Disclaimer</string>
     <string name="wallet_copy_disclaimer_info">• Please ensure secure backup your wallet.SmartMesh APP cannot access accounts,recounts keys,reset passwords,nor reverse transactions.You are responsible for your security.\n\n• Tourists(no MID and bound phone number, mailbox) to exit will not save wallet information.</string>
 
@@ -61,6 +90,7 @@
     <string name="forgot_password_hint">Forgot password</string>
     <string name="account_pwd">Account password</string>
     <string name="account_pwd_input">Enter your password</string>
+    <string name="account_pwd_login_input">Enter your password</string>
     <string name="account_pwd_again_input">Confirm your password</string>
     <string name="account_pwd_again_warning">Password does not match</string>
     <string name="account_pwd_info_input">Private key hint</string>
@@ -73,6 +103,7 @@
     <string name="account_logout_warn">Exit the prompt</string>
     <string name="account_logout_hint">By logging out, there will NOT be any new message alert but all the historial data will be stored. </string>
     <string name="account_logout_mid_warn">Please read the following instructions carefully:</string>
+    <string name="account_logout_email_hint">Binding Email or Phone to ensure the account safety</string>
     <string name="account_logout_mid_hint">Not set MID, bind phone or email account will not be able to log in again, and the wallet can not be retrieved. Are you sure you want to do this?</string>
     <string name="account_logout_mid_hint_again">Your account will not be able to log in again after you click OK. If you have used your wallet, please check if it is backed up.</string>
 	<string name="account_name_warning">Please enter 1–20 digits for username</string>
@@ -118,21 +149,31 @@
     <string name="mesh_balance">%s MESH</string>
     <string name="eth_er">%s ETHER</string>
     <string name="smt_er">%s SMT</string>
+
+    <string name="token_trans"> %1$s %2$s </string>
+
+    <string name="token_less"> - %1$s %2$s </string>
+    <string name="token_add"> + %1$s %2$s </string>
+    <string name="smt_er_lower">%s smt</string>
+    <string name="smt_er_lower_1">smt</string>
+
     <string name="eth_er_lower">%s ether</string>
     <string name="eth_er_lower_1">ether</string>
-    <string name="smt_er_lower_1">smt</string>
     <string name="mesh_er_lower_1">mesh</string>
+
     <string name="gwei">gwei</string>
-    <string name="custom_gas_price">Custom Gas Price</string>
+    <string name="custom_gas_price">Gas price should exceed 18</string>
+    <string name="custom_gas_price_1">Gas price should exceed 8</string>
     <string name="custom_gas">Custom Gas</string>
     <string name="ok">OK</string>
     <string name="advance">Advance</string>
     <string name="custom_gas_notice">Gas price too Height，is recommended less than 100 gwei</string>
     <string name="custom_gas_notice_1">Gas price is too low, is recommended greater than 8 gwei</string>
+    <string name="custom_gas_notice_2">Gas price is too low, is recommended greater than 18 gwei</string>
     <string name="custom_gas_mesh_notice">The address Mesh tokens are locked, do not transfer. Gas consumed can not be recovered.</string>
     <string name="custom_gas_smt_title">Gas tips</string>
     <string name="custom_gas_smt_notice">At the moment, only support for gate.io and okex.com coins are used for this function. Temporarily do not use other platforms, so as to avoid unnecessary loss of digital property.</string>
-
+    <string name="custom_spectrum_notice">At present, only transfers between SmartMesh wallets are supported. Do not recharge the exchanges. Otherwise, the assets cannot be recovered and the losses will be at your own expense.</string>
 
     <!-- Prompt relevant -->
     <string name="hint_pwd_warning">To ensure safety of your balance, please do not disclose your privacy to others. </string>
@@ -176,6 +217,7 @@
     <string name="normal_system_version">System version = </string>
     <string name="normal_app_version">Application version = </string>
     <string name="normal_app_channel">Application channel = </string>
+    <string name="raiden_channel_no">No channel, please create first</string>
     <string name="normal_crash_time">Crash time = </string>
     <string name="normal_connect_error">Connection error</string>
     <string name="send_message"> Send message </string>
@@ -203,6 +245,7 @@
     <string name="man">Male</string>
     <string name="woman">Female</string>
     <string name="everyone">#Everyone</string>
+    <string name="wifimesh">Blockchain Festival Vietnam</string>
 
     <!-- chat-->
     <string name="chatting_selected_delete">Delete selected conversation</string>
@@ -307,6 +350,7 @@
     <string name="permanent">Valid permanently</string>
     <string name="photo_group_scan">Choose photos</string>
     <string name="photo_save_dir">Photo has been saved to %s document</string>
+    <string name="photo_save">Save Picture</string>
     <string name="outdate_time">Due on %s</string>
     <string name="re_download_file">Please download again</string>
     <string name="re_upload_file">Upload again</string>
@@ -344,6 +388,7 @@
     <string name="contact_new_friends">Recommended friends</string>
     <string name="contact_already_friends">Already your friend</string>
     <string name="contact_default">Friends</string>
+    <string name="contact_default_empty">You have no friends yet</string>
     <string name="contact_num">%d friends</string>
     <string name="contact_smt_accect">&quot;SmartMesh&quot;Want to visit your address book</string>
     <string name="contact_add_content_share">Mutual friends "%s"</string>
@@ -356,6 +401,7 @@
     <string name="friend_is_not_your">This user is not your friend</string>
     <string name="friend_note_not_empty">Remarks cannot be empty</string>
     <string name="friend_note">Friends note</string>
+    <string name="friend_info_name">Name: %s</string>
 
 
     <!-- report-->
@@ -384,12 +430,12 @@
     <string name="report_sent">Report submitted</string>
 
     <!-- News related to -->
-    <string name="msg_event_show_card">[business card]</string>
-    <string name="msg_event_show_image">[image]</string>
-    <string name="msg_event_show_audio">[audio]</string>
-    <string name="msg_event_invite_msg103">[link] %s</string>
-    <string name="msg_event_invite_msg105">[video]</string>
-    <string name="msg_event_invite_msg1009">[file]</string>
+    <string name="msg_event_show_card">[Business card]</string>
+    <string name="msg_event_show_image">[Photo]</string>
+    <string name="msg_event_show_audio">[Audio]</string>
+    <string name="msg_event_invite_msg103">[Link] %s</string>
+    <string name="msg_event_invite_msg105">[Video]</string>
+    <string name="msg_event_invite_msg1009">[File]</string>
     <string name="msg_event_invite_msgunknown">[%s]</string>
     <string name="msg_msgunknown">%1$s has sent you %2$s,Please update to the newest version to view.</string>
     <string name="msg_not_notify">Mute Notifications</string>
@@ -457,6 +503,8 @@
     <string name="version_circle">•</string>
     <string name="select_img_error">Picture select failure</string>
     <string name="select_camera_error">Picture shoot failed</string>
+    <string name="mesh_chat_no_send_hint">It can only run when the WIFI named "MeshBox"</string>
+    
     <!-- Safety related-->
     <string name="reg_country_code">%1$s +%2$s</string>
     <string name="reg_country_code_title">Choose a country or region</string>
@@ -492,7 +540,6 @@
     <string name="verify_password">Verify your password</string>
 
     <!-- About page has been hidden temporarily do not need-->
-    <string name="fft_instructions">SmartMesh wallet is a mobile blockchain wallet app which easy and safe to use. SmartMesh wallet can also be used to save and transfer ETH,SMT and other digital currency.</string>
     <string name="use_agreement">Use Agreement</string>
     <string name="version_checking">Version</string>
     <string name="gesture_checking">Wallet Gesture</string>
@@ -564,6 +611,7 @@
 
     <!-- Backup the purse -->
     <string name="wallet_copy_private_key">Export private key</string>
+    <string name="wallet_copy_private_key_hint">Users who use the SmartMesh App to export private keys before version 2.0.0 are selected.</string>
     <string name="wallet_copy_keysotre">Export keystore</string>
     <string name="wallet_copy_name">Account name: %s</string>
     <string name="wallet_copy_pwd_info">Hint: %s</string>
@@ -582,7 +630,6 @@
     <string name="wallet_blance">Account balance</string>
     <string name="wallet_sync_ing">Syncing block：%1$d / %2$d</string>
     <string name="wallet_sync_start">Synchronize to the latest block to use the wallet</string>
-    <string name="wallet_sync_hint">ETH light node wallets support create transfor and purchase SMT can also be used.</string>
     <string name="wallet_sync">Sync</string>
     <string name="wallet_sync_address">Syncing…</string>
     <string name="wallet_backup_now">Backup Now</string>
@@ -607,29 +654,22 @@
     <string name="wallet_trans_detail_copy_url">Copy URL</string>
     <string name="wallet_trans_detail_block_none">None</string>
 
-    <string name="wallet_trans_collect_eth">Notice: %s ether Receiving successful</string>
-    <string name="wallet_trans_collect_smt">Notice: %s smt Receiving successful</string>
-    <string name="wallet_trans_collect_mesh">Notice: %s mesh Receiving successful</string>
-    <string name="wallet_trans_msg_eth">Notice: %s ether Transfer successful</string>
-    <string name="wallet_trans_msg_smt">Notice: %s smt Transfer successful</string>
-    <string name="wallet_trans_msg_mesh">Notice: %s mesh Transfer successful</string>
-    <string name="wallet_trans_collect_eth_failed">Notice: %s ether Receiving failed</string>
-    <string name="wallet_trans_collect_smt_failed">Notice: %s smt Receiving failed</string>
-    <string name="wallet_trans_collect_mesh_failed">Notice: %s mesh Receiving failed</string>
-    <string name="wallet_trans_msg_eth_failed">Notice: %s ether Transfer failed</string>
-    <string name="wallet_trans_msg_smt_failed">Notice: %s smt Transfer failed</string>
-    <string name="wallet_trans_msg_mesh_failed">Notice: %s mesh Transfer failed</string>
+    <string name="wallet_trans_collect">Notice: %1$s %2$s Receiving successful</string>
+    <string name="wallet_trans_msg">Notice: %1$s %2$s Transfer successful</string>
+    <string name="wallet_trans_collect_failed">Notice: %1$s %2$s Receiving failed</string>
+    <string name="wallet_trans_msg_failed">Notice: %1$s %2$s Transfer failed</string>
     <string name="wallet_trans_from">Sender: %s</string>
     <string name="wallet_trans_to">Receiver: %s</string>
 
-    <string name="bloance_not_enough_eth">ETH Insufficient balance</string>
-    <string name="bloance_not_enough_smt">SMT Insufficient balance</string>
-    <string name="bloance_not_enough_mesh">MESH Insufficient balance</string>
+    <string name="balance_not_enough_smt">SMT Insufficient balance</string>
+    <string name="balance_not_enough">Insufficient balance</string>
+    <string name="balance_not_enough_token">%s Insufficient balance</string>
     <string name="empty_address">Empty address</string>
     <string name="error_address">Wrong address</string>
     <string name="input_address">Receiver\' Address</string>
     <string name="input_vaule">Amount</string>
-    <string name="gathering">Receipt</string>
+    <string name="gathering">Receive</string>
+    <string name="raiden">Raiden</string>
     <string name="money_empty">Amount transferring cannot be blank</string>
     <string name="quick_blance_to_me">Scan to transfer</string>
     <string name="send_price">Confirm</string>
@@ -639,8 +679,8 @@
     <string name="send_amount">Amount：</string>
     <string name="send_blance">Transfer</string>
     <string name="send_blance_title">%s-transfer</string>
-    <string name="set_amount">Please enter the amount</string>
-    <string name="set_amount_address">Please enter the address</string>
+    <string name="set_amount">Input amount</string>
+    <string name="set_amount_address">Input address</string>
     <string name="time">Date：</string>
     <string name="description">Description</string>
 
