@@ -85,14 +85,16 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 
     private NewContactListAdapter mNewContactListAdapter;
 	private boolean isMultipleChoice=false;//A multiple-choice or radio
+	private boolean isCreateGroup;
 	private ArrayList<UserBaseVo> selectList = new ArrayList<>() ;  //The selected user list
+
 	private ArrayList<String> cantSelectList;//Don't appear the list of users, that is, can not choose the list of users, not to
 
 	private ArrayList<UserBaseVo> hasSelectList;//The selected user list already
-
 	private LinearLayout mSelectContactBg;
 	private HorizontalScrollView mHorizontalScrollView;
 	private LinearLayout mHorizontalScrollViewContent;
+
 	private TextView mFinishBtn;
 
 
@@ -107,6 +109,7 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 	    	cantSelectList = (ArrayList<String>) getIntent().getSerializableExtra("cantSelectList");
 	    	hasSelectList = (ArrayList<UserBaseVo>) getIntent().getSerializableExtra("hasSelectList");
 	    	isMultipleChoice= getIntent().getBooleanExtra("isMultipleChoice", false);
+			isCreateGroup = getIntent().getBooleanExtra("isCreateGroup", false);
 		}
 
 		mTitle = (TextView) findViewById(R.id.app_title);
@@ -157,7 +160,11 @@ public class SelectContactUI extends BaseActivity implements OnItemClickListener
 
 	@Override
 	protected void initData() {
-		mTitle.setText(getString(R.string.friend_invite_people));
+		if (isCreateGroup){
+			mTitle.setText(getString(R.string.contact_add_group_discussion_1));
+		}else{
+			mTitle.setText(getString(R.string.friend_invite_people));
+		}
 		new LoadDatabasesThread().start();
 	}
 

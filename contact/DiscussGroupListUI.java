@@ -126,6 +126,7 @@ public class DiscussGroupListUI extends BaseActivity implements OnItemClickListe
 		case R.id.app_btn_right:
 			Intent intent  = new Intent(DiscussGroupListUI.this,SelectContactUI.class);
 			intent.putExtra("isMultipleChoice", true);
+			intent.putExtra("isCreateGroup", true);
 			startActivityForResult(intent, 0);
 			Utils.openNewActivityAnim(DiscussGroupListUI.this, false);
 			break;

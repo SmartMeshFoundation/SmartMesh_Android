@@ -21,6 +21,7 @@ import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.contact.adapter.ContactSearchNickAdapter;
 import com.lingtuan.firefly.custom.LoadMoreListView;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.setting.BlackListAdapter;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.vo.UserBaseVo;
@@ -38,12 +39,12 @@ import java.util.Map;
 /**
  * @ Search nickname page
  */
-public class ContactSearchNickUI extends BaseActivity implements OnItemClickListener, OnRefreshListener {
+public class ContactSearchNickUI extends BaseActivity implements OnItemClickListener, OnRefreshListener, LoadMoreListView.RefreshListener {
 
 	private ContactSearchNickAdapter mAdapter;
 	
 
-	private ListView mListView;
+	private LoadMoreListView mListView;
 	/** Refresh the controls */
 	private SwipeRefreshLayout swipeLayout;
 	
@@ -56,6 +57,11 @@ public class ContactSearchNickUI extends BaseActivity implements OnItemClickList
 	private RelativeLayout emptyRela;
 
 	private String searchEdit;//Data from the address book
+
+
+	private boolean isLoadingData = false;
+	private int currentPage = 1 ;
+	private int oldPage=1;
 
 	@Override
 	protected void setContentView() {
@@ -84,6 +90,7 @@ public class ContactSearchNickUI extends BaseActivity implements OnItemClickList
 	@Override
 	protected void setListener() {
 		mListView.setOnItemClickListener(this);
+		mListView.setOnRefreshListener(this);
 		mListView.setOnScrollListener(new PauseOnScrollListener(NextApplication.mImageLoader, true, true));
 		swipeLayout.setOnRefreshListener(this);
 		
@@ -99,11 +106,11 @@ public class ContactSearchNickUI extends BaseActivity implements OnItemClickList
 						@Override
 						public void run() {
 							swipeLayout.setRefreshing(true);
-							searchNick(mInputSearch.getText().toString());
+							searchNick(1,mInputSearch.getText().toString());
 						}
 					}, 500);
 						
-				}
+					}
 				return false;
 			}
 		});
@@ -111,7 +118,7 @@ public class ContactSearchNickUI extends BaseActivity implements OnItemClickList
 
 	@Override
 	protected void initData() {
-		setTitle(getString(R.string.search));
+		setTitle(getString(R.string.contact_add_contact));
 		friendList = new ArrayList<>();
 		mAdapter = new ContactSearchNickAdapter(friendList, this);
 		mListView.setAdapter(mAdapter);
@@ -120,18 +127,27 @@ public class ContactSearchNickUI extends BaseActivity implements OnItemClickList
 			swipeLayout.setRefreshing(true);
 			mInputSearch.setText(searchEdit);
 			mInputSearch.setSelection(searchEdit.length());
-			searchNick(searchEdit);
+			searchNick(1,searchEdit);
 		}
 	}
-	private synchronized void searchNick(final String text){
-		friendList.clear();
-		NetRequestImpl.getInstance().friendSearch(text, new RequestListener() {
+	private synchronized void searchNick(int page,final String text){
+		if(isLoadingData){
+			return;
+		}
+		isLoadingData=true;
+		oldPage= page;
+		NetRequestImpl.getInstance().friendSearch(page,text, new RequestListener() {
 			@Override
 			public void start() {
 
 			}
 			@Override
 			public void success(JSONObject response) {
+				currentPage = oldPage;
+				if (currentPage == 1) {
+					friendList.clear();
+				}
+
 				String data = response.optString("data");
 				boolean flag = TextUtils.equals("[]", data);
 				JSONArray jsonArray = response.optJSONArray("data");
@@ -148,11 +164,18 @@ public class ContactSearchNickUI extends BaseActivity implements OnItemClickList
 				}else{
 					checkListEmpty(true);
 				}
+				isLoadingData=false;
 				swipeLayout.setRefreshing(false);
+				if (jsonArray!=null&&jsonArray.length()>=10) {
+					mListView.resetFooterState(true);
+				} else {
+					mListView.resetFooterState(false);
+				}
 			}
 
 			@Override
 			public void error(int errorCode, String errorMsg) {
+				isLoadingData=false;
 				swipeLayout.setRefreshing(false);
 				showToast(errorMsg);
 				checkListEmpty(true);
@@ -184,9 +207,8 @@ public class ContactSearchNickUI extends BaseActivity implements OnItemClickList
 
 	@Override
 	public void onRefresh() {
-		searchNick(mInputSearch.getText().toString());
+		searchNick(1,mInputSearch.getText().toString());
 	}
-	
 	/**
 	 * To test whether the current list is empty
 	 */
@@ -200,8 +222,9 @@ public class ContactSearchNickUI extends BaseActivity implements OnItemClickList
 		}
 	}
 
-	
 
-	
-	
+	@Override
+	public void loadMore() {
+		searchNick(currentPage + 1,mInputSearch.getText().toString());
+	}
 }
