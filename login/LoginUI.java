@@ -1,7 +1,9 @@
 package com.lingtuan.firefly.login;
 
 import android.content.Intent;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
@@ -22,7 +24,7 @@ import java.util.ArrayList;
  * Created on 2017/10/13.
  */
 
-public class LoginUI extends BaseActivity {
+public class LoginUI extends BaseActivity implements TextWatcher {
 
     private LoginUtil loginUtil;
 
@@ -51,7 +53,7 @@ public class LoginUI extends BaseActivity {
         clearUserName = (ImageView) findViewById(R.id.clearUserName);
         isShowPass = (ImageView) findViewById(R.id.isShowPass);
         login = (TextView) findViewById(R.id.login);
-        regist = (TextView) findViewById(R.id.regist);
+        regist = (TextView) findViewById(R.id.app_btn_right);
     }
 
     @Override
@@ -61,17 +63,23 @@ public class LoginUI extends BaseActivity {
         clearUserName.setOnClickListener(this);
         forgotPassword.setOnClickListener(this);
         regist.setOnClickListener(this);
+        userName.addTextChangedListener(this);
+        password.addTextChangedListener(this);
     }
 
     @Override
     protected void initData() {
         setTitle(getString(R.string.login));
+        regist.setVisibility(View.VISIBLE);
+        regist.setText(getString(R.string.regist));
         loginUtil = LoginUtil.getInstance();
         loginUtil.initContext(LoginUI.this);
         String username = MySharedPrefs.readString(this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_LOGIN_NAME);
         if (!TextUtils.isEmpty(username)){
             userName.setText(username);
         }
+
+        checkInputContent();
     }
 
     @Override
@@ -81,46 +89,10 @@ public class LoginUI extends BaseActivity {
             case R.id.login:
                 String mName = userName.getText().toString();
                 String mPwd = password.getText().toString();
-                String tempName;
-                String tempPwd;
-                String mid = "";
                 MySharedPrefs.write(this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_LOGIN_NAME, mName);
                 if (loginUtil.checkUser(mName,mPwd)){
                     if (Utils.isConnectNet(LoginUI.this)){
-                        ArrayList<UserInfoVo> infoList = JsonUtil.readLocalInfo(LoginUI.this);
-                        boolean isFoundName = false;//has username but not password
-                        boolean isFound = false;//username and password is right
-                        for (int i = 0 ; i < infoList.size() ; i++){//Whether the local user id
-                            try {
-                                tempName = infoList.get(i).getUsername();
-                                if (TextUtils.equals(mName,tempName)){
-                                    isFoundName = true;
-                                    tempPwd = infoList.get(i).getPassword();
-                                    mid = infoList.get(i).getMid();
-                                    if (TextUtils.equals(mPwd,tempPwd)){
-                                        isFound = true;
-                                        break;
-                                    }
-                                }
-                            }catch (Exception e){
-                                e.printStackTrace();
-                            }
-                        }
-                        if (isFound){//username and password is right
-                            if (TextUtils.isEmpty(mid)){
-                                LoginUtil.getInstance().intoMainUI(LoginUI.this,mName,mPwd);
-                            }else{
-                                loginUtil.login(mid,mPwd,true);
-                            }
-                        }else if (isFoundName){//only has username
-                            if (TextUtils.isEmpty(mid)){
-                                showToast(getString(R.string.login_pwd_error));
-                            }else{
-                                loginUtil.login(mid,mPwd,true);
-                            }
-                        }else{//no all
-                            loginUtil.login(mName,mPwd,true);
-                        }
+                        loginUtil.login(mName,mPwd,true);
                     }else{
                        LoginUtil.getInstance().intoMainUI(LoginUI.this,mName,mPwd);
                     }
@@ -131,7 +103,7 @@ public class LoginUI extends BaseActivity {
             case R.id.clearUserName:
                 userName.setText("");
                 break;
-            case R.id.regist:
+            case R.id.app_btn_right:
                 startActivity(new Intent(LoginUI.this, RegistUI.class));
                 Utils.openNewActivityAnim(LoginUI.this, false);
                 break;
@@ -158,5 +130,28 @@ public class LoginUI extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         LoginUtil.getInstance().destory();
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+        checkInputContent();
+    }
+
+    private void checkInputContent(){
+        if (TextUtils.isEmpty(userName.getText().toString()) && TextUtils.isEmpty(password.getText().toString())){
+            login.setEnabled(false);
+        }else{
+            login.setEnabled(true);
+        }
     }
 }

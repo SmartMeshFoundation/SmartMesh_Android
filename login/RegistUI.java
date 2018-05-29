@@ -1,7 +1,9 @@
 package com.lingtuan.firefly.login;
 
 import android.content.Intent;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
@@ -26,9 +28,8 @@ import java.util.UUID;
  * Created on 2017/10/13.
  */
 
-public class RegistUI extends BaseActivity {
+public class RegistUI extends BaseActivity implements TextWatcher {
 
-    //login util
     private LoginUtil loginUtil;
 
     private EditText userName,password,againPwd;//The user name, password, enter the password, the password prompt again
@@ -36,11 +37,11 @@ public class RegistUI extends BaseActivity {
     private TextView regist;//register
 
     /**
-     * show password true or false
+     * show password
      */
     private boolean isShowPassWorld = false;
 
-    private int type;//1 phone number to retrieve password 3 mailbox retrieve password
+    private int type;//1 phone number to get the password    3 email to get the password
     private String number;//Email or phone number
 
 
@@ -70,16 +71,22 @@ public class RegistUI extends BaseActivity {
         regist.setOnClickListener(this);
         isShowPass.setOnClickListener(this);
         clearUserName.setOnClickListener(this);
+        userName.addTextChangedListener(this);
+        password.addTextChangedListener(this);
+        againPwd.addTextChangedListener(this);
     }
 
     @Override
     protected void initData() {
         setTitle(getString(R.string.regist));
+        checkInputContent();
         if (type != -1){
             findViewById(R.id.userNameBg).setVisibility(View.GONE);
             findViewById(R.id.userNameLine).setVisibility(View.GONE);
             setTitle(getString(R.string.forgot_password_hint));
+            regist.setText(getString(R.string.account_pwd_input));
         }
+
         loginUtil = LoginUtil.getInstance();
         loginUtil.initContext(RegistUI.this);
     }
@@ -146,9 +153,9 @@ public class RegistUI extends BaseActivity {
             public void success(JSONObject response) {
                 LoadingDialog.close();
                 showToast(response.optString("msg"));
+                exit();
                 Intent intent = new Intent(RegistUI.this,LoginUI.class);
                 startActivity(intent);
-                finish();
             }
 
             @Override
@@ -180,9 +187,9 @@ public class RegistUI extends BaseActivity {
             public void success(JSONObject response) {
                 LoadingDialog.close();
                 showToast(response.optString("msg"));
+                exit();
                 Intent intent = new Intent(RegistUI.this,LoginUI.class);
                 startActivity(intent);
-                finish();
             }
 
             @Override
@@ -198,5 +205,28 @@ public class RegistUI extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         LoginUtil.getInstance().destory();
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+        checkInputContent();
+    }
+
+    private void checkInputContent(){
+        if (TextUtils.isEmpty(userName.getText().toString()) && TextUtils.isEmpty(password.getText().toString()) && TextUtils.isEmpty(againPwd.getText().toString())){
+            regist.setEnabled(false);
+        }else{
+            regist.setEnabled(true);
+        }
     }
 }
