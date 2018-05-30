@@ -2,6 +2,7 @@ package com.lingtuan.firefly.wallet;
 
 import android.content.Context;
 import android.support.v7.widget.CardView;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -85,11 +86,28 @@ public class AccountTokenAdapter extends BaseAdapter {
 
         int priceUnit = MySharedPrefs.readIntDefaultUsd(context,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
         if (priceUnit == 0){
-            holder.tokenPrice.setText(context.getString(R.string.token_total_price,tokenVo.getTokenPrice()));
-            holder.tokenTotalPrice.setText(context.getString(R.string.token_total_price,tokenVo.getUnitPrice()));
+            if (TextUtils.isEmpty(tokenVo.getTokenPrice())){
+                holder.tokenPrice.setText("━");
+            }else{
+                holder.tokenPrice.setText(context.getString(R.string.token_total_price,tokenVo.getTokenPrice()));
+            }
+            if (TextUtils.isEmpty(tokenVo.getUnitPrice())){
+                holder.tokenTotalPrice.setText("━");
+            }else{
+                holder.tokenTotalPrice.setText(context.getString(R.string.token_total_price,tokenVo.getUnitPrice()));
+            }
+
         }else{
-            holder.tokenPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdPrice()));
-            holder.tokenTotalPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdUnitPrice()));
+            if (TextUtils.isEmpty(tokenVo.getUsdPrice())){
+                holder.tokenPrice.setText("━");
+            }else{
+                holder.tokenPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdPrice()));
+            }
+            if (TextUtils.isEmpty(tokenVo.getUsdUnitPrice())){
+                holder.tokenTotalPrice.setText("━");
+            }else{
+                holder.tokenTotalPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdUnitPrice()));
+            }
         }
 
         BigDecimal tokenBalanceDecimal = new BigDecimal(tokenVo.getTokenBalance()).setScale(6,BigDecimal.ROUND_CEILING);
