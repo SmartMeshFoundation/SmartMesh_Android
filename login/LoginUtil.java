@@ -17,7 +17,11 @@ import com.lingtuan.firefly.contact.AddFriendsUI;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.service.LoadDataService;
+import com.lingtuan.firefly.setting.SecurityUI;
+import com.lingtuan.firefly.setting.SettingUI;
 import com.lingtuan.firefly.ui.MainFragmentUI;
+import com.lingtuan.firefly.ui.SplashActivity;
+import com.lingtuan.firefly.ui.WalletModeLoginUI;
 import com.lingtuan.firefly.util.Aes;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
@@ -27,11 +31,13 @@ import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.vo.UserInfoVo;
+import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.xmpp.XmppUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -78,7 +84,11 @@ public class LoginUtil{
 				if (TextUtils.isEmpty(token)){
 					return;
 				}
-				token = Aes.decode(aeskey,token);
+
+				String 	tokenTmp = Aes.decode(aeskey,token);
+			    if(!TextUtils.isEmpty(tokenTmp)){
+					token = tokenTmp;
+				}
 				try {//Local encrypted token decrypted storage
 
 					if (!TextUtils.isEmpty(mid)){
@@ -108,7 +118,21 @@ public class LoginUtil{
 					NextApplication.myInfo = new UserInfoVo().readMyUserInfo(mContext);
 					if (uploadRegisterInfo != null){
 						uploadRegisterInfo.setVisibility(View.GONE);
+						if (NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getMobile())&& TextUtils.isEmpty(NextApplication.myInfo.getEmail())) {
+							MyViewDialogFragment mdf = new MyViewDialogFragment();
+							mdf.setTitleAndContentText(mContext.getString(R.string.account_logout_mid_warn), mContext.getString(R.string.account_logout_email_hint));
+							mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
+								@Override
+								public void okBtn() {
+									mContext.startActivity(new Intent(mContext, SecurityUI.class));
+									Utils.openNewActivityAnim(mContext,false);
+								}
+							});
+							mdf.show(((AppCompatActivity)mContext).getSupportFragmentManager(), "mdf");
+						}
 					}
+
+
 					//Login XMPP
 					XmppUtils.loginXmppForNextApp(mContext);
 
@@ -121,8 +145,8 @@ public class LoginUtil{
 			public void error(int errorCode, String errorMsg) {
 				if (!TextUtils.isEmpty(mid)){
 					LoadingDialog.close();
+					MyToast.showToast(mContext, errorMsg);
 				}
-				MyToast.showToast(mContext, errorMsg);
 			}
 		});
 	}
@@ -141,14 +165,11 @@ public class LoginUtil{
 				if (showDialog){
 					LoadingDialog.show(mContext,"");
 				}
-
 			}
 
 			@Override
 			public void success(JSONObject response) {
-
 				try {
-
 					JSONObject object = response.optJSONObject("data");
 					//Local encrypted token decrypted storage
 					String token = object.optString("token");
@@ -157,22 +178,15 @@ public class LoginUtil{
 						return;
 					}
 					token = Aes.decode(aeskey,token);
-
 					object.put("token",token);
 					object.put("mid",mid);
 					object.put("password",uPwd);
 					MySharedPrefs.write(mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_LOGIN_USERINFO, object.toString());
-
 					UserInfoVo userInfoVo = new UserInfoVo().parse(object);
 					JsonUtil.updateLocalInfo(mContext,userInfoVo);
-
 					NextApplication.myInfo = new UserInfoVo().readMyUserInfo(mContext);
-
 					XmppUtils.loginXmppForNextApp(mContext);
-
 					getUserInfo(showDialog,mid,uPwd,token);
-
-
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -202,6 +216,7 @@ public class LoginUtil{
 			@Override
 			public void success(JSONObject response) {
 
+				MySharedPrefs.reLoadWalletList();
 				JSONObject object = response.optJSONObject("data");
 				try {
 					object.put("token",token);
@@ -254,7 +269,7 @@ public class LoginUtil{
 
 	//According to the registered bounced
 	public void showRegistDialog(final TextView uploadRegisterInfo) {
-		MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_SINGLE_EDIT, mContext.getString(R.string.account_update_mid),mContext.getString(R.string.account_input_mid),null);
+		MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_SINGLE_EDIT, mContext.getString(R.string.account_update_mid),mContext.getString(R.string.mid_length_warning),null);
 		mdf.setEditOkCallback(new MyViewDialogFragment.EditOkCallback() {
 			@Override
 			public void okBtn(String edittext) {
@@ -321,15 +336,6 @@ public class LoginUtil{
 			return;
 		}
 
-		//Verify whether the user name already exists
-		ArrayList<UserInfoVo> infoList = JsonUtil.readLocalInfo(mContext);
-		for (int i = 0 ; i < infoList.size() ; i++){
-			if (TextUtils.equals(mName,infoList.get(i).getUsername())){
-				MyToast.showToast(mContext,mContext.getString(R.string.notification_wallimp_repeat));
-				return ;
-			}
-		}
-
 		LoadingDialog.show(mContext,"");
 
 		//Store the registration information Convenient synchronization
@@ -337,14 +343,26 @@ public class LoginUtil{
 		userInfoVo.setUsername(mName);
 		userInfoVo.setPassword(mPwd);
 		userInfoVo.setLocalId(locailid);
-		JsonUtil.writeLocalInfo(mContext,userInfoVo);
 
+		try {
+			JSONObject data = new JSONObject();
+			data.put(JsonConstans.Username,userInfoVo.getUserName());
+			data.put(JsonConstans.Password,userInfoVo.getPassword());
+			data.put(JsonConstans.Localid,userInfoVo.getLocalId());
+			MySharedPrefs.write(mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_LOGIN_USERINFO, data.toString());
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		NextApplication.myInfo = new UserInfoVo().readMyUserInfo(mContext);
 		//Login XMPP
 		XmppUtils.loginXmppForNextApp(mContext);
-
+		MySharedPrefs.reLoadWalletList();
+		FinalUserDataBase.getInstance().close();
 		//Enter the app
 		mContext.startActivity(new Intent(mContext, MainFragmentUI.class));
 		Utils.openNewActivityAnim(mContext, true);
+
+
 		LoadingDialog.close();
 	}
 
@@ -357,11 +375,11 @@ public class LoginUtil{
 	public boolean intoMainUI(Context context,String mName,String mPwd){
 		ArrayList<UserInfoVo> infoList = JsonUtil.readLocalInfo(context);
 		for (int i = 0 ; i < infoList.size() ; i++){
-			String username = infoList.get(i).getUsername();
 			String mid = infoList.get(i).getMid();
+			String mobile = infoList.get(i).getMobile();
+			String email = infoList.get(i).getEmail();
 			String password = infoList.get(i).getPassword();
-			if ((TextUtils.equals(mName,username) || TextUtils.equals(mName,mid)) && TextUtils.equals(mPwd,password)){
-
+			if ((TextUtils.equals(mName,mid) || TextUtils.equals(mName,mobile) || TextUtils.equals(mName,email)) && TextUtils.equals(mPwd,password)){
 				//Save the current user information
 				String jsonString  = MySharedPrefs.readString(mContext, MySharedPrefs.FILE_USER, infoList.get(i).getLocalId());
 				try {
@@ -374,6 +392,7 @@ public class LoginUtil{
 				NextApplication.myInfo = new UserInfoVo().readMyUserInfo(context);
 				FinalUserDataBase.getInstance().close();
 				XmppUtils.loginXmppForNextApp(context);
+				MySharedPrefs.reLoadWalletList();
 				MySharedPrefs.write(context, MySharedPrefs.FILE_USER, MySharedPrefs.IS_FIRST_LOGIN, "yes");
 				context.startActivity(new Intent(context, MainFragmentUI.class));
 				Utils.openNewActivityAnim((Activity) context, true);
