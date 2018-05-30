@@ -253,8 +253,11 @@ public class XmppService extends Service {
                                 for (int i = 0 ; i < length; i++){
                                     StorableWallet storableWallet = WalletStorage.getInstance(getApplicationContext()).get().get(i);
                                     String address = "";
-                                    if(!TextUtils.isEmpty(storableWallet.getPublicKey()) && !storableWallet.getPublicKey().startsWith("0x")) {
-                                        address= "0x"+ storableWallet.getPublicKey();
+                                    if(!TextUtils.isEmpty(storableWallet.getPublicKey())) {
+                                        address = storableWallet.getPublicKey();
+                                        if (!address.startsWith("0x")){
+                                            address= "0x"+ address;
+                                        }
                                     }
                                     if ((TextUtils.equals("0",noticetype) && TextUtils.equals(fromAddress,address)) || (TextUtils.equals("1",noticetype) && TextUtils.equals(toAddress,address))){
                                         isAddressExist = true;
