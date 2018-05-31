@@ -191,12 +191,16 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent != null && (Constants.CHANGE_LANGUAGE.equals(intent.getAction()))) {
-                mTitle.setText(R.string.main_contact);
+                mTitle.setText(R.string.main_discover);
                 if (isShowList){
                     checkListEmpty();
                 }
             }else if (intent != null && (Constants.OFFLINE_MEMBER_LIST.equals(intent.getAction()))){
                 mDatas = (ArrayList<WifiPeopleVO>) intent.getSerializableExtra("onLineMember");
+                mAdapter.resetSource(mDatas);
+                if (isShowList){
+                    checkListEmpty();
+                }
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -283,7 +287,6 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
         }
         isDataFirstLoaded = false;
     }
-
 
     @Override
     public void onRadarItemClick(int position) {
@@ -376,9 +379,17 @@ public class MainFoundFragmentUI extends BaseFragment implements RadarViewGroup.
     private void updateDatas(String gender){
         if (mDatas != null ){
             ArrayList<WifiPeopleVO> selectDatas = new ArrayList<>();
-            for (int i = 0 ; i < mDatas.size() ; i++){
-                if (TextUtils.equals(gender,mDatas.get(i).getGender())){
-                    selectDatas.add(mDatas.get(i));
+            if (TextUtils.equals("1",gender)){
+                for (int i = 0 ; i < mDatas.size() ; i++){
+                    if (TextUtils.equals("1",mDatas.get(i).getGender())){
+                        selectDatas.add(mDatas.get(i));
+                    }
+                }
+            }else{
+                for (int i = 0 ; i < mDatas.size() ; i++){
+                    if (!TextUtils.equals("1",mDatas.get(i).getGender())){
+                        selectDatas.add(mDatas.get(i));
+                    }
                 }
             }
             mAdapter.resetSource(selectDatas);
