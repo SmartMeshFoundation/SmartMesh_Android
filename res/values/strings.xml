@@ -66,7 +66,7 @@
     <string name="eth_token_5">5. Map time please pay attention to the official website announcement</string>
     <string name="eth_token_6">Currency switch</string>
     <string name="wallet_copy_disclaimer">Disclaimer</string>
-    <string name="wallet_copy_disclaimer_info">• Please ensure secure backup your wallet.SmartMesh APP cannot access accounts,recounts keys,reset passwords,nor reverse transactions.You are responsible for your security.\n\n• Tourists(no MID and bound phone number, mailbox) to exit will not save wallet information.</string>
+    <string name="wallet_copy_disclaimer_info">• Please ensure secure backup your wallet.SmartMesh APP cannot access accounts,recounts keys,reset passwords,nor reverse transactions.You are responsible for your security.\n\n• Tourists(no MID and bound phone number, email) to exit will not save wallet information.</string>
 
     <!-- Create gesture activity -->
     <string name="create_gesture_set">Set gesture password</string>
@@ -127,9 +127,9 @@
     <string name="account_manager">Manage Account</string>
     <string name="setting">Settings</string>
     <string name="wallet">Wallet</string>
-    <string name="security">Security Setting</string>
+    <string name="security">Security</string>
     <string name="submit_feedback">Feedback</string>
-    <string name="qm_qm">Scan</string>
+    <string name="qm_qm">Scan QR Code</string>
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>
     <string name="qr_code">QR code</string>
@@ -166,7 +166,7 @@
     <string name="custom_gas_price_1">Gas price should exceed 8</string>
     <string name="custom_gas">Custom Gas</string>
     <string name="ok">OK</string>
-    <string name="advance">Advance</string>
+    <string name="advance">advanced settings</string>
     <string name="custom_gas_notice">Gas price too Height，is recommended less than 100 gwei</string>
     <string name="custom_gas_notice_1">Gas price is too low, is recommended greater than 8 gwei</string>
     <string name="custom_gas_notice_2">Gas price is too low, is recommended greater than 18 gwei</string>
@@ -204,9 +204,9 @@
     <string name="info_edit_dialog">Saving... One moment please</string>
     <string name="info_edit_picture_cut_failure"> Image clipping failed </string>
     <string name="info_upload_picture_failure">Image upload fail</string>
-    <string name="info_add_note">Add note</string>
+    <string name="info_add_note">Add Note</string>
     <string name="info_set_note">Edit note</string>
-    <string name="info_data_set">Data settings</string>
+    <string name="info_data_set">Setting</string>
     <string name="info_shield_user">Block this user?</string>
 	<string name="info_block">Block</string>
     <string name="select_country_title">Select area</string>
@@ -220,9 +220,9 @@
     <string name="raiden_channel_no">No channel, please create first</string>
     <string name="normal_crash_time">Crash time = </string>
     <string name="normal_connect_error">Connection error</string>
-    <string name="send_message"> Send message </string>
+    <string name="send_message"> Send Message </string>
     <string name="search">Search</string>
-    <string name="search_by_nick">Enter Nickname/MID/Email to add friends</string>
+    <string name="search_by_nick">Enter Nickname/MID/Email/phone to add friends</string>
     <string name="add">Add</string>
     <string name="to_add">Add</string>
     <string name="create">Create</string>
@@ -271,7 +271,7 @@
     <string name="chatting_cancel_download">Cancel download</string>
     <string name="chatting_start_download">Start downloading </string>
     <string name="chatting_incompatible_message">Incompatible the message</string>
-    <string name="chatting_card">Business card</string>
+    <string name="chatting_card">Contact Card</string>
     <string name="chatting_card_hint">Off the Chain Value Transfers</string>
     <string name="chatting_file">File</string>
     <string name="chatting_audio_normal">Press to talk</string>
@@ -292,7 +292,7 @@
     <string name="chat_notify_picture">%s sent you a picture</string>
     <string name="chat_notify_audio">%s sent you a voice</string>
     <string name="chat_notify_gif">%s sent you a GIF</string>
-    <string name="chat_notify_card">%1$s sent you %2$s\'s business card</string>
+    <string name="chat_notify_card">%1$s sent you %2$s\'s contact card</string>
     <string name="chat_notify_link">%s:shared a link</string>
     <string name="chat_notify_small_video">%s:sent you a video</string>
     <string name="chat_notify_file">%s:sent you a file</string>
@@ -373,7 +373,7 @@
 
     <!-- friend  contac -->
     <string name="added">Added</string>
-    <string name="add_friends">Add friend</string>
+    <string name="add_friends">Add Friend</string>
     <string name="add_friend_by_contact" >Contact</string>
     <string name="add_friend"> Add Friends </string>
     <string name="friend">Friends</string>
@@ -381,13 +381,14 @@
     <string name="add_friend_hint">Send a friend request</string>
     <string name="add_friend_hint_hello">Say hi</string>
     <string name="contact_add_content">%s please add me as a friend</string>
-    <string name="contact_add_group_discussion">New group chat</string>
-    <string name="contact_add_contact">Contacts</string>
+    <string name="contact_add_group_discussion">New Chat</string>
+    <string name="contact_add_group_discussion_1">Group Chat</string>
+    <string name="contact_add_contact">Add Contacts</string>
     <string name="contact_friends">Contact</string>
     <string name="contact_empty_msg">No chatting history</string>
     <string name="contact_new_friends">Recommended friends</string>
     <string name="contact_already_friends">Already your friend</string>
-    <string name="contact_default">Friends</string>
+    <string name="contact_default">My Friends</string>
     <string name="contact_default_empty">You have no friends yet</string>
     <string name="contact_num">%d friends</string>
     <string name="contact_smt_accect">&quot;SmartMesh&quot;Want to visit your address book</string>
@@ -430,7 +431,7 @@
     <string name="report_sent">Report submitted</string>
 
     <!-- News related to -->
-    <string name="msg_event_show_card">[Business card]</string>
+    <string name="msg_event_show_card">[Contact Card]</string>
     <string name="msg_event_show_image">[Photo]</string>
     <string name="msg_event_show_audio">[Audio]</string>
     <string name="msg_event_invite_msg103">[Link] %s</string>
@@ -463,9 +464,9 @@
     <string name="discuss_all">All members (%d)</string>
     <string name="discuss_name">Group chat name</string>
     <string name="discuss_not_exist">Unable to obtain group information, please check for existence</string>
-    <string name="group_chat">Group Chat</string>
+    <string name="group_chat">Group Chats</string>
     <string name="group_quickmark">Group chat QR code</string>
-    <string name="group_dismiss_discussion">Delete and Leave</string>
+    <string name="group_dismiss_discussion">Dissolve Group</string>
     <string name="group_out_discussion">Delete and Leave</string>
     <string name="group_member_select_list">Select people to remind</string>
     <string name="group_empty">You have not created a group chat yet</string>
@@ -520,10 +521,10 @@
     <string name="enter_code_number">Enter the verification code</string>
     <string name="enter_email_number">Please enter your email</string>
     <string name="verify_the_code">Verification SMS</string>
-    <string name="bind_mobile">Link your phone number</string>
-    <string name="bind_email">Link your email</string>
-    <string name="bind_mobile_warning">Please link your phone number to ensure account safety</string>
-    <string name="bind_email_warning">Please link your email to ensure account safety</string>
+    <string name="bind_mobile">Bind Phone Number</string>
+    <string name="bind_email">Bind Email</string>
+    <string name="bind_mobile_warning">Please Bind Phone Number to ensure account safety</string>
+    <string name="bind_email_warning">Please Bind Email to ensure account safety</string>
     <string name="bind_success">Linked!</string>
     <string name="bind_mobile_number">Your phone number is：%s</string>
     <string name="bind_email_number">Your email is：%s</string>
@@ -583,7 +584,7 @@
     <string name="problem_info">What\'s the problem?</string>
     <string name="problem_info_empty">You havent fill in the specific issues</string>
     <string name="advice_info_empty">You havent fill in the specific Suggestions</string>
-    <string name="advice_info">What is the recommended？</string>
+    <string name="advice_info">What is the suggestion？</string>
     <string name="advice_info_hint">Please leave your valuable opinions and Suggestions, we will try to improve.</string>
     <string name="email_info">Your email address?</string>
     <string name="email_is_error">Please input the correct email address</string>
@@ -666,14 +667,14 @@
     <string name="balance_not_enough_token">%s Insufficient balance</string>
     <string name="empty_address">Empty address</string>
     <string name="error_address">Wrong address</string>
-    <string name="input_address">Receiver\' Address</string>
-    <string name="input_vaule">Amount</string>
+    <string name="input_address">Enter the address</string>
+    <string name="input_vaule">Enter the amount</string>
     <string name="gathering">Receive</string>
     <string name="raiden">Raiden</string>
     <string name="money_empty">Amount transferring cannot be blank</string>
     <string name="quick_blance_to_me">Scan to transfer</string>
     <string name="send_price">Confirm</string>
-    <string name="send_gas">Mining Fee</string>
+    <string name="send_gas">Miner costs</string>
     <string name="send_address">Address：</string>
     <string name="send_account">Account：</string>
     <string name="send_amount">Amount：</string>
