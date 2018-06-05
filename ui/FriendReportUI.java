@@ -1,5 +1,6 @@
 package com.lingtuan.firefly.ui;
 
+import android.content.Intent;
 import android.view.View;
 import android.widget.TextView;
 
@@ -170,6 +171,8 @@ public class FriendReportUI extends BaseActivity {
                 LoadingDialog.close();
                 FinalUserDataBase.getInstance().deleteFriendByUid(localid);
                 showToast(response.optString("msg"));
+                Intent intent = new Intent();
+                setResult(RESULT_OK,intent);
                 finish();
             }
 

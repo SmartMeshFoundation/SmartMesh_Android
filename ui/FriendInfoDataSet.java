@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
-import com.lingtuan.firefly.custom.SwitchButton;
+import com.lingtuan.firefly.custom.switchbutton.SwitchButton;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.util.Constants;
@@ -31,6 +31,7 @@ public class FriendInfoDataSet extends BaseActivity implements CompoundButton.On
     private TextView userName;//The user name
 
     private static final int FRIEND_NOTE = 100;
+    private static final int FRIEND_ADD_BLACK = FRIEND_NOTE + 1;
 
     private UserInfoVo info;
 
@@ -69,9 +70,11 @@ public class FriendInfoDataSet extends BaseActivity implements CompoundButton.On
             if (TextUtils.equals(info.getInblack(),"1")){
                 isInBlack = true;
                 joinBlackSb.setChecked(true);
+                joinBlackSb.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
             }else{
                 isInBlack = false;
                 joinBlackSb.setChecked(false);
+                joinBlackSb.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
             }
             joinBlackSb.setOnCheckedChangeListener(this);
             if (info.getFriendLog() == 0){
@@ -98,7 +101,7 @@ public class FriendInfoDataSet extends BaseActivity implements CompoundButton.On
             case R.id.report:
                 Intent reportIntent = new Intent(FriendInfoDataSet.this,FriendReportUI.class);
                 reportIntent.putExtra("localId",info.getLocalId());
-                startActivityForResult(reportIntent,FRIEND_NOTE);
+                startActivityForResult(reportIntent,FRIEND_ADD_BLACK);
                 Utils.openNewActivityAnim(FriendInfoDataSet.this,false);
                 break;
         }
@@ -111,12 +114,21 @@ public class FriendInfoDataSet extends BaseActivity implements CompoundButton.On
             String note = data.getStringExtra("note");
             userName.setText(note);
             info.setNote(note);
+        } else if (data != null && requestCode == FRIEND_ADD_BLACK){
+            isInBlack = true;
+            joinBlackSb.setChecked(true);
+            joinBlackSb.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
         }
     }
 
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (isChecked){
+            joinBlackSb.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+        }else{
+            joinBlackSb.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
+        }
         updateBlackState(isChecked);
     }
 
@@ -150,6 +162,11 @@ public class FriendInfoDataSet extends BaseActivity implements CompoundButton.On
                 showToast(errorMsg);
                 joinBlackSb.setOnCheckedChangeListener(null);
                 joinBlackSb.setChecked(!isChecked);
+                if (!isChecked){
+                    joinBlackSb.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+                }else{
+                    joinBlackSb.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
+                }
                 joinBlackSb.setOnCheckedChangeListener(FriendInfoDataSet.this);
             }
         });
