@@ -2,6 +2,9 @@
     <string name="app_name">SmartMesh</string>
     <string name="start_smt">Start SmartMesh</string>
 
+    <!-- show offline strings -->
+    <string name="show_offline_hint">This account is already logged in on other devices , you are forced offline!</string>
+
     <!-- Gesture login activity -->
     <string name="gesture_forget_gesture">Login Password</string>
     <string name="gesture_login">Gesture password</string>
@@ -84,16 +87,16 @@
     <string name="login_validating">Validating</string>
     <string name="login_pwd_error">Username or password incorrect</string>
     <string name="login_state_failure">Please login again</string>
-    <string name="regist">Register</string>
+    <string name="regist">Sign up</string>
     <string name="wallet_mode">Wallet pattern</string>
     <string name="forgot_password">Forgot password?</string>
     <string name="forgot_password_hint">Forgot password</string>
     <string name="account_pwd">Account password</string>
-    <string name="account_pwd_input">Enter your password</string>
-    <string name="account_pwd_login_input">Enter your password</string>
-    <string name="account_pwd_again_input">Confirm your password</string>
+    <string name="account_pwd_input">Set password</string>
+    <string name="account_pwd_login_input">Enter password</string>
+    <string name="account_pwd_again_input">Confirm password</string>
     <string name="account_pwd_again_warning">Password does not match</string>
-    <string name="account_pwd_info_input">Private key hint</string>
+    <string name="account_pwd_info_input">Password hint</string>
     <string name="account_input_pwd_warning">Please enter your account password</string>
     <string name="account_name_exist">Username already exists</string>
     <string name="account_update_mid">SmartMesh ID</string>
@@ -428,7 +431,7 @@
     <string name="report_political_reactionary">Politics related</string>
     <string name="report_msg_count">%d messages</string>
     <string name="report_no_choice_guest">Unselected</string>
-    <string name="report_sent">Report submitted</string>
+    <string name="report_sent">Report Success</string>
 
     <!-- News related to -->
     <string name="msg_event_show_card">[Contact Card]</string>
@@ -612,7 +615,7 @@
 
     <!-- Backup the purse -->
     <string name="wallet_copy_private_key">Export private key</string>
-    <string name="wallet_copy_private_key_hint">Users who use the SmartMesh App to export private keys before version 2.0.0 are selected.</string>
+    <string name="wallet_copy_private_key_hint">Please check users with private keys exported from SmartMesh App versions prior to 2.0.0</string>
     <string name="wallet_copy_keysotre">Export keystore</string>
     <string name="wallet_copy_name">Account name: %s</string>
     <string name="wallet_copy_pwd_info">Hint: %s</string>
