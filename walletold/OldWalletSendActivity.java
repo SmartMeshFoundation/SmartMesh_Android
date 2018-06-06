@@ -443,6 +443,11 @@ public class OldWalletSendActivity extends BaseActivity implements SeekBar.OnSee
                 return;
             }
         }
+
+        if (currentLimit <= 0){
+            return;
+        }
+
         MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_INPUT_PWD, new MyViewDialogFragment.EditCallback() {
             @Override
             public void getEditText(String editText) {
@@ -463,7 +468,7 @@ public class OldWalletSendActivity extends BaseActivity implements SeekBar.OnSee
         }
         double tempValue = Double.valueOf(toValue.getText().toString());
         if(sendtype == 1 && tempValue > smtBalance){
-            showToast(getString(R.string.bloance_not_enough_smt));
+            showToast(getString(R.string.balance_not_enough_smt));
             return true;
         }else if (sendtype == 2 && tempValue > meshBalance){
             showToast(getString(R.string.balance_not_enough_token,getString(R.string.mesh)));
