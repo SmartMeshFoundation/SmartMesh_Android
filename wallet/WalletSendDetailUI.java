@@ -20,6 +20,7 @@ import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
 import com.lingtuan.firefly.raiden.RaidenChannelList;
+import com.lingtuan.firefly.raiden.RaidenNet;
 import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.Utils;
@@ -118,7 +119,10 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         filter.addAction(Constants.WALLET_REFRESH_BACKUP);//Refresh the page
         registerReceiver(mBroadcastReceiver, filter);
         
-        
+//        //debug
+//        if (!tokenVo.getTokenSymbol().equals("SMT")) {
+//            walletRaiden.setVisibility(View.VISIBLE);
+//        }
         transVos = new ArrayList<>();
         mAdapter = new TransAdapter(WalletSendDetailUI.this, transVos, storableWallet.getPublicKey());
         transListView.setAdapter(mAdapter);
@@ -132,6 +136,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
                 }
             }
         }, 200);
+        RaidenNet.getInatance().registerToken();
     }
     
     @Override
@@ -166,6 +171,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
             case R.id.walletRaiden:
                 Intent raidenIntent = new Intent(this, RaidenChannelList.class);
                 raidenIntent.putExtra("storableWallet", storableWallet);
+                raidenIntent.putExtra("tokenVo", tokenVo);
                 startActivity(raidenIntent);
                 Utils.openNewActivityAnim(WalletSendDetailUI.this, false);
                 break;
@@ -346,6 +352,4 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
             }
         }
     };
-    
-    
 }
