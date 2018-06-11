@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include layout="@layout/app_title_layout"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:textColor="@color/textColorHintPrimary"
+        android:text="@string/add_friend_hint"/>
+
+    <EditText
+        android:id="@+id/contentEt"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:textSize="14sp"
+        android:padding="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:gravity="left"
+        android:textColor="@color/textColorHintPrimary"
+        android:inputType="textEmailAddress"
+        android:hint="@string/add_friend_hint_hello"
+        android:background="@drawable/shape_round_blackf1_5"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:textColor="@color/textColorHintPrimary"
+        android:text="@string/info_add_note"/>
+
+    <EditText
+        android:id="@+id/addNoteEt"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:singleLine="true"
+        android:maxLength="16"
+        android:textSize="14sp"
+        android:padding="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:textColor="@color/textColorHintPrimary"
+        android:inputType="textEmailAddress"
+        android:background="@drawable/shape_round_blackf1_5"/>
+
+</LinearLayout>

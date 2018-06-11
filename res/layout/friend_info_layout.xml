@@ -70,28 +70,43 @@
                 android:layout_height="match_parent"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/friendNote"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
                     android:textColor="@color/textColor"
                     android:maxLines="1"
                     android:ellipsize="end"
                     android:textStyle="bold"
-                    android:textSize="18sp"
-                    android:layout_marginTop="8dp"/>
+                    android:textSize="16sp"
+                    android:layout_marginTop="2dp"/>
 
                 <TextView
                     android:id="@+id/friendMid"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
                     android:textColor="@color/textColor"
                     android:maxLines="1"
                     android:ellipsize="end"
-                    android:visibility="invisible"
-                    android:layout_marginTop="10dp"/>
+                    android:visibility="invisible"/>
+
+                <TextView
+                    android:id="@+id/friendName"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/textColor"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
             </LinearLayout>
 
         </LinearLayout>
@@ -111,6 +126,7 @@
         android:layout_height="0dp"/>
 
     <LinearLayout
+        android:id="@+id/friendBody"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_gravity="center_vertical"
