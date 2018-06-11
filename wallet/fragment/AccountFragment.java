@@ -62,7 +62,6 @@ import com.lingtuan.firefly.xmpp.XmppAction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Timer;
@@ -282,42 +281,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_WINDOW,false);
             initWindowPop();
         }
-
-//        writePassToSdcard();
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                String keystorePath = new File(getActivity().getFilesDir(), SDCardCtrl.WALLERPATH).getPath();
-//                String raidenDataPath = new File(getActivity().getFilesDir(), SDCardCtrl.RAIDEN_DATA).getPath();
-//                String raidenPassPath = new File(getActivity().getFilesDir(), SDCardCtrl.RAIDEN_PASS).getPath() + "/pass";
-//                Mobile.mobileStartUp("0x70aefe8d97ef5984b91b5169418f3db283f65a29", keystorePath,"ws://192.168.0.131:8546",raidenDataPath,raidenPassPath);
-//            }
-//        }).start();
     }
-//
-//    private void writePassToSdcard() {
-//        try {
-//            File dir = new File(getActivity().getFilesDir() + SDCardCtrl.RAIDEN_PASS);
-//            if (!dir.exists()) {
-//                dir.mkdirs();
-//            }
-//            File f = new File(dir, "pass");
-//            if (!f.exists()) {
-//                f.createNewFile();
-//            }
-//            copyString("123456", f);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    public void copyString(String fileContents, File outputFile) throws FileNotFoundException {
-//        OutputStream output = new FileOutputStream(outputFile);
-//        PrintWriter p = new PrintWriter(output);
-//        p.println(fileContents);
-//        p.flush();
-//        p.close();
-//    }
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -545,11 +509,20 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
                 if (priceUnit == 0){
                     MySharedPrefs.writeInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT,1);
-                    walletBalanceNum.setText(getString(R.string.token_total_usd_price,usdTotal));
+                    if (TextUtils.isEmpty(usdTotal)){
+                        walletBalanceNum.setText("━");
+                    }else{
+                        walletBalanceNum.setText(getString(R.string.token_total_usd_price,usdTotal));
+                    }
+
                     changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
                 }else{
                     MySharedPrefs.writeInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT,0);
-                    walletBalanceNum.setText(getString(R.string.token_total_price,total));
+                    if (TextUtils.isEmpty(total)){
+                        walletBalanceNum.setText("━");
+                    }else{
+                        walletBalanceNum.setText(getString(R.string.token_total_price,total));
+                    }
                     changeTokenUnit.setImageResource(R.drawable.icon_unit_cny);
                 }
                 mTokenAdapter.notifyDataSetChanged();
@@ -871,16 +844,22 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             public void success(JSONObject response) {
                 tokenVos.clear();
                 swipe_refresh.setRefreshing(false);
-                BigDecimal totalDecimal = new BigDecimal(response.optString("total")).setScale(2,BigDecimal.ROUND_DOWN);
-                BigDecimal usdTotalDecimal = new BigDecimal(response.optString("usd_total")).setScale(2,BigDecimal.ROUND_DOWN);
-                total = totalDecimal.toPlainString();
-                usdTotal = usdTotalDecimal.toPlainString();
+                total = response.optString("total");
+                usdTotal = response.optString("usd_total");
                 int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
                 if (priceUnit == 0){
-                    walletBalanceNum.setText(getString(R.string.token_total_price,total));
+                    if (TextUtils.isEmpty(total)){
+                        walletBalanceNum.setText("━");
+                    }else{
+                        walletBalanceNum.setText(getString(R.string.token_total_price,total));
+                    }
                     changeTokenUnit.setImageResource(R.drawable.icon_unit_cny);
                 }else{
-                    walletBalanceNum.setText(getString(R.string.token_total_usd_price,usdTotal));
+                    if (TextUtils.isEmpty(usdTotal)){
+                        walletBalanceNum.setText("━");
+                    }else{
+                        walletBalanceNum.setText(getString(R.string.token_total_usd_price,usdTotal));
+                    }
                     changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
                 }
                 JSONArray array = response.optJSONArray("data");
