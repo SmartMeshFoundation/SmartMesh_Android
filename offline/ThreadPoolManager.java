@@ -148,8 +148,8 @@ class HandleAcceptSocket implements Runnable {
 	}
 
 	public void run() {
-		synchronized (AppNetService.class)
-		{
+//		synchronized (AppNetService.class)
+//		{
 			try {
 				InputStream ins = socket.getInputStream();
 				int iCommand = ins.read();
@@ -168,6 +168,6 @@ class HandleAcceptSocket implements Runnable {
 			} catch (IOException e) {
 				return;
 			}
-		}
+//		}
 	}
 }
