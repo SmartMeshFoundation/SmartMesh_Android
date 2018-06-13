@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/textColor"
+    android:orientation="vertical" >
+
+    <include layout="@layout/app_title_layout" />
+
+
+    <com.lingtuan.firefly.custom.LanguageTextView
+        android:id="@+id/uploadRegisterInfo"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:singleLine="true"
+        android:text="@string/account_upload_regist_info"
+        android:textColor="@color/black"
+        android:background="@color/yellow"
+        android:visibility="gone"/>
+
+    <ListView
+        android:id="@+id/msg_event_list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:cacheColorHint="@null"
+        android:divider="@null"
+        android:listSelector="@drawable/scrollview_item_bg"
+        android:fadingEdge="none" 
+        android:scrollbars="none" >
+    </ListView>
+
+    <include layout="@layout/include_empty_view" />
+
+</LinearLayout>

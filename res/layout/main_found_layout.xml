@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/foundBg"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_centerInParent="true"
+    android:background="@drawable/found_bg">
+
+    <include layout="@layout/app_title_layout"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.lingtuan.firefly.custom.LanguageTextView
+            android:id="@+id/uploadRegisterInfo"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:singleLine="true"
+            android:text="@string/account_upload_regist_info"
+            android:textColor="@color/black"
+            android:background="@color/yellow"
+            android:visibility="gone"/>
+
+        <com.lingtuan.firefly.discover.RadarViewGroup
+            android:id="@+id/radar"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_centerInParent="true">
+
+            <com.lingtuan.firefly.discover.RadarView
+                android:id="@id/id_scan_circle"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        </com.lingtuan.firefly.discover.RadarViewGroup>
+
+
+        <include layout="@layout/include_empty_view" />
+
+        <ListView
+            android:id="@+id/offlineList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/uploadRegisterInfo"
+            android:listSelector="@drawable/scrollview_item_bg"
+            android:divider="@null"
+            android:visibility="gone"
+            android:scrollbars="none">
+
+        </ListView>
+    </RelativeLayout>
+</LinearLayout>

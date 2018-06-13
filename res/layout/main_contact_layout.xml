@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:PullToRefresh="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/textColor"
+    android:orientation="vertical">
+    <include layout="@layout/app_title_layout" />
+
+    <com.lingtuan.firefly.custom.LanguageTextView
+        android:id="@+id/uploadRegisterInfo"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:singleLine="true"
+        android:text="@string/account_upload_regist_info"
+        android:textColor="@color/black"
+        android:background="@color/yellow"
+        android:visibility="gone"/>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1">
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.lingtuan.firefly.custom.contact.ContactListViewImpl
+                android:id="@+id/contact_list"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:background="#ffffffff"
+                android:cacheColorHint="#00000000"
+                android:divider="@color/gray_sep_bg"
+                android:dividerHeight="0.5dp"
+                android:fadingEdge="none"
+                android:fastScrollEnabled="false"
+                android:footerDividersEnabled="true"
+                android:headerDividersEnabled="true"
+                android:listSelector="@drawable/scrollview_item_bg"
+                android:scrollbars="none"
+                android:smoothScrollbar="true" />
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+
+        <ViewStub
+            android:id="@+id/contact_search_stub"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/contact_search_bg"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/include_friends_search_content_bg"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/gray_sep_bg"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <EditText
+                    android:id="@+id/include_friends_search_content"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dip"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="5dip"
+                    android:layout_weight="1"
+                    android:background="@drawable/contact_search_write"
+                    android:drawableLeft="@drawable/search"
+                    android:gravity="center_vertical"
+                    android:hint="@string/contact_quick_search_already_existx_pep"
+                    android:imeOptions="actionSearch"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:singleLine="true"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/textColorHint"
+                    android:textSize="14.0sp" />
+
+                <TextView
+                    android:id="@+id/include_friends_search_cancel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="10dip"
+                    android:text="@string/cancel"
+                    android:textColor="@color/textColorHint" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="fill_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:background="#a0000000">
+
+                <FrameLayout
+                    android:id="@+id/contact_search_list_bg"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:background="@color/textColor"
+                    android:visibility="gone">
+
+                    <ListView
+                        android:id="@+id/contact_search_lv"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:cacheColorHint="@null"
+                        android:divider="@color/tab_sep_line"
+                        android:dividerHeight="0.5dp"
+                        android:listSelector="@drawable/scrollview_item_bg" />
+
+                    <LinearLayout
+                        android:id="@+id/empty"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="20dip"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="left"
+                            android:text="@string/friend_is_not_your"
+                            android:textColor="@color/textColorHint"
+                            android:textSize="18sp" />
+
+                        <TextView
+                            android:id="@+id/addFriends"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="left"
+                            android:layout_marginBottom="20dip"
+                            android:textColor="@color/textColorHint"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+                </FrameLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/contact_select_bg"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/tab_sep_line" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <HorizontalScrollView
+                android:id="@+id/contact_horizontalscrollview"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fadingEdge="none"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/contact_horizontalscrollview_content"
+                    android:layout_width="fill_parent"
+                    android:layout_height="50dp"
+                    android:orientation="horizontal">
+
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/contact_select_finish"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/selector_round_black_5"
+                android:enabled="false"
+                android:gravity="center"
+                android:paddingBottom="5dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="5dp"
+                android:text="@string/finish"
+                android:textColor="@color/textColor"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
