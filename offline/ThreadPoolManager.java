@@ -6,6 +6,7 @@ import android.os.Message;
 import android.os.Process;
 import android.util.Log;
 
+import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.util.Constants;
 
 import java.io.IOException;
@@ -148,8 +149,7 @@ class HandleAcceptSocket implements Runnable {
 	}
 
 	public void run() {
-//		synchronized (AppNetService.class)
-//		{
+
 			try {
 				InputStream ins = socket.getInputStream();
 				int iCommand = ins.read();
@@ -162,12 +162,15 @@ class HandleAcceptSocket implements Runnable {
 					netService.handleRecvChatMsg(ins, false,sockAddr);
 				}
 				else if (iCommand == Constants.COMMAND_ID_SEND_TYPE_ROOMCHAT) {
-					netService.handleRecvChatMsg(ins, true,sockAddr);
+					synchronized (NextApplication.lock)
+					{
+					     netService.handleRecvChatMsg(ins, true,sockAddr);
+					}
 				}
 				ins.close();
 			} catch (IOException e) {
 				return;
 			}
-//		}
-	}
+		}
+
 }
