@@ -824,6 +824,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private void getBalance(final boolean isShowToast){
 
         if (tokenVos == null || tokenVos.size() <= 0){
+            swipe_refresh.setRefreshing(false);
             return;
         }
 

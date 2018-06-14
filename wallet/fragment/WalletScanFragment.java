@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.quickmark.CaptureActivity;
 import com.lingtuan.firefly.ui.MainFragmentUI;
@@ -24,15 +25,18 @@ import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
 /**
  * Created on 2017/8/21.
+ * The private key import the purse
  */
 
 public class WalletScanFragment extends Fragment implements View.OnClickListener {
 
-   
+    /**
+     * root view
+     */
     private View view = null;
-    private EditText walletAddress;
-    private TextView importWallet;
-    private ImageView walletQrImg;
+    private EditText walletAddress;//The wallet address
+    private TextView importWallet;//Import the wallet
+    private ImageView walletQrImg;//Qr code
 
     @Nullable
     @Override
@@ -57,12 +61,12 @@ public class WalletScanFragment extends Fragment implements View.OnClickListener
     private void initData() {
     }
 
-    
+    //Import the purse, how to import the wallet
     @Override
     public void onClick(View v){
         switch (v.getId()){
             case R.id.importWallet:
-                String address = walletAddress.getText().toString();
+                String address = walletAddress.getText().toString().toLowerCase();
                 if (TextUtils.isEmpty(address) || address.length() != 42 || !address.startsWith("0x")){
                     MyToast.showToast(getActivity(),getString(R.string.wallet_scan_warning));
                     return;
@@ -75,10 +79,14 @@ public class WalletScanFragment extends Fragment implements View.OnClickListener
                     storableWallet.setPublicKey(address);
                     storableWallet.setWalletType(1);
                     storableWallet.setWalletName(Utils.getWalletName(getActivity()));
+                    storableWallet.setBackup(true);
                     if (WalletStorage.getInstance(getActivity().getApplicationContext()).get().size() <= 0){
                         storableWallet.setSelect(true);
                     }
                     WalletStorage.getInstance(getActivity().getApplicationContext()).add(storableWallet,getActivity());
+                    if (WalletStorage.getInstance(getActivity().getApplicationContext()).get().size() > 0) {
+                        WalletStorage.getInstance(NextApplication.mContext).updateMapDb(storableWallet.getPublicKey());
+                    }
                     MyToast.showToast(getActivity(),getString(R.string.notification_wallimp_finished));
 
                     Utils.sendBroadcastReceiver(getActivity(), new Intent(Constants.WALLET_SUCCESS), false);
