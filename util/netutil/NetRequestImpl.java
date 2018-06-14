@@ -653,7 +653,7 @@ public class NetRequestImpl {
     public void getBalance(String address,String token_address,RequestListener listener){
         Map<String,String> params = new HashMap<>();
         params.put("encrypt", "1");
-        params.put("address",address);
+        params.put("address",address.toLowerCase());
         params.put("token_address",token_address);
         JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "get_balance",false,params);
         requestUtils.requestJsonObject(jsonRequest, listener);
@@ -678,7 +678,7 @@ public class NetRequestImpl {
     public void getNonce(String address,RequestListener listener){
         Map<String,String> params = new HashMap<>();
         params.put("encrypt", "1");
-        params.put("address",address);
+        params.put("address",address.toLowerCase());
         JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "get_nonce",false,params);
         requestUtils.requestJsonObject(jsonRequest, listener);
     }
@@ -729,7 +729,7 @@ public class NetRequestImpl {
         Map<String,String> params = new HashMap<>();
         params.put("encrypt", "1");
         params.put("keyword", keyword);
-        params.put("address", address);
+        params.put("address", address.toLowerCase());
         JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "search_token",false,params);
         requestUtils.requestJsonObject(jsonRequest, listener);
     }
@@ -743,7 +743,7 @@ public class NetRequestImpl {
     public void bindTokenToList(String address,String token_address,RequestListener listener){
         Map<String,String> params = new HashMap<>();
         params.put("encrypt", "1");
-        params.put("address", address);
+        params.put("address", address.toLowerCase());
         params.put("token_address", token_address);
         JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "add_token",false,params);
         requestUtils.requestJsonObject(jsonRequest, listener);
@@ -757,7 +757,7 @@ public class NetRequestImpl {
     public void getTokenList(String address,RequestListener listener){
         Map<String,String> params = new HashMap<>();
         params.put("encrypt", "1");
-        params.put("address", address);
+        params.put("address", address.toLowerCase());
         JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "token_list",false,params);
         requestUtils.requestJsonObject(jsonRequest, listener);
     }
@@ -770,8 +770,22 @@ public class NetRequestImpl {
     public void getChange(int version,RequestListener listener){
         Map<String,String> params = new HashMap<>();
         params.put("encrypt", "1");
-        params.put("version", version +"");
+        params.put("data_version", version +"");
         JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "get_change",false,params);
+        requestUtils.requestJsonObject(jsonRequest, listener);
+    }
+
+
+    /**
+     * Get all transaction records for the specified address
+     * 获取指定地址所有交易记录
+     * @param address         wallet address
+     */
+    public void getAllTransactionList(String address,RequestListener listener){
+        Map<String,String> params = new HashMap<>();
+        params.put("encrypt", "1");
+        params.put("address", address.toLowerCase());
+        JSONObject jsonRequest = requestUtils.getJsonRequest("wallet", "get_all_transaction_list",false,params);
         requestUtils.requestJsonObject(jsonRequest, listener);
     }
 }
