@@ -226,67 +226,63 @@ public class XmppService extends Service {
     class NextPacketListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
-            synchronized (AppNetService.class)
-            {
                 if (packet instanceof Message) {
                     final Message msg = (Message) packet;
                     ChatMsg chatmsg = null;
                     try {
                         ackMsg(msg);
-                        if(msg.getFrom().contains(Constants.APP_EVERYONE))
-                        {
-                            msg.setMsgtype(MsgType.normalchat);
-                        }
-                        String number = "";
-                        String noticetype = "";
-                        if (msg.getMsgtype() == Message.MsgType.system) {
-                            //Group chat
-                            ChatMsg chatmsgT = parseBody(msg);
-                            number = chatmsgT.getNumber();
-                            noticetype = String.valueOf(chatmsgT.getNoticeType());
-                            int tempType = chatmsgT.getType();
-                            String fromAddress = chatmsgT.getFromAddress();
-                            String toAddress = chatmsgT.getToAddress();
-                            if (tempType == 300){
-                                boolean isAddressExist = false;
-                                int length = WalletStorage.getInstance(getApplicationContext()).get().size();
-                                for (int i = 0 ; i < length; i++){
-                                    StorableWallet storableWallet = WalletStorage.getInstance(getApplicationContext()).get().get(i);
-                                    String address = "";
-                                    if(!TextUtils.isEmpty(storableWallet.getPublicKey())) {
-                                        address = storableWallet.getPublicKey();
-                                        if (!address.startsWith("0x")){
-                                            address= "0x"+ address;
-                                        }
-                                    }
-                                    if ((TextUtils.equals("0",noticetype) && TextUtils.equals(fromAddress,address)) || (TextUtils.equals("1",noticetype) && TextUtils.equals(toAddress,address))){
-                                        isAddressExist = true;
-                                        break;
-                                    }
-                                }
-                                if (!isAddressExist){
-                                    return;
-                                }
-                            }
-                        }
-                        boolean isMsgExit = FinalUserDataBase.getInstance()
-                                .checkMsgExist(msg.getPacketID(),msg.getMsgtype(),parseBody(msg).getType(),number,noticetype);
-                        if (isMsgExit) {
-                            return;
-                        }
-
                     } catch (Exception e1) {
                         e1.printStackTrace();
                     }
+                    if(msg.getFrom().contains(Constants.APP_EVERYONE))
+                    {
+                        msg.setMsgtype(MsgType.normalchat);
+                    }
+
                     if (msg.getType() == Type.groupchat) {
                         //Everyone chat room
-                        chatmsg = parseRoomChat(msg);
+                        synchronized (NextApplication.lock) {
+                            try {
+                                boolean isMsgExit = FinalUserDataBase.getInstance()
+                                        .checkMsgExist(msg.getPacketID(), msg.getMsgtype(), parseBody(msg).getType(), "", "");
+                                if (isMsgExit) {
+                                    return;
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            chatmsg = parseRoomChat(msg);
+                        }
                     }
                     else if (msg.getMsgtype() == Message.MsgType.normalchat) {
                         //Normal chat
+                        try {
+                            boolean isMsgExit  = FinalUserDataBase.getInstance()
+                                    .checkMsgExist(msg.getPacketID(),msg.getMsgtype(),parseBody(msg).getType(),"","");
+                            if (isMsgExit) {
+                                return;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         chatmsg = parseNormalChat(msg, false);
                     } else if (msg.getMsgtype() == Message.MsgType.system) {
                         //System information
+                        try {
+                            ChatMsg chatmsgT = parseBody(msg);
+                            String number = chatmsgT.getNumber();
+                            String noticetype = String.valueOf(chatmsgT.getNoticeType());
+                            if (chatmsgT.getType() == 300 && !checkAddressIsExist(chatmsgT,noticetype)){
+                                return;
+                            }
+                            boolean isMsgExit = FinalUserDataBase.getInstance()
+                                    .checkMsgExist(msg.getPacketID(),msg.getMsgtype(),parseBody(msg).getType(),number,noticetype);
+                            if (isMsgExit) {
+                                return;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         chatmsg = parseSystem(msg);
                         if (chatmsg != null && (chatmsg.getType() == 19 || chatmsg.getType() == 20)) {
                             return;
@@ -294,6 +290,16 @@ public class XmppService extends Service {
 
                     } else if (msg.getMsgtype() == Message.MsgType.groupchat) {
                         //Group chat
+                        try {
+                            boolean isMsgExit = FinalUserDataBase.getInstance()
+                                    .checkMsgExist(msg.getPacketID(),msg.getMsgtype(),parseBody(msg).getType(),"","");
+                            if (isMsgExit) {
+                                return;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
                         chatmsg = parseGroupChat(msg, false);
                     }
                     else {//Unknown chat type to abandon the if (MSG) getMsgtype () = = Message. The MsgType. Unkonw)
@@ -336,7 +342,38 @@ public class XmppService extends Service {
                 }
             }
 
+    }
+
+
+    /**
+     * check wallet address is exist
+     * @param chatmsgT     chatmsg
+     * @param noticetype   0 sender 1 receiver
+     * @return  isAddressExist   true or false
+     * */
+    private boolean checkAddressIsExist(ChatMsg chatmsgT,String noticetype){
+        int tempType = chatmsgT.getType();
+        String fromAddress = chatmsgT.getFromAddress();
+        String toAddress = chatmsgT.getToAddress();
+        boolean isAddressExist = false;
+        if (tempType == 300){
+            int length = WalletStorage.getInstance(getApplicationContext()).get().size();
+            for (int i = 0 ; i < length; i++){
+                StorableWallet storableWallet = WalletStorage.getInstance(getApplicationContext()).get().get(i);
+                String address = "";
+                if(!TextUtils.isEmpty(storableWallet.getPublicKey())) {
+                    address = storableWallet.getPublicKey();
+                    if (!address.startsWith("0x")){
+                        address= "0x"+ address;
+                    }
+                }
+                if ((TextUtils.equals("0",noticetype) && TextUtils.equals(fromAddress,address)) || (TextUtils.equals("1",noticetype) && TextUtils.equals(toAddress,address))){
+                    isAddressExist = true;
+                    break;
+                }
+            }
         }
+        return isAddressExist;
     }
 
     /**
