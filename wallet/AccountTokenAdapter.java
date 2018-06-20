@@ -110,7 +110,7 @@ public class AccountTokenAdapter extends BaseAdapter {
             }
         }
 
-        BigDecimal tokenBalanceDecimal = new BigDecimal(tokenVo.getTokenBalance()).setScale(6,BigDecimal.ROUND_CEILING);
+        BigDecimal tokenBalanceDecimal = new BigDecimal(tokenVo.getTokenBalance()).setScale(6,BigDecimal.ROUND_DOWN);
         holder.tokenBalance.setText(tokenBalanceDecimal.toPlainString());
 
         holder.walletTokenBody.setOnClickListener(new View.OnClickListener() {

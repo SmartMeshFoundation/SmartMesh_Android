@@ -2,58 +2,66 @@ package com.lingtuan.firefly.wallet.vo;
 
 import org.json.JSONObject;
 
+import java.io.Serializable;
+
 /**
  * Created on 2018/3/19.
  * token info
  */
 
-public class TokenVo {
+public class TokenVo implements Serializable{
 
     //token img
-    private String tokenPic;
+    private String tokenLogo;
     //token name
     private String tokenName;
-    //token info
-    private String tokenInfo;
+    //token symbol
+    private String tokenSymbol;
     //token number
-    private String tokenNumber;
-    //token price
-    private String tokenPrice;
-    //token total price
-    private String tokenTotalPrice;
+    private double tokenBalance;
+
+    //token contact address
+    private String contactAddress;
     //token is checked
     private boolean isChecked;
+    //token is final open
+    private boolean fixed;
+    //wallet address
+    private String walletAddress;
+    //Operation type 0 Delete the default display token  1 Add the default display token   2 Modify the token information
+    private int state;
 
-    public String getTokenPic() {
-        return tokenPic;
+    //Token unit price (RMB)
+    private String unitPrice;
+    //Token estimated market value (US$)
+    private String usdPrice;
+    //Token price (US$)
+    private String usdUnitPrice;
+    //token price
+    private String tokenPrice;
+
+    public String getUnitPrice() {
+        return unitPrice;
     }
 
-    public void setTokenPic(String tokenPic) {
-        this.tokenPic = tokenPic;
+    public void setUnitPrice(String unitPrice) {
+        this.unitPrice = unitPrice;
     }
 
-    public String getTokenName() {
-        return tokenName;
+    public String getUsdPrice() {
+        return usdPrice;
     }
 
-    public void setTokenName(String tokenName) {
-        this.tokenName = tokenName;
+    public void setUsdPrice(String usdPrice) {
+        this.usdPrice = usdPrice;
     }
 
-    public String getTokenInfo() {
-        return tokenInfo;
+    public String getUsdUnitPrice() {
+        return usdUnitPrice;
     }
 
-    public void setTokenInfo(String tokenInfo) {
-        this.tokenInfo = tokenInfo;
-    }
-
-    public String getTokenNumber() {
-        return tokenNumber;
-    }
-
-    public void setTokenNumber(String tokenNumber) {
-        this.tokenNumber = tokenNumber;
+    public void setUsdUnitPrice(String usdUnitPrice) {
+        this.usdUnitPrice = usdUnitPrice;
     }
 
     public String getTokenPrice() {
@@ -64,12 +72,61 @@ public class TokenVo {
         this.tokenPrice = tokenPrice;
     }
 
-    public String getTokenTotalPrice() {
-        return tokenTotalPrice;
+    public boolean isFixed() {
+        return fixed;
     }
 
-    public void setTokenTotalPrice(String tokenTotalPrice) {
-        this.tokenTotalPrice = tokenTotalPrice;
+    public void setFixed(boolean fixed) {
+        this.fixed = fixed;
+    }
+
+    public String getWalletAddress() {
+        return walletAddress;
+    }
+
+    public void setWalletAddress(String walletAddress) {
+        this.walletAddress = walletAddress;
+    }
+
+    public String getTokenLogo() {
+        return tokenLogo;
+    }
+
+    public void setTokenLogo(String tokenLogo) {
+        this.tokenLogo = tokenLogo;
+    }
+
+    public String getTokenName() {
+        return tokenName;
+    }
+
+    public void setTokenName(String tokenName) {
+        this.tokenName = tokenName;
+    }
+
+    public String getTokenSymbol() {
+        return tokenSymbol;
+    }
+
+    public void setTokenSymbol(String tokenSymbol) {
+        this.tokenSymbol = tokenSymbol;
+    }
+
+    public double getTokenBalance() {
+        return tokenBalance;
+    }
+
+    public void setTokenBalance(double tokenBalance) {
+        this.tokenBalance = tokenBalance;
+    }
+
+
+    public String getContactAddress() {
+        return contactAddress;
+    }
+
+    public void setContactAddress(String contactAddress) {
+        this.contactAddress = contactAddress;
     }
 
     public boolean isChecked() {
@@ -80,7 +137,30 @@ public class TokenVo {
         isChecked = checked;
     }
 
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
+
     public TokenVo parse(JSONObject object){
+        if (object == null){
+            return null;
+        }
+        setContactAddress(object.optString("token_address"));
+        setTokenName(object.optString("name"));
+        setTokenSymbol(object.optString("symbol"));
+        setTokenLogo(object.optString("logo"));
+        setTokenBalance(object.optDouble("balance",0.000000));
+        setTokenPrice(object.optString("price"));
+        setChecked(object.optInt("is_open",0) == 1);
+        setFixed(object.optInt("fixed",0) == 1);
+        setState(object.optInt("state"));
+        setUnitPrice(object.optString("unit_price"));
+        setUsdUnitPrice(object.optString("usd_unit_price"));
+        setUsdPrice(object.optString("usd_price"));
         return this;
     }
 
