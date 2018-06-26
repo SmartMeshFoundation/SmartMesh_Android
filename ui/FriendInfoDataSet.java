@@ -116,8 +116,13 @@ public class FriendInfoDataSet extends BaseActivity implements CompoundButton.On
             info.setNote(note);
         } else if (data != null && requestCode == FRIEND_ADD_BLACK){
             isInBlack = true;
+            joinBlackSb.setOnCheckedChangeListener(null);
             joinBlackSb.setChecked(true);
             joinBlackSb.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+            joinBlackSb.setOnCheckedChangeListener(FriendInfoDataSet.this);
+            Intent intent = new Intent(Constants.ACTION_REFRESH_FRIEND_INBLACK);
+            intent.putExtra("isInBlack",true);
+            Utils.sendBroadcastReceiver(FriendInfoDataSet.this,intent,true);
         }
     }
 
@@ -154,7 +159,9 @@ public class FriendInfoDataSet extends BaseActivity implements CompoundButton.On
                 }
                 isInBlack = !isInBlack;
                 info.setInblack(isInBlack ? "1" : "0");
-
+                Intent intent = new Intent(Constants.ACTION_REFRESH_FRIEND_INBLACK);
+                intent.putExtra("isInBlack",isInBlack);
+                Utils.sendBroadcastReceiver(FriendInfoDataSet.this,intent,true);
             }
 
             @Override
@@ -174,9 +181,6 @@ public class FriendInfoDataSet extends BaseActivity implements CompoundButton.On
 
     @Override
     public void finish() {
-        Intent intent = new Intent();
-        intent.putExtra("isInBlack",isInBlack);
-        setResult(RESULT_OK,intent);
         super.finish();
     }
 }
