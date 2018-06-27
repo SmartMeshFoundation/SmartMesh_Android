@@ -5,153 +5,173 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <RelativeLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="170dp"
-            android:background="@color/wallet_copy_bg"/>
-
-        <ImageView
-            android:id="@+id/app_back"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:paddingRight="9dp"
-            android:paddingLeft="8dp"
-            android:scaleType="center"
-            android:src="@drawable/icon_white_back" />
-
-        <com.lingtuan.firefly.custom.AlwaysMarqueeTextView
-            android:id="@+id/app_title"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginLeft="70dp"
-            android:layout_marginRight="70dp"
-            android:layout_centerHorizontal="true"
-            android:ellipsize="marquee"
-            android:gravity="center"
-            android:singleLine="true"
-            android:textColor="@color/textColor"
-            android:textSize="19sp" />
+        android:layout_height="match_parent"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/shape_round_write_4"
-            android:layout_marginTop="120dp">
+            android:orientation="vertical">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <LinearLayout
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="170dp"
+                    android:background="@color/wallet_copy_bg"/>
+
+                <ImageView
+                    android:id="@+id/app_back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:paddingRight="9dp"
+                    android:paddingLeft="8dp"
+                    android:scaleType="center"
+                    android:src="@drawable/icon_white_back" />
+
+                <com.lingtuan.firefly.custom.AlwaysMarqueeTextView
+                    android:id="@+id/app_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_marginLeft="70dp"
+                    android:layout_marginRight="70dp"
+                    android:layout_centerHorizontal="true"
+                    android:ellipsize="marquee"
+                    android:gravity="center"
+                    android:singleLine="true"
+                    android:textColor="@color/textColor"
+                    android:textSize="19sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/shape_round_write_4"
+                    android:layout_marginTop="120dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/success"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="20dp"
+                            android:layout_marginRight="20dp"
+                            android:layout_marginBottom="20dp"
+                            android:layout_marginTop="40dp"
+                            android:textSize="18sp"
+                            android:ellipsize="middle"
+                            android:singleLine="true"
+                            android:text="@string/notification_wallgen_finished"/>
+
+                        <TextView
+                            android:visibility="gone"
+                            android:layout_width="220dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/address"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="20dp"
+                            android:layout_marginRight="20dp"
+                            android:layout_marginBottom="20dp"
+                            android:layout_marginTop="40dp"
+                            android:textSize="12sp"
+                            android:singleLine="true"
+                            android:ellipsize="middle"
+                            android:textColor="@color/black"/>
+
+                        <TextView
+                            android:id="@+id/walletCopyName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="10dp"
+                            android:layout_marginLeft="40dp"
+                            android:textColor="@color/textColorHint"
+                            android:textSize="12sp"
+                            android:maxLines="1"/>
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dp"
+                            android:layout_marginLeft="40dp"
+                            android:layout_marginRight="40dp"
+                            android:background="@color/tab_sep_line"/>
+                        <TextView
+                            android:id="@+id/walletCopyPwdInfo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="10dp"
+                            android:layout_marginLeft="40dp"
+                            android:textColor="@color/textColorHint"
+                            android:textSize="12sp"
+                            android:maxLines="1"/>
+
+                        <View
+                            android:id="@+id/walletCopyPwdInfoLine"
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dp"
+                            android:layout_marginLeft="40dp"
+                            android:layout_marginRight="40dp"
+                            android:background="@color/tab_sep_line"/>
+
+                        <TextView
+                            android:id="@+id/walletCopyKey"
+                            style="@style/WalletStyle"
+                            android:layout_marginTop="40dp"
+                            android:text="@string/wallet_copy_private_key"
+                            android:textColor="@color/wallet_copy_text"
+                            android:background="@drawable/selector_round_gray_10"
+                            />
+
+                        <TextView
+                            android:id="@+id/walletCopyKeyStore"
+                            style="@style/WalletStyle"
+                            android:text="@string/wallet_copy_keysotre"
+                            android:textColor="@color/wallet_copy_text"
+                            android:background="@drawable/selector_round_gray_10"
+                            />
+
+                        <TextView
+                            android:id="@+id/walletDelete"
+                            style="@style/WalletStyle"
+                            android:text="@string/wallet_delete"
+                            android:textColor="@color/colorRed"
+                            android:layout_marginBottom="30dp"
+                            android:background="@drawable/selector_round_gray_10"
+                            />
+
+                    </LinearLayout>
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="55dp"
+                    android:layout_height="55dp"
+                    android:id="@+id/icon"
+                    android:src="@drawable/icon_static_005"
+                    android:layout_centerHorizontal="true"
+                    android:layout_gravity="top"
+                    android:layout_marginTop="90dp"/>
+            </RelativeLayout>
+
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/success"
-                    android:layout_gravity="center"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp"
-                    android:layout_marginBottom="20dp"
-                    android:layout_marginTop="40dp"
-                    android:textSize="18sp"
-                    android:ellipsize="middle"
-                    android:singleLine="true"
-                    android:text="@string/notification_wallgen_finished"/>
-
-                <TextView
-                    android:visibility="gone"
-                    android:layout_width="220dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/address"
-                    android:layout_gravity="center"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp"
-                    android:layout_marginBottom="20dp"
-                    android:layout_marginTop="40dp"
-                    android:textSize="12sp"
-                    android:singleLine="true"
-                    android:ellipsize="middle"
-                    android:textColor="@color/black"/>
-
-                <TextView
-                    android:id="@+id/walletCopyName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp"
-                    android:layout_marginLeft="40dp"
-                    android:textColor="@color/textColorHint"
-                    android:textSize="12sp"
-                    android:maxLines="1"/>
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginRight="40dp"
-                    android:background="@color/tab_sep_line"/>
-                <TextView
-                    android:id="@+id/walletCopyPwdInfo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp"
-                    android:layout_marginLeft="40dp"
-                    android:textColor="@color/textColorHint"
-                    android:textSize="12sp"
-                    android:maxLines="1"/>
-
-                <View
-                    android:id="@+id/walletCopyPwdInfoLine"
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginRight="40dp"
-                    android:background="@color/tab_sep_line"/>
-
-                <TextView
-                    android:id="@+id/walletCopyKey"
-                    style="@style/WalletStyle"
-                    android:layout_marginTop="40dp"
-                    android:text="@string/wallet_copy_private_key"
-                    android:textColor="@color/wallet_copy_text"
-                    android:background="@drawable/selector_round_gray_10"
-                    />
-
-                <TextView
-                    android:id="@+id/walletCopyKeyStore"
-                    style="@style/WalletStyle"
-                    android:text="@string/wallet_copy_keysotre"
-                    android:textColor="@color/wallet_copy_text"
-                    android:background="@drawable/selector_round_gray_10"
-                    />
-
-                <TextView
-                    android:id="@+id/walletDelete"
-                    style="@style/WalletStyle"
-                    android:text="@string/wallet_delete"
-                    android:textColor="@color/colorRed"
-                    android:layout_marginBottom="40dp"
-                    android:background="@drawable/selector_round_gray_10"
-                    />
-
-            </LinearLayout>
+                android:textColor="@color/wallet_copy_text"
+                android:layout_marginRight="30dp"
+                android:layout_marginLeft="30dp"
+                android:layout_marginBottom="10dp"
+                android:layout_gravity="top"
+                android:gravity="top"
+                android:textSize="12sp"
+                android:text="@string/wallet_private_key_hint"/>
         </LinearLayout>
-
-        <ImageView
-            android:layout_width="55dp"
-            android:layout_height="55dp"
-            android:id="@+id/icon"
-            android:src="@drawable/icon_static_005"
-            android:layout_centerHorizontal="true"
-            android:layout_gravity="top"
-            android:layout_marginTop="90dp"/>
-
-    </RelativeLayout>
+    </ScrollView>
 </LinearLayout>
