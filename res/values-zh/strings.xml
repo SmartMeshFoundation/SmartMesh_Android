@@ -2,6 +2,9 @@
     <string name="app_name">SmartMesh</string>
     <string name="start_smt">开始SmartMesh</string>
 
+    <!-- show offline strings -->
+    <string name="show_offline_hint">该账号已经在其它设备上登录，您被迫下线!</string>
+
     <!-- Gesture login activity -->
     <string name="gesture_forget_gesture">使用钱包密码登录</string>
     <string name="gesture_login">使用手势密码登录</string>
@@ -16,26 +19,56 @@
     <string name="gesture_wallet_close">手势锁：关</string>
 
     <!-- raiden pay -->
-    <string name="raiden_channel">通道</string>
-    <string name="raiden_channel_create">创建通道</string>
+    <string name="raiden_channel_name">%s 通道</string>
+    <string name="raiden_channel_create">创建</string>
     <string name="raiden_channel_add">存款</string>
+    <string name="raiden_channel_no">暂无通道，请先创建</string>
+    <string name="raiden_channel_add_content_top">存款</string>
+    <string name="raiden_channel_add_title">存款</string>
     <string name="raiden_channel_add_complete">完成添加</string>
     <string name="raiden_channel_create_enter">完成创建</string>
     <string name="raiden_channel_close">是否关闭通道?</string>
+    <string name="raiden_channel_open">是否打开通道?</string>
     <string name="raiden_channel_raiden">雷电</string>
     <string name="raiden_pay">支付:</string>
     <string name="raiden_pay_1">支付</string>
-    <string name="raiden_partner">地址:</string>
+    <string name="raiden_partner">地址</string>
     <string name="raiden_partner_1">地址</string>
-    <string name="raiden_balance">余额:</string>
+    <string name="raiden_address">地址：</string>
+    <string name="raiden_create_balance">余额：%s</string>
+    <string name="raiden_balance">余额</string>
+    <string name="raiden_channel_list_deposit">存款</string>
     <string name="raiden_balance_1">余额</string>
-    <string name="raiden_deposit">存款</string>
+    <string name="raiden_deposit">存款：</string>
     <string name="raiden_token">代币:</string>
     <string name="raiden_token_1">代币</string>
-    <string name="raiden_state">状态:</string>
+    <string name="raiden_state">状态</string>
+    <string name="raiden_date">时间</string>
+    <string name="raiden_deposit_add">补充</string>
     <string name="raiden_to">To:</string>
-    <string name="raiden_from">From:</string>
+    <string name="raiden_pay_hint">使用无网支付</string>
+    <string name="raiden_channel_close_hint">确定关闭该通道？</string>
+    <string name="raiden_channel_close_content">*关闭通道需要消耗Gas:0.00001SMT</string>
 
+
+    <!-- token -->
+    <string name="token_total_assets">总资产</string>
+    <string name="token_total_price">≈￥%s</string>
+    <string name="token_total_usd_price">≈$%s</string>
+    <string name="token_search_empty_hint">没找到匹配的结果？</string>
+    <string name="token_search_empty_submit">试试在页面底部提交新token</string>
+    <string name="token_submit_no_token">暂时没有新的Token</string>
+    <string name="token_submit_token">向我们提交新Token</string>
+    <string name="token_add_assets">添加新资产</string>
+
+    <string name="wallet_old_balance">Ethereum Token钱包</string>
+    <string name="eth_token_0">钱包说明</string>
+    <string name="eth_token_1">1.主界面是Spectrum钱包</string>
+    <string name="eth_token_2">2.Spectrum钱包不显示Ethereum Token</string>
+    <string name="eth_token_3">3.界面底部的按钮可进入Ethereum Token钱包</string>
+    <string name="eth_token_4">4.完成映射将关闭Ethereum Token钱包</string>
+    <string name="eth_token_5">5.映射时间请关注官网公告</string>
+    <string name="eth_token_6">货币单位切换</string>
     <string name="wallet_copy_disclaimer">免责声明</string>
     <string name="wallet_copy_disclaimer_info">• 请确保已备份钱包至安全的地方，SmartMesh APP不承担任何钱包丢失、被盗、忘记密码等产生的资产损失。\n\n• 游客模式（无MID和绑定手机号、邮箱的）退出将不会保存钱包的信息。</string>
 
@@ -60,6 +93,7 @@
     <string name="forgot_password_hint">忘记密码</string>
     <string name="account_pwd">账户密码</string>
     <string name="account_pwd_input">设置密码</string>
+    <string name="account_pwd_login_input">输入密码</string>
     <string name="account_pwd_again_input">确认密码</string>
     <string name="account_pwd_again_warning">两次密码不一致</string>
     <string name="account_pwd_info_input">密码提示（可不填）</string>
@@ -72,6 +106,7 @@
     <string name="account_logout_warn">退出提示</string>
     <string name="account_logout_hint"> 退出当前账号不会删除历史数据，但会收不到新消息提醒</string>
     <string name="account_logout_mid_warn">请认真阅读以下说明：</string>
+    <string name="account_logout_email_hint">绑定邮箱或电话以确保帐户安全</string>
     <string name="account_logout_mid_hint"> 没有设置MID、绑定手机或邮箱的帐号退出后将无法再次登录，并且钱包也无法找回。您确定要这么做吗？</string>
     <string name="account_logout_mid_hint_again"> 您的帐号在点击确认后将无法再次登录，如使用过钱包请检查是否备份。</string>
     <string name="account_name_warning">请输入 1 – 20位账户名称</string>
@@ -79,11 +114,12 @@
     <string name="mid_length_warning">请输入 6 – 20位MID</string>
     <string name="mid_content_warning">MID不能为纯数字</string>
     <string name="mid_user">MID:&quot; %s</string>
+    <string name="mesh_chat_no_send_hint">请在MeshBox的局域网运行</string>
 
     <!-- 首页 -->
     <string name="main_chats">聊天</string>
     <string name="main_discover">发现</string>
-    <string name="main_contact">人脉</string>
+    <string name="main_contact">通讯录</string>
     <string name="account">账户</string>
     <string name="myself">我的</string>
     <string name="smart_mesh">SMART&quot;&quot;&quot;&quot;  MESH</string>
@@ -115,20 +151,32 @@
     <string name="eth_er">%s ETHER</string>
     <string name="smt_er">%s SMT</string>
     <string name="mesh_er">%s MESH</string>
+
+    <string name="token_trans"> %1$s %2$s </string>
+
+    <string name="token_less"> - %1$s %2$s </string>
+    <string name="token_add"> + %1$s %2$s </string>
+    <string name="smt_er_lower">%s smt</string>
+    <string name="smt_er_lower_1">smt</string>
+
     <string name="eth_er_lower">%s ether</string>
     <string name="eth_er_lower_1">ether</string>
-    <string name="smt_er_lower_1">smt</string>
     <string name="mesh_er_lower_1">mesh</string>
+
     <string name="gwei">gwei</string>
-    <string name="custom_gas_price">自定义Gas Price</string>
+    <string name="custom_gas_price">自定义Gas Price 必须大于18</string>
+    <string name="custom_gas_price_1">自定义Gas Price 建议大于8</string>
     <string name="custom_gas">自定义Gas</string>
+    <string name="gas_value_to_small">gas值太小</string>
     <string name="ok">我知道了</string>
     <string name="advance">高级设置</string>
     <string name="custom_gas_notice">Gas price太高，建议应该小于100 gwei</string>
     <string name="custom_gas_notice_1">Gas price太低，建议应该大于8 gwei</string>
+    <string name="custom_gas_notice_2">Gas price太低，必须大于18 gwei</string>
     <string name="custom_gas_mesh_notice">该地址Mesh代币处于锁定状态，请勿转账。消耗的Gas无法找回。</string>
     <string name="custom_gas_smt_title">Gas提示</string>
     <string name="custom_gas_smt_notice">目前仅支持 gate.io 和 okex.com 充币使用该功能。其他平台暂时请勿使用，以免造成不必要的数字财产损失。</string>
+    <string name="custom_spectrum_notice">目前仅支持SmartMesh钱包之间转账，请勿对交易所充值，否则资产不可找回，造成的损失自担。</string>
 
     <!-- 提示相关 -->
     <string name="hint_pwd_warning">为保障您的资金安全，请不要轻易透露您的隐私给其他人。</string>
@@ -176,7 +224,7 @@
     <string name="normal_connect_error">连接有问题</string>
     <string name="send_message"> 发消息 </string>
     <string name="search">搜索</string>
-    <string name="search_by_nick">输入昵称/MID/邮箱添加好友</string>
+    <string name="search_by_nick">输入昵称/MID/邮箱/手机号添加好友</string>
     <string name="add">添加</string>
     <string name="to_add">去添加</string>
     <string name="create">创建</string>
@@ -199,6 +247,7 @@
     <string name="man">男</string>
     <string name="woman">女</string>
     <string name="everyone">#Everyone</string>
+    <string name="wifimesh">火币越南大会</string>
 
     <!-- chat-->
     <string name="chatting_selected_delete">删除所选对话</string>
@@ -303,6 +352,7 @@
     <string name="permanent">永久有效</string>
     <string name="photo_group_scan">选择照片</string>
     <string name="photo_save_dir">图片已保存至%s文件夹</string>
+    <string name="photo_save">保存图片</string>
     <string name="outdate_time">%s到期</string>
     <string name="re_download_file">重新下载</string>
     <string name="re_upload_file">重新上传</string>
@@ -333,13 +383,15 @@
     <string name="add_friend_hint">你需要发送验证应用程序,请通过</string>
     <string name="add_friend_hint_hello">你好</string>
     <string name="contact_add_content">%s 请求 加你为好友</string>
-    <string name="contact_add_group_discussion">创建群聊</string>
+    <string name="contact_add_group_discussion">发起群聊</string>
+    <string name="contact_add_group_discussion_1">发起群聊</string>
     <string name="contact_add_contact">添加好友</string>
     <string name="contact_friends">通迅录好友</string>
     <string name="contact_empty_msg">暂无聊天消息</string>
     <string name="contact_new_friends">好友推荐</string>
     <string name="contact_already_friends">已为好友</string>
     <string name="contact_default">我的好友</string>
+    <string name="contact_default_empty">您还没有好友</string>
     <string name="contact_num">%d位好友</string>
     <string name="contact_smt_accect">&quot;SmartMesh&quot;想访问您的通讯录</string>
     <string name="contact_add_content_share">共同好友 "%s"</string>
@@ -352,7 +404,7 @@
     <string name="friend_is_not_your">该用户不是您的好友</string>
     <string name="friend_note_not_empty">备注不能为空</string>
     <string name="friend_note">好友备注</string>
-
+    <string name="friend_info_name">昵称: %s</string>
 
     <!-- report-->
     <string name="report">举报</string>
@@ -440,7 +492,7 @@
     <string name="black_list_empty">暂无黑名单</string>
     <string name="black_list_remove_title">移除黑名单</string>
     <string name="black_list_remove">移除黑名单后，该用户成为正常好友关系</string>
-    <string name="black_list_join">加入黑名单</string>
+    <string name="black_list_join">添加黑名单</string>
     <string name="smartmesh_communication">无网通讯</string>
     <string name="smartmesh_communication_open">是否开启无网通讯</string>
     <string name="smartmesh_communication_hint">可以在我的→设置里开启或者关闭无网通讯</string>
@@ -489,7 +541,6 @@
     <string name="verify_password">验证密码</string>
 
     <!-- 关于界面  已隐藏暂时不需要 -->
-    <string name="fft_instructions">SmartMesh钱包是一款移动端轻钱包App,它旨在为用户提供一款安全好用的区块链资产钱包应用。SmartMesh钱包可以用来保存和发送ETH、SMT等数字货币。</string>
     <string name="use_agreement">使用协议</string>
     <string name="version_checking">版本号</string>
     <string name="gesture_checking">钱包手势绘制</string>
@@ -546,7 +597,16 @@
     <!-- 导入钱包 -->
     <string name="wallet_private_key">私钥</string>
     <string name="wallet_scan">观察</string>
-    <string name="wallet_private_key_clear">请输入私钥明文</string>
+    <string name="wallet_private_key_clear">
+        请输入私钥明文
+        \n自2.0.0版本起，私钥算法升级兼容部分第三方钱包。会出现与历史版本导出的私钥不同，请妥善保管。
+        \n\n使用历史私钥导入SmartMesh App钱包时，请勾选\"2.0.0之前版本使用SmartMesh App导出私钥的用户请勾选\"。
+    </string>
+
+    <string name="wallet_private_key_hint">
+        \n\n自2.0.0版本起，私钥算法升级兼容部分第三方钱包。会出现与历史版本导出的私钥不同，请妥善保管。
+        \n\n使用历史私钥导入SmartMesh App钱包时，请勾选\"2.0.0之前版本使用SmartMesh App导出私钥的用户请勾选\"。
+    </string>
     <string name="wallet_keysotre_info">KeyStore文本内容</string>
     <string name="wallet_keysotre_pwd">KeyStore&quot;&quot; 密码</string>
     <string name="wallet_import_start">开始导入</string>
@@ -560,6 +620,7 @@
 
     <!-- 备份钱包 -->
     <string name="wallet_copy_private_key">导出私钥明文</string>
+    <string name="wallet_copy_private_key_hint">2.0.0之前版本使用SmartMesh App导出私钥的用户请勾选</string>
     <string name="wallet_copy_keysotre">导出KeyStore</string>
     <string name="wallet_copy_name">账户名：%s</string>
     <string name="wallet_copy_pwd_info">密码提示：%s</string>
@@ -578,7 +639,6 @@
     <string name="wallet_blance">账户可用余额</string>
     <string name="wallet_sync_ing">同步区块：%1$d / %2$d</string>
     <string name="wallet_sync_start">同步区块以后才能正常使用钱包</string>
-    <string name="wallet_sync_hint">ETH轻节点钱包，提供创建、导入、转账，且可使用SMT</string>
     <string name="wallet_sync">同步</string>
     <string name="wallet_sync_address">同步地址中。。。</string>
     <string name="wallet_backup_now">立即备份</string>
@@ -604,29 +664,22 @@
     <string name="wallet_trans_detail_block_none">无</string>
 
 
-    <string name="wallet_trans_collect_eth">收款通知: %s ether 收款成功</string>
-    <string name="wallet_trans_collect_smt">收款通知: %s smt 收款成功</string>
-    <string name="wallet_trans_collect_mesh">收款通知: %s mesh 收款成功</string>
-    <string name="wallet_trans_msg_eth">转账通知: %s ether 转账成功</string>
-    <string name="wallet_trans_msg_smt">转账通知: %s smt 转账成功</string>
-    <string name="wallet_trans_msg_mesh">转账通知: %s mesh 转账成功</string>
-    <string name="wallet_trans_collect_eth_failed">收款通知: %s ether 收款失败</string>
-    <string name="wallet_trans_collect_smt_failed">收款通知: %s smt 收款失败</string>
-    <string name="wallet_trans_collect_mesh_failed">收款通知: %s mesh 收款失败</string>
-    <string name="wallet_trans_msg_eth_failed">转账通知: %s ether 转账失败</string>
-    <string name="wallet_trans_msg_smt_failed">转账通知: %s smt 转账失败</string>
-    <string name="wallet_trans_msg_mesh_failed">转账通知: %s mesh 转账失败</string>
+    <string name="wallet_trans_collect">收款通知: %1$s %2$s 收款成功</string>
+    <string name="wallet_trans_msg">转账通知: %1$s %2$s 转账成功</string>
+    <string name="wallet_trans_collect_failed">收款通知: %1$s %2$s 收款失败</string>
+    <string name="wallet_trans_msg_failed">转账通知: %1$s %2$s 转账失败</string>
     <string name="wallet_trans_from">发送方: %s</string>
     <string name="wallet_trans_to">接收方: %s</string>
 
-    <string name="bloance_not_enough_eth">ETH余额不足</string>
-    <string name="bloance_not_enough_smt">SMT余额不足</string>
-    <string name="bloance_not_enough_mesh">MESH余额不足</string>
+    <string name="balance_not_enough_smt">SMT余额不足</string>
+    <string name="balance_not_enough_token">%s 余额不足</string>
+    <string name="balance_not_enough">余额不足</string>
     <string name="empty_address">接地址为空</string>
     <string name="error_address">接地址错误</string>
     <string name="input_address">请输入地址</string>
-    <string name="input_vaule">请输入数量</string>
+    <string name="input_vaule">请输入金额</string>
     <string name="gathering">收款</string>
+    <string name="raiden">Raiden</string>
     <string name="money_empty">转账数量不能为空</string>
     <string name="quick_blance_to_me">扫一扫给我转账</string>
     <string name="send_price">确认转账</string>
@@ -636,7 +689,7 @@
     <string name="send_amount">数量：</string>
     <string name="send_blance">转账</string>
     <string name="send_blance_title">%s-转账</string>
-    <string name="set_amount">请输入数量</string>
+    <string name="set_amount">请输入金额</string>
     <string name="set_amount_address">请输入地址</string>
     <string name="time">时间：</string>
     <string name="description">说明</string>
