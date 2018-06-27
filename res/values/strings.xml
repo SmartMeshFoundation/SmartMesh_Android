@@ -168,11 +168,12 @@
     <string name="custom_gas_price">Gas price should exceed 18</string>
     <string name="custom_gas_price_1">Gas price should exceed 8</string>
     <string name="custom_gas">Custom Gas</string>
+    <string name="gas_value_to_small">Gas value is too small</string>
     <string name="ok">OK</string>
     <string name="advance">advanced settings</string>
     <string name="custom_gas_notice">Gas price too Height，is recommended less than 100 gwei</string>
     <string name="custom_gas_notice_1">Gas price is too low, is recommended greater than 8 gwei</string>
-    <string name="custom_gas_notice_2">Gas price is too low, is recommended greater than 18 gwei</string>
+    <string name="custom_gas_notice_2">Gas price is too low and must be greater than 18 gwei</string>
     <string name="custom_gas_mesh_notice">The address Mesh tokens are locked, do not transfer. Gas consumed can not be recovered.</string>
     <string name="custom_gas_smt_title">Gas tips</string>
     <string name="custom_gas_smt_notice">At the moment, only support for gate.io and okex.com coins are used for this function. Temporarily do not use other platforms, so as to avoid unnecessary loss of digital property.</string>
@@ -601,7 +602,16 @@
     <!-- Import the wallet -->
     <string name="wallet_private_key">Private key</string>
     <string name="wallet_scan">Observe mode</string>
-    <string name="wallet_private_key_clear">Please enter the private key in text</string>
+    <string name="wallet_private_key_clear">
+        Please enter the private key in text
+        \n\nSince Version 2.0.0, the private key algorithm has been upgraded to be compatible third-party wallets. Please be mindful that this differs from earlier versions.
+        \n\nWhen using the SmartMesh App wallet with a private key from earlier versions, please select \"Use key exported from a SmartMesh Wallet earlier than Version 2.0.0\".
+    </string>
+
+    <string name="wallet_private_key_hint">
+        \nSince Version 2.0.0, the private key algorithm has been upgraded to be compatible third-party wallets. Please be mindful that this differs from earlier versions.
+        \n\nWhen using the SmartMesh App wallet with a private key from earlier versions, please select \"Use key exported from a SmartMesh Wallet earlier than Version 2.0.0\".
+    </string>
     <string name="wallet_keysotre_info">Keystore text content</string>
     <string name="wallet_keysotre_pwd">KeyStore&quot;&quot; password</string>
     <string name="wallet_import_start">Start importing</string>
