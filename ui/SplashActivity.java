@@ -1,14 +1,20 @@
 package com.lingtuan.firefly.ui;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -28,6 +34,10 @@ import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.xmpp.XmppUtils;
+import com.tbruyelle.rxpermissions2.Permission;
+import com.tbruyelle.rxpermissions2.RxPermissions;
+
+import io.reactivex.functions.Consumer;
 
 /**
  * Created on 2017/8/23.
@@ -42,6 +52,8 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
     private TextView walletPattern;
 
     private LinearLayout bottom_bg_login;
+
+    private static int REQUEST_CODE_WRITE_SETTINGS = 0x01;
 
 
     @Override
@@ -107,7 +119,76 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
 
     @Override
     public void onAnimationEnd(Animation animation) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            final RxPermissions rxPermissions = new RxPermissions(this);
+            rxPermissions
+                    .request(Manifest.permission.CAMERA
+                            ,Manifest.permission.READ_PHONE_STATE
+                            ,Manifest.permission.WRITE_EXTERNAL_STORAGE
+                            ,Manifest.permission.READ_EXTERNAL_STORAGE
+//                        ,Manifest.permission.CHANGE_CONFIGURATION
+                            ,Manifest.permission.RECORD_AUDIO
+                            ,Manifest.permission.READ_CONTACTS)
+                    .subscribe(new Consumer<Boolean>() {
+                        @Override
+                        public void accept(Boolean aBoolean) throws Exception {
+                            if (aBoolean){
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.System.canWrite(SplashActivity.this)) {
+                                    requestWriteSettings();
+                                }else{
+                                    intoNextMethod();
+                                }
+                            }else{
+                                showToast(getString(R.string.open_permission));
+                                finish();
+                            }
+                        }
+                    });
+        }else{
+            intoNextMethod();
+        }
 
+    }
+
+    @Override
+    public void onAnimationRepeat(Animation animation) {
+
+    }
+
+    private void requestWriteSettings() {
+        Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+        intent.setData(Uri.parse("package:" + getPackageName()));
+        startActivityForResult(intent, REQUEST_CODE_WRITE_SETTINGS );
+    }
+
+
+    private void requestSinglePermission(RxPermissions rxPermissions,Permission permission,boolean intoNext){
+        rxPermissions
+                .request(permission.name)
+                .subscribe(new Consumer<Boolean>() {
+                    @Override
+                    public void accept(Boolean aBoolean) throws Exception {
+                        if (!aBoolean){
+                            finish();
+                        }
+                    }
+                });
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_WRITE_SETTINGS && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if (!Settings.System.canWrite(this)){
+                finish();
+            }else{
+                intoNextMethod();
+            }
+        }
+    }
+
+    private void intoNextMethod(){
         Intent versionService = new Intent(SplashActivity.this, UpdateVersionService.class);
         stopService(versionService);
         startService(versionService);
@@ -136,11 +217,6 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
                 Utils.openNewActivityAnim(SplashActivity.this, true);
             }
         }
-    }
-
-    @Override
-    public void onAnimationRepeat(Animation animation) {
-
     }
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
