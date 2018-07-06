@@ -9,10 +9,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.view.View;
@@ -24,6 +26,7 @@ import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.chat.vo.GalleryVo;
+import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.imagescan.CropActivity;
 import com.lingtuan.firefly.imagescan.ScanLargePic;
 import com.lingtuan.firefly.listener.RequestListener;
@@ -32,6 +35,7 @@ import com.lingtuan.firefly.util.BitmapUtils;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyDialogFragment;
+import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.SDCardCtrl;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
@@ -52,7 +56,7 @@ public class MyProfileUI extends BaseActivity {
 
     private static final int SELECT_COUNTRY = 100;
 
-    private ImageView userImg;//Head portrait
+    private CharAvatarView userImg;//Head portrait
     private EditText userName;//The user name
     private TextView addGender;//gender
     private TextView addRegion;//address
@@ -69,10 +73,8 @@ public class MyProfileUI extends BaseActivity {
      */
     private Uri photoUri;
 
-    /**image*/
     private String imgPath;
 
-    /**gender*/
     private String gender;
 
     private UserInfoSettingReceiver infoSettingReceiver;
@@ -85,7 +87,7 @@ public class MyProfileUI extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        userImg = (ImageView) findViewById(R.id.userImg);
+        userImg = (CharAvatarView) findViewById(R.id.userImg);
         userName = (EditText) findViewById(R.id.userName);
         addGender = (TextView) findViewById(R.id.addGender);
         addRegion = (TextView) findViewById(R.id.addRegion);
@@ -107,11 +109,14 @@ public class MyProfileUI extends BaseActivity {
         btnRight.setVisibility(View.VISIBLE);
         btnRight.setText(getString(R.string.save));
         if (NextApplication.myInfo != null){
-            NextApplication.displayCircleImage(userImg,NextApplication.myInfo.getThumb());
+            userImg.setText(NextApplication.myInfo.getUsername(),userImg,NextApplication.myInfo.getThumb());
             userName.setText(NextApplication.myInfo.getUsername());
             addGender.setText(TextUtils.equals("1",NextApplication.myInfo.getGender()) ? getString(R.string.man) : getString(R.string.woman));
             addRegion.setText(NextApplication.myInfo.getAddress());
             addSign.setText(NextApplication.myInfo.getSightml());
+            if (!TextUtils.isEmpty(NextApplication.myInfo.getUserName())){
+                userName.setSelection(NextApplication.myInfo.getUserName().length());
+            }
         }
 
         infoSettingReceiver = new UserInfoSettingReceiver();
@@ -126,6 +131,11 @@ public class MyProfileUI extends BaseActivity {
         super.onClick(v);
         switch (v.getId()){
             case R.id.app_btn_right:
+                int nameLenght = userName.getText().toString().trim().length();
+                if (nameLenght > 20 || nameLenght <= 0){
+                    showToast(getString(R.string.account_name_warning));
+                    return;
+                }
                 updateInfoMethod();
                 break;
             case R.id.userImg:
@@ -142,7 +152,7 @@ public class MyProfileUI extends BaseActivity {
     }
 
     /**
-     * 添加修改性别方法
+     * update gender method
      * */
     private void addGenderMethod() {
         MyDialogFragment mdf = new MyDialogFragment(MyDialogFragment.DIALOG_LIST, R.array.sex_list);
@@ -166,7 +176,7 @@ public class MyProfileUI extends BaseActivity {
      * */
     private void updateInfoMethod() {
         LoadingDialog.show(MyProfileUI.this,getString(R.string.info_edit_dialog));
-        final String username = userName.getText().toString();
+        final String username = userName.getText().toString().trim();
         final String sightml = addSign.getText().toString();
         final String birthcity = addRegion.getText().toString();
         if (imgPath != null){
@@ -243,7 +253,12 @@ public class MyProfileUI extends BaseActivity {
                         }
                     }
                     cameraUri = Uri.fromFile(file);
-                    camera.putExtra(MediaStore.EXTRA_OUTPUT, cameraUri);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        Uri photoUri = FileProvider.getUriForFile(MyProfileUI.this,"com.lingtuan.firefly.fileProvider",file);
+                        camera.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                    }else{
+                        camera.putExtra(MediaStore.EXTRA_OUTPUT, cameraUri);
+                    }
                     startActivityForResult(camera, Constants.CAMERA_WITH_DATA);
                 } else { // From the album revision
                     try {
@@ -319,7 +334,7 @@ public class MyProfileUI extends BaseActivity {
                         if (photoUri != null && photoUri.toString().startsWith("file://")) {
                             imgPath = photoUri.toString().replace("file://", "");
                         }
-                        NextApplication.displayCircleImage(userImg,photoUri.toString());
+                        userImg.setText(NextApplication.myInfo.getUsername(),userImg,photoUri.toString());
                     } catch (Exception e) {
                         showToast(getString(R.string.info_edit_picture_cut_failure));
                         e.printStackTrace();
@@ -341,7 +356,7 @@ public class MyProfileUI extends BaseActivity {
                     JSONObject result = (JSONObject) msg.obj;
                     showToast(result.optString("msg"));
                     try {
-                        NextApplication.displayCircleImage(userImg, result.optString("avatarPath"));
+                        userImg.setText(NextApplication.myInfo.getUsername(),userImg,result.optString("avatarPath"));
                     } catch (Exception e) {
                         showToast(getString(R.string.info_edit_picture_cut_failure));
                         e.printStackTrace();
@@ -389,8 +404,7 @@ public class MyProfileUI extends BaseActivity {
                               message.what = 2;
                               mHandler.sendMessage(message);
                           }
-
-                          NextApplication.displayCircleImage(userImg,obj.optString("thumb"));
+                          userImg.setText(NextApplication.myInfo.getUsername(),userImg,obj.optString("thumb"));
                           finish();
                     } catch (Exception e2) {
                         showToast(getString(R.string.info_upload_picture_failure));
