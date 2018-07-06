@@ -5,13 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
-import android.provider.Settings;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -34,7 +29,6 @@ import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.xmpp.XmppUtils;
-import com.tbruyelle.rxpermissions2.Permission;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import io.reactivex.functions.Consumer;
@@ -54,12 +48,6 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
     private LinearLayout bottom_bg_login;
 
     private static int REQUEST_CODE_WRITE_SETTINGS = 0x01;
-
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
 
     @Override
     protected void setContentView() {
@@ -107,6 +95,11 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(SplashActivity.this).unregisterReceiver(mBroadcastReceiver);
@@ -133,13 +126,15 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
                         @Override
                         public void accept(Boolean aBoolean) throws Exception {
                             if (aBoolean){
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.System.canWrite(SplashActivity.this)) {
-                                    requestWriteSettings();
-                                }else{
-                                    intoNextMethod();
-                                }
+                                //暂时不需要本permission
+//                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.System.canWrite(SplashActivity.this)) {
+//                                    requestWriteSettings();
+//                                }else{
+//                                    intoNextMethod();
+//                                }
+                                intoNextMethod();
                             }else{
-                                showToast(getString(R.string.open_permission));
+//                                showToast(getString(R.string.open_permission));
                                 finish();
                             }
                         }
@@ -155,44 +150,23 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
 
     }
 
-    private void requestWriteSettings() {
-        Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
-        intent.setData(Uri.parse("package:" + getPackageName()));
-        startActivityForResult(intent, REQUEST_CODE_WRITE_SETTINGS );
-    }
-
-
-    private void requestSinglePermission(RxPermissions rxPermissions,Permission permission,boolean intoNext){
-        rxPermissions
-                .request(permission.name)
-                .subscribe(new Consumer<Boolean>() {
-                    @Override
-                    public void accept(Boolean aBoolean) throws Exception {
-                        if (!aBoolean){
-                            finish();
-                        }
-                    }
-                });
-    }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_WRITE_SETTINGS && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            if (!Settings.System.canWrite(this)){
-                finish();
-            }else{
-                intoNextMethod();
-            }
-        }
-    }
+//    private void requestWriteSettings() {
+//        Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+//        intent.setData(Uri.parse("package:" + getPackageName()));
+//        startActivityForResult(intent, REQUEST_CODE_WRITE_SETTINGS );
+//    }
+//
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        if (requestCode == REQUEST_CODE_WRITE_SETTINGS){
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.System.canWrite(SplashActivity.this)){
+//                intoNextMethod();
+//            }
+//        }
+//    }
 
     private void intoNextMethod(){
-        Intent versionService = new Intent(SplashActivity.this, UpdateVersionService.class);
-        stopService(versionService);
-        startService(versionService);
-
         int walletMode = MySharedPrefs.readInt(SplashActivity.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
         String jsonToken = MySharedPrefs.readString(SplashActivity.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_LOGIN_USERINFO);
         String isFirst = MySharedPrefs.readString(SplashActivity.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_FIRST_WALLET_USE);
