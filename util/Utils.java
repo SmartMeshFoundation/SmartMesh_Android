@@ -1,5 +1,6 @@
 package com.lingtuan.firefly.util;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -25,6 +26,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.ColorInt;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
@@ -32,6 +35,8 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -51,6 +56,7 @@ import com.lingtuan.firefly.vo.UserInfoVo;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.xmpp.XmppAction;
+import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import org.apache.http.util.EncodingUtils;
 import org.json.JSONObject;
@@ -68,6 +74,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+
+import io.reactivex.functions.Consumer;
 
 /**
  * Created on 2017/8/18.
@@ -253,7 +261,15 @@ public class Utils {
      * Access to mobile phone IMEI number
      */
     public static String getIMEI(Context mContext) {
-        TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        final TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            try {
+                RxPermissions rxPermissions = new RxPermissions((Activity) mContext);
+                rxPermissions.request(Manifest.permission.READ_PHONE_STATE);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
         return telephonyManager.getDeviceId();
     }
 
@@ -349,6 +365,14 @@ public class Utils {
 
     public static String formatTime(long time) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        return format.format(time * 1000);
+    }
+
+    /**
+     * transfer record time
+     * */
+    public static String formatTransTime(long time) {
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
         return format.format(time * 1000);
     }
 
@@ -594,7 +618,7 @@ public class Utils {
      * @ param context context
      * What a purse @ param position
      * */
-    public static  int getWalletImg(Context context,int position){
+    public static String getWalletImg(Context context,int position){
         int index = position%100+1;
         String ids = "icon_static_00"+index;
         if(index>=10 && index<100)
@@ -604,8 +628,30 @@ public class Utils {
         else if(index==100){
             ids = "icon_static_"+index;
         }
-        return context.getResources().getIdentifier(context.getPackageName() + ":drawable/" + ids, null, null);
+        return ids;
     }
+
+    /**
+     * get the purse
+     * @ param context context
+     * What a purse @ param position
+     * */
+    public static  int getWalletImageId(Context context,String ids){
+        return context.getResources().getIdentifier(context.getPackageName() + ":drawable/" + ids, null,
+                null);
+    }
+
+    /**
+     * get the purse
+     * @ param context context
+     * What a purse @ param position
+     * */
+    public static String setWalletImageId(){
+        int index = Integer.parseInt(Utils.makeRandomInt(2));
+        String ids = "icon_static_0" + index;
+        return ids;
+    }
+
 
     /**
      * Name to get the wallet
@@ -643,6 +689,27 @@ public class Utils {
     }
 
 
+    /**
+     * 设置状态栏颜色
+     * setting status bar color
+     * */
+    public static void setStatusBar(Context context,int colorPrimary){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Window window = ((Activity)context).getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            if (colorPrimary == 0){
+                window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+                window.setStatusBarColor(context.getResources().getColor(R.color.colorPrimary));
+            }else if (colorPrimary == 1){
+                window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+                window.setStatusBarColor(context.getResources().getColor(R.color.wallet_copy_bg));
+            }else{
+                window.getDecorView().setSystemUiVisibility(View.STATUS_BAR_VISIBLE);
+                window.setStatusBarColor(context.getResources().getColor(R.color.colorFound));
+            }
+        }
+    }
+
 
     /**
      * copy the text to the clipboard
@@ -663,28 +730,16 @@ public class Utils {
      * */
     public static void settingLanguage(Context context){
         String language = MySharedPrefs.readString(context,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_LANGUAFE);
+        Locale locale;
         if (TextUtils.isEmpty(language)){
-            // Local language setting
-            Locale locale;
             if (Build.VERSION.SDK_INT >= 24 && TextUtils.equals(Locale.getDefault().toString(),"en")){
                 locale = new Locale(Locale.getDefault().toString());
             }else{
                 locale = new Locale(Locale.getDefault().getLanguage());
             }
-            Resources res = context.getResources();
-            DisplayMetrics dm = res.getDisplayMetrics();
-            Configuration conf = res.getConfiguration();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                conf.setLocale(locale);
-            } else {
-                conf.locale = locale;
-            }
-            res.updateConfiguration(conf, dm);
-            return;
+        }else{
+            locale = new Locale(language);
         }
-
-        // Local language setting
-        Locale locale = new Locale(language);
         Resources res = context.getResources();
         DisplayMetrics dm = res.getDisplayMetrics();
         Configuration conf = res.getConfiguration();
@@ -733,6 +788,26 @@ public class Utils {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < length; ++i) {
             int number = random.nextInt(62);
+            sb.append(str.charAt(number));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * by : cyt
+     * @ param length key length less than or equal to 16
+     * @ return String
+     * @ TODO immediately generated specifies the length of the key
+     */
+    public static String makeRandomInt(int length) {
+        String str = "123456789";
+        Random random = new Random();
+        if (length > 2) {
+            length = 2;
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; ++i) {
+            int number = random.nextInt(9);
             sb.append(str.charAt(number));
         }
         return sb.toString();
@@ -813,6 +888,39 @@ public class Utils {
         }
         Utils.intentChattingUI(context, "group-" + cid, url.toString(), TextUtils.isEmpty(groupName) ? username.toString() : groupName, "1",0,true, false, false, 0, true);
     }
+
+
+    /**
+     * into the group chat
+     * @ param cid group chat id
+     * @ param member group of members
+     */
+    public static void gotoGroupChatFalse(Context context,boolean hasJoined,String groupName,String cid, List<UserBaseVo> member) {
+        StringBuilder url = new StringBuilder();
+        StringBuilder username = new StringBuilder();
+        try {
+            if(!hasJoined){
+                url.append(NextApplication.myInfo.getThumb()).append("___").append(NextApplication.myInfo.getGender()).append("#");
+            }
+            for (UserBaseVo vo : member) {
+                url.append(vo.getThumb()).append("___").append(vo.getGender()).append("#");
+            }
+            url.deleteCharAt(url.lastIndexOf("#"));
+
+            if (TextUtils.isEmpty(groupName)){
+                username.append(NextApplication.myInfo.getUserName()).append("、");
+                for (UserBaseVo vo : member) {
+                    username.append(vo.getUserName()).append("、");
+                }
+                username.deleteCharAt(username.lastIndexOf("、"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Utils.intentChattingUI(context, "group-" + cid, url.toString(), TextUtils.isEmpty(groupName) ? username.toString() : groupName, "1",0,true, false, false, 0, false);
+    }
+
 
     /**
      * jump to chat page
@@ -1007,6 +1115,34 @@ public class Utils {
             return sb.toString();
         } catch (Exception e) {
             return thumb;
+        }
+    }
+
+    //安装apk，兼容7.0  Install apk, compatible with 7.0
+    public static void installApk8(Context context,File file) {
+        if (file == null){
+            return;
+        }
+        if (!file.exists()){
+            return;
+        }
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            // 由于没有在Activity环境下启动Activity,设置下面的标签   setFlags要放在addFlags之前
+            // Since the Activity is not started in the Activity environment, set the following label setFlags to be placed before addFlags
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //版本在7.0以上是不能直接通过uri访问的
+            //Versions above 7.0 are not directly accessible via uri
+            //参数1 上下文, 参数2 Provider主机地址和清单文件中保持一致   参数3 共享的文件
+            //Parameter 1 context, parameter 2 Provider host address and keep consistent in the manifest file Parameter 3 shared file
+            Uri apkUri = FileProvider.getUriForFile(context, "com.lingtuan.firefly.fileProvider", file);
+            //添加这一句表示对目标应用临时授权该Uri所代表的文件
+            //Adding this sentence means temporarily authorizing the file represented by the Uri to the target application.
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+            context.startActivity(intent);
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
