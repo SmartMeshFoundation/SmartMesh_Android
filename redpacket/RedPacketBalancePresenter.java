@@ -7,6 +7,9 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.util.Utils;
 
+/**
+ * @see RedPacketBalanceUI
+ * */
 public class RedPacketBalancePresenter {
 
     private Context context;
@@ -28,7 +31,7 @@ public class RedPacketBalancePresenter {
      * red packet recharge method
      * */
     public void rechargeMethod(){
-        context.startActivity(new Intent(context,RedPacketRecharge.class));
+        context.startActivity(new Intent(context,RedPacketRechargeUI.class));
         Utils.openNewActivityAnim((Activity) context,false);
     }
 
@@ -36,7 +39,7 @@ public class RedPacketBalancePresenter {
      * red packet withdraw method
      * */
     public void withDrawMethod(){
-        context.startActivity(new Intent(context,RedPacketWithdraw.class));
+        context.startActivity(new Intent(context,RedPacketWithdrawUI.class));
         Utils.openNewActivityAnim((Activity) context,false);
     }
 
@@ -44,7 +47,7 @@ public class RedPacketBalancePresenter {
      * red packet recode
      * */
     public void redPacketRecode(){
-        context.startActivity(new Intent(context,RedPacketBalanceRecord.class));
+        context.startActivity(new Intent(context,RedPacketBalanceRecordUI.class));
         Utils.openNewActivityAnim((Activity) context,false);
     }
 }

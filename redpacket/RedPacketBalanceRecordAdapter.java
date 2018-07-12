@@ -12,6 +12,9 @@ import com.lingtuan.firefly.util.Utils;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class RedPacketBalanceRecordAdapter extends BaseAdapter {
 
     private Context context;
@@ -49,12 +52,8 @@ public class RedPacketBalanceRecordAdapter extends BaseAdapter {
     public View getView(int i, View view, ViewGroup viewGroup) {
         RedPacketRecordHolder holder;
         if(view == null){
-            holder = new RedPacketRecordHolder();
             view = View.inflate(context, R.layout.red_packet_balace_record_item, null);
-            holder.redRecordType = view.findViewById(R.id.redRecordType);
-            holder.redRecordAddress = view.findViewById(R.id.redRecordAddress);
-            holder.redRecordAmount = view.findViewById(R.id.redRecordAmount);
-            holder.redRecordTime = view.findViewById(R.id.redRecordTime);
+            holder = new RedPacketRecordHolder(view);
             view.setTag(holder);
         }else{
             holder = (RedPacketRecordHolder) view.getTag();
@@ -74,9 +73,17 @@ public class RedPacketBalanceRecordAdapter extends BaseAdapter {
     }
 
     static class RedPacketRecordHolder{
+        @BindView(R.id.redRecordType)
         TextView redRecordType = null ;
+        @BindView(R.id.redRecordAddress)
         TextView redRecordAddress = null ;
+        @BindView(R.id.redRecordAmount)
         TextView redRecordAmount = null ;
+        @BindView(R.id.redRecordTime)
         TextView redRecordTime = null ;
+
+        public RedPacketRecordHolder(View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 }
