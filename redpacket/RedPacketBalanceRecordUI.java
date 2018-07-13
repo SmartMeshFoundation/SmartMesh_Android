@@ -34,9 +34,6 @@ public class RedPacketBalanceRecordUI extends BaseActivity{
 
     @Override
     protected void findViewById() {
-        emptyView = findViewById(R.id.emptyView);
-        recordListView = findViewById(R.id.recordListView);
-        refreshLayout = findViewById(R.id.swipe_refresh);
         redPacketBalanceRecordPresenter = new RedPacketBalanceRecordPresenter(RedPacketBalanceRecordUI.this);
         redPacketBalanceRecordPresenter.init(refreshLayout,recordListView,emptyView);
     }
