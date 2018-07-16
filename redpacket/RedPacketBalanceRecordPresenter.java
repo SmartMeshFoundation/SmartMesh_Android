@@ -100,27 +100,33 @@ public class RedPacketBalanceRecordPresenter implements SwipeRefreshLayout.OnRef
         if(isLoadingData){
             return;
         }
-        isLoadingData=true;
-        oldPage= page;
-        NetRequestImpl.getInstance().getRedPacketBalanceRecord("", new RequestListener() {
-            @Override
-            public void start() {
 
-            }
+        isLoadingData=false;
+        refreshLayout.setRefreshing(false);
+        MyToast.showToast(context,"no api");
+        checkListEmpty();
 
-            @Override
-            public void success(JSONObject response) {
-                parseData(response);
-            }
-
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                isLoadingData=false;
-                refreshLayout.setRefreshing(false);
-                MyToast.showToast(context,errorMsg);
-                checkListEmpty();
-            }
-        });
+//        isLoadingData=true;
+//        oldPage= page;
+//        NetRequestImpl.getInstance().getRedPacketBalanceRecord("", new RequestListener() {
+//            @Override
+//            public void start() {
+//
+//            }
+//
+//            @Override
+//            public void success(JSONObject response) {
+//                parseData(response);
+//            }
+//
+//            @Override
+//            public void error(int errorCode, String errorMsg) {
+//                isLoadingData=false;
+//                refreshLayout.setRefreshing(false);
+//                MyToast.showToast(context,errorMsg);
+//                checkListEmpty();
+//            }
+//        });
     }
 
     /**
