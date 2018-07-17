@@ -81,6 +81,7 @@
                         style="@style/EditTextSendStyle"
                         android:layout_height="50dp"
                         android:layout_marginTop="0dp"
+                        android:digits="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                         android:hint="@string/input_address"/>
 
                     <View
@@ -289,7 +290,6 @@
                         android:layout_gravity="center_vertical|right"/>
                 </LinearLayout>
             </LinearLayout>
-
 
             <TextView
                 android:id="@+id/send"
