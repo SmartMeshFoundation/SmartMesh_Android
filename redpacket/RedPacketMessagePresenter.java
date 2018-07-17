@@ -1,6 +1,8 @@
 package com.lingtuan.firefly.redpacket;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
@@ -13,6 +15,7 @@ import com.lingtuan.firefly.redpacket.bean.RedPacketMessageBean;
 import com.lingtuan.firefly.redpacket.bean.RedPacketRecordBean;
 import com.lingtuan.firefly.redpacket.listener.SetOnClickListener;
 import com.lingtuan.firefly.util.MyToast;
+import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
 import org.json.JSONArray;
@@ -147,5 +150,7 @@ public class RedPacketMessagePresenter implements SwipeRefreshLayout.OnRefreshLi
     @Override
     public void onItemClickListener(int position) {
         MyToast.showToast(context,"点击了第" + position + "几项");
+        context.startActivity(new Intent(context,RedPacketMessageDetailUI.class));
+        Utils.openNewActivityAnim((Activity)context,false);
     }
 }
