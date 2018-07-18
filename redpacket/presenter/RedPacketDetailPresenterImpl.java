@@ -32,15 +32,6 @@ public class RedPacketDetailPresenterImpl implements RedPacketDetailContract.Pre
 
     @Override
     public void start() {
-
-    }
-
-    /**
-     * request red packet details data
-     * 请求红包详情页数据
-     * */
-    @Override
-    public void loadData() {
         mView.error(0,null);
 //        NetRequestImpl.getInstance().getRedPacketBalanceRecord("", new RequestListener() {
 //            @Override

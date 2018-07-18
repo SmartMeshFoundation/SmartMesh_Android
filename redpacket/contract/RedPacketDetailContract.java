@@ -11,10 +11,6 @@ public interface RedPacketDetailContract {
 
     interface Presenter extends BasePresenter {
 
-        /**
-         * get red packet balance record
-         * */
-        void loadData();
     }
 
     interface View extends BaseView<Presenter> {

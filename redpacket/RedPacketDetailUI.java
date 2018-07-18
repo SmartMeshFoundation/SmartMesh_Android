@@ -70,7 +70,7 @@ public class RedPacketDetailUI extends BaseActivity implements RedPacketDetailCo
         redPacketDetailAdapter = new RedPacketDetailAdapter(this,redPacketBeans);
         listView.setAdapter(redPacketDetailAdapter);
         LoadingDialog.show(RedPacketDetailUI.this,"");
-        mPresenter.loadData();
+        mPresenter.start();
     }
 
     @OnClick({R.id.app_back,R.id.app_btn_right})
