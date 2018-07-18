@@ -1,10 +1,14 @@
 package com.lingtuan.firefly.redpacket;
 
+import android.content.Intent;
 import android.view.View;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.redpacket.contract.RedPacketBalanceContract;
+import com.lingtuan.firefly.redpacket.presenter.RedPacketBalancePresenterImpl;
+import com.lingtuan.firefly.util.Utils;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -14,7 +18,7 @@ import butterknife.OnClick;
  * red packet balance
  * @see com.lingtuan.firefly.fragment.MySelfFragment
  * */
-public class RedPacketBalanceUI extends BaseActivity{
+public class RedPacketBalanceUI extends BaseActivity implements RedPacketBalanceContract.View{
 
     @BindView(R.id.redBalanceSymbol)
     TextView redBalanceSymbol;
@@ -25,7 +29,7 @@ public class RedPacketBalanceUI extends BaseActivity{
     @BindView(R.id.app_btn_right)
     TextView appBtnRight;
 
-    private RedPacketBalancePresenter redPacketBalancePresenter;
+    private RedPacketBalanceContract.Presenter mPresenter;
 
     @Override
     protected void setContentView() {
@@ -34,8 +38,8 @@ public class RedPacketBalanceUI extends BaseActivity{
 
     @Override
     protected void findViewById() {
-        redPacketBalancePresenter = new RedPacketBalancePresenter(RedPacketBalanceUI.this);
-        redPacketBalancePresenter.init(redBalanceSymbol,redBalanceBalance,redBalanceMoney);
+        new RedPacketBalancePresenterImpl(this);
+        mPresenter.start();
     }
 
     @Override
@@ -55,14 +59,27 @@ public class RedPacketBalanceUI extends BaseActivity{
         super.onClick(v);
         switch (v.getId()){
             case R.id.redBalanceRecharge:
-                redPacketBalancePresenter.rechargeMethod();
+                startActivity(new Intent(this,RedPacketRechargeUI.class));
+                Utils.openNewActivityAnim(this,false);
                 break;
             case R.id.redBalanceWithdraw:
-                redPacketBalancePresenter.withDrawMethod();
+                startActivity(new Intent(this,RedPacketWithdrawUI.class));
+                Utils.openNewActivityAnim(this,false);
                 break;
             case R.id.app_btn_right:
-                redPacketBalancePresenter.redPacketRecode();
+                startActivity(new Intent(this,RedPacketBalanceRecordUI.class));
+                Utils.openNewActivityAnim(this,false);
                 break;
         }
+    }
+
+    @Override
+    public void setPresenter(RedPacketBalanceContract.Presenter presenter) {
+        this.mPresenter = presenter;
+    }
+
+    @Override
+    public void refreshUI() {
+
     }
 }

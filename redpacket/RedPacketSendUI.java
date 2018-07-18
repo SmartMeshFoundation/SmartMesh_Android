@@ -1,15 +1,17 @@
 package com.lingtuan.firefly.redpacket;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
-import com.lingtuan.firefly.ui.FriendInfoUI;
+import com.lingtuan.firefly.redpacket.contract.RedPacketSendContract;
+import com.lingtuan.firefly.redpacket.presenter.RedPacketSendPresenterImpl;
 import com.lingtuan.firefly.util.Utils;
 
 import java.math.BigDecimal;
@@ -22,7 +24,7 @@ import butterknife.OnClick;
  * send red packet ui
  * @see com.lingtuan.firefly.chat.ChattingUI
  * */
-public class RedPacketSendUI extends BaseActivity{
+public class RedPacketSendUI extends BaseActivity implements RedPacketSendContract.View{
 
     @BindView(R.id.redPacketValue)
     EditText redPacketValue;
@@ -47,16 +49,17 @@ public class RedPacketSendUI extends BaseActivity{
 
     private boolean type;
 
-    private RedPacketSendPresenter redPacketSendPresenter;
+    private RedPacketSendContract.Presenter mPresenter;
 
     @Override
     protected void setContentView() {
         setContentView(R.layout.red_packet_send_layout);
+        Utils.setStatusBar(this,3);
     }
 
     @Override
     protected void findViewById() {
-        redPacketSendPresenter = new RedPacketSendPresenter(RedPacketSendUI.this);
+        new RedPacketSendPresenterImpl(this);
     }
 
     @Override
@@ -87,25 +90,26 @@ public class RedPacketSendUI extends BaseActivity{
                 break;
             case R.id.redPacketSend:
                 String singleAmount = redPacketValue.getText().toString().trim();
-                if (TextUtils.isEmpty(singleAmount)){
-                    showToast(getString(R.string.red_packet_send_value_hint));
-                    return;
-                }else{
-                    BigDecimal singleAmount1 = new BigDecimal(singleAmount);
-                    BigDecimal singleAmount2 = new BigDecimal("0.01");
-                    if (singleAmount1.compareTo(singleAmount2) < 0){
-                        showToast(getString(R.string.red_packet_send_value_hint));
-                        return;
-                    }
-                }
                 String redNumber = redPacketNumber.getText().toString().trim();
-                if (TextUtils.isEmpty(redNumber) || Integer.parseInt(redNumber) < 1){
-                    showToast(getString(R.string.red_packet_send_number_hint));
-                    return;
-                }
                 String redLeaveMessage = redPacketLeaveMessage.getText().toString().trim();
-                redPacketSendPresenter.sendRedPacketMethod(singleAmount,redNumber,redLeaveMessage,type);
+                mPresenter.sendRedPacketMethod(this,singleAmount,redNumber,redLeaveMessage,type);
                 break;
         }
+    }
+
+    @Override
+    public void sendSuccess() {
+        startActivity(new Intent(RedPacketSendUI.this,RedPacketDetailUI.class));
+        Utils.openNewActivityAnim(RedPacketSendUI.this,false);
+    }
+
+    @Override
+    public void showToastMessage(String message) {
+        showToast(message);
+    }
+
+    @Override
+    public void setPresenter(RedPacketSendContract.Presenter presenter) {
+        this.mPresenter = presenter;
     }
 }

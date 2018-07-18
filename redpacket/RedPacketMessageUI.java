@@ -1,11 +1,21 @@
 package com.lingtuan.firefly.redpacket;
 
+import android.content.Intent;
+import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.LoadMoreListView;
+import com.lingtuan.firefly.redpacket.bean.RedPacketMessageBean;
+import com.lingtuan.firefly.redpacket.contract.RedPacketMessageContract;
+import com.lingtuan.firefly.redpacket.listener.SetOnClickListener;
+import com.lingtuan.firefly.redpacket.presenter.RedPacketMessagePresenterImpl;
+import com.lingtuan.firefly.util.MyToast;
+import com.lingtuan.firefly.util.Utils;
+
+import java.util.ArrayList;
 
 import butterknife.BindView;
 
@@ -13,9 +23,9 @@ import butterknife.BindView;
  * message notice
  * 支付消息通知页面
  * */
-public class RedPacketMessageUI extends BaseActivity {
+public class RedPacketMessageUI extends BaseActivity implements RedPacketMessageContract.View, SetOnClickListener, SwipeRefreshLayout.OnRefreshListener, LoadMoreListView.RefreshListener {
 
-    private RedPacketMessagePresenter redPacketMessagePresenter;
+    private RedPacketMessageContract.Presenter mPresenter;
 
     @BindView(R.id.swipe_refresh)
     SwipeRefreshLayout refreshLayout;
@@ -23,6 +33,9 @@ public class RedPacketMessageUI extends BaseActivity {
     LoadMoreListView messageListView;
     @BindView(R.id.emptyView)
     TextView emptyView;
+    private int currentPage = 1;
+    private ArrayList<RedPacketMessageBean> redPacketMessages;
+    private RedPacketMessageAdapter redPacketMessageAdapter;
 
     @Override
     protected void setContentView() {
@@ -31,17 +44,68 @@ public class RedPacketMessageUI extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        redPacketMessagePresenter = new RedPacketMessagePresenter(RedPacketMessageUI.this);
-        redPacketMessagePresenter.init(refreshLayout,messageListView,emptyView);
+        new RedPacketMessagePresenterImpl(this);
     }
 
     @Override
     protected void setListener() {
-
+        refreshLayout.setOnRefreshListener(this);
+        messageListView.setOnRefreshListener(this);
     }
 
     @Override
     protected void initData() {
         setTitle(getString(R.string.red_packet_pay_message));
+        redPacketMessages = new ArrayList<>();
+        redPacketMessageAdapter = new RedPacketMessageAdapter(RedPacketMessageUI.this,redPacketMessages,this);
+        messageListView.setAdapter(redPacketMessageAdapter);
+        setListener();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                refreshLayout.setRefreshing(true);
+                mPresenter.loadData(0);
+            }
+        }, 500);
+    }
+
+    @Override
+    public void success(ArrayList<RedPacketMessageBean> redPacketMessages, int currentPage, boolean resetFooterState) {
+        refreshLayout.setRefreshing(false);
+        this.currentPage = currentPage;
+        redPacketMessageAdapter.resetSource(redPacketMessages);
+        messageListView.resetFooterState(resetFooterState);
+    }
+
+    @Override
+    public void error(int errorCode, String errorMsg) {
+        refreshLayout.setRefreshing(false);
+        if (errorCode == 0){
+            showToast(getString(R.string.red_balance_record_empty));
+        }else{
+            showToast(errorMsg);
+        }
+    }
+
+    @Override
+    public void setPresenter(RedPacketMessageContract.Presenter presenter) {
+        this.mPresenter = presenter;
+    }
+
+    @Override
+    public void onItemClickListener(int position) {
+        MyToast.showToast(this,"点击了第" + position + "几项");
+        startActivity(new Intent(this,RedPacketMessageDetailUI.class));
+        Utils.openNewActivityAnim(this,false);
+    }
+
+    @Override
+    public void onRefresh() {
+        mPresenter.loadData(0);
+    }
+
+    @Override
+    public void loadMore() {
+        mPresenter.loadData(currentPage + 1);
     }
 }
