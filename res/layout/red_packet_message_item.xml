@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/shape_white_border_round_10"
+    android:layout_margin="10dp"
+    android:padding="10dp"
+    android:layout_gravity="center">
+
+    <TextView
+        android:id="@+id/redMessageType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:textSize="16sp"
+        android:singleLine="true"
+        android:ellipsize="middle"
+        android:textColor="@color/black"
+        android:text="@string/red_withdraw_success"
+        />
+
+    <TextView
+        android:id="@+id/redMessageAmountHint"
+        android:layout_below="@+id/redMessageType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        android:singleLine="true"
+        android:ellipsize="middle"
+        android:textSize="14sp"
+        android:text="@string/red_balance_withdraw_amount"
+        android:textColor="@color/textColorHint"
+        />
+
+    <TextView
+        android:id="@+id/redMessageAmount"
+        android:layout_below="@+id/redMessageAmountHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center"
+        android:singleLine="true"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:textColor="@color/black"
+        />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_below="@+id/redMessageAmount"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/shape_dotted_line_gray"/>
+
+    <TextView
+        android:id="@+id/redMessageAddressHint"
+        android:layout_below="@+id/redMessageAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:singleLine="true"
+        android:textSize="14sp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="10dp"
+        android:text="@string/wallet_trans_detail_to"
+        android:textColor="@color/textColorHintPrimary"
+        />
+
+    <TextView
+        android:id="@+id/redMessageAddress"
+        android:layout_below="@+id/redMessageAmount"
+        android:layout_toRightOf="@+id/redMessageAddressHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_marginTop="20dp"
+        android:singleLine="true"
+        android:ellipsize="middle"
+        android:textSize="14sp"
+        android:textColor="@color/black"
+        />
+
+    <TextView
+        android:id="@+id/redMessageTimeHint"
+        android:layout_below="@+id/redMessageAddressHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:singleLine="true"
+        android:textSize="14sp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="10dp"
+        android:text="@string/red_packet_pay_message_time"
+        android:textColor="@color/textColorHintPrimary"
+        />
+
+    <TextView
+        android:id="@+id/redMessageTime"
+        android:layout_below="@+id/redMessageAddress"
+        android:layout_toRightOf="@+id/redMessageTimeHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_marginTop="20dp"
+        android:singleLine="true"
+        android:ellipsize="middle"
+        android:textSize="14sp"
+        android:textColor="@color/black"
+        />
+
+    <TextView
+        android:id="@+id/redMessageStateHint"
+        android:layout_below="@+id/redMessageTimeHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:singleLine="true"
+        android:textSize="14sp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="10dp"
+        android:text="@string/red_packet_pay_message_state"
+        android:textColor="@color/textColorHintPrimary"
+        />
+
+    <TextView
+        android:id="@+id/redMessageState"
+        android:layout_below="@+id/redMessageTime"
+        android:layout_toRightOf="@+id/redMessageStateHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_marginTop="20dp"
+        android:singleLine="true"
+        android:ellipsize="middle"
+        android:textSize="14sp"
+        android:textColor="@color/black"
+        />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_below="@+id/redMessageState"
+        android:layout_marginTop="15dp"
+        android:background="@color/tab_sep_line"/>
+
+
+    <TextView
+        android:id="@+id/redMessageDetails"
+        android:layout_below="@+id/redMessageState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="10dp"
+        android:singleLine="true"
+        android:ellipsize="middle"
+        android:textSize="16sp"
+        android:text="@string/red_packet_pay_message_details"
+        android:textColor="@color/black"
+        />
+
+    <ImageView
+        android:layout_below="@+id/redMessageState"
+        android:layout_marginTop="35dp"
+        android:layout_marginBottom="10dp"
+        style="@style/my_setting_right_tv_style" />
+</RelativeLayout>

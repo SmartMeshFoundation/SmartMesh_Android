@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/shape_white_border_round_5"
+    android:layout_margin="10dp"
+    android:layout_gravity="center">
+
+    <TextView
+        android:id="@+id/redRecordType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_margin="10dp"
+        android:textSize="12sp"
+        android:singleLine="true"
+        android:ellipsize="middle"
+        android:textColor="@color/black"
+        />
+
+    <TextView
+        android:id="@+id/redRecordAddress"
+        android:layout_toRightOf="@+id/redRecordType"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_marginTop="10dp"
+        android:singleLine="true"
+        android:ellipsize="middle"
+        android:textSize="14sp"
+        android:textColor="@color/textColorHint"
+        />
+
+    <TextView
+        android:id="@+id/redRecordAmount"
+        android:layout_toRightOf="@+id/redRecordAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical|right"
+        android:singleLine="true"
+        android:textSize="14sp"
+        android:layout_margin="10dp"
+        android:layout_alignParentRight="true"
+        android:textColor="@color/wallet_transfer_bg"
+        />
+
+    <TextView
+        android:id="@+id/redRecordTime"
+        android:layout_below="@+id/redRecordType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:singleLine="true"
+        android:textSize="14sp"
+        android:layout_margin="10dp"
+        android:textColor="@color/textColorHintPrimary"
+        />
+</RelativeLayout>

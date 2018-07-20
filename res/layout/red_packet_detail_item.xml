@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/shape_white_border_round_5"
+    android:layout_margin="10dp"
+    android:layout_gravity="center">
+
+    <ImageView
+        android:id="@+id/redPacketToImage"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_centerVertical="true"
+        android:layout_margin="10dp"/>
+
+    <TextView
+        android:id="@+id/redPacketToName"
+        android:layout_toRightOf="@+id/redPacketToImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_margin="10dp"
+        android:singleLine="true"
+        android:ellipsize="middle"
+        android:textColor="@color/black"
+        />
+
+
+
+    <TextView
+        android:id="@+id/redPacketAmount"
+        android:layout_toRightOf="@+id/redPacketToName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical|right"
+        android:layout_alignParentRight="true"
+        android:layout_margin="10dp"
+        android:singleLine="true"
+        android:textColor="@color/wallet_transfer_bg"
+        />
+
+    <TextView
+        android:id="@+id/redPacketTime"
+        android:layout_toRightOf="@+id/redPacketToImage"
+        android:layout_below="@+id/redPacketToName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_margin="10dp"
+        android:singleLine="true"
+        android:textColor="@color/textColorHintPrimary"
+        />
+
+
+    <TextView
+        android:id="@+id/redPacketBigValue"
+        android:layout_toRightOf="@+id/redPacketTime"
+        android:layout_below="@+id/redPacketToName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical|right"
+        android:layout_alignParentRight="true"
+        android:layout_margin="10dp"
+        android:singleLine="true"
+        android:textColor="@color/textColorHint"
+        />
+</RelativeLayout>
