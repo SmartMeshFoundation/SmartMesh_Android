@@ -25,6 +25,8 @@ import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.util.netutil.NetRequestImpl;
+import com.lingtuan.firefly.wallet.contract.WalletSendDetailContract;
+import com.lingtuan.firefly.wallet.presenter.WalletSendDetailPresenterImpl;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
 import com.lingtuan.firefly.wallet.vo.TransVo;
@@ -37,32 +39,32 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import butterknife.BindView;
+import butterknife.OnClick;
+
 /**
  * Created on 2018/3/16.
  * Transfers or receipts
  */
 
-public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayout.OnRefreshListener, AdapterView.OnItemClickListener, LoadMoreListView.RefreshListener {
-    
-    private TextView walletTransfer;
-    private TextView walletReceipt;
-    private TextView walletRaiden;
+public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayout.OnRefreshListener, AdapterView.OnItemClickListener, LoadMoreListView.RefreshListener,WalletSendDetailContract.View{
+
+    @BindView(R.id.swipe_refresh)
+    SwipeRefreshLayout refreshLayout;
+    @BindView(R.id.transListView)
+    LoadMoreListView transListView;
+    @BindView(R.id.emptyView)
+    TextView emptyView;
+
     private StorableWallet storableWallet;
     private TokenVo tokenVo;
     private double smtBalance;
-    
-    private SwipeRefreshLayout refreshLayout;
-    private LoadMoreListView transListView;
     private TransAdapter mAdapter;
     private ArrayList<TransVo> transVos;
-    private TextView emptyView;
-    
-    private Timer timer;
-    private TimerTask timerTask;
-    
     private boolean isFirstLoad = true;
-    
-    
+
+    private WalletSendDetailContract.Presenter mPresenter;
+
     @Override
     protected void setContentView() {
         setContentView(R.layout.wallet_send_detail_layout);
@@ -73,23 +75,16 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         tokenVo = (TokenVo) getIntent().getSerializableExtra("tokenVo");
         smtBalance = getIntent().getDoubleExtra("smtBalance", 0);
         storableWallet = (StorableWallet) getIntent().getSerializableExtra("storableWallet");
+        new WalletSendDetailPresenterImpl(this);
     }
     
     @Override
     protected void findViewById() {
-        walletTransfer = (TextView) findViewById(R.id.walletTransfer);
-        walletReceipt = (TextView) findViewById(R.id.walletReceipt);
-        walletRaiden = (TextView) findViewById(R.id.walletRaiden);
-        emptyView = (TextView) findViewById(R.id.emptyView);
-        transListView = (LoadMoreListView) findViewById(R.id.transListView);
-        refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+
     }
     
     @Override
     protected void setListener() {
-        walletTransfer.setOnClickListener(this);
-        walletReceipt.setOnClickListener(this);
-        walletRaiden.setOnClickListener(this);
         refreshLayout.setOnRefreshListener(this);
         transListView.setOnItemClickListener(this);
         transListView.setOnRefreshListener(this);
@@ -103,7 +98,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
                 public void run() {
                     getTransMethod(storableWallet.getPublicKey());
                     refreshLayout.setRefreshing(true);
-                    transDetailState();
+                    mPresenter.loadData(tokenVo.getContactAddress(), storableWallet.getPublicKey());
                 }
             }, 200);
         }
@@ -119,12 +114,12 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         filter.addAction(Constants.WALLET_REFRESH_BACKUP);//Refresh the page
         registerReceiver(mBroadcastReceiver, filter);
         
-//        //debug
+        //debug
 //        if (!tokenVo.getTokenSymbol().equals("SMT")) {
 //            walletRaiden.setVisibility(View.VISIBLE);
 //        }
         transVos = new ArrayList<>();
-        mAdapter = new TransAdapter(WalletSendDetailUI.this, transVos, storableWallet.getPublicKey());
+        mAdapter = new TransAdapter(WalletSendDetailUI.this, transVos);
         transListView.setAdapter(mAdapter);
         new Handler().postDelayed(new Runnable() {
             public void run() {
@@ -132,14 +127,14 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
                     isFirstLoad = false;
                     getTransMethod(storableWallet.getPublicKey());
                     refreshLayout.setRefreshing(true);
-                    transDetailState();
+                    mPresenter.loadData(tokenVo.getContactAddress(), storableWallet.getPublicKey());
                 }
             }
         }, 200);
         RaidenNet.getInatance().registerToken();
     }
     
-    @Override
+    @OnClick({R.id.walletTransfer,R.id.walletReceipt,R.id.walletRaiden})
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
@@ -196,7 +191,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         public void handleMessage(Message msg) {
             int size = msg.arg1;
             refreshLayout.setRefreshing(false);
-            mAdapter.resetSource(transVos, storableWallet.getPublicKey());
+            mAdapter.resetSource(transVos);
             if (size >= 10) {
                 transListView.resetFooterState(true);
             } else {
@@ -217,7 +212,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
     @Override
     public void onRefresh() {
         getTransMethod(storableWallet.getPublicKey());
-        transDetailState();
+        mPresenter.loadData(tokenVo.getContactAddress(), storableWallet.getPublicKey());
     }
     
     @Override
@@ -244,46 +239,9 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
             transListView.resetFooterState(false);
         }
         transVos.addAll(mlist);
-        mAdapter.resetSource(transVos, storableWallet.getPublicKey());
+        mAdapter.resetSource(transVos);
     }
-    
-    final StringBuilder builder = new StringBuilder();
-    
-    /**
-     * Turn on the timer to call the interface every 12 seconds
-     */
-    private void transDetailState() {
-        if (timer == null) {
-            timer = new Timer();
-            timerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    List<TransVo> mlist = FinalUserDataBase.getInstance().getTransTempList(tokenVo.getContactAddress(), storableWallet.getPublicKey(), true);
-                    if (mlist == null || mlist.size() <= 0) {
-                        if (timer != null) {
-                            timer.cancel();
-                            timer = null;
-                        }
-                        if (timerTask != null) {
-                            timerTask.cancel();
-                            timerTask = null;
-                        }
-                        return;
-                    }
-                    builder.delete(0, builder.length());
-                    for (int i = 0; i < mlist.size(); i++) {
-                        builder.append(mlist.get(i).getTx()).append(",");
-                    }
-                    if (builder.length() > 0) {
-                        builder.deleteCharAt(builder.length() - 1);
-                    }
-                    getTranscationBlock(builder.toString());
-                }
-            };
-            timer.schedule(timerTask, 0, 10000);
-        }
-    }
-    
+
     /**
      * Get the block number of the transaction hash
      */
@@ -330,14 +288,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mBroadcastReceiver);
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-        }
-        if (timerTask != null) {
-            timerTask.cancel();
-            timerTask = null;
-        }
+        mPresenter.onDestroy();
     }
     
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -352,4 +303,20 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
             }
         }
     };
+
+    @Override
+    public void setPresenter(WalletSendDetailContract.Presenter presenter) {
+        this.mPresenter = presenter;
+    }
+
+    @Override
+    public void success(ArrayList<TransVo> transVos) {
+        this.transVos = transVos;
+        mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void error(int errorCode, String errorMsg) {
+        showToast(errorMsg);
+    }
 }
