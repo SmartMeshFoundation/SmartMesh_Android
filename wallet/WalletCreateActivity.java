@@ -10,7 +10,6 @@ import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
@@ -19,6 +18,9 @@ import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
+import butterknife.BindView;
+import butterknife.OnClick;
+
 /**
  * Created  on 2017/8/18.
  * Create a wallet
@@ -26,15 +28,16 @@ import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
 public class WalletCreateActivity extends BaseActivity {
 
+    @BindView(R.id.walletName)
     EditText walletName;//Name of the wallet
+    @BindView(R.id.walletPwd)
     EditText walletPwd;//The wallet password
+    @BindView(R.id.walletAgainPwd)
     EditText walletAgainPwd;//Input the purse close again
+    @BindView(R.id.walletPwdInfo)
     EditText walletPwdInfo;//Password prompt information
-
-    private TextView createWallet;//Create a wallet
-
-    //Remove the wallet name Show the password
-    private ImageView clearWalletName,isShowPass;
+    @BindView(R.id.isShowPass)
+    ImageView isShowPass;//Remove the wallet name Show the password
 
     private WalletHandler mHandler;
 
@@ -50,21 +53,12 @@ public class WalletCreateActivity extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        walletName = (EditText) findViewById(R.id.walletName);
-        walletPwd = (EditText) findViewById(R.id.walletPwd);
-        walletAgainPwd = (EditText) findViewById(R.id.walletAgainPwd);
-        walletPwdInfo = (EditText) findViewById(R.id.walletPwdInfo);
 
-        createWallet = (TextView) findViewById(R.id.createWallet);
-        clearWalletName = (ImageView) findViewById(R.id.clearWalletName);
-        isShowPass = (ImageView) findViewById(R.id.isShowPass);
     }
 
     @Override
     protected void setListener() {
-        createWallet.setOnClickListener(this);
-        clearWalletName.setOnClickListener(this);
-        isShowPass.setOnClickListener(this);
+
     }
 
     @Override
@@ -79,7 +73,7 @@ public class WalletCreateActivity extends BaseActivity {
     }
 
     //Create a wallet 、import the purse
-    @Override
+    @OnClick({R.id.clearWalletName,R.id.isShowPass,R.id.createWallet})
     public void onClick(View v){
         switch (v.getId()){
             case R.id.clearWalletName://Remove the name
@@ -153,7 +147,6 @@ public class WalletCreateActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Cancellation of radio
         if (mBroadcastReceiver != null) {
             unregisterReceiver(mBroadcastReceiver);
         }

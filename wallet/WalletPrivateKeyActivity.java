@@ -8,20 +8,24 @@ import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.Utils;
 
+import butterknife.BindView;
+import butterknife.OnClick;
+
 /**
  * Created on 2017/8/22.
- * 
+ * According to the private key plaintext
  * {@link WalletCopyActivity}
  */
 
 public class WalletPrivateKeyActivity extends BaseActivity{
 
-    private TextView walletPrivateKey;
-    private TextView walletCopyPrivateKey;
+    @BindView(R.id.walletPrivateKey)
+    TextView walletPrivateKey;
+    @BindView(R.id.walletCopyPrivateKey)
+    TextView walletCopyPrivateKey;
 
     private String privateKey;
-
-    private boolean hasCopy;//
+    private boolean hasCopy;//Is the copy
 
     @Override
     protected void setContentView() {
@@ -31,13 +35,12 @@ public class WalletPrivateKeyActivity extends BaseActivity{
 
     @Override
     protected void findViewById() {
-        walletPrivateKey = (TextView) findViewById(R.id.walletPrivateKey);
-        walletCopyPrivateKey = (TextView) findViewById(R.id.walletCopyPrivateKey);
+
     }
 
     @Override
     protected void setListener() {
-        walletCopyPrivateKey.setOnClickListener(this);
+
     }
 
     private void getPassData() {
@@ -50,7 +53,7 @@ public class WalletPrivateKeyActivity extends BaseActivity{
         walletPrivateKey.setText(privateKey);
     }
 
-    @Override
+    @OnClick(R.id.walletCopyPrivateKey)
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.walletCopyPrivateKey:

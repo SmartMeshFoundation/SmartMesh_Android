@@ -1,6 +1,7 @@
 package com.lingtuan.firefly.wallet;
 
 import android.content.Intent;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -15,6 +16,9 @@ import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.OnClick;
+
 /**
  * Created on 2017/8/22.
  * The purse to create success page
@@ -23,8 +27,8 @@ import java.util.ArrayList;
 public class WalletCreateSuccessActivity extends BaseActivity {
 
 
-    private TextView walletCopy;
-    private ImageView walletImg;
+    @BindView(R.id.walletImg)
+    ImageView walletImg;
 
     @Override
     protected void setContentView() {
@@ -33,24 +37,23 @@ public class WalletCreateSuccessActivity extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        walletCopy = (TextView) findViewById(R.id.walletCopy);
-        walletImg = (ImageView) findViewById(R.id.walletImg);
+
     }
 
     @Override
     protected void setListener() {
-        walletCopy.setOnClickListener(this);
+
     }
 
-    @Override
+    @OnClick({R.id.walletCopy,R.id.app_back})
     public void onClick(View v){
         switch (v.getId()){
             case R.id.walletCopy:
-                int imgId = Utils.getWalletImg(WalletCreateSuccessActivity.this,(WalletStorage.getInstance(getApplicationContext()).get().size()-1));
+                String imgId = Utils.getWalletImg(WalletCreateSuccessActivity.this,(WalletStorage.getInstance(getApplicationContext()).get().size()-1));
                 Intent copyIntent = new Intent(WalletCreateSuccessActivity.this,WalletCopyActivity.class);
                 ArrayList<StorableWallet> list = WalletStorage.getInstance(getApplicationContext()).get();
                 copyIntent.putExtra(Constants.WALLET_INFO,list.get(list.size()-1));
-                copyIntent.putExtra(Constants.WALLET_ICON, imgId);
+                copyIntent.putExtra(Constants.WALLET_IMAGE, imgId);
                 startActivity(copyIntent);
                 break;
             case R.id.app_back:
@@ -73,10 +76,11 @@ public class WalletCreateSuccessActivity extends BaseActivity {
     protected void initData() {
         setTitle(getString(R.string.notification_wallgen_success));
         ArrayList<StorableWallet> list = WalletStorage.getInstance(getApplicationContext()).get();
-        int imgId = Utils.getWalletImg(WalletCreateSuccessActivity.this,list.size() - 1);
-        if (list.get(list.size() - 1).getImgId() == 0){
-            list.get(list.size() - 1).setImgId(imgId);
+        String imgId = Utils.getWalletImg(WalletCreateSuccessActivity.this,list.size() - 1);
+        StorableWallet storableWallet = list.get(list.size() - 1);
+        if (TextUtils.isEmpty(storableWallet.getWalletImageId()) || !storableWallet.getWalletImageId().startsWith("icon_static_")) {
+            storableWallet.setWalletImageId(imgId);
         }
-        walletImg.setImageResource(list.get(list.size() - 1).getImgId());
+        walletImg.setImageResource(Utils.getWalletImageId(WalletCreateSuccessActivity.this,storableWallet.getWalletImageId()));
     }
 }
