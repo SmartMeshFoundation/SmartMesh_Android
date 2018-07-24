@@ -13,7 +13,7 @@ public interface WalletSendDetailContract {
         /**
          * get wallet send list
          * */
-        void loadData(String contactAddress,String walletAddress);
+        void loadData(ArrayList<TransVo> transVos,String contactAddress,String walletAddress);
 
         void onDestroy();
     }

@@ -23,7 +23,6 @@ public class WalletSendDetailPresenterImpl implements WalletSendDetailContract.P
     private Timer timer;
     private TimerTask timerTask;
     final StringBuilder builder = new StringBuilder();
-    private ArrayList<TransVo> transVos = new ArrayList<>();
 
     public WalletSendDetailPresenterImpl(WalletSendDetailContract.View view){
         this.mView = view;
@@ -40,7 +39,7 @@ public class WalletSendDetailPresenterImpl implements WalletSendDetailContract.P
      * Turn on the timer to call the interface every 12 seconds
      * */
     @Override
-    public void loadData(final String contactAddress, final String walletAddress) {
+    public void loadData(final ArrayList<TransVo> transVos,final String contactAddress, final String walletAddress) {
         if (timer == null) {
             timer = new Timer();
             timerTask = new TimerTask() {
@@ -65,7 +64,7 @@ public class WalletSendDetailPresenterImpl implements WalletSendDetailContract.P
                     if (builder.length() > 0) {
                         builder.deleteCharAt(builder.length() - 1);
                     }
-                    getTranscationBlock(builder.toString());
+                    getTranscationBlock(transVos,builder.toString());
                 }
             };
             timer.schedule(timerTask, 0, 10000);
@@ -75,7 +74,7 @@ public class WalletSendDetailPresenterImpl implements WalletSendDetailContract.P
     /**
      * Get the block number of the transaction hash
      */
-    private void getTranscationBlock(String txList) {
+    public void getTranscationBlock(final ArrayList<TransVo> transVos,String txList) {
         NetRequestImpl.getInstance().getTxBlockNumber(txList, new RequestListener() {
             @Override
             public void start() {
