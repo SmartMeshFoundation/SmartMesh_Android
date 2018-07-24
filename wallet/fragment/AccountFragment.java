@@ -24,130 +24,124 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseFragment;
 import com.lingtuan.firefly.custom.CustomListView;
-import com.lingtuan.firefly.custom.gesturelock.ACache;
+import com.lingtuan.firefly.custom.LanguageTextView;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
-import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.quickmark.CaptureActivity;
 import com.lingtuan.firefly.quickmark.QuickMarkShowUI;
 import com.lingtuan.firefly.setting.CreateGestureActivity;
 import com.lingtuan.firefly.setting.GestureLoginActivity;
 import com.lingtuan.firefly.ui.AlertActivity;
-import com.lingtuan.firefly.ui.WalletModeLoginUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.AccountAdapter;
 import com.lingtuan.firefly.wallet.AccountTokenAdapter;
 import com.lingtuan.firefly.wallet.ManagerWalletActivity;
 import com.lingtuan.firefly.wallet.TokenListUI;
-import com.lingtuan.firefly.wallet.TransactionRecordsActivity;
 import com.lingtuan.firefly.wallet.WalletCopyActivity;
 import com.lingtuan.firefly.wallet.WalletCreateActivity;
 import com.lingtuan.firefly.wallet.WalletSendDetailUI;
+import com.lingtuan.firefly.wallet.contract.AccountContract;
+import com.lingtuan.firefly.wallet.presenter.AccountPresenterImpl;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
-import com.lingtuan.firefly.wallet.vo.TransVo;
 import com.lingtuan.firefly.walletold.OldAccountUI;
 import com.lingtuan.firefly.xmpp.XmppAction;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import butterknife.OnItemClick;
+import butterknife.Unbinder;
 
 /**
  * Created  on 2017/8/23.
  * account
  */
 
-public class AccountFragment extends BaseFragment implements View.OnClickListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, AccountTokenAdapter.TokenOnItemClick {
+public class AccountFragment extends BaseFragment implements View.OnClickListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, AccountTokenAdapter.TokenOnItemClick,AccountContract.View {
+
+    @BindView(R.id.windowBg)
+    View windowBg;
+    @BindView(R.id.walletName)
+    TextView walletName;//Name of the wallet
+    @BindView(R.id.walletBackup)
+    LanguageTextView walletBackup;//backup of the wallet
+    @BindView(R.id.walletAddress)
+    TextView walletAddress;//The wallet address
+    @BindView(R.id.walletImg)
+    ImageView walletImg;//The wallet picture
+    @BindView(R.id.cnyUsdChangeGif)
+    ImageView cnyUsdChangeGif;
+    @BindView(R.id.currencyBg)
+    LinearLayout currencyBg;
+    @BindView(R.id.changeTokenUnit)
+    ImageView changeTokenUnit;
+    @BindView(R.id.walletBalanceNum)
+    TextView walletBalanceNum;
+    @BindView(R.id.walletBalanceAdd)
+    ImageView walletBalanceAdd;
+    @BindView(R.id.accountTokenList)
+    CustomListView accountTokenList;
+    @BindView(R.id.swipe_refresh)
+    SwipeRefreshLayout swipe_refresh;
+    @BindView(R.id.ethWarningImg)
+    ImageView ethWarningImg;
+    @BindView(R.id.oldWallet)
+    LanguageTextView oldWallet;
+    @BindView(R.id.oldWalletImg)
+    ImageView oldWalletImg;
+    @BindView(R.id.walletList)
+    ListView walletListView;
+    @BindView(R.id.walletGesture)
+    LanguageTextView walletGesture;
+    @BindView(R.id.walletManager)
+    LanguageTextView walletManager;
+    @BindView(R.id.createWallet)
+    LanguageTextView createWallet;
+    @BindView(R.id.showQuicMark)
+    LanguageTextView showQuicMark;
+    @BindView(R.id.account_drawerlayout)
+    DrawerLayout mDrawerLayout;
+
+    private Unbinder unbinder;
 
     /**
      * root view
      */
     private View view = null;
     private boolean isDataFirstLoaded;
-
-    private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
-
-    private TextView walletGesture;//wallet gesture
-    private TextView walletManager;//Account management
-    private TextView createWallet;//Create a wallet
-    private TextView showQuicMark;//Flicking a
-    private ImageView changeTokenUnit;//changeTokenUnit
-
-    private ListView walletListView;//The wallet list
     private AccountAdapter mAdapter;
     private ArrayList<TokenVo> tokenVos;
-
-    private CustomListView accountTokenList;//token list
     private AccountTokenAdapter mTokenAdapter;
-    private ImageView walletImg;//The wallet picture
-    private TextView walletName;//Name of the wallet
-    private TextView walletBackup;//backup of the wallet
-    private TextView walletAddress;//The wallet address
-    private TextView qrCode;//Qr code
-    private TextView transRecord;//Transaction records
-    private TextView copyAddress;//Copy the address
-
-    private LinearLayout walletNameBody;
-
-    private SwipeRefreshLayout swipe_refresh;
-
     private StorableWallet storableWallet;
 
-    private TextView walletBalanceNum;
-
-    private ImageView cnyUsdChangeGif;
-    private LinearLayout currencyBg;
-
-//    private LinearLayout raidenTransfer;//raiden
-
-    private int index = -1;//Which one is selected
-
-    private ImageView walletBalanceAdd;
-
     private boolean isChecked;
-
-    private Timer timer;
-    private TimerTask timerTask;
-    private int timerLine = 10;
-
-    private Timer cnytimer;
-    private TimerTask cnytimerTask;
-    private int cnytimerLine = 5;
 
     private PopupWindow homePop;
     private PopupWindow ethPop;
     private PopupWindow windowPop;
 
     private LinearLayout ethWindow;
+    private RelativeLayout homePopBody;
 
     private String total;
     private String usdTotal;
 
-    private TextView oldWallet;
-    private ImageView ethWarningImg;
-    private ImageView oldWalletImg;
+    private AccountContract.Presenter mPresenter;
 
-    private View windowBg;
-
-    public AccountFragment(){
-
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -163,9 +157,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             ((ViewGroup) view.getParent()).removeView(view);
             return view;
         }
-        view = inflater.inflate(R.layout.wallet_account_fragment,container,false);
-        findViewById();
-        setListener();
+        view = inflater.inflate(R.layout.wallet_account_fragment, container, false);
+        new AccountPresenterImpl(this);
+        unbinder = ButterKnife.bind(this, view);
         initData();
         return view;
     }
@@ -180,78 +174,19 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     }
 
 
-    private void findViewById() {
-
-        swipe_refresh = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh);
-
-        //The sidebar related
-        mDrawerLayout = (DrawerLayout) view.findViewById(R.id.account_drawerlayout);
-        walletListView = (ListView) view.findViewById(R.id.walletList);
-        accountTokenList = (CustomListView) view.findViewById(R.id.accountTokenList);
-        createWallet = (TextView) view.findViewById(R.id.createWallet);
-        showQuicMark = (TextView) view.findViewById(R.id.showQuicMark);
-        changeTokenUnit = (ImageView) view.findViewById(R.id.changeTokenUnit);
-        walletManager = (TextView) view.findViewById(R.id.walletManager);
-        walletGesture = (TextView) view.findViewById(R.id.walletGesture);
-
-        //The main related
-        walletImg = (ImageView) view.findViewById(R.id.walletImg);
-        walletName = (TextView) view.findViewById(R.id.walletName);
-        walletNameBody = (LinearLayout) view.findViewById(R.id.walletNameBody);
-        walletBackup = (TextView) view.findViewById(R.id.walletBackup);
-        walletAddress = (TextView) view.findViewById(R.id.walletAddress);
-        walletBalanceAdd = (ImageView) view.findViewById(R.id.walletBalanceAdd);
-        qrCode = (TextView) view.findViewById(R.id.qrCode);
-        transRecord = (TextView) view.findViewById(R.id.transRecord);
-        copyAddress = (TextView) view.findViewById(R.id.copyAddress);
-        walletBalanceNum = (TextView) view.findViewById(R.id.walletBalanceNum);
-
-        oldWallet = (TextView) view.findViewById(R.id.oldWallet);
-        ethWarningImg = (ImageView) view.findViewById(R.id.ethWarningImg);
-        oldWalletImg = (ImageView) view.findViewById(R.id.oldWalletImg);
-        cnyUsdChangeGif = (ImageView) view.findViewById(R.id.cnyUsdChangeGif);
-        currencyBg = (LinearLayout) view.findViewById(R.id.currencyBg);
-        windowBg = view.findViewById(R.id.windowBg);
-//        raidenTransfer = (LinearLayout) view.findViewById(R.id.raidenTransfer);
-    }
-
-    private void setListener(){
-        walletManager.setOnClickListener(this);
-        walletGesture.setOnClickListener(this);
-        walletAddress.setOnClickListener(this);
-        createWallet.setOnClickListener(this);
-        showQuicMark.setOnClickListener(this);
-        changeTokenUnit.setOnClickListener(this);
-        walletListView.setOnItemClickListener(this);
-
-        walletImg.setOnClickListener(this);
-        walletNameBody.setOnClickListener(this);
-        walletBalanceAdd.setOnClickListener(this);
-        qrCode.setOnClickListener(this);
-        transRecord.setOnClickListener(this);
-        copyAddress.setOnClickListener(this);
-        oldWallet.setOnClickListener(this);
-        oldWalletImg.setOnClickListener(this);
-        ethWarningImg.setOnClickListener(this);
-
-//        raidenTransfer.setOnClickListener(this);
-
-        swipe_refresh.setOnRefreshListener(this);
-    }
-
     private void initData() {
-
+        tokenVos = new ArrayList<>();
+        swipe_refresh.setOnRefreshListener(this);
+        Utils.setStatusBar(getActivity(), 1);
         accountTokenList.setFocusable(false);
-
         swipe_refresh.setColorSchemeResources(R.color.black);
         mAdapter = new AccountAdapter(getActivity());
         walletListView.setAdapter(mAdapter);
 
-        tokenVos = new ArrayList<>();
-        mTokenAdapter = new AccountTokenAdapter(getActivity(),tokenVos,this);
+        mTokenAdapter = new AccountTokenAdapter(getActivity(), tokenVos, this);
         accountTokenList.setAdapter(mTokenAdapter);
 
-        mDrawerToggle = new ActionBarDrawerToggle(getActivity(), mDrawerLayout, R.string.drawer_open,R.string.drawer_close);
+        mDrawerToggle = new ActionBarDrawerToggle(getActivity(), mDrawerLayout, R.string.drawer_open, R.string.drawer_close);
         mDrawerToggle.syncState();
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
@@ -267,18 +202,19 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         filter.addAction(Constants.CHANGE_LANGUAGE);//Update language refresh the page
         filter.addAction(XmppAction.ACTION_TRANS);//trans
         filter.addAction(Constants.WALLET_BIND_TOKEN);
+        filter.addAction(Constants.WALLET_UPDATE_NAME);
         getActivity().registerReceiver(mBroadcastReceiver, filter);
 
-        int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
-        if (priceUnit == 0){
+        int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
+        if (priceUnit == 0) {
             changeTokenUnit.setImageResource(R.drawable.icon_unit_cny);
-        }else{
+        } else {
             changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
         }
 
-        boolean isFirstShowWindow = MySharedPrefs.readBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_WINDOW);
-        if (isFirstShowWindow){
-            MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_WINDOW,false);
+        boolean isFirstShowWindow = MySharedPrefs.readBoolean(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_FIRST_WALLET_SHOW_WINDOW);
+        if (isFirstShowWindow) {
+            MySharedPrefs.writeBoolean(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_FIRST_WALLET_SHOW_WINDOW, false);
             initWindowPop();
         }
     }
@@ -286,26 +222,33 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent != null){
-                if (Constants.WALLET_REFRESH_DEL.equals(intent.getAction()) || Constants.WALLET_REFRESH_BACKUP.equals(intent.getAction()) ) {
-                    initWalletInfo();
-                }else if (Constants.WALLET_REFRESH_GESTURE.equals(intent.getAction()) || Constants.WALLET_SUCCESS.equals(intent.getAction())) {
-                    initWalletInfo();
-                }else if (Constants.ACTION_GESTURE_LOGIN.equals(intent.getAction())) {
-                    initWalletInfo();
-                }else if (Constants.CHANGE_LANGUAGE.equals(intent.getAction())) {
-                    Utils.updateViewLanguage(view.findViewById(R.id.account_drawerlayout));
-                }else if (XmppAction.ACTION_TRANS.equals(intent.getAction())) {
-                    loadData(false);
-                }else if (Constants.WALLET_REFRESH_SHOW_HINT.equals(intent.getAction())){
-                    if (mDrawerLayout != null){
-                        mDrawerLayout.closeDrawer(GravityCompat.END);
-                    }
-                    initHomePop();
-                    showPowTimer();
-                }else if (Constants.WALLET_BIND_TOKEN.equals(intent.getAction())){
-                    tokenVos = FinalUserDataBase.getInstance().getOpenTokenList(walletAddress.getText().toString());
-                    mTokenAdapter.resetSource(tokenVos);
+            if (intent != null && intent.getAction() != null) {
+                switch (intent.getAction()){
+                    case Constants.WALLET_REFRESH_DEL:
+                    case Constants.WALLET_REFRESH_BACKUP:
+                    case Constants.WALLET_REFRESH_GESTURE:
+                    case Constants.WALLET_SUCCESS:
+                    case Constants.ACTION_GESTURE_LOGIN:
+                    case Constants.WALLET_UPDATE_NAME:
+                        initWalletInfo();
+                        break;
+                    case Constants.CHANGE_LANGUAGE:
+                        Utils.updateViewLanguage(view.findViewById(R.id.account_drawerlayout));
+                        break;
+                    case XmppAction.ACTION_TRANS:
+                        loadData(false);
+                        break;
+                    case Constants.WALLET_REFRESH_SHOW_HINT:
+                        if (mDrawerLayout != null) {
+                            mDrawerLayout.closeDrawer(GravityCompat.END);
+                        }
+                        initHomePop();
+                        mPresenter.showPowTimer();
+                        break;
+                    case Constants.WALLET_BIND_TOKEN:
+                        tokenVos = FinalUserDataBase.getInstance().getOpenTokenList(walletAddress.getText().toString());
+                        mTokenAdapter.resetSource(tokenVos);
+                        break;
                 }
             }
         }
@@ -313,7 +256,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
 
     /**
-     * Initialize the Pop layout
+     * Initialize the Pop layo ut
      */
     private void initHomePop() {
         LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -322,7 +265,8 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         homePop.setBackgroundDrawable(new BitmapDrawable());
         homePop.setOutsideTouchable(true);
         homePop.setFocusable(true);
-        view.findViewById(R.id.txt_home_pop_1).setOnClickListener(this);
+        homePopBody = view.findViewById(R.id.txt_home_pop_1);
+        homePopBody.setOnClickListener(this);
         if (homePop.isShowing()) {
             homePop.dismiss();
         } else {
@@ -351,25 +295,10 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         if (ethPop.isShowing()) {
             ethPop.dismiss();
         } else {
-            boolean isChinese;
-            String language = MySharedPrefs.readString(getActivity(),MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_LANGUAFE);
-            if (TextUtils.isEmpty(language)){
-                Locale locale = new Locale(Locale.getDefault().getLanguage());
-                if (TextUtils.equals(locale.getLanguage(),"zh")){
-                    isChinese = true;
-                }else{
-                    isChinese = false;
-                }
-            }else{
-                if (TextUtils.equals(language,"zh")){
-                    isChinese = true;
-                }else{
-                    isChinese = false;
-                }
-            }
-            if (isChinese){
+            boolean isChinese = mPresenter.checkLanguage();
+            if (isChinese) {
                 ethPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), -25), Utils.dip2px(getActivity(), -265));
-            }else{
+            } else {
                 ethPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), -25), Utils.dip2px(getActivity(), -326));
             }
 
@@ -386,27 +315,12 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         windowPop.setBackgroundDrawable(new BitmapDrawable());
         windowPop.setOutsideTouchable(true);
         windowPop.setFocusable(true);
-        ethWindow = (LinearLayout) view.findViewById(R.id.ethWindow);
+        ethWindow = view.findViewById(R.id.ethWindow);
         ethWindow.setOnClickListener(this);
-        boolean isChinese;
-        String language = MySharedPrefs.readString(getActivity(),MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_LANGUAFE);
-        if (TextUtils.isEmpty(language)){
-            Locale locale = new Locale(Locale.getDefault().getLanguage());
-            if (TextUtils.equals(locale.getLanguage(),"zh")){
-                isChinese = true;
-            }else{
-                isChinese = false;
-            }
-        }else{
-            if (TextUtils.equals(language,"zh")){
-                isChinese = true;
-            }else{
-                isChinese = false;
-            }
-        }
-        if (isChinese){
+        boolean isChinese = mPresenter.checkLanguage();
+        if (isChinese) {
             ethWindow.setBackgroundResource(R.drawable.icon_eth_window_zh);
-        }else{
+        } else {
             ethWindow.setBackgroundResource(R.drawable.icon_eth_window_en);
         }
         if (windowPop.isShowing()) {
@@ -423,7 +337,14 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         super.onDestroy();
         getActivity().unregisterReceiver(mBroadcastReceiver);
         LoginUtil.getInstance().destory();
-        cancelTimer();
+        mPresenter.cancelTimer();
+        mPresenter.cancelCnyTimer();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
     }
 
     @Override
@@ -434,271 +355,199 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
     /**
      * set wallet gesture  open or close
-     * */
-    private void setWalletGesture(){
-        int walletMode = MySharedPrefs.readInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
-        byte[] gestureByte;
-        if (walletMode == 0 && NextApplication.myInfo != null){
-            gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
-        }else{
-            gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD);
-        }
-        if (gestureByte != null && gestureByte.length > 0){
+     */
+    private void setWalletGesture() {
+        if (mPresenter.setWalletGesture()){
             isChecked = true;
             walletGesture.setText(getString(R.string.gesture_wallet_open));
         }else{
             isChecked = false;
             walletGesture.setText(getString(R.string.gesture_wallet_close));
         }
-
     }
 
+    @Nullable
     @Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.walletImg://Open the sidebar
-                mDrawerLayout.openDrawer(GravityCompat.END);
-                dismissHomePop();
-                cancelTimer();
-                break;
+    public void onClick(View view) {
+        switch (view.getId()){
             case R.id.txt_home_pop_1://Open the sidebar
                 dismissHomePop();
-                cancelTimer();
+                mPresenter.cancelTimer();
                 break;
-            case R.id.walletManager://Account management
-                mDrawerLayout.closeDrawer(GravityCompat.END);
-                dismissHomePop();
-                cancelTimer();
-                startActivity(new Intent(getActivity(), ManagerWalletActivity.class));
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.walletGesture://Account management
-                int walletMode = MySharedPrefs.readInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
-                byte[] gestureByte;
-                if (walletMode == 0 && NextApplication.myInfo != null){
-                    gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
-                }else{
-                    gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD);
-                }
-                if (gestureByte != null && gestureByte.length > 0){
-                    Intent intent = new Intent(getActivity(),GestureLoginActivity.class);
-                    intent.putExtra("type",isChecked ? 2 : 1);
-                    startActivity(intent);
-                    isChecked = !isChecked;
-                }else{
-                    Intent intent = new Intent(getActivity(),CreateGestureActivity.class);
-                    startActivity(intent);
-                }
-                break;
-            case R.id.createWallet://Create a wallet
-                mDrawerLayout.closeDrawer(GravityCompat.END);
-                startActivity(new Intent(getActivity(), WalletCreateActivity.class));
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.showQuicMark://Flicking a
-                mDrawerLayout.closeDrawer(GravityCompat.END);
-                startActivity(new Intent(getActivity(), CaptureActivity.class));
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.changeTokenUnit://Flicking a
-
-                cancelCnyTimer();
-                MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF,false);
-                currencyBg.setVisibility(View.GONE);
-
-                int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
-                if (priceUnit == 0){
-                    MySharedPrefs.writeInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT,1);
-                    if (TextUtils.isEmpty(usdTotal)){
-                        walletBalanceNum.setText("━");
-                    }else{
-                        walletBalanceNum.setText(getString(R.string.token_total_usd_price,usdTotal));
-                    }
-
-                    changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
-                }else{
-                    MySharedPrefs.writeInt(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT,0);
-                    if (TextUtils.isEmpty(total)){
-                        walletBalanceNum.setText("━");
-                    }else{
-                        walletBalanceNum.setText(getString(R.string.token_total_price,total));
-                    }
-                    changeTokenUnit.setImageResource(R.drawable.icon_unit_cny);
-                }
-                mTokenAdapter.notifyDataSetChanged();
-                break;
-            case R.id.walletNameBody://Backup the purse
-                if (storableWallet == null){
-                    return;
-                }
-                Intent copyIntent = new Intent(getActivity(),WalletCopyActivity.class);
-                copyIntent.putExtra(Constants.WALLET_INFO, storableWallet);
-                copyIntent.putExtra(Constants.WALLET_ICON, storableWallet.getImgId());
-                copyIntent.putExtra(Constants.WALLET_TYPE, 1);
-                startActivity(copyIntent);
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.walletAddress://Qr code
-                if (storableWallet == null || tokenVos == null){
-                    return;
-                }
-                if (!storableWallet.isBackup()){
-                    Intent intent = new Intent(getActivity(), AlertActivity.class);
-                    intent.putExtra("type", 5);
-                    intent.putExtra("strablewallet", storableWallet);
-                    startActivity(intent);
-                    getActivity().overridePendingTransition(0, 0);
-                    return;
-                }
-                Intent qrCodeIntent = new Intent(getActivity(),QuickMarkShowUI.class);
-                qrCodeIntent.putExtra("tokenVo", tokenVos.get(0));
-                qrCodeIntent.putExtra("address", storableWallet.getPublicKey());
-                startActivity(qrCodeIntent);
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.walletBalanceAdd:
-                Intent tokenListIntent = new Intent(getActivity(),TokenListUI.class);
-                tokenListIntent.putExtra("address",walletAddress.getText().toString());
-                startActivity(tokenListIntent);
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.transRecord://Transaction records
-                if (NextApplication.myInfo == null){
-                    startActivity(new Intent(getActivity(),WalletModeLoginUI.class));
-                    Utils.openNewActivityAnim(getActivity(),false);
-                }else{
-                    Intent transIntent = new Intent(getActivity(), TransactionRecordsActivity.class);
-                    transIntent.putExtra("address",walletAddress.getText().toString());
-                    transIntent.putExtra("name",storableWallet.getWalletName());
-                    startActivity(transIntent);
-                    Utils.openNewActivityAnim(getActivity(),false);
-                }
-                break;
-            case R.id.copyAddress://Copy the address
-                if (storableWallet != null && !storableWallet.isBackup()){
-                    Intent intent = new Intent(getActivity(), AlertActivity.class);
-                    intent.putExtra("type", 5);
-                    intent.putExtra("strablewallet", storableWallet);
-                    startActivity(intent);
-                    getActivity().overridePendingTransition(0, 0);
-                    return;
-                }
-                Utils.copyText(getActivity(),walletAddress.getText().toString());
-                break;
-            case R.id.oldWallet://Copy the address
-            case R.id.oldWalletImg://Copy the address
-                Intent intent = new Intent(getActivity(), OldAccountUI.class);
-                intent.putExtra("strablewallet", storableWallet);
-                startActivity(intent);
-                Utils.openNewActivityAnim(getActivity(),false);
-                break;
-            case R.id.ethWarningImg://Copy the address
-                initEthereumPop();
-                break;
-            case R.id.ethWindow://Copy the address
+            case R.id.ethWindow:
                 if (windowPop != null && windowPop.isShowing()) {
                     windowPop.dismiss();
                     windowPop = null;
                 }
-                boolean isFirstShowGif = MySharedPrefs.readBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF);
-                if (isFirstShowGif){
-                    showCnyTimer();
+                boolean isFirstShowGif = MySharedPrefs.readBoolean(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF);
+                if (isFirstShowGif) {
+                    mPresenter.showCnyTimer();
                     currencyBg.setVisibility(View.VISIBLE);
-                    MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF,false);
+                    MySharedPrefs.writeBoolean(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF, false);
                     cnyUsdChangeGif.setImageResource(R.drawable.cny_usd_change);
-                    if ( cnyUsdChangeGif.getDrawable() instanceof AnimationDrawable) {
+                    if (cnyUsdChangeGif.getDrawable() instanceof AnimationDrawable) {
                         ((AnimationDrawable) cnyUsdChangeGif.getDrawable()).start();
                         ((AnimationDrawable) cnyUsdChangeGif.getDrawable()).setOneShot(false);
                     }
-                }else{
+                } else {
                     currencyBg.setVisibility(View.GONE);
                 }
                 break;
         }
     }
 
-    @Override
+    @OnClick({R.id.walletImg,R.id.walletManager,R.id.walletGesture,R.id.createWallet,R.id.showQuicMark,
+            R.id.changeTokenUnit,R.id.walletNameBody,R.id.walletAddress,R.id.walletBalanceAdd,R.id.oldWallet,R.id.oldWalletImg,
+            R.id.ethWarningImg})
+    public void onViewClick(View v) {
+        switch (v.getId()) {
+            case R.id.walletImg://Open the sidebar
+                mDrawerLayout.openDrawer(GravityCompat.END);
+                dismissHomePop();
+                mPresenter.cancelTimer();
+                break;
+            case R.id.walletManager://Account management
+                mDrawerLayout.closeDrawer(GravityCompat.END);
+                dismissHomePop();
+                mPresenter.cancelTimer();
+                startActivity(new Intent(getActivity(), ManagerWalletActivity.class));
+                Utils.openNewActivityAnim(getActivity(), false);
+                break;
+            case R.id.walletGesture://Account management
+                if (mPresenter.setWalletGesture()) {
+                    Intent intent = new Intent(getActivity(), GestureLoginActivity.class);
+                    intent.putExtra("type", isChecked ? 2 : 1);
+                    startActivity(intent);
+                    isChecked = !isChecked;
+                } else {
+                    Intent intent = new Intent(getActivity(), CreateGestureActivity.class);
+                    startActivity(intent);
+                }
+                break;
+            case R.id.createWallet://Create a wallet
+                mDrawerLayout.closeDrawer(GravityCompat.END);
+                startActivity(new Intent(getActivity(), WalletCreateActivity.class));
+                Utils.openNewActivityAnim(getActivity(), false);
+                break;
+            case R.id.showQuicMark://Flicking a
+                mDrawerLayout.closeDrawer(GravityCompat.END);
+                startActivity(new Intent(getActivity(), CaptureActivity.class));
+                Utils.openNewActivityAnim(getActivity(), false);
+                break;
+            case R.id.changeTokenUnit://Flicking a
+                mPresenter.cancelCnyTimer();
+                MySharedPrefs.writeBoolean(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF, false);
+                currencyBg.setVisibility(View.GONE);
+
+                int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
+                if (priceUnit == 0) {
+                    MySharedPrefs.writeInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_TOKEN_PRICE_UNIT, 1);
+                    if (TextUtils.isEmpty(usdTotal)) {
+                        walletBalanceNum.setText("━");
+                    } else {
+                        walletBalanceNum.setText(getString(R.string.token_total_usd_price, usdTotal));
+                    }
+
+                    changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
+                } else {
+                    MySharedPrefs.writeInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_TOKEN_PRICE_UNIT, 0);
+                    if (TextUtils.isEmpty(total)) {
+                        walletBalanceNum.setText("━");
+                    } else {
+                        walletBalanceNum.setText(getString(R.string.token_total_price, total));
+                    }
+                    changeTokenUnit.setImageResource(R.drawable.icon_unit_cny);
+                }
+                mTokenAdapter.notifyDataSetChanged();
+                break;
+            case R.id.walletNameBody://Backup the purse
+                if (storableWallet == null) {
+                    return;
+                }
+                Intent copyIntent = new Intent(getActivity(), WalletCopyActivity.class);
+                copyIntent.putExtra(Constants.WALLET_INFO, storableWallet);
+                copyIntent.putExtra(Constants.WALLET_IMAGE, storableWallet.getWalletImageId());
+                copyIntent.putExtra(Constants.WALLET_TYPE, 1);
+                startActivity(copyIntent);
+                Utils.openNewActivityAnim(getActivity(), false);
+                break;
+            case R.id.walletAddress://Qr code
+                if (storableWallet == null || tokenVos == null) {
+                    return;
+                }
+                if (!storableWallet.isBackup()) {
+                    Intent intent = new Intent(getActivity(), AlertActivity.class);
+                    intent.putExtra("type", 5);
+                    intent.putExtra("strablewallet", storableWallet);
+                    startActivity(intent);
+                    getActivity().overridePendingTransition(0, 0);
+                    return;
+                }
+                Intent qrCodeIntent = new Intent(getActivity(), QuickMarkShowUI.class);
+                qrCodeIntent.putExtra("tokenVo", tokenVos.get(0));
+                qrCodeIntent.putExtra("address", storableWallet.getPublicKey());
+                startActivity(qrCodeIntent);
+                Utils.openNewActivityAnim(getActivity(), false);
+                break;
+            case R.id.walletBalanceAdd:
+                Intent tokenListIntent = new Intent(getActivity(), TokenListUI.class);
+                tokenListIntent.putExtra("address", walletAddress.getText().toString());
+                startActivity(tokenListIntent);
+                Utils.openNewActivityAnim(getActivity(), false);
+                break;
+            case R.id.oldWallet://Copy the address
+            case R.id.oldWalletImg://Copy the address
+                Intent intent = new Intent(getActivity(), OldAccountUI.class);
+                intent.putExtra("strablewallet", storableWallet);
+                startActivity(intent);
+                Utils.openNewActivityAnim(getActivity(), false);
+                break;
+            case R.id.ethWarningImg://Copy the address
+                initEthereumPop();
+                break;
+        }
+    }
+
+    @OnItemClick(R.id.walletList)
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (!WalletStorage.getInstance(getActivity().getApplicationContext()).get().get(position).isSelect()){
+        if (!WalletStorage.getInstance(getActivity().getApplicationContext()).get().get(position).isSelect()) {
             String address = "";
-            for (int i = 0 ; i < WalletStorage.getInstance(getActivity().getApplicationContext()).get().size(); i++){
-                if (i != position){
+            for (int i = 0; i < WalletStorage.getInstance(getActivity().getApplicationContext()).get().size(); i++) {
+                if (i != position) {
                     WalletStorage.getInstance(getActivity().getApplicationContext()).get().get(i).setSelect(false);
-                }else{
+                } else {
                     WalletStorage.getInstance(getActivity().getApplicationContext()).get().get(i).setSelect(true);
                     address = WalletStorage.getInstance(getActivity().getApplicationContext()).get().get(i).getPublicKey();
                 }
             }
             initWalletInfo();
             mDrawerLayout.closeDrawer(GravityCompat.END);
-            if (!TextUtils.isEmpty(address)){
-                if (!address.startsWith("0x")){
+            if (!TextUtils.isEmpty(address)) {
+                if (!address.startsWith("0x")) {
                     address = "0x" + address;
                 }
-                boolean hasGetTrans =  MySharedPrefs.readBooleanNormal(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_WALLET_ALL_TRANS + address);
-                if (!hasGetTrans){
-                    getAllTransactionList(address);
+                boolean hasGetTrans = MySharedPrefs.readBooleanNormal(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_WALLET_ALL_TRANS + address);
+                if (!hasGetTrans) {
+                    mPresenter.getAllTransactionList(address);
                 }
             }
         }
-    }
-
-
-    /**
-     * Get all transaction records for the specified address
-     * @param address   wallet address
-     * */
-    private void getAllTransactionList(String address) {
-
-        if (!address.startsWith("0x")){
-            address = "0x" + address;
-        }
-        final String finalAddress = address;
-        NetRequestImpl.getInstance().getAllTransactionList(address, new RequestListener() {
-            @Override
-            public void start() {
-
-            }
-
-            @Override
-            public void success(JSONObject response) {
-                MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_WALLET_ALL_TRANS + finalAddress,true);
-                JSONArray array = response.optJSONArray("data");
-                int blockNumber = response.optInt("blockNumber");
-                if (array != null){
-                    FinalUserDataBase.getInstance().beginTransaction();
-                    for (int i = 0 ; i < array.length() ; i++){
-                        JSONObject obiect = array.optJSONObject(i);
-                        TransVo transVo = new TransVo().parse(obiect);
-                        transVo.setBlockNumber(blockNumber);
-                        transVo.setState(1);
-                        FinalUserDataBase.getInstance().updateTrans(transVo);
-                    }
-                    FinalUserDataBase.getInstance().endTransactionSuccessful();
-                }
-            }
-
-            @Override
-            public void error(int errorCode, String errorMsg) {
-
-            }
-        });
     }
 
     @Override
     public void setTokenOnItemClick(int position) {
-        if (storableWallet == null || tokenVos == null || tokenVos.size() <= 0){
+        if (storableWallet == null || tokenVos == null || tokenVos.size() <= 0) {
             return;
         }
-        Intent ethIntent = new Intent(getActivity(),WalletSendDetailUI.class);
+        Intent ethIntent = new Intent(getActivity(), WalletSendDetailUI.class);
         ethIntent.putExtra("tokenVo", tokenVos.get(position));
         double smtBalance = 0;
-        if (TextUtils.equals(tokenVos.get(0).getTokenSymbol(),getString(R.string.smt))){
+        if (TextUtils.equals(tokenVos.get(0).getTokenSymbol(), getString(R.string.smt))) {
             smtBalance = tokenVos.get(0).getTokenBalance();
-        }else{
-            for (int i = 0 ; i < tokenVos.size() ; i++){
+        } else {
+            for (int i = 0; i < tokenVos.size(); i++) {
                 TokenVo tokenVo = tokenVos.get(i);
-                if (TextUtils.equals(tokenVo.getTokenSymbol(),getString(R.string.smt))){
+                if (TextUtils.equals(tokenVo.getTokenSymbol(), getString(R.string.smt))) {
                     smtBalance = tokenVo.getTokenBalance();
                     break;
                 }
@@ -707,58 +556,32 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         ethIntent.putExtra("smtBalance", smtBalance);
         ethIntent.putExtra("storableWallet", storableWallet);
         startActivity(ethIntent);
-        Utils.openNewActivityAnim(getActivity(),false);
+        Utils.openNewActivityAnim(getActivity(), false);
     }
 
     /**
      * Load or refresh the wallet information
-     * */
-    private void initWalletInfo(){
-        ArrayList<StorableWallet> storableWallets = WalletStorage.getInstance(getActivity().getApplicationContext()).get();
-        for (int i = 0 ; i < storableWallets.size(); i++){
-            if (storableWallets.get(i).isSelect() ){
-                WalletStorage.getInstance(NextApplication.mContext).updateWalletToList(NextApplication.mContext,storableWallets.get(i).getPublicKey(),false);
-                index = i;
-                int imgId = Utils.getWalletImg(getActivity(),i);
-                storableWallet = storableWallets.get(i);
-                if (storableWallet.getImgId() == 0){
-                    storableWallet.setImgId(imgId);
-                    walletImg.setImageResource(imgId);
-                }else{
-                    walletImg.setImageResource(storableWallet.getImgId());
-                }
-                break;
-            }
-        }
-        if (index == -1 && storableWallets.size() > 0){
-            int imgId = Utils.getWalletImg(getActivity(),0);
-            storableWallet = storableWallets.get(0);
-            if (storableWallet.getImgId() == 0){
-                storableWallet.setImgId(imgId);
-                walletImg.setImageResource(imgId);
-            }else{
-                walletImg.setImageResource(storableWallet.getImgId());
-            }
-        }
-
-        if (storableWallet != null){
+     */
+    private void initWalletInfo() {
+        storableWallet = mPresenter.getStorableWallet();
+        if (storableWallet != null) {
+            walletImg.setImageResource(Utils.getWalletImageId(getActivity(), storableWallet.getWalletImageId()));
             walletName.setText(storableWallet.getWalletName());
-
-            if (storableWallet.isBackup()){
+            if (storableWallet.isBackup()) {
                 walletBackup.setVisibility(View.GONE);
-            }else{
+            } else {
                 walletBackup.setVisibility(View.VISIBLE);
             }
 
             String address = storableWallet.getPublicKey();
-            if(!address.startsWith("0x")){
-                address = "0x"+address;
+            if (!address.startsWith("0x")) {
+                address = "0x" + address;
             }
             walletAddress.setText(address);
         }
 
         mAdapter.resetSource(WalletStorage.getInstance(NextApplication.mContext).get());
-        new Handler().postDelayed(new Runnable(){
+        new Handler().postDelayed(new Runnable() {
             public void run() {
                 swipe_refresh.setRefreshing(true);
                 loadData(true);
@@ -773,200 +596,95 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
     /**
      * get token list
-     * */
-    private void loadData(final boolean isShowToast){
-        boolean isFirstGet = MySharedPrefs.readBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST + walletAddress.getText().toString());
+     */
+    private void loadData(final boolean isShowToast) {
+        boolean isFirstGet = MySharedPrefs.readBoolean(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST + walletAddress.getText().toString());
         tokenVos = FinalUserDataBase.getInstance().getOpenTokenList(walletAddress.getText().toString());
-        if (!isFirstGet && tokenVos != null &&  tokenVos.size() > 0){
+        if (!isFirstGet && tokenVos != null && tokenVos.size() > 0) {
             mTokenAdapter.resetSource(tokenVos);
-            getBalance(isShowToast);
-        }else{
-            NetRequestImpl.getInstance().getTokenList(walletAddress.getText().toString(), new RequestListener() {
-                @Override
-                public void start() {
-
-                }
-
-                @Override
-                public void success(JSONObject response) {
-                    tokenVos.clear();
-                    JSONArray array = response.optJSONArray("data");
-                    if (array != null){
-                        for (int i = 0 ; i < array.length() ; i++){
-                            TokenVo tokenVo = new TokenVo().parse(array.optJSONObject(i));
-                            if (tokenVo.isFixed()){
-                                tokenVo.setChecked(true);
-                            }
-                            tokenVos.add(tokenVo);
-                        }
-                    }
-                    FinalUserDataBase.getInstance().beginTransaction();
-                    for (int i = 0 ; i < tokenVos.size() ; i++){
-                        FinalUserDataBase.getInstance().updateTokenList(tokenVos.get(i),walletAddress.getText().toString(),true);
-                    }
-                    FinalUserDataBase.getInstance().endTransactionSuccessful();
-                    MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST + walletAddress.getText().toString(),false);
-                    mTokenAdapter.resetSource(tokenVos);
-                    getBalance(isShowToast);
-                }
-
-                @Override
-                public void error(int errorCode, String errorMsg) {
-                    getBalance(isShowToast);
-                }
-            });
+            mPresenter.getBalance(tokenVos,walletAddress.getText().toString(),isShowToast);
+        } else {
+            if (tokenVos == null){
+                tokenVos = new ArrayList<>();
+            }
+            mPresenter.getTokenList(tokenVos,walletAddress.getText().toString(),isShowToast);
         }
     }
 
-    /**
-     * get token balance
-     * */
-    private void getBalance(final boolean isShowToast){
 
-        if (tokenVos == null || tokenVos.size() <= 0){
-            swipe_refresh.setRefreshing(false);
-            return;
-        }
+    @Override
+    public void setPresenter(AccountContract.Presenter presenter) {
+        mPresenter = presenter;
+    }
 
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0 ; i < tokenVos.size() ; i++){
-            builder.append(tokenVos.get(i).getContactAddress()).append(",");
-        }
-        if (builder.length() > 0){
-            builder.deleteCharAt(builder.length() - 1);
-        }
-        NetRequestImpl.getInstance().getBalance(walletAddress.getText().toString(), builder.toString(), new RequestListener() {
-            @Override
-            public void start() {
+    @Override
+    public void getTokenListSuccess(ArrayList<TokenVo> tokens,boolean isShowToast) {
+        this.tokenVos = tokens;
+        mTokenAdapter.resetSource(tokenVos);
+        mPresenter.getBalance(tokenVos,walletAddress.getText().toString(),isShowToast);
+    }
 
+    @Override
+    public void getTokenListError(boolean isShowToast) {
+        mPresenter.getBalance(tokenVos,walletAddress.getText().toString(),isShowToast);
+    }
+
+    @Override
+    public void getBalanceSuccess(ArrayList<TokenVo> tokens,String total,String usdTotal) {
+        this.tokenVos = tokens;
+        this.total = total;
+        this.usdTotal = usdTotal;
+        mTokenAdapter.resetSource(tokenVos);
+        swipe_refresh.setRefreshing(false);
+        int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
+        if (priceUnit == 0) {
+            if (TextUtils.isEmpty(total)) {
+                walletBalanceNum.setText("━");
+            } else {
+                walletBalanceNum.setText(getString(R.string.token_total_price, total));
             }
-
-            @Override
-            public void success(JSONObject response) {
-                tokenVos.clear();
-                swipe_refresh.setRefreshing(false);
-                total = response.optString("total");
-                usdTotal = response.optString("usd_total");
-                int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
-                if (priceUnit == 0){
-                    if (TextUtils.isEmpty(total)){
-                        walletBalanceNum.setText("━");
-                    }else{
-                        walletBalanceNum.setText(getString(R.string.token_total_price,total));
-                    }
-                    changeTokenUnit.setImageResource(R.drawable.icon_unit_cny);
-                }else{
-                    if (TextUtils.isEmpty(usdTotal)){
-                        walletBalanceNum.setText("━");
-                    }else{
-                        walletBalanceNum.setText(getString(R.string.token_total_usd_price,usdTotal));
-                    }
-                    changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
-                }
-                JSONArray array = response.optJSONArray("data");
-                if (array != null){
-                    for (int i = 0 ; i < array.length() ; i++){
-                        TokenVo tokenVo = new TokenVo().parse(array.optJSONObject(i));
-                        tokenVo.setChecked(true);
-                        tokenVos.add(tokenVo);
-                    }
-                }
-
-                FinalUserDataBase.getInstance().beginTransaction();
-                for (int i = 0 ; i < tokenVos.size() ; i++){
-                    FinalUserDataBase.getInstance().updateTokenList(tokenVos.get(i),walletAddress.getText().toString(),false);
-                }
-                FinalUserDataBase.getInstance().endTransactionSuccessful();
-                mTokenAdapter.resetSource(tokenVos);
+            changeTokenUnit.setImageResource(R.drawable.icon_unit_cny);
+        } else {
+            if (TextUtils.isEmpty(usdTotal)) {
+                walletBalanceNum.setText("━");
+            } else {
+                walletBalanceNum.setText(getString(R.string.token_total_usd_price, usdTotal));
             }
+            changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
+        }
+    }
 
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                if (isShowToast){
-                    showToast(errorMsg);
-                }
-                mTokenAdapter.resetSource(tokenVos);
-                swipe_refresh.setRefreshing(false);
-            }
-        });
+    @Override
+    public void getBalanceError(int errorCode, String errorMsg,boolean isShowToast,ArrayList<TokenVo> tokens) {
+        if (isShowToast) {
+            showToast(errorMsg);
+        }
+        mTokenAdapter.resetSource(tokenVos);
+        swipe_refresh.setRefreshing(false);
+    }
+
+    @Override
+    public void cancelHomePop() {
+        mHandler.sendEmptyMessage(2);
+    }
+
+    @Override
+    public void cancelCnyView() {
+        mHandler.sendEmptyMessage(3);
     }
 
     @SuppressLint("HandlerLeak")
-    private Handler mHandler = new Handler(){
+    private Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 2:
                     dismissHomePop();
                     break;
                 case 3:
-                    MySharedPrefs.writeBoolean(getActivity(),MySharedPrefs.FILE_USER,MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF,false);
+                    MySharedPrefs.writeBoolean(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF, false);
                     currencyBg.setVisibility(View.GONE);
                     break;
             }
         }
     };
-
-
-    /**
-     * Control the popup countdown
-     * */
-    private void showPowTimer(){
-        if(timer == null){
-            timer = new Timer();
-            timerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    timerLine--;
-                    if(timerLine < 0){
-                        mHandler.sendEmptyMessage(2);
-                        cancelTimer();
-                    }
-                }
-            };
-            timer.schedule(timerTask,1000,1000);
-        }
-    }
-
-    private void cancelTimer(){
-        if (timer != null){
-            timer.cancel();
-            timer = null;
-        }
-        if (timerTask != null){
-            timerTask.cancel();
-            timerTask = null;
-        }
-    }
-
-    /**
-     * Control the popup countdown
-     * */
-    private void showCnyTimer(){
-        if(cnytimer == null){
-            cnytimer = new Timer();
-            cnytimerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    cnytimerLine--;
-                    if(cnytimerLine < 0){
-                        mHandler.sendEmptyMessage(3);
-                        cancelCnyTimer();
-                    }
-                }
-            };
-            cnytimer.schedule(cnytimerTask,1000,1000);
-        }
-    }
-
-    private void cancelCnyTimer(){
-        if (cnytimer != null){
-            cnytimer.cancel();
-            cnytimer = null;
-        }
-        if (cnytimerTask != null){
-            cnytimerTask.cancel();
-            cnytimerTask = null;
-        }
-    }
-
 }
