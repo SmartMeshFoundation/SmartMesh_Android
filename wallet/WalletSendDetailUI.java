@@ -98,7 +98,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
                 public void run() {
                     getTransMethod(storableWallet.getPublicKey());
                     refreshLayout.setRefreshing(true);
-                    mPresenter.loadData(tokenVo.getContactAddress(), storableWallet.getPublicKey());
+                    mPresenter.loadData(transVos,tokenVo.getContactAddress(), storableWallet.getPublicKey());
                 }
             }, 200);
         }
@@ -127,7 +127,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
                     isFirstLoad = false;
                     getTransMethod(storableWallet.getPublicKey());
                     refreshLayout.setRefreshing(true);
-                    mPresenter.loadData(tokenVo.getContactAddress(), storableWallet.getPublicKey());
+                    mPresenter.loadData(transVos,tokenVo.getContactAddress(), storableWallet.getPublicKey());
                 }
             }
         }, 200);
@@ -212,7 +212,7 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
     @Override
     public void onRefresh() {
         getTransMethod(storableWallet.getPublicKey());
-        mPresenter.loadData(tokenVo.getContactAddress(), storableWallet.getPublicKey());
+        mPresenter.loadData(transVos,tokenVo.getContactAddress(), storableWallet.getPublicKey());
     }
     
     @Override
@@ -249,9 +249,9 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
         NetRequestImpl.getInstance().getTxBlockNumber(txList, new RequestListener() {
             @Override
             public void start() {
-                
+
             }
-            
+
             @Override
             public void success(JSONObject response) {
                 JSONArray array = response.optJSONArray("data");
@@ -276,14 +276,14 @@ public class WalletSendDetailUI extends BaseActivity implements SwipeRefreshLayo
                     mAdapter.notifyDataSetChanged();
                 }
             }
-            
+
             @Override
             public void error(int errorCode, String errorMsg) {
                 showToast(errorMsg);
             }
         });
     }
-    
+
     @Override
     protected void onDestroy() {
         super.onDestroy();

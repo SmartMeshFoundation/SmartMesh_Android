@@ -15,6 +15,9 @@ import com.lingtuan.firefly.wallet.vo.TokenVo;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created on 2018/3/19.
  */
@@ -58,12 +61,8 @@ public class TokenSearchListAdapter extends BaseAdapter {
     public View getView(final int position, View convertView, ViewGroup parent) {
         final ViewHolder holder;
         if (convertView == null){
-            holder = new ViewHolder();
             convertView = View.inflate(context, R.layout.token_search_list_item_layout,null);
-            holder.tokenImg = (ImageView) convertView.findViewById(R.id.tokenImg);
-            holder.tokenName = (TextView) convertView.findViewById(R.id.tokenName);
-            holder.tokenSymbol = (TextView) convertView.findViewById(R.id.tokenSymbol);
-            holder.tokenHasAdd = (ImageView) convertView.findViewById(R.id.tokenHasAdd);
+            holder = new ViewHolder(convertView);
             convertView.setTag(holder);
         }else{
             holder = (ViewHolder) convertView.getTag();
@@ -102,9 +101,17 @@ public class TokenSearchListAdapter extends BaseAdapter {
     }
 
     static class ViewHolder{
-        private ImageView tokenImg;
-        private TextView tokenName;
-        private TextView tokenSymbol;
-        private ImageView tokenHasAdd;
+        @BindView(R.id.tokenImg)
+        ImageView tokenImg;
+        @BindView(R.id.tokenName)
+        TextView tokenName;
+        @BindView(R.id.tokenSymbol)
+        TextView tokenSymbol;
+        @BindView(R.id.tokenHasAdd)
+        ImageView tokenHasAdd;
+
+        public ViewHolder(View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 }
