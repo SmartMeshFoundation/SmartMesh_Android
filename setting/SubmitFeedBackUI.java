@@ -1,11 +1,8 @@
 package com.lingtuan.firefly.setting;
 
-import android.annotation.SuppressLint;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
@@ -16,6 +13,9 @@ import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
 import org.json.JSONObject;
 
+import butterknife.BindView;
+import butterknife.OnClick;
+
 /**
  * Created on 2017/9/14.
  * SubmitFeedBackUI
@@ -23,21 +23,18 @@ import org.json.JSONObject;
 
 public class SubmitFeedBackUI extends BaseActivity {
 
-    //reportProblem suggestImprovement
-    private LinearLayout reportProblem,suggestImprovement;
-    private View reportLine,suggestLine;
-
-    //submitType
-    private TextView submitType;
-
-    //problem content suggest content
-    private EditText problemEt,suggestEt;
-
-    //email address
-    private EditText emailEt;
-
-    //submit
-    private TextView submit;
+    @BindView(R.id.reportLine)
+    View reportLine;
+    @BindView(R.id.suggestLine)
+    View suggestLine;
+    @BindView(R.id.submitType)
+    TextView submitType; //submitType
+    @BindView(R.id.problemEt)
+    EditText problemEt; //problem content suggest content
+    @BindView(R.id.suggestEt)
+    EditText suggestEt;
+    @BindView(R.id.emailEt)
+    EditText emailEt;//email address
 
     private int type;//0 report problem suggestImprovement
 
@@ -48,22 +45,12 @@ public class SubmitFeedBackUI extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        reportProblem = (LinearLayout) findViewById(R.id.reportProblem);
-        suggestImprovement = (LinearLayout) findViewById(R.id.suggestImprovement);
-        reportLine = findViewById(R.id.reportLine);
-        suggestLine = findViewById(R.id.suggestLine);
-        submitType = (TextView) findViewById(R.id.submitType);
-        submit = (TextView) findViewById(R.id.submit);
-        problemEt = (EditText) findViewById(R.id.problemEt);
-        suggestEt = (EditText) findViewById(R.id.suggestEt);
-        emailEt = (EditText) findViewById(R.id.emailEt);
+
     }
 
     @Override
     protected void setListener() {
-        reportProblem.setOnClickListener(this);
-        suggestImprovement.setOnClickListener(this);
-        submit.setOnClickListener(this);
+
     }
 
     @Override
@@ -71,7 +58,7 @@ public class SubmitFeedBackUI extends BaseActivity {
         setTitle(getString(R.string.submit_feedback));
     }
 
-    @Override
+    @OnClick({R.id.reportProblem,R.id.suggestImprovement,R.id.submit})
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.reportProblem:
@@ -159,22 +146,4 @@ public class SubmitFeedBackUI extends BaseActivity {
             return strEmail.matches(strPattern);
         }
     }
-
-    @SuppressLint("HandlerLeak")
-    private Handler mHandler = new Handler(){
-        public void handleMessage(android.os.Message msg) {
-            switch (msg.what) {
-                case 0://提交反馈成功
-                    LoadingDialog.close();
-                    showToast(getString(R.string.submit_success));
-                    finish();
-                    break;
-                case 1://提交反馈失败
-                    LoadingDialog.close();
-                    showToast(getString(R.string.submit_faile));
-                    finish();
-                    break;
-            }
-        }
-    };
 }

@@ -11,13 +11,16 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.util.Utils;
 
+import butterknife.OnClick;
+
 /**
  * Created on 2017/10/11.
  * Security page
  */
 
 public class SecurityUI extends BaseActivity {
-    private RelativeLayout bindMobileBody,bindEmailBody;//Binding mobile phone number, binding mailbox
+
+
     @Override
     protected void setContentView() {
        setContentView(R.layout.security_layout);
@@ -25,14 +28,10 @@ public class SecurityUI extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        bindMobileBody = (RelativeLayout) findViewById(R.id.bindMobileBody);
-        bindEmailBody = (RelativeLayout) findViewById(R.id.bindEmailBody);
     }
 
     @Override
     protected void setListener() {
-        bindMobileBody.setOnClickListener(this);
-        bindEmailBody.setOnClickListener(this);
     }
 
     @Override
@@ -40,7 +39,7 @@ public class SecurityUI extends BaseActivity {
         setTitle(getString(R.string.security));
     }
 
-    @Override
+    @OnClick({R.id.bindMobileBody,R.id.bindEmailBody})
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.bindMobileBody:
@@ -50,7 +49,9 @@ public class SecurityUI extends BaseActivity {
                     intent.putExtra("type",0);
                     startActivity(intent);
                 }else{
-                    startActivity(new Intent(this,BindMobileUI.class));
+                    Intent intent = new Intent(this,BindMobileUI.class);
+                    intent.putExtra("type",0);
+                    startActivity(intent);
                 }
                 Utils.openNewActivityAnim(SecurityUI.this,false);
                 break;
@@ -61,7 +62,9 @@ public class SecurityUI extends BaseActivity {
                     intent.putExtra("type",1);
                     startActivity(intent);
                 }else{
-                    startActivity(new Intent(this,BindEmailUI.class));
+                    Intent intent = new Intent(this,BindEmailUI.class);
+                    intent.putExtra("type",1);
+                    startActivity(intent);
                 }
                 Utils.openNewActivityAnim(SecurityUI.this,false);
                 break;
