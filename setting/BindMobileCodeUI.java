@@ -9,14 +9,16 @@ import android.widget.TextView;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
-import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.login.JsonUtil;
 import com.lingtuan.firefly.login.RegistUI;
+import com.lingtuan.firefly.setting.contract.BindMobileCodeContract;
+import com.lingtuan.firefly.setting.presenter.BindMobileCodePresenterImpl;
 import com.lingtuan.firefly.util.LoadingDialog;
+import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
-import org.jivesoftware.smack.packet.Bind;
-import org.json.JSONObject;
+import butterknife.BindView;
+import butterknife.OnClick;
 
 /**
  * binding mobile phone number message validation page
@@ -26,15 +28,18 @@ import org.json.JSONObject;
  * Created on 2017/10/24.
  */
 
-public class BindMobileCodeUI extends BaseActivity {
+public class BindMobileCodeUI extends BaseActivity implements BindMobileCodeContract.View{
 
-    private TextView next;
-
-    private EditText codeEt;
+    @BindView(R.id.app_btn_right)
+    TextView next;
+    @BindView(R.id.codeEt)
+    EditText codeEt;
 
     private String phoneNumber;
     private String email;//email
-    private int type;//0 binding mobile phone number, 1 binding inbox, 2 phone number retrieve password, 3 retrieve password
+    private int type;//0 binding mobile phone number, 1 binding email, 2 phone number retrieve password, 3 email retrieve password
+
+    private BindMobileCodeContract.Presenter mPresenter;
 
     @Override
     protected void setContentView() {
@@ -50,17 +55,18 @@ public class BindMobileCodeUI extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        next = (TextView) findViewById(R.id.app_btn_right);
-        codeEt = (EditText) findViewById(R.id.codeEt);
+
     }
 
     @Override
     protected void setListener() {
-        next.setOnClickListener(this);
     }
 
     @Override
     protected void initData() {
+
+        new BindMobileCodePresenterImpl(this);
+
         if (type == 0){
             setTitle(getString(R.string.bind_mobile));
         }else if (type == 1){
@@ -72,16 +78,19 @@ public class BindMobileCodeUI extends BaseActivity {
         next.setText(getString(R.string.next));
     }
 
-    @Override
+    @OnClick(R.id.app_btn_right)
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.app_btn_right:
-                if (type == 0 || type == 2){
-                    verifySmsc();
+                if (type == 0 || type == 1){
+                    checkPasswordMethod();
                 }else{
-                    verifyMail();
+                    if (type == 2){
+                        verifySmsc();
+                    }else{
+                        verifyMail();
+                    }
                 }
-
                 break;
             default:
                 super.onClick(v);
@@ -98,64 +107,7 @@ public class BindMobileCodeUI extends BaseActivity {
             showToast(getString(R.string.code_number_not_empty));
             return;
         }
-        NetRequestImpl.getInstance().verifySmsc(code, phoneNumber, new RequestListener() {
-            @Override
-            public void start() {
-                LoadingDialog.show(BindMobileCodeUI.this,"");
-            }
-
-            @Override
-            public void success(JSONObject response) {
-                if (type == 0){//Binding mobile phone number
-                    bindMobileMethod();
-                }else{//Mobile phone number to retrieve password
-                    Intent intent = new Intent(BindMobileCodeUI.this, RegistUI.class);
-                    intent.putExtra("number",phoneNumber);
-                    intent.putExtra("type",type);
-                    startActivity(intent);
-                    Utils.openNewActivityAnim(BindMobileCodeUI.this,false);
-                }
-
-            }
-
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                LoadingDialog.close();
-                showToast(errorMsg);
-            }
-        });
-    }
-
-    /**
-     * Interface binding mobile phone number
-     * */
-    private void bindMobileMethod() {
-        NetRequestImpl.getInstance().bindMobile(phoneNumber, new RequestListener() {
-            @Override
-            public void start() {
-
-            }
-
-            @Override
-            public void success(JSONObject response) {
-                LoadingDialog.close();
-                showToast(response.optString("msg"));
-                NextApplication.myInfo.updateJsonBindMobile(phoneNumber, BindMobileCodeUI.this);
-                NextApplication.myInfo.setPhonenumber(phoneNumber);
-                Intent intent = new Intent(BindMobileCodeUI.this,BindMobileSuccessUI.class);
-                intent.putExtra("phonenumber",phoneNumber);
-                intent.putExtra("email", email);
-                intent.putExtra("type",type);
-                startActivity(intent);
-                Utils.openNewActivityAnim(BindMobileCodeUI.this,true);
-            }
-
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                LoadingDialog.close();
-                showToast(errorMsg);
-            }
-        });
+        mPresenter.verifySms(code,phoneNumber);
     }
 
     /**
@@ -167,64 +119,97 @@ public class BindMobileCodeUI extends BaseActivity {
             showToast(getString(R.string.code_number_not_empty));
             return;
         }
-        NetRequestImpl.getInstance().verifyMail(code, email, new RequestListener() {
-            @Override
-            public void start() {
-                LoadingDialog.show(BindMobileCodeUI.this,"");
-            }
-
-            @Override
-            public void success(JSONObject response) {
-                if (type == 1){//Binding email
-                    bindEmailMethod();
-                }else{//Email retrieve password
-                    Intent intent = new Intent(BindMobileCodeUI.this, RegistUI.class);
-                    intent.putExtra("number",email);
-                    intent.putExtra("type",type);
-                    startActivity(intent);
-                    Utils.openNewActivityAnim(BindMobileCodeUI.this,false);
-                }
-
-            }
-
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                LoadingDialog.close();
-                showToast(errorMsg);
-            }
-        });
+        mPresenter.verifyEmail(code,email);
     }
+
+
 
     /**
-     * Binding email interface
+     * check pwd
      * */
-    private void bindEmailMethod() {
-        NetRequestImpl.getInstance().bindEmail(email, new RequestListener() {
+    private void checkPasswordMethod(){
+        MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_PWD, getString(R.string.verify_password),getString(R.string.account_input_pwd_warning),null);
+        mdf.setVerifyPwd(true);
+        mdf.setEditOkCallback(new MyViewDialogFragment.EditOkCallback() {
             @Override
-            public void start() {
-
-            }
-
-            @Override
-            public void success(JSONObject response) {
-                LoadingDialog.close();
-                showToast(response.optString("msg"));
-                NextApplication.myInfo.updateJsonBindEmail(email, BindMobileCodeUI.this);
-                NextApplication.myInfo.setEmail(email);
-                Intent intent = new Intent(BindMobileCodeUI.this,BindMobileSuccessUI.class);
-                intent.putExtra("phonenumber",phoneNumber);
-                intent.putExtra("email", email);
-                intent.putExtra("type",type);
-                startActivity(intent);
-                Utils.openNewActivityAnim(BindMobileCodeUI.this,true);
-            }
-
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                LoadingDialog.close();
-                showToast(errorMsg);
+            public void okBtn(String edittext) {
+                if (TextUtils.equals(edittext,NextApplication.myInfo.getPassword())){
+                    if (type == 0){
+                        verifySmsc();
+                    }else{
+                        verifyMail();
+                    }
+                }else{
+                    showToast(getString(R.string.wallet_copy_pwd_error));
+                }
             }
         });
+        mdf.show(getSupportFragmentManager(), "mdf");
     }
 
+    @Override
+    public void start() {
+        LoadingDialog.show(BindMobileCodeUI.this,"");
+    }
+
+    @Override
+    public void verifySmsSuccess() {
+        if (type == 0){//Binding mobile phone number
+            mPresenter.bindMobile(phoneNumber);
+        }else{//Mobile phone number to retrieve password
+            LoadingDialog.close();
+            Intent intent = new Intent(BindMobileCodeUI.this, RegistUI.class);
+            intent.putExtra("number",phoneNumber);
+            intent.putExtra("type",type);
+            startActivity(intent);
+            Utils.openNewActivityAnim(BindMobileCodeUI.this,false);
+        }
+    }
+
+    @Override
+    public void verifyEmailSuccess() {
+        if (type == 1){//Binding email
+            mPresenter.bindEmail(email);
+        }else{//Email retrieve password
+            LoadingDialog.close();
+            Intent intent = new Intent(BindMobileCodeUI.this, RegistUI.class);
+            intent.putExtra("number",email);
+            intent.putExtra("type",type);
+            startActivity(intent);
+            Utils.openNewActivityAnim(BindMobileCodeUI.this,false);
+        }
+    }
+
+    @Override
+    public void bindSuccess(String message,boolean isEmail) {
+        LoadingDialog.close();
+        showToast(message);
+        if (isEmail){
+            NextApplication.myInfo.updateJsonBindEmail(email, BindMobileCodeUI.this);
+            NextApplication.myInfo.setEmail(email);
+        }else{
+            NextApplication.myInfo.updateJsonBindMobile(phoneNumber, BindMobileCodeUI.this);
+            NextApplication.myInfo.setPhonenumber(phoneNumber);
+        }
+        JsonUtil.updateLocalInfo(BindMobileCodeUI.this,NextApplication.myInfo);
+        Intent intent = new Intent(BindMobileCodeUI.this,BindMobileSuccessUI.class);
+        intent.putExtra("phonenumber",phoneNumber);
+        intent.putExtra("email", email);
+        intent.putExtra("type",type);
+        startActivity(intent);
+        setResult(RESULT_OK);
+        Utils.openNewActivityAnim(BindMobileCodeUI.this,true);
+    }
+
+
+    @Override
+    public void error(int errorCode, String errorMsg) {
+        LoadingDialog.close();
+        showToast(errorMsg);
+    }
+
+    @Override
+    public void setPresenter(BindMobileCodeContract.Presenter presenter) {
+        this.mPresenter = presenter;
+    }
 }

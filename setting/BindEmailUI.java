@@ -18,6 +18,9 @@ import com.lingtuan.firefly.vo.CountryCodeVo;
 
 import org.json.JSONObject;
 
+import butterknife.BindView;
+import butterknife.OnClick;
+
 /**
  * Created on 2017/10/11.
  * Binding email
@@ -27,14 +30,14 @@ public class BindEmailUI extends BaseActivity {
 
     private static final int BINDMOBLECODE = 100;
 
-    private TextView btnRight;
-
-    private EditText emailEt;
+    @BindView(R.id.app_btn_right)
+    TextView btnRight;
+    @BindView(R.id.emailEt)
+    EditText emailEt;
+    @BindView(R.id.bindEmailHint)
+    TextView bindEmailHint;
 
     private String aeskey = null ;
-
-    private TextView bindEmailHint;
-
     private int type;//0 binding mobile phone number, 1 binding inbox, 2 phone number retrieve password, 3 retrieve password
 
     @Override
@@ -49,14 +52,12 @@ public class BindEmailUI extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        btnRight = (TextView) findViewById(R.id.app_btn_right);
-        bindEmailHint = (TextView) findViewById(R.id.bindEmailHint);
-        emailEt = (EditText) findViewById(R.id.emailEt);
+
     }
 
     @Override
     protected void setListener() {
-        btnRight.setOnClickListener(this);
+
     }
 
     @Override
@@ -72,7 +73,7 @@ public class BindEmailUI extends BaseActivity {
         btnRight.setText(getString(R.string.next));
     }
 
-    @Override
+    @OnClick(R.id.app_btn_right)
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()){
