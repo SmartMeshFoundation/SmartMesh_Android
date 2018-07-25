@@ -3,19 +3,15 @@ package com.lingtuan.firefly.quickmark;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -41,29 +37,37 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.OnClick;
+
 /**
  * group quick mark ui<br>
  */
 public class GroupQuickMarkUI extends BaseActivity {
+
+	@BindView(R.id.nickname)
+	TextView mNickname;
+	@BindView(R.id.avatar_group)
+	DiscussGroupImageView mGroupAvatar;
+	@BindView(R.id.quickmark)
+	ImageView mQuickMark;
+	@BindView(R.id.quickmarkBody)
+	LinearLayout quickmarkBody;
+	@BindView(R.id.discussGroupBody)
+	LinearLayout discussGroupBody;
+	@BindView(R.id.discussNumbers)
+	TextView discussNumber;
+	@BindView(R.id.app_btn_right)
+	TextView shareTv;
 
 	private List<UserBaseVo> avatarList;
 	private String avatarUrl;
 	private String id;
 	private String nickname;
 	private int number;
-
-	private TextView mNickname;
-	private DiscussGroupImageView mGroupAvatar;
-	private ImageView mQuickMark;
-	private LinearLayout quickmarkBody;
-	private LinearLayout discussGroupBody;
-	private LinearLayout discussScan;
-	private TextView discussNumber;
-
 	private int width;
 	private int type;
 
-	private TextView shareTv;
 
 
 	@Override
@@ -75,20 +79,11 @@ public class GroupQuickMarkUI extends BaseActivity {
 	@Override
 	protected void findViewById() {
 
-		mNickname = (TextView) findViewById(R.id.nickname);
-		mQuickMark = (ImageView) findViewById(R.id.quickmark);
-		quickmarkBody = (LinearLayout) findViewById(R.id.quickmarkBody);
-		discussGroupBody = (LinearLayout) findViewById(R.id.discussGroupBody);
-		discussScan = (LinearLayout) findViewById(R.id.discussScan);
-		mGroupAvatar = (DiscussGroupImageView) findViewById(R.id.avatar_group);
-		shareTv = (TextView) findViewById(R.id.app_btn_right);
-		discussNumber = (TextView) findViewById(R.id.discussNumbers);
 	}
 
 	@Override
 	protected void setListener() {
-		shareTv.setOnClickListener(this);
-		discussScan.setOnClickListener(this);
+
 	}
 
 	@Override
@@ -173,7 +168,7 @@ public class GroupQuickMarkUI extends BaseActivity {
 		mGroupAvatar.setMember(avatarList);
 	}
 
-	@Override
+	@OnClick({R.id.app_btn_right,R.id.discussScan})
 	public void onClick(View v) {
 		super.onClick(v);
 		switch (v.getId()) {

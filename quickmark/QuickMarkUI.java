@@ -13,7 +13,6 @@ import android.webkit.DownloadListener;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
@@ -21,8 +20,9 @@ import com.lingtuan.firefly.contact.DiscussGroupJoinUI;
 import com.lingtuan.firefly.ui.WebViewUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.vo.UserBaseVo;
-import com.lingtuan.firefly.xmpp.XmppUtils;
+import com.lingtuan.firefly.wallet.WalletSendActivity;
+
+import butterknife.BindView;
 
 /**
  * Flicking a results page needs a key = result, value = String
@@ -30,11 +30,10 @@ import com.lingtuan.firefly.xmpp.XmppUtils;
 @SuppressLint("SetJavaScriptEnabled")
 public class QuickMarkUI extends BaseActivity {
 
-	private WebView loadWebView = null ;
-	
-	private ProgressBar progressBar1 = null ;
-	
-	private TextView mContent;
+	@BindView(R.id.webView1)
+	WebView loadWebView = null ;
+	@BindView(R.id.progressBar1)
+	ProgressBar progressBar1 = null ;
 	
 	@Override
 	protected void setContentView() {
@@ -43,10 +42,7 @@ public class QuickMarkUI extends BaseActivity {
 
 	@Override
 	protected void findViewById() {
-		loadWebView = (WebView)findViewById(R.id.webView1);
 	    loadWebView.getSettings().setJavaScriptEnabled(true);
-		progressBar1 = (ProgressBar)findViewById(R.id.progressBar1);
-		mContent = (TextView) findViewById(R.id.text);
 	}
 
 	@Override
@@ -71,8 +67,7 @@ public class QuickMarkUI extends BaseActivity {
 			}
 			
 			@Override
-			public void onReceivedError(WebView view, int errorCode,
-										String description, String failingUrl) {
+			public void onReceivedError(WebView view, int errorCode,String description, String failingUrl) {
 //				loadWebView.setVisibility(View.GONE);
 				mHandler.sendEmptyMessage(0);
 				super.onReceivedError(view, errorCode, description, failingUrl);
@@ -81,12 +76,10 @@ public class QuickMarkUI extends BaseActivity {
 		});
 		
 		loadWebView.setDownloadListener(new DownloadListener() {
-		      public void onDownloadStart(String url, String userAgent,
-										  String contentDisposition, String mimetype,
-										  long contentLength) {
-		        Intent i = new Intent(Intent.ACTION_VIEW);
-		        i.setData(Uri.parse(url));
-		        startActivity(i);
+		      public void onDownloadStart(String url, String userAgent,String contentDisposition, String mimetype,long contentLength) {
+					Intent i = new Intent(Intent.ACTION_VIEW);
+					i.setData(Uri.parse(url));
+					startActivity(i);
 		      }
 	    });
 	}
@@ -95,10 +88,10 @@ public class QuickMarkUI extends BaseActivity {
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		 if ((keyCode == KeyEvent.KEYCODE_BACK) && loadWebView.canGoBack()) {
-	            loadWebView.goBack();       
-	                   return true;       
-	        }       
-	        return super.onKeyDown(keyCode, event); 
+		 	 loadWebView.goBack();
+		 	 return true;
+		 }
+		 return super.onKeyDown(keyCode, event);
 	}
 	
 	
@@ -110,12 +103,32 @@ public class QuickMarkUI extends BaseActivity {
 		if(TextUtils.isEmpty(result)){
 			showToast(getString(R.string.parse_error));
 			Utils.exitActivityAndBackAnim(this, true);
-			return;
 		}else{
-			Intent intent = new Intent(QuickMarkUI.this, WebViewUI.class);
-			intent.putExtra("loadUrl", result);
-			startActivity(intent);
-			Utils.openNewActivityAnim(QuickMarkUI.this, true);
+			if(result.contains(Constants.APP_URL_FLAG) && result.contains("/qrgroup.html")){
+				Uri parse = Uri.parse(result);
+				String gid = parse.getQueryParameter("gid");
+				Intent intent = new Intent(this, DiscussGroupJoinUI.class);
+				intent.putExtra("groupid", gid);
+				startActivity(intent);
+				Utils.openNewActivityAnim(this, true);
+			}else if(result.length() > 42 && result.startsWith("0x") && result.contains("token")){
+				String address = result.substring(0,result.indexOf("?"));
+				Uri parse = Uri.parse(result);
+				float amount = 0f;
+				if(!TextUtils.isEmpty(parse.getQueryParameter("amount"))){
+					amount = Float.valueOf(parse.getQueryParameter("amount"));
+				}
+				Intent intent = new Intent(this,WalletSendActivity.class);
+				intent.putExtra("address", address);
+				intent.putExtra("amount", amount);
+				startActivity(intent);
+				Utils.openNewActivityAnim(QuickMarkUI.this, true);
+			}else{
+				Intent intent = new Intent(QuickMarkUI.this, WebViewUI.class);
+				intent.putExtra("loadUrl", result);
+				startActivity(intent);
+				Utils.openNewActivityAnim(QuickMarkUI.this, true);
+			}
 		}
 	}
 
