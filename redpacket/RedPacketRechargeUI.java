@@ -55,7 +55,8 @@ public class RedPacketRechargeUI extends BaseActivity {
         super.onClick(v);
         switch (v.getId()){
             case R.id.app_btn_right:
-                showToast(getString(R.string.red_balance_record));
+                startActivity(new Intent(RedPacketRechargeUI.this,RedPacketRechargeRecordUI.class));
+                Utils.openNewActivityAnim(RedPacketRechargeUI.this,false);
                 break;
             case R.id.redRecharge:
                 String rechargeAmount = redRechargeAmount.getText().toString().trim();
