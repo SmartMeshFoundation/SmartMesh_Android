@@ -6,6 +6,7 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.redpacket.fragment.RedPacketWithdrawRecordFragment;
 import com.lingtuan.firefly.util.Utils;
 
 import butterknife.BindView;
@@ -49,7 +50,8 @@ public class RedPacketWithdrawUI extends BaseActivity {
         super.onClick(v);
         switch (v.getId()){
             case R.id.app_btn_right:
-                showToast(getString(R.string.red_balance_record));
+                startActivity(new Intent(RedPacketWithdrawUI.this,RedPacketWithdrawRecordUI.class));
+                Utils.openNewActivityAnim(RedPacketWithdrawUI.this,false);
                 break;
             case R.id.redWithdraw:
                 String rechargeAmount = redWithdrawAmount.getText().toString().trim();
