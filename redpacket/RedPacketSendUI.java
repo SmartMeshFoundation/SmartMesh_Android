@@ -2,6 +2,7 @@ package com.lingtuan.firefly.redpacket;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -12,6 +13,7 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.redpacket.contract.RedPacketSendContract;
 import com.lingtuan.firefly.redpacket.presenter.RedPacketSendPresenterImpl;
+import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 
 import java.math.BigDecimal;
@@ -49,12 +51,21 @@ public class RedPacketSendUI extends BaseActivity implements RedPacketSendContra
 
     private boolean type;
 
+    private String uid;// user id   or group id
+    private boolean isGroup;//is send group
+
     private RedPacketSendContract.Presenter mPresenter;
 
     @Override
     protected void setContentView() {
         setContentView(R.layout.red_packet_send_layout);
         Utils.setStatusBar(this,3);
+        getPassData();
+    }
+
+    private void getPassData() {
+        uid = getIntent().getStringExtra("uid");
+        isGroup = getIntent().getBooleanExtra("isGroup",false);
     }
 
     @Override
@@ -70,6 +81,11 @@ public class RedPacketSendUI extends BaseActivity implements RedPacketSendContra
     @Override
     protected void initData() {
         setTitle(getString(R.string.red_packet_send));
+        if (isGroup){
+            redPacketGroupBody.setVisibility(View.VISIBLE);
+        }else{
+            redPacketGroupBody.setVisibility(View.GONE);
+        }
     }
 
     @OnClick({R.id.app_back,R.id.redPacketChangeType,R.id.redPacketSend})
@@ -91,21 +107,35 @@ public class RedPacketSendUI extends BaseActivity implements RedPacketSendContra
             case R.id.redPacketSend:
                 String singleAmount = redPacketValue.getText().toString().trim();
                 String redNumber = redPacketNumber.getText().toString().trim();
-                String redLeaveMessage = redPacketLeaveMessage.getText().toString().trim();
-                mPresenter.sendRedPacketMethod(this,singleAmount,redNumber,redLeaveMessage,type);
+                mPresenter.checkRedPacket(singleAmount,redNumber,isGroup);
                 break;
         }
     }
 
+
     @Override
-    public void sendSuccess() {
+    public void checkSuccess() {
+        MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_INPUT_PWD, new MyViewDialogFragment.EditCallback() {
+            @Override
+            public void getEditText(String editText) {
+                String singleAmount = redPacketValue.getText().toString().trim();
+                String redNumber = redPacketNumber.getText().toString().trim();
+                String redLeaveMessage = redPacketLeaveMessage.getText().toString().trim();
+                mPresenter.sendRedPacket(singleAmount,redNumber,redLeaveMessage,type,isGroup);
+            }
+        });
+        mdf.show(getSupportFragmentManager(), "mdf");
+    }
+
+    @Override
+    public void success() {
         startActivity(new Intent(RedPacketSendUI.this,RedPacketDetailUI.class));
         Utils.openNewActivityAnim(RedPacketSendUI.this,false);
     }
 
     @Override
-    public void showToastMessage(String message) {
-        showToast(message);
+    public void error(int errorCode, String errorMsg) {
+        showToast(errorMsg);
     }
 
     @Override

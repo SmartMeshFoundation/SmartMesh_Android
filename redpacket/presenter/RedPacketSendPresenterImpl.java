@@ -27,38 +27,44 @@ public class RedPacketSendPresenterImpl implements RedPacketSendContract.Present
      * send red packet
      * @param singleAmount        red packet single amount    红包单个金额
      * @param redNumber           red packet number           红包个数
-     * @param redLeaveMessage    red packet leave message    红包留言
-     * @param type                red packet type  true is an average red packet  false is hand red packet
-     * @param type                红包类型  true 是均分红包   false 是拼手气红包
+     * @param isGroup            is group red packet    是否是群组红包
      * */
     @Override
-    public void sendRedPacketMethod(Context context,String singleAmount,String redNumber,String redLeaveMessage,boolean type){
+    public void checkRedPacket(String singleAmount,String redNumber,boolean isGroup){
+        if (isGroup && (TextUtils.isEmpty(redNumber) || Integer.parseInt(redNumber) < 1)){
+            mView.error(0,NextApplication.mContext.getString(R.string.red_packet_send_number_hint));
+            return;
+        }
+
         if (TextUtils.isEmpty(singleAmount)){
-            mView.showToastMessage(context.getString(R.string.red_packet_send_value_hint));
+            mView.error(0,NextApplication.mContext.getString(R.string.red_packet_send_value_hint));
             return;
         }else{
             BigDecimal singleAmount1 = new BigDecimal(singleAmount);
             BigDecimal singleAmount2 = new BigDecimal("0.01");
             if (singleAmount1.compareTo(singleAmount2) < 0){
-                mView.showToastMessage(context.getString(R.string.red_packet_send_value_hint));
+                mView.error(0,NextApplication.mContext.getString(R.string.red_packet_send_value_hint));
                 return;
             }
         }
-        if (TextUtils.isEmpty(redNumber) || Integer.parseInt(redNumber) < 1){
-            mView.showToastMessage(context.getString(R.string.red_packet_send_number_hint));
-            return;
-        }
-        String redPacketType;
-        if (type){
-            redPacketType = "均分红包";
-        }else{
-            redPacketType = "拼手气红包";
-        }
+        mView.checkSuccess();
+    }
+
+    /**
+     * send red packet
+     * @param singleAmount        red packet single amount    红包单个金额
+     * @param redNumber           red packet number           红包个数
+     * @param redLeaveMessage    red packet leave message    红包留言
+     * @param type                red packet type  true is an average red packet  false is hand red packet
+     *                             红包类型  true 是均分红包   false 是拼手气红包
+     * @param isGroup            is group red packet    是否是群组红包
+     * */
+    @Override
+    public void sendRedPacket(String singleAmount, String redNumber, String redLeaveMessage, boolean type, boolean isGroup) {
         if (TextUtils.isEmpty(redLeaveMessage.trim())){
-            redLeaveMessage = context.getString(R.string.red_packet_send_leave_message);
+            redLeaveMessage = NextApplication.mContext.getString(R.string.red_packet_send_leave_message);
         }
-        MyToast.showToast(context,"发出了" + redNumber +"个红包\n单个金额是:" + singleAmount + "\n留言是：" + redLeaveMessage + "\n红包类型是" + redPacketType);
-        mView.sendSuccess();
+        mView.success();
     }
 
 
