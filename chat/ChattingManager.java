@@ -10,11 +10,13 @@ import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.view.View;
@@ -22,6 +24,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.lingtuan.firefly.BuildConfig;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.chat.adapter.ChatAdapter;
@@ -37,6 +40,7 @@ import com.lingtuan.firefly.mesh.MeshUtils;
 import com.lingtuan.firefly.mesh.MessageVo;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
+import com.lingtuan.firefly.redpacket.RedPacketSendUI;
 import com.lingtuan.firefly.service.LoadDataService;
 import com.lingtuan.firefly.util.BitmapUtils;
 import com.lingtuan.firefly.util.Constants;
@@ -352,6 +356,17 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
     public void showFaceView(View faceView, EditText mInputContent, View stubBottomBg) {
         FaceUtils.getInstance(mContext).showFaceView(faceView, mInputContent, stubBottomBg);
     }
+
+    /**
+     * Send the red packet
+     */
+    public void showRedPacketView(String uid,boolean isGroup) {
+        Intent intent = new Intent(mContext, RedPacketSendUI.class);
+        intent.putExtra("uid",uid);
+        intent.putExtra("isGroup",isGroup);
+        mContext.startActivity(intent);
+        Utils.openNewActivityAnim((Activity) mContext, false);
+    }
     
     
     /**
@@ -367,8 +382,14 @@ public class ChattingManager implements RecordAudioView.IRecordAudioListener, Li
      */
     public void showCameraView() {
         Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE); //调用系统相机
-        imageUri = Uri.fromFile(new File(SDCardCtrl.getChatImagePath() + "/", System.currentTimeMillis() + ".jpg"));
-        camera.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        File tempFile = new File(SDCardCtrl.getChatImagePath() + "/", System.currentTimeMillis() + ".jpg");
+        imageUri = Uri.fromFile(tempFile);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Uri photoUri = FileProvider.getUriForFile(mContext,"com.lingtuan.firefly.fileProvider",tempFile);
+            camera.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+        }else{
+            camera.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        }
         ((Activity) mContext).startActivityForResult(camera, ACTION_CAMERA_RESULT);
     }
     
