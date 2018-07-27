@@ -15,6 +15,9 @@ import com.lingtuan.firefly.vo.UserInfoVo;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Near no network adapter
  */
@@ -55,10 +58,8 @@ public class MainFoundAdapter extends BaseAdapter {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		BlackHolder holder;
 		if(convertView == null){
-			holder = new BlackHolder();
 			convertView = View.inflate(c, R.layout.black_list_item, null);
-			holder.avatar = (CharAvatarView)convertView.findViewById(R.id.invite_avatar);
-			holder.nickName = (TextView)convertView.findViewById(R.id.name);
+			holder = new BlackHolder(convertView);
 			convertView.setTag(holder);
 		}else{
 			holder = (BlackHolder)convertView.getTag();
@@ -72,8 +73,14 @@ public class MainFoundAdapter extends BaseAdapter {
 	}
 	
 	static class BlackHolder{
-		CharAvatarView avatar = null ;
-		TextView nickName = null ;
+		@BindView(R.id.invite_avatar)
+		CharAvatarView avatar;
+		@BindView(R.id.name)
+		TextView nickName;
+
+		public BlackHolder(View view) {
+			ButterKnife.bind(this, view);
+		}
 	}
 
 }

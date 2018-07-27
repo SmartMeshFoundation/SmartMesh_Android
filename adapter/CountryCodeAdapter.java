@@ -13,6 +13,9 @@ import com.lingtuan.firefly.vo.CountryCodeVo;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class CountryCodeAdapter extends BaseAdapter {
 	private List<CountryCodeVo> list = null;
 	private Context mContext;
@@ -41,11 +44,8 @@ public class CountryCodeAdapter extends BaseAdapter {
 		ViewHolder viewHolder = null;
 		final CountryCodeVo mContent = list.get(position);
 		if (view == null) {
-			viewHolder = new ViewHolder();
 			view = LayoutInflater.from(mContext).inflate(R.layout.country_code_item, null);
-			viewHolder.tvTitle = (TextView) view.findViewById(R.id.reg_country_code_name);
-			viewHolder.tvLetter = (TextView) view.findViewById(R.id.reg_country_code_catalog);
-			viewHolder.line = view.findViewById(R.id.reg_country_code_line);
+			viewHolder = new ViewHolder(view);
 			view.setTag(viewHolder);
 		} else {
 			viewHolder = (ViewHolder) view.getTag();
@@ -72,9 +72,15 @@ public class CountryCodeAdapter extends BaseAdapter {
 
 
 	static class ViewHolder {
+		@BindView(R.id.reg_country_code_catalog)
 		TextView tvLetter;
+		@BindView(R.id.reg_country_code_name)
 		TextView tvTitle;
+		@BindView(R.id.reg_country_code_line)
 		View line;
+		public ViewHolder(View view) {
+			ButterKnife.bind(this, view);
+		}
 	}
 
 

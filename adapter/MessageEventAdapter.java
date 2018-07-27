@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * My information page adapter
  */
@@ -112,20 +115,8 @@ public class MessageEventAdapter extends BaseAdapter {
         Holder h;
         ChatMsg msg = mList.get(position);
         if (convertView == null) {
-            h = new Holder();
             convertView = View.inflate(mContext, R.layout.item_msg_evnet, null);
-            h.bg = (LinearLayout) convertView.findViewById(R.id.item_bg);
-            h.avatarShape = (CharAvatarView) convertView.findViewById(R.id.item_avatar);
-            h.listenerIcon = (ImageView) convertView.findViewById(R.id.item_msg_event_listener);
-            h.content = (TextView) convertView.findViewById(R.id.item_content);
-            h.time = (TextView) convertView.findViewById(R.id.item_times);
-            h.nickname = (TextView) convertView.findViewById(R.id.item_nickname);
-            h.unread = (TextView) convertView.findViewById(R.id.item_unread);
-            h.atGroupMe = (TextView) convertView.findViewById(R.id.item_at);
-            h.unReadIcon = (ImageView) convertView.findViewById(R.id.item_unread_icon);
-            h.groupImageView = (DiscussGroupImageView) convertView.findViewById(R.id.group_avatar);
-            h.y_m_d = (ImageView) convertView.findViewById(R.id.y_m_d);
-            h.vipLevel = (ImageView) convertView.findViewById(R.id.vipLevel);
+            h = new Holder(convertView);
             convertView.setTag(h);
         } else {
             h = (Holder) convertView.getTag();
@@ -230,7 +221,6 @@ public class MessageEventAdapter extends BaseAdapter {
                 h.groupImageView.setMember(msg.getMemberAvatarUserBaseList());
             }
         } else {
-
             if (!TextUtils.isEmpty(url)) {
                 if (url.startsWith("drawable://")) {
                     NextApplication.displayCircleImage(h.avatarShape, null);
@@ -308,16 +298,30 @@ public class MessageEventAdapter extends BaseAdapter {
     }
 
     static class Holder {
+        @BindView(R.id.item_bg)
         LinearLayout bg;
+        @BindView(R.id.item_avatar)
         CharAvatarView avatarShape;
-        ImageView y_m_d, vipLevel;
+        @BindView(R.id.item_msg_event_listener)
         ImageView listenerIcon;
+        @BindView(R.id.item_times)
         TextView time;
+        @BindView(R.id.item_content)
         TextView content;
+        @BindView(R.id.item_nickname)
         TextView nickname;
+        @BindView(R.id.item_unread)
         TextView unread;
+        @BindView(R.id.item_unread_icon)
         ImageView unReadIcon;
+        @BindView(R.id.group_avatar)
         DiscussGroupImageView groupImageView;
+        @BindView(R.id.item_at)
         TextView atGroupMe;
+
+
+        public Holder(View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 }

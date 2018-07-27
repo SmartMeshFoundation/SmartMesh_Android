@@ -24,6 +24,9 @@ import org.json.JSONObject;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * trans msg adapter
  */
@@ -67,11 +70,8 @@ public class MsgTransAdapter extends BaseAdapter {
 		final Holder h;
 		final ChatMsg chatMsg = mList.get(position);
 		if(convertView == null){
-			h = new Holder();
 			convertView = View.inflate(mContext, R.layout.item_msg_trans, null);
-			h.transNotify = (TextView) convertView.findViewById(R.id.transNotify);
-			h.transTime = (TextView) convertView.findViewById(R.id.transTime);
-			h.transFromAddress = (TextView) convertView.findViewById(R.id.transFromAddress);
+			h = new Holder(convertView);
 			convertView.setTag(h);
 		}else{
 			h = (Holder) convertView.getTag();
@@ -80,42 +80,30 @@ public class MsgTransAdapter extends BaseAdapter {
 		if (chatMsg.getNoticeType() == 0){
 			if (TextUtils.equals("0",chatMsg.getMode())){//eth
 				if (chatMsg.getInviteType() == 0){
-					h.transNotify.setText(mContext.getString(R.string.wallet_trans_msg_eth,chatMsg.getMoney()));
+					h.transNotify.setText(mContext.getString(R.string.wallet_trans_msg,chatMsg.getMoney(),chatMsg.getTokenSymbol()));
 				}else{
-					h.transNotify.setText(mContext.getString(R.string.wallet_trans_msg_eth_failed,chatMsg.getMoney()));
+					h.transNotify.setText(mContext.getString(R.string.wallet_trans_msg_failed,chatMsg.getMoney(),chatMsg.getTokenSymbol()));
 				}
-			}else if (TextUtils.equals("1",chatMsg.getMode())){
+			}else{
 				if (chatMsg.getInviteType() == 0){
-					h.transNotify.setText(mContext.getString(R.string.wallet_trans_msg_smt,chatMsg.getMoney()));
+					h.transNotify.setText(mContext.getString(R.string.wallet_trans_msg,chatMsg.getMoney(),chatMsg.getTokenSymbol()));
 				}else{
-					h.transNotify.setText(mContext.getString(R.string.wallet_trans_msg_smt_failed,chatMsg.getMoney()));
-				}
-			}else if (TextUtils.equals("2",chatMsg.getMode())){
-				if (chatMsg.getInviteType() == 0){
-					h.transNotify.setText(mContext.getString(R.string.wallet_trans_msg_mesh,chatMsg.getMoney()));
-				}else{
-					h.transNotify.setText(mContext.getString(R.string.wallet_trans_msg_mesh_failed,chatMsg.getMoney()));
+					h.transNotify.setText(mContext.getString(R.string.wallet_trans_msg_failed,chatMsg.getMoney(),chatMsg.getTokenSymbol()));
 				}
 			}
 			h.transFromAddress.setText(mContext.getString(R.string.wallet_trans_to,chatMsg.getToAddress()));
 		}else{
 			if (TextUtils.equals("0",chatMsg.getMode())){//eth
 				if (chatMsg.getInviteType() == 0){
-					h.transNotify.setText(mContext.getString(R.string.wallet_trans_collect_eth,chatMsg.getMoney()));
+					h.transNotify.setText(mContext.getString(R.string.wallet_trans_collect,chatMsg.getMoney(),chatMsg.getTokenSymbol()));
 				}else{
-					h.transNotify.setText(mContext.getString(R.string.wallet_trans_collect_eth_failed,chatMsg.getMoney()));
+					h.transNotify.setText(mContext.getString(R.string.wallet_trans_collect_failed,chatMsg.getMoney(),chatMsg.getTokenSymbol()));
 				}
-			}else if (TextUtils.equals("1",chatMsg.getMode())){
+			}else{
 				if (chatMsg.getInviteType() == 0){
-					h.transNotify.setText(mContext.getString(R.string.wallet_trans_collect_smt,chatMsg.getMoney()));
+					h.transNotify.setText(mContext.getString(R.string.wallet_trans_collect,chatMsg.getMoney(),chatMsg.getTokenSymbol()));
 				}else{
-					h.transNotify.setText(mContext.getString(R.string.wallet_trans_collect_smt_failed,chatMsg.getMoney()));
-				}
-			}else if (TextUtils.equals("2",chatMsg.getMode())){
-				if (chatMsg.getInviteType() == 0){
-					h.transNotify.setText(mContext.getString(R.string.wallet_trans_collect_mesh,chatMsg.getMoney()));
-				}else{
-					h.transNotify.setText(mContext.getString(R.string.wallet_trans_collect_mesh_failed,chatMsg.getMoney()));
+					h.transNotify.setText(mContext.getString(R.string.wallet_trans_collect_failed,chatMsg.getMoney(),chatMsg.getTokenSymbol()));
 				}
 			}
 			h.transFromAddress.setText(mContext.getString(R.string.wallet_trans_from,chatMsg.getFromAddress()));
@@ -124,9 +112,17 @@ public class MsgTransAdapter extends BaseAdapter {
 	}
 	
 	static  class Holder {
+
+		@BindView(R.id.transNotify)
 		TextView transNotify;
+		@BindView(R.id.transTime)
 		TextView transTime;
+		@BindView(R.id.transFromAddress)
 		TextView transFromAddress;
+
+		public Holder(View view) {
+			ButterKnife.bind(this, view);
+		}
 	}
 
 }
