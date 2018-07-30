@@ -256,6 +256,11 @@ public class TransactionDetailActivity extends BaseActivity implements Transacti
         } else {
             FinalUserDataBase.getInstance().updateTransTemp(transVo);
         }
+
+        if (mHandler != null){
+            mHandler.removeCallbacksAndMessages(null);
+            mHandler = null;
+        }
     }
 
     private void cancelTimer(){
@@ -286,4 +291,5 @@ public class TransactionDetailActivity extends BaseActivity implements Transacti
     public void error(int errorCode, String errorMsg) {
         showToast(errorMsg);
     }
+
 }

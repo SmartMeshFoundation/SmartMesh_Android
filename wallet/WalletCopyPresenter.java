@@ -386,5 +386,11 @@ public class WalletCopyPresenter {
         });
     }
 
+    public void onDestroy(){
+        if (mHandler != null){
+            mHandler.removeCallbacksAndMessages(null);
+            mHandler = null;
+        }
+    }
 
 }

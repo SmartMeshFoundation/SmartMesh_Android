@@ -109,6 +109,7 @@ public class WalletCopyActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         MySharedPrefs.writeBoolean(WalletCopyActivity.this, MySharedPrefs.FILE_USER, MySharedPrefs.IS_SHOW_WALLET_DIALOG, false);
+        walletCopyPresenter.onDestroy();
     }
 
     /**
