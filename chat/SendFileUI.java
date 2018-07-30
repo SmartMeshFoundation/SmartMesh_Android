@@ -256,5 +256,9 @@ public class SendFileUI extends BaseActivity implements View.OnClickListener {
     protected void onDestroy() {
         super.onDestroy();
         isDestory = true;
+        if (mHandler != null){
+            mHandler.removeCallbacksAndMessages(null);
+            mHandler = null;
+        }
     }
 }
