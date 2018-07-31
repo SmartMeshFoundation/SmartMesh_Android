@@ -47,6 +47,11 @@ public class RequestUtils {
         return instance;
     }
 
+    /**
+     * load data
+     * @param jsonRequest json body
+     * @param listener call back
+     * */
     public  void getData(final JSONObject jsonRequest, final RequestListener listener){
         boolean needReturn = requestStart(jsonRequest,listener);
         if (needReturn){
@@ -76,6 +81,14 @@ public class RequestUtils {
     }
 
 
+    /**
+     * upload file
+     * @param jsonRequest json body
+     * @param addPartName part name
+     * @param messageId message id
+     * @param path file path
+     * @param listener call back
+     * */
     public void upload(final JSONObject jsonRequest, String addPartName, final String path, final String messageId, final RequestListener listener){
         boolean needReturn = requestStart(jsonRequest,listener);
         if (needReturn){
@@ -114,6 +127,11 @@ public class RequestUtils {
     }
 
 
+    /**
+     * request start
+     * @param jsonRequest json body
+     * @param listener call back
+     * */
     private boolean requestStart(JSONObject jsonRequest,RequestListener listener){
         if(listener != null){
             listener.start();
@@ -135,6 +153,11 @@ public class RequestUtils {
         return false;
     }
 
+    /**
+     * request error
+     * @param e Throwable exception
+     * @param listener call back
+     * */
     private void requestError(Throwable e,RequestListener listener){
         if(e instanceof TimeoutException){
             if(listener != null){
@@ -149,6 +172,9 @@ public class RequestUtils {
         }
     }
 
+    /**
+     * request offline
+     * */
     private void requestOffLine(){
         try {
             MySharedPrefs.clearUserInfo(NextApplication.mContext);
@@ -181,6 +207,11 @@ public class RequestUtils {
         }
     }
 
+    /**
+     * request success
+     * @param responseBody response body
+     * @param listener call back
+     * */
     private void requestSuccess(ResponseBody responseBody,RequestListener listener){
         try {
             String jsonString = responseBody.string();
@@ -202,7 +233,7 @@ public class RequestUtils {
         }
     }
 
-    public void destory(){
+    public void destroy(){
         instance = null;
     }
 
