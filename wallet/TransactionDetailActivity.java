@@ -2,8 +2,6 @@ package com.lingtuan.firefly.wallet;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -12,33 +10,21 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.MultiFormatWriter;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.MonIndicator;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
-import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.ui.WebViewUI;
+import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.contract.TransactionDetailContract;
 import com.lingtuan.firefly.wallet.presenter.TransactionDetailPresenterImpl;
 import com.lingtuan.firefly.wallet.vo.TransVo;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.Hashtable;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -132,7 +118,7 @@ public class TransactionDetailActivity extends BaseActivity implements Transacti
             }
 
             if (transVo.getState() != -1) {
-                if (transVo.getBlockNumber() - transVo.getTxBlockNumber() < 12) {
+                if (transVo.getBlockNumber() - transVo.getTxBlockNumber() < Constants.NEED_CONFIRM_BLOCK) {
                     transVo.setState(0);
                 }
             }
@@ -151,9 +137,9 @@ public class TransactionDetailActivity extends BaseActivity implements Transacti
                     monindIcator.setVisibility(View.GONE);
                     transDetailType.setVisibility(View.VISIBLE);
                     if (transVo.getBlockNumber() - transVo.getTxBlockNumber() < 0) {
-                        transDetailType.setText(getString(R.string.wallet_trans_detail_type_1, 1));
+                        transDetailType.setText(getString(R.string.wallet_trans_detail_type_18, 1));
                     } else {
-                        transDetailType.setText(getString(R.string.wallet_trans_detail_type_1, transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1));
+                        transDetailType.setText(getString(R.string.wallet_trans_detail_type_18, transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1));
                     }
                     transDetailImg.setImageResource(R.drawable.trans_detail_wait);
                     transDetailState();
@@ -215,13 +201,13 @@ public class TransactionDetailActivity extends BaseActivity implements Transacti
                     transTypeBody.setVisibility(View.VISIBLE);
                     transDetailType.setVisibility(View.VISIBLE);
                     monindIcator.setVisibility(View.GONE);
-                    transDetailType.setText(getString(R.string.wallet_trans_detail_type_1, 1));
+                    transDetailType.setText(getString(R.string.wallet_trans_detail_type_18, 1));
                     if (transVo.getTxBlockNumber() <= 0) {
                         transDetailBlockNumber.setText(getString(R.string.wallet_trans_detail_block_none));
                     } else {
                         int blockNumberDifference = transVo.getBlockNumber() - transVo.getTxBlockNumber();
                         transDetailBlockNumber.setText(transVo.getTxBlockNumber() + "");
-                        if (blockNumberDifference >= 11) {
+                        if (blockNumberDifference >= Constants.NEED_CONFIRM_BLOCK) {
                             transTypeBody.setVisibility(View.GONE);
                             transDetailImg.setImageResource(R.drawable.trans_detail_success);
                             transVo.setState(1);
@@ -229,7 +215,7 @@ public class TransactionDetailActivity extends BaseActivity implements Transacti
                         } else {
                             transTypeBody.setVisibility(View.VISIBLE);
                             transDetailType.setVisibility(View.VISIBLE);
-                            transDetailType.setText(getString(R.string.wallet_trans_detail_type_1, blockNumberDifference + 1));
+                            transDetailType.setText(getString(R.string.wallet_trans_detail_type_18, blockNumberDifference + 1));
                         }
                     }
                     break;

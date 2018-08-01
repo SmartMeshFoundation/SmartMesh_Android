@@ -10,10 +10,14 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.custom.CustomProgressBar;
+import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.vo.TransVo;
 
 import java.util.ArrayList;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Created on 2017/8/23.
@@ -23,17 +27,15 @@ public class TransAdapter extends BaseAdapter {
 
     private Context context = null ;
     private ArrayList<TransVo> transVos;
-    private String selectedAddress;
 
-    public TransAdapter(Context context,ArrayList<TransVo> transVos,String selectedAddress){
+    public TransAdapter(Context context,ArrayList<TransVo> transVos){
         this.context = context;
         this.transVos = transVos;
-        this.selectedAddress = selectedAddress;
+
     }
 
-    public void resetSource(ArrayList<TransVo> transVos,String selectedAddress){
+    public void resetSource(ArrayList<TransVo> transVos){
         this.transVos = transVos;
-        this.selectedAddress = selectedAddress;
         notifyDataSetChanged();
     }
 
@@ -59,14 +61,8 @@ public class TransAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null){
-            holder = new ViewHolder();
             convertView = View.inflate(context, R.layout.wallet_trans_item, null);
-            holder.address = (TextView) convertView.findViewById(R.id.address);
-            holder.time = (TextView) convertView.findViewById(R.id.time);
-            holder.value = (TextView) convertView.findViewById(R.id.value);
-            holder.transFailed = (TextView) convertView.findViewById(R.id.transFailed);
-            holder.transIcon = (ImageView) convertView.findViewById(R.id.transIcon);
-            holder.transProgressBar = (CustomProgressBar) convertView.findViewById(R.id.transProgressBar);
+            holder = new ViewHolder(convertView);
             convertView.setTag(holder);
         }else{
             holder = (ViewHolder) convertView.getTag();
@@ -100,29 +96,35 @@ public class TransAdapter extends BaseAdapter {
             holder.transFailed.setVisibility(View.VISIBLE);
             holder.transFailed.setTextColor(context.getResources().getColor(R.color.yellow_wallet));
             if (transVo.getBlockNumber() - transVo.getTxBlockNumber() < 0){
-                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_1,1));
+                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_18,1));
                 holder.transProgressBar.setProgress(1);
             }else{
                 int blockNumber = transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1;
-                if (blockNumber > 11){
+                if (blockNumber >= Constants.NEED_CONFIRM_BLOCK){
                     holder.transFailed.setVisibility(View.INVISIBLE);
                     holder.transProgressBar.setVisibility(View.GONE);
                 }else{
-                    holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_1,blockNumber));
+                    holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_18,blockNumber));
                     holder.transProgressBar.setProgress(blockNumber);
                 }
             }
         }else{
             int blockNumber = transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1;
-            if (blockNumber > 11){
+            if (blockNumber >= Constants.NEED_CONFIRM_BLOCK){
                 holder.transFailed.setVisibility(View.INVISIBLE);
                 holder.transProgressBar.setVisibility(View.GONE);
+            }else if(blockNumber < 0){
+                holder.transFailed.setVisibility(View.VISIBLE);
+                holder.transProgressBar.setVisibility(View.VISIBLE);
+                holder.transProgressBar.setProgress(1);
+                holder.transFailed.setTextColor(context.getResources().getColor(R.color.yellow_wallet));
+                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_18,1));
             }else{
                 holder.transFailed.setVisibility(View.VISIBLE);
                 holder.transProgressBar.setVisibility(View.VISIBLE);
                 holder.transProgressBar.setProgress(blockNumber);
                 holder.transFailed.setTextColor(context.getResources().getColor(R.color.yellow_wallet));
-                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_1,blockNumber));
+                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_18,blockNumber));
             }
         }
 
@@ -131,11 +133,21 @@ public class TransAdapter extends BaseAdapter {
     }
 
     static class ViewHolder{
+        @BindView(R.id.address)
         TextView address;//address
+        @BindView(R.id.time)
         TextView time;//time
+        @BindView(R.id.value)
         TextView value;//Transfer amount
+        @BindView(R.id.transFailed)
         TextView transFailed;//Transaction failed
+        @BindView(R.id.transIcon)
         ImageView transIcon;//Transfer icon
+        @BindView(R.id.transProgressBar)
         CustomProgressBar transProgressBar;
+
+        public ViewHolder(View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 }
