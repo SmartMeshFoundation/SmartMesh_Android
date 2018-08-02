@@ -96,7 +96,7 @@ public class TransAdapter extends BaseAdapter {
             holder.transFailed.setVisibility(View.VISIBLE);
             holder.transFailed.setTextColor(context.getResources().getColor(R.color.yellow_wallet));
             if (transVo.getBlockNumber() - transVo.getTxBlockNumber() < 0){
-                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_18,1));
+                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_17,1));
                 holder.transProgressBar.setProgress(1);
             }else{
                 int blockNumber = transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1;
@@ -104,7 +104,7 @@ public class TransAdapter extends BaseAdapter {
                     holder.transFailed.setVisibility(View.INVISIBLE);
                     holder.transProgressBar.setVisibility(View.GONE);
                 }else{
-                    holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_18,blockNumber));
+                    holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_17,blockNumber));
                     holder.transProgressBar.setProgress(blockNumber);
                 }
             }
@@ -118,13 +118,13 @@ public class TransAdapter extends BaseAdapter {
                 holder.transProgressBar.setVisibility(View.VISIBLE);
                 holder.transProgressBar.setProgress(1);
                 holder.transFailed.setTextColor(context.getResources().getColor(R.color.yellow_wallet));
-                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_18,1));
+                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_17,1));
             }else{
                 holder.transFailed.setVisibility(View.VISIBLE);
                 holder.transProgressBar.setVisibility(View.VISIBLE);
                 holder.transProgressBar.setProgress(blockNumber);
                 holder.transFailed.setTextColor(context.getResources().getColor(R.color.yellow_wallet));
-                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_18,blockNumber));
+                holder.transFailed.setText(context.getString(R.string.wallet_trans_detail_type_17,blockNumber));
             }
         }
 

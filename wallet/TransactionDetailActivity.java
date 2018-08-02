@@ -137,9 +137,9 @@ public class TransactionDetailActivity extends BaseActivity implements Transacti
                     monindIcator.setVisibility(View.GONE);
                     transDetailType.setVisibility(View.VISIBLE);
                     if (transVo.getBlockNumber() - transVo.getTxBlockNumber() < 0) {
-                        transDetailType.setText(getString(R.string.wallet_trans_detail_type_18, 1));
+                        transDetailType.setText(getString(R.string.wallet_trans_detail_type_17, 1));
                     } else {
-                        transDetailType.setText(getString(R.string.wallet_trans_detail_type_18, transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1));
+                        transDetailType.setText(getString(R.string.wallet_trans_detail_type_17, transVo.getBlockNumber() - transVo.getTxBlockNumber() + 1));
                     }
                     transDetailImg.setImageResource(R.drawable.trans_detail_wait);
                     transDetailState();
@@ -201,7 +201,7 @@ public class TransactionDetailActivity extends BaseActivity implements Transacti
                     transTypeBody.setVisibility(View.VISIBLE);
                     transDetailType.setVisibility(View.VISIBLE);
                     monindIcator.setVisibility(View.GONE);
-                    transDetailType.setText(getString(R.string.wallet_trans_detail_type_18, 1));
+                    transDetailType.setText(getString(R.string.wallet_trans_detail_type_17, 1));
                     if (transVo.getTxBlockNumber() <= 0) {
                         transDetailBlockNumber.setText(getString(R.string.wallet_trans_detail_block_none));
                     } else {
@@ -215,7 +215,7 @@ public class TransactionDetailActivity extends BaseActivity implements Transacti
                         } else {
                             transTypeBody.setVisibility(View.VISIBLE);
                             transDetailType.setVisibility(View.VISIBLE);
-                            transDetailType.setText(getString(R.string.wallet_trans_detail_type_18, blockNumberDifference + 1));
+                            transDetailType.setText(getString(R.string.wallet_trans_detail_type_17, blockNumberDifference + 1));
                         }
                     }
                     break;
