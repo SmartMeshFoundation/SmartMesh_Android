@@ -1,5 +1,6 @@
 package com.lingtuan.firefly.network;
 
+import android.accounts.NetworkErrorException;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.text.TextUtils;
@@ -94,6 +95,7 @@ public class RequestUtils {
         if (needReturn){
             return;
         }
+
         FileUploadObserver<ResponseBody> fileUploadObserver = new FileUploadObserver<ResponseBody>() {
             @Override
             public void onUpLoadSuccess(ResponseBody responseBody) {
@@ -110,7 +112,6 @@ public class RequestUtils {
                 if (!TextUtils.isEmpty(messageId)){
                     Utils.intentImagePrecent(NextApplication.mContext, messageId,progress);
                 }
-
             }
         };
 
@@ -123,7 +124,6 @@ public class RequestUtils {
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(fileUploadObserver);
-
     }
 
 
@@ -159,16 +159,20 @@ public class RequestUtils {
      * @param listener call back
      * */
     private void requestError(Throwable e,RequestListener listener){
-        if(e instanceof TimeoutException){
-            if(listener != null){
+        if (listener != null){
+            if(e instanceof TimeoutException){
                 listener.error(404, NextApplication.mContext.getString(R.string.net_request_timeout));
-            }
-        }else if(e instanceof NoConnectionPendingException){
-            if(listener != null){
+            }else if(e instanceof NetworkErrorException){
                 listener.error(404,NextApplication.mContext.getString(R.string.net_unavailable));
+            }else{
+                if (e.getMessage().contains("Failed to connect") || e.getMessage().contains("failed to connect")){
+                    listener.error(404,NextApplication.mContext.getString(R.string.net_unavailable));
+                }else if (e.getMessage().contains("timeout")){
+                    listener.error(404, NextApplication.mContext.getString(R.string.net_request_timeout));
+                }else{
+                    listener.error(404,"");
+                }
             }
-        }else{
-            listener.error(404,e.getMessage());
         }
     }
 
@@ -201,7 +205,6 @@ public class RequestUtils {
             Intent intent = new Intent(NextApplication.mContext,LoginUI.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             NextApplication.mContext.startActivity(intent);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
