@@ -65,6 +65,7 @@ public class ManagerWalletActivity extends BaseActivity implements AdapterView.O
         filter.addAction(Constants.WALLET_REFRESH_DEL);//Refresh the page
         filter.addAction(Constants.WALLET_SUCCESS);//Refresh the page
         filter.addAction(Constants.ACTION_GESTURE_LOGIN);//Refresh the page
+        filter.addAction(Constants.WALLET_UPDATE_NAME);
         registerReceiver(mBroadcastReceiver, filter);
     }
 
@@ -102,6 +103,8 @@ public class ManagerWalletActivity extends BaseActivity implements AdapterView.O
                     adapter.notifyDataSetChanged();
                 }
             }else if (intent != null && (Constants.WALLET_SUCCESS.equals(intent.getAction())) || Constants.ACTION_GESTURE_LOGIN.equals(intent.getAction())){
+                adapter.notifyDataSetChanged();
+            }else if (intent != null && (Constants.WALLET_UPDATE_NAME.equals(intent.getAction()))){
                 adapter.notifyDataSetChanged();
             }
         }
