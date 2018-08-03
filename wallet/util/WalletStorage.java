@@ -5,13 +5,12 @@ import android.text.TextUtils;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.listener.RequestListener;
-import com.lingtuan.firefly.raiden.RaidenNet;
+import com.lingtuan.firefly.network.NetRequestImpl;
 import com.lingtuan.firefly.raiden.RaidenUrl;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.SDCardCtrl;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
 import org.json.JSONArray;
@@ -62,7 +61,19 @@ public class WalletStorage {
     
     public synchronized boolean add(StorableWallet storableWallet, Context context) {
         for (int i = 0; i < mapdb.size(); i++) {
-            if (mapdb.get(i).getPublicKey().equals(storableWallet.getPublicKey())) {
+
+            String address = mapdb.get(i).getPublicKey();
+            String tempAddress = storableWallet.getPublicKey();
+
+            if (address.startsWith("0x")){
+                address = "0x" + address;
+            }
+
+            if (tempAddress.startsWith("0x")){
+                tempAddress = "0x" + tempAddress;
+            }
+
+            if (TextUtils.equals(address,tempAddress)) {
                 return true;
             }
         }
@@ -92,7 +103,20 @@ public class WalletStorage {
         }
         boolean hasWallet = false;
         for (int i = 0; i < mapdb.size(); i++) {
-            if (mapdb.get(i).getPublicKey().equals(storableWallet.getPublicKey())) {
+
+            String address = mapdb.get(i).getPublicKey();
+            String tempAddress = storableWallet.getPublicKey();
+
+            if (address.startsWith("0x")){
+                address = "0x" + address;
+            }
+
+            if (tempAddress.startsWith("0x")){
+                tempAddress = "0x" + tempAddress;
+            }
+
+
+            if (TextUtils.equals(address,tempAddress)) {
                 mapdb.get(i).setSelect(true);
                 hasWallet = true;
             } else {
@@ -118,7 +142,15 @@ public class WalletStorage {
             return;
         }
         for (int i = 0; i < mapdb.size(); i++) {
-            if (TextUtils.equals(mapdb.get(i).getPublicKey(), publicKey)) {
+            if (!publicKey.startsWith("0x")){
+                publicKey = "0x" + publicKey;
+            }
+
+            String tempAddress = mapdb.get(i).getPublicKey();
+            if (!tempAddress.startsWith("0x")){
+                tempAddress = "0x" + tempAddress;
+            }
+            if (TextUtils.equals(tempAddress, publicKey)) {
                 mapdb.get(i).setSelect(true);
             } else {
                 mapdb.get(i).setSelect(false);
@@ -133,7 +165,17 @@ public class WalletStorage {
      */
     public synchronized boolean checkExists(String address) {
         for (int i = 0; i < mapdb.size(); i++) {
-            if (mapdb.get(i).getPublicKey().equalsIgnoreCase(address)) {
+
+            String tempAddress = mapdb.get(i).getPublicKey();
+            if (!tempAddress.startsWith("0x")){
+                tempAddress = "0x" + tempAddress;
+            }
+
+            if (!address.startsWith("0x")){
+                address = "0x" + address;
+            }
+
+            if (tempAddress.equalsIgnoreCase(address)) {
                 return true;
             }
         }
@@ -152,39 +194,20 @@ public class WalletStorage {
      */
     public void addWalletToList(Context context, StorableWallet storableWallet) {
         String walletList = MySharedPrefs.readWalletList(context);
-        try {
-            JSONObject json;
-            if (TextUtils.isEmpty(walletList)) {
-                json = new JSONObject();
-            } else {
-                json = new JSONObject(walletList);
-            }
-            JSONArray array = json.optJSONArray("data");
-            if (array == null) {
-                array = new JSONArray();
-            }
-            JSONObject newWallet = new JSONObject();
-            newWallet.put(Constants.WALLET_NAME, storableWallet.getWalletName());
-            newWallet.put(Constants.WALLET_ADDRESS, storableWallet.getPublicKey());
-            newWallet.put(Constants.WALLET_EXTRA, storableWallet.getCanExportPrivateKey());
-            newWallet.put(Constants.WALLET_BACKUP, storableWallet.isBackup());
-            newWallet.put(Constants.WALLET_SELECT, storableWallet.isSelect());
-            newWallet.put(Constants.WALLET_ICON, storableWallet.getImgId());
-            array.put(newWallet);
-            json.put("data", array);
-            int walletMode = MySharedPrefs.readInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
-            if (walletMode == 0 && NextApplication.myInfo != null) {
-                MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId(), json.toString());
-                addWalletAllToList(context, storableWallet);
-            } else if (walletMode == 1) {
-                MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET, json.toString());
-                addWalletModeToList(context, storableWallet);
-            } else {
-                MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET, json.toString());
-                addWalletAllToList(context, storableWallet);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        JSONObject json = updateJsonArray(walletList,storableWallet,false);
+        if (json == null){
+            return;
+        }
+        int walletMode = MySharedPrefs.readInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+        if (walletMode == 0 && NextApplication.myInfo != null) {
+            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId(), json.toString());
+            addWalletAllToList(context, storableWallet);
+        } else if (walletMode == 1) {
+            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET, json.toString());
+            addWalletModeToList(context, storableWallet);
+        } else {
+            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET, json.toString());
+            addWalletAllToList(context, storableWallet);
         }
     }
     
@@ -195,75 +218,24 @@ public class WalletStorage {
      */
     public void addWalletAllToList(Context context, StorableWallet storableWallet) {
         String walletList = MySharedPrefs.readWalletModeAllList(context);
-        try {
-            JSONObject json;
-            if (TextUtils.isEmpty(walletList)) {
-                json = new JSONObject();
-            } else {
-                json = new JSONObject(walletList);
-            }
-            JSONArray array = json.optJSONArray("data");
-            if (array == null) {
-                array = new JSONArray();
-            }
-            for (int i = 0; i < array.length(); i++) {
-                String address = array.optJSONObject(i).optString(Constants.WALLET_ADDRESS);
-                if (TextUtils.equals(address, storableWallet.getPublicKey())) {
-                    return;
-                }
-            }
-            JSONObject newWallet = new JSONObject();
-            newWallet.put(Constants.WALLET_NAME, storableWallet.getWalletName());
-            newWallet.put(Constants.WALLET_ADDRESS, storableWallet.getPublicKey());
-            newWallet.put(Constants.WALLET_EXTRA, storableWallet.getCanExportPrivateKey());
-            newWallet.put(Constants.WALLET_BACKUP, storableWallet.isBackup());
-            newWallet.put(Constants.WALLET_SELECT, storableWallet.isSelect());
-            newWallet.put(Constants.WALLET_ICON, storableWallet.getImgId());
-            array.put(newWallet);
-            json.put("data", array);
-            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET, json.toString());
-        } catch (JSONException e) {
-            e.printStackTrace();
+        JSONObject json = updateJsonArray(walletList,storableWallet,true);
+        if (json == null){
+            return;
         }
+        MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET, json.toString());
     }
     
     /**
      * increase the purse lists
-     *
      * @ param storableWallet wallet
      */
     public void addWalletModeToList(Context context, StorableWallet storableWallet) {
         String walletList = MySharedPrefs.readWalletModeList(context);
-        try {
-            JSONObject json;
-            if (TextUtils.isEmpty(walletList)) {
-                json = new JSONObject();
-            } else {
-                json = new JSONObject(walletList);
-            }
-            JSONArray array = json.optJSONArray("data");
-            if (array == null) {
-                array = new JSONArray();
-            }
-            for (int i = 0; i < array.length(); i++) {
-                String address = array.optJSONObject(i).optString(Constants.WALLET_ADDRESS);
-                if (TextUtils.equals(address, storableWallet.getPublicKey())) {
-                    return;
-                }
-            }
-            JSONObject newWallet = new JSONObject();
-            newWallet.put(Constants.WALLET_NAME, storableWallet.getWalletName());
-            newWallet.put(Constants.WALLET_ADDRESS, storableWallet.getPublicKey());
-            newWallet.put(Constants.WALLET_EXTRA, storableWallet.getCanExportPrivateKey());
-            newWallet.put(Constants.WALLET_BACKUP, storableWallet.isBackup());
-            newWallet.put(Constants.WALLET_SELECT, storableWallet.isSelect());
-            newWallet.put(Constants.WALLET_ICON, storableWallet.getImgId());
-            array.put(newWallet);
-            json.put("data", array);
-            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET, json.toString());
-        } catch (JSONException e) {
-            e.printStackTrace();
+        JSONObject json= updateJsonArray(walletList,storableWallet,true);
+        if (json == null){
+            return;
         }
+        MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET, json.toString());
     }
     
     
@@ -284,51 +256,13 @@ public class WalletStorage {
         } else {
             walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET);
         }
-        try {
-            JSONObject json;
-            if (TextUtils.isEmpty(walletList)) {
-                json = new JSONObject();
-            } else {
-                json = new JSONObject(walletList);
-            }
-            JSONArray array = json.optJSONArray("data");
-            if (array == null) {
-                array = new JSONArray();
-            }
-            JSONArray newArray = new JSONArray();
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject newWallet = new JSONObject();
-                newWallet.put(Constants.WALLET_ADDRESS, array.optJSONObject(i).optString(Constants.WALLET_ADDRESS));
-                newWallet.put(Constants.WALLET_NAME, array.optJSONObject(i).optString(Constants.WALLET_NAME));
-                newWallet.put(Constants.WALLET_SELECT, array.optJSONObject(i).optString(Constants.WALLET_SELECT));
-                newWallet.put(Constants.WALLET_EXTRA, array.optJSONObject(i).optString(Constants.WALLET_EXTRA));
-                newWallet.put(Constants.WALLET_BACKUP, array.optJSONObject(i).optString(Constants.WALLET_BACKUP));
-                newWallet.put(Constants.WALLET_ICON, array.optJSONObject(i).optInt(Constants.WALLET_ICON));
-                if (isCopy) {
-                    if (address.equals(array.optJSONObject(i).optString(Constants.WALLET_ADDRESS))) {
-                        newWallet.put(Constants.WALLET_EXTRA, 0);
-                        newWallet.put(Constants.WALLET_BACKUP, true);
-                    }
-                } else {
-                    if (address.equals(array.optJSONObject(i).optString(Constants.WALLET_ADDRESS))) {
-                        newWallet.put(Constants.WALLET_SELECT, true);
-                    } else {
-                        newWallet.put(Constants.WALLET_SELECT, false);
-                    }
-                }
-                newArray.put(newWallet);
-            }
-            json.put("data", newArray);
-            if (walletMode == 0 && NextApplication.myInfo != null) {
-                MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId(), json.toString());
-            } else if (walletMode == 1) {
-                MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET, json.toString());
-            } else {
-                MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET, json.toString());
-            }
-            
-        } catch (JSONException e) {
-            e.printStackTrace();
+        JSONObject json = copyJsonArray(walletList,address,isCopy,true);
+        if (walletMode == 0 && NextApplication.myInfo != null) {
+            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId(), json.toString());
+        } else if (walletMode == 1) {
+            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET, json.toString());
+        } else {
+            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET, json.toString());
         }
     }
     
@@ -342,7 +276,17 @@ public class WalletStorage {
     public void removeWallet(String address, int type, Context context) {
         int position = -1;
         for (int i = 0; i < mapdb.size(); i++) {
-            if (mapdb.get(i).getPublicKey().equalsIgnoreCase(address)) {
+
+            String tempAddress = mapdb.get(i).getPublicKey();
+            if (!tempAddress.startsWith("0x")){
+                tempAddress = "0x" + tempAddress;
+            }
+
+            if (!address.startsWith("0x")){
+                address = "0x" + address;
+            }
+
+            if (tempAddress.equalsIgnoreCase(address)) {
                 position = i;
                 break;
             }
@@ -354,7 +298,6 @@ public class WalletStorage {
             delWalletList(context, address);
             mapdb.remove(position);
         }
-        
     }
     
     /**
@@ -373,40 +316,13 @@ public class WalletStorage {
         } else {
             walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET);
         }
-        try {
-            JSONObject json;
-            if (TextUtils.isEmpty(walletList)) {
-                json = new JSONObject();
-            } else {
-                json = new JSONObject(walletList);
-            }
-            JSONArray array = json.optJSONArray("data");
-            if (array == null) {
-                array = new JSONArray();
-            }
-            JSONArray newArray = new JSONArray();
-            for (int i = 0; i < array.length(); i++) {
-                if (!walletAddress.equals(array.optJSONObject(i).optString(Constants.WALLET_ADDRESS))) {
-                    JSONObject newWallet = new JSONObject();
-                    newWallet.put(Constants.WALLET_ADDRESS, array.optJSONObject(i).optString(Constants.WALLET_ADDRESS));
-                    newWallet.put(Constants.WALLET_NAME, array.optJSONObject(i).optString(Constants.WALLET_NAME));
-                    newWallet.put(Constants.WALLET_EXTRA, array.optJSONObject(i).optInt(Constants.WALLET_EXTRA));
-                    newWallet.put(Constants.WALLET_BACKUP, array.optJSONObject(i).optBoolean(Constants.WALLET_BACKUP));
-                    newWallet.put(Constants.WALLET_SELECT, array.optJSONObject(i).optBoolean(Constants.WALLET_SELECT));
-                    newWallet.put(Constants.WALLET_ICON, array.optJSONObject(i).optInt(Constants.WALLET_ICON));
-                    newArray.put(newWallet);
-                }
-            }
-            json.put("data", newArray);
-            if (walletMode == 0 && NextApplication.myInfo != null) {
-                MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId(), json.toString());
-            } else if (walletMode == 1) {
-                MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET, json.toString());
-            } else if (walletMode == 2) {
-                MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET, json.toString());
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        JSONObject json = deleteJsonArray(walletList,walletAddress);
+        if (walletMode == 0 && NextApplication.myInfo != null) {
+            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId(), json.toString());
+        } else if (walletMode == 1) {
+            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET, json.toString());
+        } else if (walletMode == 2) {
+            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET, json.toString());
         }
     }
     
@@ -471,25 +387,7 @@ public class WalletStorage {
             
             for (int i = 0; i < walletArray.length(); i++) {
                 JSONObject walletObj = walletArray.optJSONObject(i);
-                StorableWallet storableWallet = new StorableWallet();
-                storableWallet.setPublicKey(walletObj.optString(Constants.WALLET_ADDRESS));
-                storableWallet.setWalletName(walletObj.optString(Constants.WALLET_NAME));
-                storableWallet.setCanExportPrivateKey(walletObj.optInt(Constants.WALLET_EXTRA));
-                storableWallet.setBackup(walletObj.optBoolean(Constants.WALLET_BACKUP));
-                storableWallet.setImgId(walletObj.optInt(Constants.WALLET_ICON));
-                if (hasSelect == 1) {
-                    storableWallet.setSelect(walletObj.optBoolean(Constants.WALLET_SELECT));
-                } else {
-                    if (i == index) {
-                        storableWallet.setSelect(true);
-                    } else {
-                        storableWallet.setSelect(false);
-                    }
-                }
-                File destination = new File(new File(context.getFilesDir(), SDCardCtrl.WALLERPATH), RaidenUrl.getInatance().initLocalKeyStore(storableWallet.getPublicKey()));
-                if (!destination.exists()) {
-                    storableWallet.setWalletType(1);
-                }
+                StorableWallet storableWallet = loadWallet(walletObj,i,hasSelect,index,context);
                 mapdb.add(storableWallet);
             }
         } catch (JSONException e) {
@@ -534,26 +432,7 @@ public class WalletStorage {
             
             for (int i = 0; i < walletArray.length(); i++) {
                 JSONObject walletObj = walletArray.optJSONObject(i);
-                StorableWallet storableWallet = new StorableWallet();
-                storableWallet.setPublicKey(walletObj.optString(Constants.WALLET_ADDRESS));
-                storableWallet.setWalletName(walletObj.optString(Constants.WALLET_NAME));
-                storableWallet.setCanExportPrivateKey(walletObj.optInt(Constants.WALLET_EXTRA));
-                storableWallet.setBackup(walletObj.optBoolean(Constants.WALLET_BACKUP));
-                storableWallet.setSelect(walletObj.optBoolean(Constants.WALLET_SELECT));
-                storableWallet.setImgId(walletObj.optInt(Constants.WALLET_ICON));
-                if (hasSelect == 1) {
-                    storableWallet.setSelect(walletObj.optBoolean(Constants.WALLET_SELECT));
-                } else {
-                    if (i == index) {
-                        storableWallet.setSelect(true);
-                    } else {
-                        storableWallet.setSelect(false);
-                    }
-                }
-                File destination = new File(new File(context.getFilesDir(), SDCardCtrl.WALLERPATH), RaidenUrl.getInatance().initLocalKeyStore(storableWallet.getPublicKey()));
-                if (!destination.exists()) {
-                    storableWallet.setWalletType(1);
-                }
+                StorableWallet storableWallet = loadWallet(walletObj,i,hasSelect,index,context);
                 mapdbLogin.add(storableWallet);
             }
         } catch (JSONException e) {
@@ -585,34 +464,51 @@ public class WalletStorage {
                 JSONObject object = new JSONObject(walletList);
                 JSONArray walletArray = object.optJSONArray("data");
                 addWalletArray(context, walletArray, false, true);
+
                 JSONObject objectMode = new JSONObject(walletModeList);
                 JSONArray walletModeArray = objectMode.optJSONArray("data");
                 boolean hasExists = false;
+
+                boolean hasSelectDb = false;
+                for (int i = 0 ; i <mapdb.size() ; i++){
+                    if (mapdb.get(i).isSelect()){
+                        hasSelectDb = true;
+                        break;
+                    }
+                }
+
                 for (int i = 0; i < walletModeArray.length(); i++) {
                     JSONObject walletObj = walletModeArray.optJSONObject(i);
                     for (int j = 0; j < mapdb.size(); j++) {
                         hasExists = false;
-                        if (mapdb.get(j).getPublicKey().equals(walletObj.optString(Constants.WALLET_ADDRESS))) {
+
+                        String address = mapdb.get(j).getPublicKey();
+                        if (!address.startsWith("0x")){
+                            address = "0x" + address;
+                        }
+
+                        String tempAddress = walletObj.optString(Constants.WALLET_ADDRESS);
+                        if (!tempAddress.startsWith("0x")){
+                            tempAddress = "0x" + tempAddress;
+                        }
+
+                        if (TextUtils.equals(address,tempAddress)) {
+                            hasExists = true;
+                            if (hasSelectDb){
+                                break;
+                            }
                             if (walletObj.optBoolean(Constants.WALLET_SELECT)) {
                                 mapdb.get(j).setSelect(true);
                             }
-                            hasExists = true;
                             break;
                         }
                     }
                     if (hasExists) {
                         continue;
                     }
-                    StorableWallet storableWallet = new StorableWallet();
-                    storableWallet.setPublicKey(walletObj.optString(Constants.WALLET_ADDRESS));
-                    storableWallet.setWalletName(walletObj.optString(Constants.WALLET_NAME));
-                    storableWallet.setCanExportPrivateKey(walletObj.optInt(Constants.WALLET_EXTRA));
-                    storableWallet.setBackup(walletObj.optBoolean(Constants.WALLET_BACKUP));
-                    storableWallet.setSelect(walletObj.optBoolean(Constants.WALLET_SELECT));
-                    storableWallet.setSelect(walletObj.optBoolean(Constants.WALLET_ICON));
-                    File destination = new File(new File(context.getFilesDir(), SDCardCtrl.WALLERPATH), RaidenUrl.getInatance().initLocalKeyStore(storableWallet.getPublicKey()));
-                    if (!destination.exists()) {
-                        storableWallet.setWalletType(1);
+                    StorableWallet storableWallet = loadWallet(walletObj,i,1,0,context);
+                    if (hasSelectDb){
+                        storableWallet.setSelect(false);
                     }
                     addWalletToList(NextApplication.mContext, storableWallet);
                     mapdb.add(storableWallet);
@@ -690,29 +586,7 @@ public class WalletStorage {
         
         for (int i = 0; i < walletArray.length(); i++) {
             JSONObject walletObj = walletArray.optJSONObject(i);
-            StorableWallet storableWallet = new StorableWallet();
-            storableWallet.setPublicKey(walletObj.optString(Constants.WALLET_ADDRESS));
-            storableWallet.setWalletName(walletObj.optString(Constants.WALLET_NAME));
-            storableWallet.setCanExportPrivateKey(walletObj.optInt(Constants.WALLET_EXTRA));
-            storableWallet.setBackup(walletObj.optBoolean(Constants.WALLET_BACKUP));
-            storableWallet.setImgId(walletObj.optInt(Constants.WALLET_ICON));
-            if (reSetSelect) {
-                storableWallet.setSelect(false);
-            } else {
-                if (hasSelect == 1) {
-                    storableWallet.setSelect(walletObj.optBoolean(Constants.WALLET_SELECT));
-                } else {
-                    if (i == index) {
-                        storableWallet.setSelect(true);
-                    } else {
-                        storableWallet.setSelect(false);
-                    }
-                }
-            }
-            File destination = new File(new File(context.getFilesDir(), SDCardCtrl.WALLERPATH), RaidenUrl.getInatance().initLocalKeyStore(storableWallet.getPublicKey()));
-            if (!destination.exists()) {
-                storableWallet.setWalletType(1);
-            }
+            StorableWallet storableWallet = loadWallet(walletObj,i,hasSelect,index,context);
             if (needAdd) {
                 addWalletToList(NextApplication.mContext, storableWallet);
             }
@@ -772,6 +646,234 @@ public class WalletStorage {
                 
             }
         });
+    }
+
+    /**
+     * update wallet json
+     * @param walletList json string
+     * @param checkEquals check is equals
+     * @param storableWallet wallet bean
+     * */
+    private JSONObject updateJsonArray(String walletList,StorableWallet storableWallet,boolean checkEquals){
+        JSONObject json = null;
+        try {
+            if (TextUtils.isEmpty(walletList)) {
+                json = new JSONObject();
+            } else {
+                json = new JSONObject(walletList);
+            }
+
+            JSONArray array = json.optJSONArray("data");
+            if (array == null) {
+                array = new JSONArray();
+            }
+            if (checkEquals){
+                for (int i = 0; i < array.length(); i++) {
+                    String address = array.optJSONObject(i).optString(Constants.WALLET_ADDRESS);
+                    if (!address.startsWith("0x")){
+                        address = "0x" + address;
+                    }
+
+                    String tempAddress = storableWallet.getPublicKey();
+                    if (!tempAddress.startsWith("0x")){
+                        tempAddress = "0x" + tempAddress;
+                    }
+                    if (TextUtils.equals(address, tempAddress)) {
+                        return null;
+                    }
+                }
+            }
+            JSONObject newWallet = new JSONObject();
+            newWallet.put(Constants.WALLET_NAME, storableWallet.getWalletName());
+            newWallet.put(Constants.WALLET_ADDRESS, storableWallet.getPublicKey());
+            newWallet.put(Constants.WALLET_EXTRA, storableWallet.getCanExportPrivateKey());
+            newWallet.put(Constants.WALLET_BACKUP, storableWallet.isBackup());
+            newWallet.put(Constants.WALLET_SELECT, storableWallet.isSelect());
+            newWallet.put(Constants.WALLET_IMAGE, storableWallet.getWalletImageId());
+            array.put(newWallet);
+            json.put("data", array);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return json;
+    }
+
+    /**
+     * update wallet json
+     * @param walletList json string
+     * @param address wallet address
+     * @param isCopy is copy
+     * @param updateSelect is update select
+     * */
+    private JSONObject copyJsonArray(String walletList,String address,boolean isCopy,boolean updateSelect){
+        JSONObject json = null;
+        try {
+            if (TextUtils.isEmpty(walletList)) {
+                json = new JSONObject();
+            } else {
+                json = new JSONObject(walletList);
+            }
+            JSONArray array = json.optJSONArray("data");
+            if (array == null) {
+                array = new JSONArray();
+            }
+            JSONArray newArray = new JSONArray();
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject newWallet = new JSONObject();
+                newWallet.put(Constants.WALLET_ADDRESS, array.optJSONObject(i).optString(Constants.WALLET_ADDRESS));
+                newWallet.put(Constants.WALLET_NAME, array.optJSONObject(i).optString(Constants.WALLET_NAME));
+                newWallet.put(Constants.WALLET_SELECT, array.optJSONObject(i).optBoolean(Constants.WALLET_SELECT));
+                newWallet.put(Constants.WALLET_EXTRA, array.optJSONObject(i).optString(Constants.WALLET_EXTRA));
+                newWallet.put(Constants.WALLET_BACKUP, array.optJSONObject(i).optBoolean(Constants.WALLET_BACKUP));
+                newWallet.put(Constants.WALLET_IMAGE, array.optJSONObject(i).optString(Constants.WALLET_IMAGE));
+                if (updateSelect){
+
+                    if (!address.startsWith("0x")){
+                        address = "0x" + address;
+                    }
+
+                    String tempAddress = array.optJSONObject(i).optString(Constants.WALLET_ADDRESS);
+                    if (!tempAddress.startsWith("0x")){
+                        tempAddress = "0x" + tempAddress;
+                    }
+
+                    if (isCopy) {
+                        if (TextUtils.equals(address,tempAddress)) {
+                            newWallet.put(Constants.WALLET_EXTRA, 0);
+                            newWallet.put(Constants.WALLET_BACKUP, true);
+                        }
+                    } else {
+                        if (TextUtils.equals(address,tempAddress)) {
+                            newWallet.put(Constants.WALLET_SELECT, true);
+                        } else {
+                            newWallet.put(Constants.WALLET_SELECT, false);
+                        }
+                    }
+                }
+                newArray.put(newWallet);
+            }
+            json.put("data", newArray);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return json;
+    }
+
+    /**
+     * update wallet json
+     * @param walletList json string
+     * @param walletAddress wallet address
+     * */
+    private JSONObject deleteJsonArray(String walletList,String walletAddress){
+        JSONObject json = null;
+        try {
+            if (TextUtils.isEmpty(walletList)) {
+                json = new JSONObject();
+            } else {
+                json = new JSONObject(walletList);
+            }
+            JSONArray array = json.optJSONArray("data");
+            if (array == null) {
+                array = new JSONArray();
+            }
+            JSONArray newArray = new JSONArray();
+            for (int i = 0; i < array.length(); i++) {
+
+                if (!walletAddress.startsWith("0x")){
+                    walletAddress = "0x" + walletAddress;
+                }
+
+                String tempAddress = array.optJSONObject(i).optString(Constants.WALLET_ADDRESS);
+                if (!tempAddress.startsWith("0x")){
+                    tempAddress = "0x" + tempAddress;
+                }
+
+                if (!TextUtils.equals(walletAddress,tempAddress)) {
+                    JSONObject newWallet = new JSONObject();
+                    newWallet.put(Constants.WALLET_ADDRESS, array.optJSONObject(i).optString(Constants.WALLET_ADDRESS));
+                    newWallet.put(Constants.WALLET_NAME, array.optJSONObject(i).optString(Constants.WALLET_NAME));
+                    newWallet.put(Constants.WALLET_SELECT, array.optJSONObject(i).optBoolean(Constants.WALLET_SELECT));
+                    newWallet.put(Constants.WALLET_EXTRA, array.optJSONObject(i).optString(Constants.WALLET_EXTRA));
+                    newWallet.put(Constants.WALLET_BACKUP, array.optJSONObject(i).optBoolean(Constants.WALLET_BACKUP));
+                    newWallet.put(Constants.WALLET_IMAGE, array.optJSONObject(i).optString(Constants.WALLET_IMAGE));
+                    newArray.put(newWallet);
+                }
+            }
+            json.put("data", newArray);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return json;
+    }
+
+
+    /**
+     * load wallet bean
+     * @param walletObj json
+     * @param i wallet int array position
+     * @param hasSelect is select
+     * @param index current wallet select
+     * */
+    private StorableWallet loadWallet(JSONObject walletObj,int i,int hasSelect,int index,Context context){
+        StorableWallet storableWallet = new StorableWallet();
+        storableWallet.setPublicKey(walletObj.optString(Constants.WALLET_ADDRESS));
+        storableWallet.setWalletName(walletObj.optString(Constants.WALLET_NAME));
+        storableWallet.setCanExportPrivateKey(walletObj.optInt(Constants.WALLET_EXTRA));
+        storableWallet.setBackup(walletObj.optBoolean(Constants.WALLET_BACKUP));
+        storableWallet.setWalletImageId(walletObj.optString(Constants.WALLET_IMAGE));
+        if (hasSelect == 1) {
+            storableWallet.setSelect(walletObj.optBoolean(Constants.WALLET_SELECT));
+        } else {
+            if (i == index) {
+                storableWallet.setSelect(true);
+            } else {
+                storableWallet.setSelect(false);
+            }
+        }
+        File destination = new File(new File(context.getFilesDir(), SDCardCtrl.WALLERPATH), RaidenUrl.getInatance().initLocalKeyStore(storableWallet.getPublicKey()));
+        if (!destination.exists()) {
+            storableWallet.setWalletType(1);
+        }
+        return storableWallet;
+    }
+
+
+    /**
+     * update wallet json
+     * @param address  wallet address
+     * @param walletName  wallet name
+     * */
+    public void updateWalletName(Context context,String address,String walletName){
+        String walletList = MySharedPrefs.readString(context,MySharedPrefs.FILE_WALLET,NextApplication.myInfo.getLocalId());
+        try {
+            JSONObject json;
+            if (TextUtils.isEmpty(walletList)) {
+                json = new JSONObject();
+            } else {
+                json = new JSONObject(walletList);
+            }
+            JSONArray array = json.optJSONArray("data");
+            if (array == null) {
+                array = new JSONArray();
+            }
+            for (int i = 0; i < array.length(); i++) {
+                String walletAddress = array.optJSONObject(i).optString(Constants.WALLET_ADDRESS);
+                if (!walletAddress.startsWith("0x")){
+                    walletAddress = "0x" + walletAddress;
+                }
+                if (!address.startsWith("0x")){
+                   address = "0x" + address;
+                }
+                if (TextUtils.equals(walletAddress, address)) {
+                    array.optJSONObject(i).put(Constants.WALLET_NAME, walletName);
+                    json.put("data", array);
+                    MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId(), json.toString());
+                    break;
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
     
 }
