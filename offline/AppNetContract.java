@@ -47,21 +47,11 @@ public interface AppNetContract {
 
         void removeP2pService(WifiP2pManager manager,WifiP2pManager.Channel channel,WifiP2pDnsSdServiceInfo serviceInfo);
 
-        ChatMsg saveTextChatMsg(String chatId, String uid, String username, String usergender, int type, String messageId,String content);
-
-        ChatMsg savePicChatMsg(String chatId, String uid, String username,String usergender, String path, int type, String messageId);
-
-        ChatMsg saveAudioChatMsg(String chatId, String uid, String username, String usergender, int type, String messageId, String second, String path);
-
-        ChatMsg saveCardChatMsg(String chatId, String uid, String username, String usergender, int type, String messageId, String path,  String id, String name, String sign);
-
-        ChatMsg saveFileChatMsg(String chatId, String uid, String username, String path, String usergender, int type, String messageId, String title, String number,int msgtype );
-
         void saveExitOrEnterChatMsg(String chatId, String uid, String username, String usergender, int type, String messageId,String content);
 
-        boolean handleRecvSystemMsg(InputStream ins, InetSocketAddress sockAddr,WifiPeopleVO meInfo,ArrayList<WifiPeopleVO> peerInfoList);
+        boolean handleReceiveSystemMsg(InputStream ins, InetSocketAddress sockAddr,WifiPeopleVO meInfo,ArrayList<WifiPeopleVO> peerInfoList);
 
-        boolean handleRecvChatMsg(InputStream ins, boolean isRoomChat, InetSocketAddress sockAddr,WifiPeopleVO meInfo,ArrayList<WifiPeopleVO> peerInfoList);
+        boolean handleReceiveChatMsg(InputStream ins, boolean isRoomChat, InetSocketAddress sockAddr,WifiPeopleVO meInfo,ArrayList<WifiPeopleVO> peerInfoList);
 
     }
 
@@ -97,9 +87,5 @@ public interface AppNetContract {
         void postSendBytes(long currentLength, String msgid);
 
         void postSendMsgResult(boolean successed,int state, String msgid);
-
-        void postRecvRoomChatMsg(String content, String second,String path, String uid, String username, String usergender,String id,String name,String sign,String messageId,int type);
-
-        ChatMsg postRecvNormalChatMsg(String content, String second,String path, String uid, String username, String usergender, String title, String number, String id,String name ,String sign,String messageId, int msgtype,int type);
     }
 }
