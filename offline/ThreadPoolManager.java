@@ -25,27 +25,29 @@ public class ThreadPoolManager extends HandlerThread {
 	private final ExecutorService pool;
 	private final AppNetService netService;
 	private final static String TAG = "ServiceThread";
-	
-	public ThreadPoolManager(AppNetService service, int port, int poolSize)
-			throws Exception {
+	private boolean isServiceRun = true;
+	private Handler handler = null;
+
+	public ThreadPoolManager(AppNetService service, int port, int poolSize)throws Exception {
 		super(TAG, Process.THREAD_PRIORITY_FOREGROUND);
 		assert (poolSize > 0);
 		this.netService = service;
 		serverSocket = new ServerSocket(port);
 		pool = Executors.newFixedThreadPool(poolSize);
 	}
+
 	public Handler getHandler() {
 		return handler;
 	}
-	
-	private boolean isServiceRun = true;
+
 	final void setServiceRun(boolean isRun) {
 		this.isServiceRun = isRun; 
 	}
+
 	final boolean isServiceRun() {
 		return isServiceRun; 
 	}
-	private Handler handler = null;
+
 	static private class ServiceThreadHandler extends Handler {
 		private ThreadPoolManager sThread;
 		ServiceThreadHandler(ThreadPoolManager service) {
@@ -85,18 +87,12 @@ public class ThreadPoolManager extends HandlerThread {
 
 	public void uninit() {
 		setServiceRun(false);
-		//close();
 	}
 	
 	public void execute (Runnable command) {
 		pool.execute(command);
 	}
-	
-//	public void open() {		
-//	}
-//	public void close() {		
-//	}
-	
+
 	public void destory() {
 		setServiceRun(false);
 		shutdownAndAwaitTermination();
@@ -122,7 +118,6 @@ public class ThreadPoolManager extends HandlerThread {
 			// Preserve interrupt status
 			Thread.currentThread().interrupt();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -149,28 +144,24 @@ class HandleAcceptSocket implements Runnable {
 	}
 
 	public void run() {
+		try {
+			InputStream ins = socket.getInputStream();
+			int iCommand = ins.read();
+			InetSocketAddress sockAddr = (InetSocketAddress) socket.getRemoteSocketAddress();
 
-			try {
-				InputStream ins = socket.getInputStream();
-				int iCommand = ins.read();
-				InetSocketAddress sockAddr = (InetSocketAddress) socket.getRemoteSocketAddress();
-
-				if (iCommand == Constants.COMMAND_ID_SEND_TYPE_SYSTEM) {
-					netService.handleRecvSystemMsg(ins,sockAddr);
+			if (iCommand == Constants.COMMAND_ID_SEND_TYPE_SYSTEM) {
+				netService.handleRecvSystemMsg(ins,sockAddr);
+			}else if (iCommand == Constants.COMMAND_ID_SEND_TYPE_NORMALCHAT) {
+				netService.handleRecvChatMsg(ins, false,sockAddr);
+			}else if (iCommand == Constants.COMMAND_ID_SEND_TYPE_ROOMCHAT) {
+				synchronized (NextApplication.lock){
+					 netService.handleRecvChatMsg(ins, true,sockAddr);
 				}
-				else if (iCommand == Constants.COMMAND_ID_SEND_TYPE_NORMALCHAT) {
-					netService.handleRecvChatMsg(ins, false,sockAddr);
-				}
-				else if (iCommand == Constants.COMMAND_ID_SEND_TYPE_ROOMCHAT) {
-					synchronized (NextApplication.lock)
-					{
-					     netService.handleRecvChatMsg(ins, true,sockAddr);
-					}
-				}
-				ins.close();
-			} catch (IOException e) {
-				return;
 			}
+			ins.close();
+		} catch (IOException e) {
+			return;
 		}
+	}
 
 }
