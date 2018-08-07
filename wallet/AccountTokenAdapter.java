@@ -21,6 +21,9 @@ import com.lingtuan.firefly.wallet.vo.TokenVo;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created on 2017/8/23.
  */
@@ -68,18 +71,13 @@ public class AccountTokenAdapter extends BaseAdapter {
     public View getView(final int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null){
-            holder = new ViewHolder();
             convertView = View.inflate(context, R.layout.wallet_token_item, null);
-            holder.tokenImg = (ImageView) convertView.findViewById(R.id.tokenImg);
-            holder.tokenPrice = (TextView) convertView.findViewById(R.id.tokenPrice);
-            holder.tokenSymbol = (TextView) convertView.findViewById(R.id.tokenSymbol);
-            holder.tokenBalance = (TextView) convertView.findViewById(R.id.tokenBalance);
-            holder.tokenTotalPrice = (TextView) convertView.findViewById(R.id.tokenTotalPrice);
-            holder.walletTokenBody = (LinearLayout) convertView.findViewById(R.id.walletTokenBody);
+            holder = new ViewHolder(convertView);
             convertView.setTag(holder);
         }else{
             holder = (ViewHolder) convertView.getTag();
         }
+
         TokenVo tokenVo = tokenVos.get(position);
         NextApplication.displayCircleToken(holder.tokenImg,Utils.buildThumb(tokenVo.getTokenLogo()));
         holder.tokenSymbol.setText(tokenVo.getTokenSymbol());
@@ -109,9 +107,13 @@ public class AccountTokenAdapter extends BaseAdapter {
                 holder.tokenTotalPrice.setText(context.getString(R.string.token_total_usd_price,tokenVo.getUsdUnitPrice()));
             }
         }
+        if (TextUtils.isEmpty(tokenVo.getTokenStringBalance())){
+            BigDecimal tokenBalanceDecimal = new BigDecimal(tokenVo.getTokenBalance()).setScale(6,BigDecimal.ROUND_CEILING);
+            holder.tokenBalance.setText(tokenBalanceDecimal.toPlainString());
+        }else{
+            holder.tokenBalance.setText(tokenVo.getTokenStringBalance());
+        }
 
-        BigDecimal tokenBalanceDecimal = new BigDecimal(tokenVo.getTokenBalance()).setScale(6,BigDecimal.ROUND_DOWN);
-        holder.tokenBalance.setText(tokenBalanceDecimal.toPlainString());
 
         holder.walletTokenBody.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -130,11 +132,21 @@ public class AccountTokenAdapter extends BaseAdapter {
     }
 
     static class ViewHolder{
+        @BindView(R.id.tokenImg)
         ImageView tokenImg;//token pic
+        @BindView(R.id.tokenPrice)
         TextView tokenPrice;//token price
+        @BindView(R.id.tokenSymbol)
         TextView tokenSymbol;//token name
+        @BindView(R.id.tokenBalance)
         TextView tokenBalance;//token balance
+        @BindView(R.id.tokenTotalPrice)
         TextView tokenTotalPrice;//token total price
+        @BindView(R.id.walletTokenBody)
         LinearLayout walletTokenBody;
+
+        public ViewHolder(View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 }

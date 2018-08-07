@@ -20,6 +20,8 @@ public class TokenVo implements Serializable{
     //token number
     private double tokenBalance;
 
+    private String tokenStringBalance;
+
     //token contact address
     private String contactAddress;
     //token is checked
@@ -145,6 +147,14 @@ public class TokenVo implements Serializable{
         this.state = state;
     }
 
+    public String getTokenStringBalance() {
+        return tokenStringBalance;
+    }
+
+    public void setTokenStringBalance(String tokenStringBalance) {
+        this.tokenStringBalance = tokenStringBalance;
+    }
+
     public TokenVo parse(JSONObject object){
         if (object == null){
             return null;
@@ -154,6 +164,7 @@ public class TokenVo implements Serializable{
         setTokenSymbol(object.optString("symbol"));
         setTokenLogo(object.optString("logo"));
         setTokenBalance(object.optDouble("balance",0.000000));
+        setTokenStringBalance(object.optString("balance"));
         setTokenPrice(object.optString("price"));
         setChecked(object.optInt("is_open",0) == 1);
         setFixed(object.optInt("fixed",0) == 1);
