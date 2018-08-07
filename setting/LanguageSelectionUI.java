@@ -1,22 +1,18 @@
 package com.lingtuan.firefly.setting;
 
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.os.Build;
-import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
-import com.lingtuan.firefly.util.Constants;
-import com.lingtuan.firefly.util.MySharedPrefs;
-import com.lingtuan.firefly.util.Utils;
+import com.lingtuan.firefly.language.LanguageType;
+import com.lingtuan.firefly.language.MultiLanguageUtil;
+import com.lingtuan.firefly.ui.MainFragmentUI;
 
-import java.util.Locale;
+import butterknife.BindView;
+import butterknife.OnClick;
 
 /**
  * Created on 2017/9/13.
@@ -27,8 +23,14 @@ import java.util.Locale;
 public class LanguageSelectionUI extends BaseActivity {
 
     //Chinese English
-    private RelativeLayout chineseBody,englishBody;
-    private ImageView chineseImg,englishImg;
+    @BindView(R.id.chineseBody)
+    RelativeLayout chineseBody;
+    @BindView(R.id.englishBody)
+    RelativeLayout englishBody;
+    @BindView(R.id.chineseImg)
+    ImageView chineseImg;
+    @BindView(R.id.englishImg)
+    ImageView englishImg;
 
     @Override
     protected void setContentView() {
@@ -37,50 +39,35 @@ public class LanguageSelectionUI extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        chineseBody = (RelativeLayout) findViewById(R.id.chineseBody);
-        englishBody = (RelativeLayout) findViewById(R.id.englishBody);
-        chineseImg = (ImageView) findViewById(R.id.chineseImg);
-        englishImg = (ImageView) findViewById(R.id.englishImg);
+
     }
 
     @Override
     protected void setListener() {
-        chineseBody.setOnClickListener(this);
-        englishBody.setOnClickListener(this);
+
     }
 
     @Override
     protected void initData() {
         setTitle(getString(R.string.setting_language_selection));
-        String language = MySharedPrefs.readString(LanguageSelectionUI.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_LANGUAFE);
-        if (TextUtils.isEmpty(language)){
-            String defaultLanguage = Locale.getDefault().getLanguage();
-            if (TextUtils.equals("zh",defaultLanguage)){
-                chineseImg.setVisibility(View.VISIBLE);
-                englishImg.setVisibility(View.GONE);
-            }else{//en
-                chineseImg.setVisibility(View.GONE);
-                englishImg.setVisibility(View.VISIBLE);
-            }
-        }else{
-            if (TextUtils.equals(language,"zh")){//Chinese
-                chineseImg.setVisibility(View.VISIBLE);
-                englishImg.setVisibility(View.GONE);
-            }else{//en
-                chineseImg.setVisibility(View.GONE);
-                englishImg.setVisibility(View.VISIBLE);
-            }
+        int language = MultiLanguageUtil.getInstance().getLanguageType();
+        if (LanguageType.LANGUAGE_CHINESE_SIMPLIFIED == language){//Chinese
+            chineseImg.setVisibility(View.VISIBLE);
+            englishImg.setVisibility(View.GONE);
+        }else{//en
+            chineseImg.setVisibility(View.GONE);
+            englishImg.setVisibility(View.VISIBLE);
         }
     }
 
-    @Override
+    @OnClick({R.id.chineseBody,R.id.englishBody})
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.chineseBody:
-                switchLanguage("zh");
+                switchLanguage(LanguageType.LANGUAGE_CHINESE_SIMPLIFIED);
                 break;
             case R.id.englishBody:
-                switchLanguage("en");
+                switchLanguage(LanguageType.LANGUAGE_EN);
                 break;
             default:
                 super.onClick(v);
@@ -90,32 +77,24 @@ public class LanguageSelectionUI extends BaseActivity {
 
     /**
      * Refresh the language
-     * @param language  en english  zh chinese
+     * @param languageType  0 default  1 english  2 chinese
      */
-    public void switchLanguage(String language) {
-        if (TextUtils.equals(language,"zh")){//chinese
+    public void switchLanguage(int languageType) {
+        int language = MultiLanguageUtil.getInstance().getLanguageType();
+        if (language == languageType){
+            return;
+        }
+        if (languageType == LanguageType.LANGUAGE_CHINESE_SIMPLIFIED){//chinese
             chineseImg.setVisibility(View.VISIBLE);
             englishImg.setVisibility(View.GONE);
-        }else{//en
+        }else {//en
             chineseImg.setVisibility(View.GONE);
             englishImg.setVisibility(View.VISIBLE);
         }
-        MySharedPrefs.write(LanguageSelectionUI.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_LANGUAFE,language);
-        // Local language setting
-        Locale locale = new Locale(language);
-        Resources res = getResources();
-        DisplayMetrics dm = res.getDisplayMetrics();
-        Configuration conf = res.getConfiguration();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            conf.setLocale(locale);
-        } else {
-            conf.locale = locale;
-        }
-        res.updateConfiguration(conf, dm);
-
-        setTitle(getString(R.string.setting_language_selection));
-        Utils.updateViewLanguage(findViewById(android.R.id.content));
-        Utils.sendBroadcastReceiver(LanguageSelectionUI.this,new Intent(Constants.CHANGE_LANGUAGE), false);
+        MultiLanguageUtil.getInstance().updateLanguage(languageType,true);
+        Intent intent = new Intent(LanguageSelectionUI.this, MainFragmentUI.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 
 }

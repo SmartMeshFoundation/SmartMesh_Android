@@ -1,10 +1,7 @@
 
 package com.lingtuan.firefly.setting;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -19,7 +16,6 @@ import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.gesturelock.ACache;
 import com.lingtuan.firefly.custom.switchbutton.SwitchButton;
 import com.lingtuan.firefly.fragment.MySelfFragment;
-import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.setting.contract.SettingContract;
 import com.lingtuan.firefly.setting.presenter.SettingPresenterImpl;
@@ -29,11 +25,6 @@ import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
-
-import org.json.JSONObject;
-
-import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -88,12 +79,7 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
 
     @Override
     protected void initData() {
-
         new SettingPresenterImpl(this);
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.CHANGE_LANGUAGE);//Refresh the page
-        registerReceiver(mBroadcastReceiver, filter);
         setTitle(getString(R.string.setting));
         versionCheck.setText(Utils.getVersionName(SettingUI.this));
 
@@ -237,22 +223,9 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
         mdf.show(getSupportFragmentManager(), "mdf");
     }
 
-
-    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent != null && (Constants.CHANGE_LANGUAGE.equals(intent.getAction()))) {
-                setTitle(getString(R.string.setting));
-                Utils.updateViewLanguage(findViewById(android.R.id.content));
-            }
-        }
-    };
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mBroadcastReceiver);
     }
 
     @Override
