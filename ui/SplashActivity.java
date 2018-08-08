@@ -1,10 +1,12 @@
 package com.lingtuan.firefly.ui;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
@@ -24,13 +26,18 @@ import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.login.LoginUI;
 import com.lingtuan.firefly.login.RegistUI;
 import com.lingtuan.firefly.service.UpdateVersionService;
+import com.lingtuan.firefly.setting.SecurityUI;
+import com.lingtuan.firefly.setting.SettingUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
+import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.xmpp.XmppUtils;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
+import butterknife.BindView;
+import butterknife.OnClick;
 import io.reactivex.functions.Consumer;
 
 /**
@@ -39,15 +46,10 @@ import io.reactivex.functions.Consumer;
 
 public class SplashActivity extends BaseActivity implements Animation.AnimationListener, View.OnClickListener {
 
-    private RelativeLayout splash_bg;
-
-    private TextView regsterBtn;
-    private TextView loginBtn;
-    private TextView walletPattern;
-
-    private LinearLayout bottom_bg_login;
-
-    private static int REQUEST_CODE_WRITE_SETTINGS = 0x01;
+    @BindView(R.id.splash_bg)
+    RelativeLayout splash_bg;
+    @BindView(R.id.bottom_bg_login)
+    LinearLayout bottom_bg_login;
 
     @Override
     protected void setContentView() {
@@ -56,11 +58,7 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
 
     @Override
     protected void findViewById() {
-        splash_bg = (RelativeLayout) findViewById(R.id.splash_bg);
-        regsterBtn = (TextView) findViewById(R.id.guide_register);
-        loginBtn = (TextView) findViewById(R.id.guide_login);
-        walletPattern = (TextView) findViewById(R.id.guide_wallet_mode);
-        bottom_bg_login = (LinearLayout) findViewById(R.id.bottom_bg_login);
+
     }
 
     @Override
@@ -75,22 +73,11 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
         LocalBroadcastManager.getInstance(SplashActivity.this).registerReceiver(mBroadcastReceiver, filter);
 
         /**Set the language*/
-        Utils.settingLanguage(SplashActivity.this);
-        Utils.updateViewLanguage(findViewById(android.R.id.content));
-
-        regsterBtn.setOnClickListener(this);
-        loginBtn.setOnClickListener(this);
-        walletPattern.setOnClickListener(this);
+        Utils.settingLanguage();
         AlphaAnimation aa = new AlphaAnimation(0.3f, 1.0f);
         aa.setDuration(1000);
         splash_bg.startAnimation(aa);
         aa.setAnimationListener(this);
-
-//        ComponentName mName = new ComponentName(this, LoadDataService.class);
-//        Intent locationService = new Intent(LoadDataService.ACTION_LOAD_LOCATION);
-//        locationService.setComponent(mName);
-//        startService(locationService);
-
 
     }
 
@@ -110,6 +97,7 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
 
     }
 
+    @SuppressLint("CheckResult")
     @Override
     public void onAnimationEnd(Animation animation) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -119,52 +107,52 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
                             ,Manifest.permission.READ_PHONE_STATE
                             ,Manifest.permission.WRITE_EXTERNAL_STORAGE
                             ,Manifest.permission.READ_EXTERNAL_STORAGE
-//                        ,Manifest.permission.CHANGE_CONFIGURATION
                             ,Manifest.permission.RECORD_AUDIO
                             ,Manifest.permission.READ_CONTACTS)
                     .subscribe(new Consumer<Boolean>() {
                         @Override
-                        public void accept(Boolean aBoolean) throws Exception {
+                        public void accept(Boolean aBoolean){
                             if (aBoolean){
-                                //暂时不需要本permission
-//                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.System.canWrite(SplashActivity.this)) {
-//                                    requestWriteSettings();
-//                                }else{
-//                                    intoNextMethod();
-//                                }
                                 intoNextMethod();
                             }else{
-//                                showToast(getString(R.string.open_permission));
-                                finish();
+                                openPermission();
                             }
                         }
                     });
         }else{
             intoNextMethod();
         }
+    }
 
+    private void openPermission(){
+        MyViewDialogFragment mdf = new MyViewDialogFragment();
+        mdf.setTitleAndContentText(getString(R.string.open_permission_about_smartmesh), getString(R.string.open_permission));
+        mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
+            @Override
+            public void okBtn() {
+                Intent localIntent = new Intent();
+                localIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                localIntent.setAction("android.settings.APPLICATION_DETAILS_SETTINGS");
+                localIntent.setData(Uri.fromParts("package", getPackageName(), null));
+                startActivity(localIntent);
+                finish();
+            }
+        });
+
+        mdf.setCancelCallback(new MyViewDialogFragment.CancelCallback() {
+            @Override
+            public void cancelBtn() {
+                finish();
+            }
+        });
+        mdf.setCancelable(false);
+        mdf.show(getSupportFragmentManager(), "mdf");
     }
 
     @Override
     public void onAnimationRepeat(Animation animation) {
 
     }
-
-//    private void requestWriteSettings() {
-//        Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
-//        intent.setData(Uri.parse("package:" + getPackageName()));
-//        startActivityForResult(intent, REQUEST_CODE_WRITE_SETTINGS );
-//    }
-//
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//        if (requestCode == REQUEST_CODE_WRITE_SETTINGS){
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.System.canWrite(SplashActivity.this)){
-//                intoNextMethod();
-//            }
-//        }
-//    }
 
     private void intoNextMethod(){
         int walletMode = MySharedPrefs.readInt(SplashActivity.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
@@ -203,7 +191,7 @@ public class SplashActivity extends BaseActivity implements Animation.AnimationL
     };
 
 
-    @Override
+    @OnClick({R.id.guide_register,R.id.guide_login,R.id.guide_wallet_mode})
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.guide_register:
