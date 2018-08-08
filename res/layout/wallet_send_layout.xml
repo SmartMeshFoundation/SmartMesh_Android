@@ -100,9 +100,10 @@
                             android:id="@+id/toValue"
                             style="@style/EditTextSendStyle"
                             android:layout_marginTop="0dp"
+                            android:layout_marginRight="10dp"
                             android:layout_height="50dp"
                             android:layout_width="0dp"
-                            android:layout_weight="1"
+                            android:layout_weight="1.5"
                             android:inputType="numberDecimal"
                             android:hint="@string/input_vaule"/>
 
@@ -111,7 +112,10 @@
                             style="@style/TextViewSendStyle"
                             android:layout_marginRight="10dp"
                             android:layout_marginTop="0dp"
+                            android:layout_weight="1"
+                            android:layout_width = "0dp"
                             android:visibility="gone"
+                            android:gravity="center_vertical|right"
                             android:textColor="@color/textColorHintPrimary"/>
 
                     </LinearLayout>
@@ -290,6 +294,7 @@
                         android:layout_gravity="center_vertical|right"/>
                 </LinearLayout>
             </LinearLayout>
+
 
             <TextView
                 android:id="@+id/send"
