@@ -86,6 +86,7 @@ public class TransAdapter extends BaseAdapter {
 
         if (transVo.getState() == 2){
             holder.transFailed.setVisibility(View.VISIBLE);
+            holder.transFailed.setText(context.getString(R.string.transcation_failed));
             holder.transProgressBar.setVisibility(View.GONE);
         }else if (transVo.getState() == -1){
             holder.transFailed.setVisibility(View.VISIBLE);
