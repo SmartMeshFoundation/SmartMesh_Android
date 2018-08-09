@@ -5,11 +5,13 @@ import android.text.TextUtils;
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.custom.gesturelock.ACache;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
+import com.lingtuan.firefly.language.LanguageType;
+import com.lingtuan.firefly.language.MultiLanguageUtil;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.network.NetRequestImpl;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.wallet.contract.AccountContract;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
@@ -250,23 +252,8 @@ public class AccountPresenterImpl implements AccountContract.Presenter {
 
     @Override
     public boolean checkLanguage() {
-        boolean isChinese;
-        String language = MySharedPrefs.readString(NextApplication.mContext, MySharedPrefs.FILE_APPLICATION, MySharedPrefs.KEY_LANGUAFE);
-        if (TextUtils.isEmpty(language)) {
-            Locale locale = new Locale(Locale.getDefault().getLanguage());
-            if (TextUtils.equals(locale.getLanguage(), "zh")) {
-                isChinese = true;
-            } else {
-                isChinese = false;
-            }
-        } else {
-            if (TextUtils.equals(language, "zh")) {
-                isChinese = true;
-            } else {
-                isChinese = false;
-            }
-        }
-        return isChinese;
+        int language = MultiLanguageUtil.getInstance().getLanguageType();
+        return LanguageType.LANGUAGE_CHINESE_SIMPLIFIED == language;
     }
 
 
