@@ -690,6 +690,7 @@ public class WalletStorage {
             newWallet.put(Constants.WALLET_BACKUP, storableWallet.isBackup());
             newWallet.put(Constants.WALLET_SELECT, storableWallet.isSelect());
             newWallet.put(Constants.WALLET_IMAGE, storableWallet.getWalletImageId());
+            newWallet.put(Constants.WALLET_PWD_INFO, storableWallet.getPwdInfo());
             array.put(newWallet);
             json.put("data", array);
         }catch (Exception e){
@@ -726,6 +727,7 @@ public class WalletStorage {
                 newWallet.put(Constants.WALLET_EXTRA, array.optJSONObject(i).optString(Constants.WALLET_EXTRA));
                 newWallet.put(Constants.WALLET_BACKUP, array.optJSONObject(i).optBoolean(Constants.WALLET_BACKUP));
                 newWallet.put(Constants.WALLET_IMAGE, array.optJSONObject(i).optString(Constants.WALLET_IMAGE));
+                newWallet.put(Constants.WALLET_PWD_INFO, array.optJSONObject(i).optString(Constants.WALLET_PWD_INFO));
                 if (updateSelect){
 
                     if (!address.startsWith("0x")){
@@ -796,6 +798,7 @@ public class WalletStorage {
                     newWallet.put(Constants.WALLET_EXTRA, array.optJSONObject(i).optString(Constants.WALLET_EXTRA));
                     newWallet.put(Constants.WALLET_BACKUP, array.optJSONObject(i).optBoolean(Constants.WALLET_BACKUP));
                     newWallet.put(Constants.WALLET_IMAGE, array.optJSONObject(i).optString(Constants.WALLET_IMAGE));
+                    newWallet.put(Constants.WALLET_PWD_INFO, array.optJSONObject(i).optString(Constants.WALLET_PWD_INFO));
                     newArray.put(newWallet);
                 }
             }
@@ -821,6 +824,7 @@ public class WalletStorage {
         storableWallet.setCanExportPrivateKey(walletObj.optInt(Constants.WALLET_EXTRA));
         storableWallet.setBackup(walletObj.optBoolean(Constants.WALLET_BACKUP));
         storableWallet.setWalletImageId(walletObj.optString(Constants.WALLET_IMAGE));
+        storableWallet.setPwdInfo(walletObj.optString(Constants.WALLET_PWD_INFO));
         if (hasSelect == 1) {
             storableWallet.setSelect(walletObj.optBoolean(Constants.WALLET_SELECT));
         } else {
