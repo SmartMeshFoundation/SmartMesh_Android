@@ -957,7 +957,7 @@ public class FinalUserDataBase {
                     continue;
                 }
             }
-            if (vo.getBlockNumber() - vo.getTxBlockNumber() >= 12 && vo.getTxBlockNumber() > 0){
+            if (vo.getBlockNumber() - vo.getTxBlockNumber() >= Constants.NEED_CONFIRM_BLOCK && vo.getTxBlockNumber() > 0){
                 FinalUserDataBase.getInstance().deleteTransTemp(vo.getTx(),String.valueOf(vo.getNoticeType()));
                 FinalUserDataBase.getInstance().insertTrans(vo,false);
             }else{
@@ -1245,6 +1245,7 @@ public class FinalUserDataBase {
         values.put(TableField.FIELD_RESERVED_DATA10, vo.isFixed());
         values.put(TableField.FIELD_RESERVED_DATA11, vo.getUsdPrice());
         values.put(TableField.FIELD_RESERVED_DATA12, vo.getUsdUnitPrice());
+        values.put(TableField.FIELD_RESERVED_DATA13, vo.getTokenStringBalance());
         db.insert(TableField.TABLE_TOKEN_LIST, TableField._ID, values);
     }
 
@@ -1330,6 +1331,7 @@ public class FinalUserDataBase {
             values.put(TableField.FIELD_RESERVED_DATA8, vo.isChecked());
             values.put(TableField.FIELD_RESERVED_DATA11, vo.getUsdPrice());
             values.put(TableField.FIELD_RESERVED_DATA12, vo.getUsdUnitPrice());
+            values.put(TableField.FIELD_RESERVED_DATA13, vo.getTokenStringBalance());
             if (update){
                 if (!TextUtils.isEmpty(vo.getTokenName())){
                     values.put(TableField.FIELD_RESERVED_DATA2, vo.getTokenName());
@@ -1385,6 +1387,7 @@ public class FinalUserDataBase {
             vo.setFixed(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) == 1);
             vo.setUsdPrice(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
             vo.setUsdUnitPrice(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
+            vo.setTokenStringBalance(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA13)));
             if (TextUtils.isEmpty(vo.getContactAddress())){
                 continue;
             }
@@ -1420,6 +1423,7 @@ public class FinalUserDataBase {
             vo.setFixed(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA10)) == 1);
             vo.setUsdPrice(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA11)));
             vo.setUsdUnitPrice(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA12)));
+            vo.setTokenStringBalance(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA13)));
             if (TextUtils.isEmpty(vo.getContactAddress())){
                 continue;
             }
@@ -1480,7 +1484,7 @@ public class FinalUserDataBase {
     public void updateTransTemp(TransVo vo) {
         boolean result = hasTransTemp(vo);
         if(result){
-            if (vo.getBlockNumber() - vo.getTxBlockNumber() >= 12 && vo.getTxBlockNumber() > 0){
+            if (vo.getBlockNumber() - vo.getTxBlockNumber() >= Constants.NEED_CONFIRM_BLOCK && vo.getTxBlockNumber() > 0){
                 FinalUserDataBase.getInstance().deleteTransTemp(vo.getTx(),String.valueOf(vo.getNoticeType()));
                 FinalUserDataBase.getInstance().insertTrans(vo,false);
             }else{
@@ -1672,7 +1676,7 @@ public class FinalUserDataBase {
      */
     public void insertChatEvent(ChatMsg vo) {
         ContentValues values = new ContentValues();
-        if (!TextUtils.isEmpty(vo.getRealname())) {
+        if (!TextUtils.isEmpty(vo.getRealname()) && !vo.isGroup()) {
             values.put(TableField.FIELD_FRIEND_UNAME, vo.getRealname());
         }else{
             values.put(TableField.FIELD_FRIEND_UNAME, vo.getUsername());
@@ -1791,7 +1795,7 @@ public class FinalUserDataBase {
      */
     public void updateChatEventMsg(ChatMsg vo, boolean isSystem, boolean isNewMsg) {
         ContentValues values = new ContentValues();
-        if (!TextUtils.isEmpty(vo.getRealname())) {
+        if (!TextUtils.isEmpty(vo.getRealname()) && !vo.isGroup()) {
             values.put(TableField.FIELD_FRIEND_UNAME, vo.getRealname());
         }else{
             values.put(TableField.FIELD_FRIEND_UNAME, vo.getUsername());
@@ -2554,6 +2558,79 @@ public class FinalUserDataBase {
         return vo;
     }
 
+//
+//    /**
+//     * Save the wallet list
+//     */
+//    public void insertWallet(StorableWallet storableWallet) {
+//        ContentValues values = new ContentValues();
+//        values.put(TableField.FIELD_RESERVED_DATA1, storableWallet.getPublicKey());
+//        values.put(TableField.FIELD_RESERVED_DATA2, storableWallet.getWalletName());
+//        values.put(TableField.FIELD_RESERVED_DATA3, storableWallet.isSelect());
+//        values.put(TableField.FIELD_RESERVED_DATA4, storableWallet.getCanExportPrivateKey());
+//        values.put(TableField.FIELD_RESERVED_DATA5, storableWallet.isBackup());
+//        values.put(TableField.FIELD_RESERVED_DATA6, storableWallet.getWalletImageId());
+//        values.put(TableField.FIELD_RESERVED_DATA7, storableWallet.getLocalId());
+//        db.insert(TableField.TABLE_WALLET, TableField._ID, values);
+//    }
+//
+//    /**
+//     * update wallet
+//     * */
+//    public void updateWallet(StorableWallet storableWallet){
+//        boolean result = hasWallet(storableWallet.getPublicKey(),storableWallet.getLocalId());
+//        if(result){
+//            ContentValues values = new ContentValues();
+//            values.put(TableField.FIELD_RESERVED_DATA2, storableWallet.getWalletName());
+//            values.put(TableField.FIELD_RESERVED_DATA3, storableWallet.isSelect());
+//            values.put(TableField.FIELD_RESERVED_DATA4, storableWallet.getCanExportPrivateKey());
+//            values.put(TableField.FIELD_RESERVED_DATA5, storableWallet.isBackup());
+//            values.put(TableField.FIELD_RESERVED_DATA6, storableWallet.getWalletImageId());
+//            db.update(TableField.TABLE_WALLET,values,TableField.FIELD_RESERVED_DATA1 + "=? and "
+//                    + TableField.FIELD_RESERVED_DATA7 + "=?",new String[]{storableWallet.getPublicKey(),storableWallet.getLocalId()});
+//        }else{
+//            insertWallet(storableWallet);
+//        }
+//    }
+//
+//    /**
+//     * get all wallet
+//     * */
+//    public ArrayList<StorableWallet>  getAllWallet(boolean isGetAll){
+//
+//        String sql = "select * from " + TableField.TABLE_WALLET + " order by " + TableField._ID + " desc ";
+//        Cursor cursor = db.rawQuery(sql,null);
+//        ArrayList<StorableWallet> mapdb = new ArrayList<>();
+//        StorableWallet storableWallet;
+//        while (cursor.moveToNext()) {
+//            storableWallet = new StorableWallet();
+//            storableWallet.setPublicKey(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA1)));
+//            storableWallet.setWalletName(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA2)));
+//            storableWallet.setSelect(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA3)) == 1);
+//            storableWallet.setCanExportPrivateKey(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA4)));
+//            storableWallet.setBackup(cursor.getInt(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA5)) == 1);
+//            storableWallet.setWalletImageId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA6)));
+//            storableWallet.setLocalId(cursor.getString(cursor.getColumnIndex(TableField.FIELD_RESERVED_DATA7)));
+//        }
+//        cursor.close();
+//        return mapdb;
+//    }
+//
+//    /**
+//     * check has wallet
+//     * */
+//    public boolean hasWallet(String address,String localId){
+//        String sql = "select * from " + TableField.TABLE_WALLET + " where " + TableField.FIELD_RESERVED_DATA1 + "=? and "
+//                + TableField.FIELD_RESERVED_DATA7 + "=?";
+//        Cursor cursor = db.rawQuery(sql, new String[]{address,localId});
+//        if (cursor.moveToNext()) {
+//            cursor.close();
+//            return true;
+//        }else{
+//            cursor.close();
+//            return false;
+//        }
+//    }
 
 
     /**
