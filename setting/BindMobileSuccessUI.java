@@ -11,6 +11,9 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.util.Utils;
 
+import butterknife.BindView;
+import butterknife.OnClick;
+
 /**
  * binding mobile phone number success page
  * binding mailbox success page
@@ -19,16 +22,21 @@ import com.lingtuan.firefly.util.Utils;
 
 public class BindMobileSuccessUI extends BaseActivity {
 
+    @BindView(R.id.phoneNumber)
+    TextView phoneNumber;
+    @BindView(R.id.phoneImg)
+    ImageView phoneImg;
+    @BindView(R.id.phoneBook)
+    TextView phoneBook;//Enter the address book
+    @BindView(R.id.replacePhone)
+    TextView replacePhone;//Replace a phone number
+
+    private static final int BINDMOBLECODE = 100;
+
     private String phonenumber;//Mobile phone no.
     private String email;//email
 
-    private int type;//0 binding mobile phone number, 1 binding mailbox, 2 forget password
-
-    private TextView phoneNumber;
-    private ImageView phoneImg;
-
-    private TextView phoneBook;//Enter the address book
-    private TextView replacePhone;//Replace a phone number
+    private int type;//0 binding mobile, 1 binding email, 2 forget password
 
     @Override
     protected void setContentView() {
@@ -44,16 +52,12 @@ public class BindMobileSuccessUI extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        phoneNumber = (TextView) findViewById(R.id.phoneNumber);
-        phoneImg = (ImageView) findViewById(R.id.phoneImg);
-        phoneBook = (TextView) findViewById(R.id.phoneBook);
-        replacePhone = (TextView) findViewById(R.id.replacePhone);
+
     }
 
     @Override
     protected void setListener() {
-        phoneBook.setOnClickListener(this);
-        replacePhone.setOnClickListener(this);
+
     }
 
     @Override
@@ -73,29 +77,37 @@ public class BindMobileSuccessUI extends BaseActivity {
         }
     }
 
-    @Override
+    @OnClick({R.id.phoneBook,R.id.replacePhone})
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()){
             case R.id.phoneBook:
-                Intent addIntent = new Intent(Intent.ACTION_INSERT,Uri.withAppendedPath(Uri.parse("content://com.android.contacts"), "contacts"));
-                addIntent.setType("vnd.android.cursor.dir/person");
-                addIntent.setType("vnd.android.cursor.dir/contact");
-                addIntent.setType("vnd.android.cursor.dir/raw_contact");
-                addIntent.putExtra(ContactsContract.Intents.Insert.NAME,phonenumber);
-                addIntent.putExtra(android.provider.ContactsContract.Intents.Insert.PHONE, phonenumber);
+                Uri uri = Uri.parse("content://contacts/people");
+                Intent addIntent = new Intent(Intent.ACTION_PICK, uri);
                 startActivity(addIntent);
                 Utils.openNewActivityAnim(BindMobileSuccessUI.this,false);
                 break;
             case R.id.replacePhone:
                 if (type == 1){
-                    startActivity(new Intent(BindMobileSuccessUI.this,BindEmailUI.class));
+                    Intent intent = new Intent(BindMobileSuccessUI.this,BindEmailUI.class);
+                    intent.putExtra("type",type);
+                    startActivityForResult(intent,BINDMOBLECODE);
                     Utils.openNewActivityAnim(BindMobileSuccessUI.this,true);
                 }else{
-                    startActivity(new Intent(BindMobileSuccessUI.this,BindMobileUI.class));
+                    Intent intent = new Intent(BindMobileSuccessUI.this,BindMobileUI.class);
+                    intent.putExtra("type",type);
+                    startActivityForResult(intent,BINDMOBLECODE);
                     Utils.openNewActivityAnim(BindMobileSuccessUI.this,true);
                 }
                 break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == BINDMOBLECODE) {
+            finish();
         }
     }
 }
