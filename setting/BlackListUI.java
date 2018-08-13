@@ -12,10 +12,13 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.LoadMoreListView;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.network.NetRequestImpl;
+import com.lingtuan.firefly.setting.contract.BlackListContract;
+import com.lingtuan.firefly.setting.contract.SettingContract;
+import com.lingtuan.firefly.setting.presenter.BlackListPresenterImpl;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.vo.UserInfoVo;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
@@ -25,28 +28,35 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.OnItemClick;
+import butterknife.OnItemLongClick;
+
 /**
  * Created on 2017/10/11.
  * The blacklist
  */
 
-public class BlackListUI extends BaseActivity implements LoadMoreListView.RefreshListener, SwipeRefreshLayout.OnRefreshListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
+public class BlackListUI extends BaseActivity implements LoadMoreListView.RefreshListener, SwipeRefreshLayout.OnRefreshListener,BlackListContract.View{
 
-    private TextView emptyTextView;
-    private RelativeLayout emptyRela;
-
+    @BindView(R.id.empty_text)
+    TextView emptyTextView;
+    @BindView(R.id.empty_like_rela)
+    RelativeLayout emptyRela;
     /** blacklisting */
-    private LoadMoreListView blackLv = null;
-
+    @BindView(R.id.refreshListView)
+    LoadMoreListView blackLv;
     /** Refresh the controls */
-    private SwipeRefreshLayout swipeLayout;
+    @BindView(R.id.swipe_container)
+    SwipeRefreshLayout swipeLayout;
+
+    private BlackListContract.Presenter mPresenter;
 
     private boolean isLoadingData = false;
 
     private BlackListAdapter blackAdapter = null;
 
     private int currentPage = 1 ;
-    private int oldPage=1;
     private List<UserInfoVo> source = null ;
 
 
@@ -57,27 +67,22 @@ public class BlackListUI extends BaseActivity implements LoadMoreListView.Refres
 
     @Override
     protected void findViewById() {
-        blackLv = (LoadMoreListView) findViewById(R.id.refreshListView);
-        blackLv.setOnScrollListener(new PauseOnScrollListener(NextApplication.mImageLoader, true, true));
-        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
 
-        emptyRela = (RelativeLayout) findViewById(R.id.empty_like_rela);
-        emptyTextView = (TextView) findViewById(R.id.empty_text);
     }
 
     @Override
     protected void setListener() {
         blackLv.setOnRefreshListener(this);
         swipeLayout.setOnRefreshListener(this);
-        blackLv.setOnItemClickListener(this);
-        blackLv.setOnItemLongClickListener(this);
     }
 
     @Override
     protected void initData() {
-        setTitle(getString(R.string.black_list));
-        swipeLayout.setColorSchemeResources(R.color.black);
+        new BlackListPresenterImpl(this);
         source = new ArrayList<>();
+        setTitle(getString(R.string.black_list));
+        blackLv.setOnScrollListener(new PauseOnScrollListener(NextApplication.mImageLoader, true, true));
+        swipeLayout.setColorSchemeResources(R.color.black);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -89,61 +94,6 @@ public class BlackListUI extends BaseActivity implements LoadMoreListView.Refres
         blackLv.setAdapter(blackAdapter);
     }
 
-    /**
-     * Load the data
-     */
-    private void loadBlackList(int page) {
-        if(isLoadingData){
-            return;
-        }
-        isLoadingData=true;
-        oldPage= page;
-
-        NetRequestImpl.getInstance().getBlackList(page, new RequestListener() {
-            @Override
-            public void start() {
-
-            }
-
-            @Override
-            public void success(JSONObject response) {
-                currentPage=oldPage;
-                if (currentPage == 1) {
-                    source.clear();
-                }
-
-                JSONArray jsonArray = response.optJSONArray("data");
-                if (jsonArray != null) {
-                    int count = jsonArray.length();
-                    for (int i = 0; i < count; i++) {
-                        UserInfoVo uInfo = new UserInfoVo().parse(jsonArray.optJSONObject(i));
-                        source.add(uInfo);
-                    }
-                    blackAdapter.resetSource(source);
-                } else {
-                    showToast(getString(R.string.black_list_empty));
-                }
-                isLoadingData=false;
-                swipeLayout.setRefreshing(false);
-                if (jsonArray!=null&&jsonArray.length()>=10) {
-                    blackLv.resetFooterState(true);
-                } else {
-                    blackLv.resetFooterState(false);
-                }
-                checkListEmpty();
-            }
-
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                isLoadingData=false;
-                swipeLayout.setRefreshing(false);
-                showToast(errorMsg);
-                checkListEmpty();
-            }
-        });
-    }
-
-
     @Override
     public void loadMore() {
         loadBlackList(currentPage + 1);
@@ -154,9 +104,24 @@ public class BlackListUI extends BaseActivity implements LoadMoreListView.Refres
         loadBlackList(1);
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+    @OnItemClick(R.id.refreshListView)
+    void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Utils.intentFriendUserInfo(this, source.get(position), false);
+    }
+
+    @OnItemLongClick(R.id.refreshListView)
+    public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+        MyViewDialogFragment mdf = new MyViewDialogFragment();
+        mdf.setTitleAndContentText(getString(R.string.black_list_remove_title), getString(R.string.black_list_remove));
+        mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
+            @Override
+            public void okBtn() {
+                mPresenter.updateBlackState(1,position,source.get(position).getLocalId());
+            }
+        });
+        mdf.show(getSupportFragmentManager(), "mdf");
+        return true;
     }
 
     /**
@@ -171,44 +136,68 @@ public class BlackListUI extends BaseActivity implements LoadMoreListView.Refres
         }
     }
 
-    @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-        MyViewDialogFragment mdf = new MyViewDialogFragment();
-        mdf.setTitleAndContentText(getString(R.string.black_list_remove_title), getString(R.string.black_list_remove));
-        mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
-            @Override
-            public void okBtn() {
-                removeBlackListMethod(position);
-            }
-        });
-        mdf.show(getSupportFragmentManager(), "mdf");
-        return true;
+    /**
+     * Load the data
+     */
+    private void loadBlackList(int page) {
+        if(isLoadingData){
+            return;
+        }
+        isLoadingData = true;
+        mPresenter.getBlackList(page,source);
     }
 
-    /**
-     * remove blacklist users
-     * @ param position want to remove the user
-     * */
-    private void removeBlackListMethod(final int position) {
-        NetRequestImpl.getInstance().updateBlackState(1,source.get(position).getLocalId(), new RequestListener() {
-            @Override
-            public void start() {
-                LoadingDialog.show(BlackListUI.this,"");
-            }
+    @Override
+    public void setPresenter(BlackListContract.Presenter presenter) {
+        this.mPresenter = presenter;
+    }
 
-            @Override
-            public void success(JSONObject response) {
-                LoadingDialog.close();
-                showToast(response.optString("msg"));
-                source.remove(position);
-                blackAdapter.resetSource(source);
+    @Override
+    public void getBlackSuccess(List<UserInfoVo> source, int currentPage,boolean showLoadMore) {
+        this.source = source;
+        this.currentPage = currentPage;
+        blackAdapter.resetSource(source);
+        isLoadingData=false;
+        if (swipeLayout != null){
+            swipeLayout.setRefreshing(false);
+        }
+        if (blackLv != null){
+            if (showLoadMore) {
+                blackLv.resetFooterState(true);
+            } else {
+                blackLv.resetFooterState(false);
             }
+        }
+        checkListEmpty();
+    }
 
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                LoadingDialog.close();
-                showToast(errorMsg);
-            }
-        });
+    @Override
+    public void getBlackError(int errorCode, String errorMsg) {
+        isLoadingData=false;
+        if (swipeLayout != null){
+            swipeLayout.setRefreshing(false);
+        }
+        showToast(errorMsg);
+        checkListEmpty();
+    }
+
+    @Override
+    public void updateBlackStart() {
+        LoadingDialog.show(BlackListUI.this,"");
+    }
+
+    @Override
+    public void updateBlackSuccess(String message, int position) {
+        LoadingDialog.close();
+        showToast(message);
+        source.remove(position);
+        blackAdapter.resetSource(source);
+        checkListEmpty();
+    }
+
+    @Override
+    public void updateBlackError(int errorCode, String errorMsg) {
+        LoadingDialog.close();
+        showToast(errorMsg);
     }
 }
