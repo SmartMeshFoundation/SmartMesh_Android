@@ -13,41 +13,50 @@ import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.gesturelock.ACache;
-import com.lingtuan.firefly.custom.gesturelock.LockPatternUtil;
 import com.lingtuan.firefly.custom.gesturelock.LockPatternView;
+import com.lingtuan.firefly.setting.contract.GestureLoginContract;
+import com.lingtuan.firefly.setting.presenter.GestureLoginPresenterImpl;
 import com.lingtuan.firefly.util.Constants;
-import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
-import com.lingtuan.firefly.xmpp.XmppAction;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import butterknife.BindView;
+import butterknife.OnClick;
+
 /**
  * gesture login
  */
-public class GestureLoginActivity extends BaseActivity {
+public class GestureLoginActivity extends BaseActivity implements GestureLoginContract.View{
 
-    private LockPatternView lockPatternView;
-    private LinearLayout walletBody;
-    private View gestureView;
-    private TextView messageTv;
-    private TextView forgetGestureBtn;
+    @BindView(R.id.lockPatternView)
+    LockPatternView lockPatternView;
+    @BindView(R.id.walletBody)
+    LinearLayout walletBody;
+    @BindView(R.id.gestureView)
+    View gestureView;
+    @BindView(R.id.messageTv)
+    TextView messageTv;
+    @BindView(R.id.forgetGestureBtn)
+    TextView forgetGestureBtn;
+    @BindView(R.id.walletImg)
+    ImageView walletImg;
+    @BindView(R.id.walletName)
+    TextView walletName;
+    @BindView(R.id.walletAddress)
+    TextView walletAddress;
+
+    private GestureLoginContract.Presenter mPresenter;
+
     private int type ; //0 login  1 open gesture  2 close gesture
-
-    private ImageView walletImg;
-    private TextView walletName;
-    private TextView walletAddress;
-
     private ACache aCache;
     private static final long DELAYTIME = 600l;
     private byte[] gesturePassword;
 
     private int errorNum = 0;
-
-    private int index = -1;//Which one is selected
-
 
     @Override
     protected void setContentView() {
@@ -61,32 +70,20 @@ public class GestureLoginActivity extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        lockPatternView = (LockPatternView) findViewById(R.id.lockPatternView);
-        walletBody = (LinearLayout) findViewById(R.id.walletBody);
-        forgetGestureBtn = (TextView) findViewById(R.id.forgetGestureBtn);
-        messageTv = (TextView) findViewById(R.id.messageTv);
-        walletImg = (ImageView) findViewById(R.id.walletImg);
-        walletName = (TextView) findViewById(R.id.walletName);
-        walletAddress = (TextView) findViewById(R.id.walletAddress);
-        gestureView = findViewById(R.id.gestureView);
+
     }
 
     @Override
     protected void setListener() {
-        forgetGestureBtn.setOnClickListener(this);
+
     }
 
     @Override
     protected void initData() {
+        new GestureLoginPresenterImpl(this);
         setTitle(getString(R.string.gesture_checking));
         aCache = ACache.get(NextApplication.mContext);
-        //get current pwd
-        int walletMode = MySharedPrefs.readInt(GestureLoginActivity.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
-        if (walletMode != 0 && NextApplication.myInfo == null){
-            gesturePassword = aCache.getAsBinary(Constants.GESTURE_PASSWORD);
-        }else{
-            gesturePassword = aCache.getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
-        }
+        gesturePassword = mPresenter.getAsBinary(aCache);
         lockPatternView.setOnPatternListener(patternListener);
         updateStatus(Status.DEFAULT);
         initWalletInfo();
@@ -95,7 +92,6 @@ public class GestureLoginActivity extends BaseActivity {
         }else{
             forgetGestureBtn.setText(getString(R.string.gesture_forget_gesture));
         }
-
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.WALLET_REFRESH_GESTURE);//Refresh the page
         registerReceiver(mBroadcastReceiver, filter);
@@ -111,7 +107,7 @@ public class GestureLoginActivity extends BaseActivity {
     };
 
 
-    @Override
+    @OnClick(R.id.forgetGestureBtn)
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()){
@@ -152,16 +148,8 @@ public class GestureLoginActivity extends BaseActivity {
         @Override
         public void onPatternComplete(List<LockPatternView.Cell> pattern) {
             if(pattern != null){
-               int number =  MySharedPrefs.readInt(GestureLoginActivity.this,MySharedPrefs.FILE_USER,MySharedPrefs.GESTIRE_ERROR + NextApplication.myInfo.getLocalId());
-                if (number > 5){
-                    updateStatus(Status.ERRORMORE);
-                }else{
-                    if(LockPatternUtil.checkPattern(pattern, gesturePassword)) {
-                        updateStatus(Status.CORRECT);
-                    } else {
-                        updateStatus(Status.ERROR);
-                    }
-                }
+                Status status = mPresenter.getStatus(pattern,gesturePassword);
+                updateStatus(status);
             }
         }
     };
@@ -181,7 +169,7 @@ public class GestureLoginActivity extends BaseActivity {
                 lockPatternView.setPattern(LockPatternView.DisplayMode.ERROR);
                 lockPatternView.postClearPatternRunnable(DELAYTIME);
                 errorNum ++;
-                MySharedPrefs.writeInt(GestureLoginActivity.this,MySharedPrefs.FILE_USER,MySharedPrefs.GESTIRE_ERROR + NextApplication.myInfo.getLocalId(),errorNum);
+                mPresenter.putGestureErrorNum(errorNum);
                 break;
             case ERRORMORE:
                 lockPatternView.setPattern(LockPatternView.DisplayMode.ERROR);
@@ -189,7 +177,7 @@ public class GestureLoginActivity extends BaseActivity {
                 break;
             case CORRECT:
                 lockPatternView.setPattern(LockPatternView.DisplayMode.DEFAULT);
-                MySharedPrefs.writeInt(GestureLoginActivity.this,MySharedPrefs.FILE_USER,MySharedPrefs.GESTIRE_ERROR + NextApplication.myInfo.getLocalId(),0);
+                mPresenter.putGestureErrorNum(0);
                 loginGestureSuccess();
                 break;
         }
@@ -201,19 +189,17 @@ public class GestureLoginActivity extends BaseActivity {
     private void loginGestureSuccess() {
         Intent intent = new Intent(Constants.ACTION_GESTURE_LOGIN);
         Utils.sendBroadcastReceiver(GestureLoginActivity.this,intent,false);
-        int walletMode = MySharedPrefs.readInt(GestureLoginActivity.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
-        if (type == 2){
-            if (walletMode == 0 && NextApplication.myInfo != null){
-                aCache.put(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId(),"");
-            }else{
-                aCache.put(Constants.GESTURE_PASSWORD,"");
-            }
-        }
+        mPresenter.putAsBinary(aCache,type);
         finish();
     }
 
+    @Override
+    public void setPresenter(GestureLoginContract.Presenter presenter) {
+        this.mPresenter = presenter;
+    }
 
-    private enum Status {
+
+    public enum Status {
         //defaut
         DEFAULT(R.string.create_gesture_default, R.color.textColorHint),
         //pwd error
@@ -235,43 +221,21 @@ public class GestureLoginActivity extends BaseActivity {
      * Load or refresh the wallet information
      * */
     private void initWalletInfo(){
-        StorableWallet storableWallet;
-        ArrayList<StorableWallet> storableWallets = WalletStorage.getInstance(NextApplication.mContext).get();
-        if (storableWallets.size() <= 0){
+        StorableWallet storableWallet = mPresenter.initWalletInfo();
+        if (storableWallet == null) {
             walletBody.setVisibility(View.GONE);
             gestureView.setVisibility(View.VISIBLE);
-        }else{
-            gestureView.setVisibility(View.GONE);
-            walletBody.setVisibility(View.VISIBLE);
+            return;
         }
-        for (int i = 0 ; i < storableWallets.size(); i++){
-            if (storableWallets.get(i).isSelect() ){
-                index = i;
-                int imgId = Utils.getWalletImg(GestureLoginActivity.this,i);
-                walletImg.setImageResource(imgId);
-                storableWallet = storableWallets.get(i);
-                storableWallet.setImgId(imgId);
-                walletName.setText(storableWallet.getWalletName());
-                String address = storableWallet.getPublicKey();
-                if(!address.startsWith("0x")){
-                    address = "0x"+address;
-                }
-                walletAddress.setText(address);
-                break;
-            }
+        gestureView.setVisibility(View.GONE);
+        walletBody.setVisibility(View.VISIBLE);
+        walletImg.setImageResource(Utils.getWalletImageId(GestureLoginActivity.this,storableWallet.getWalletImageId()));
+        walletName.setText(storableWallet.getWalletName());
+        String address = storableWallet.getPublicKey();
+        if(!address.startsWith("0x")){
+            address = "0x"+address;
         }
-        if (index == -1 && storableWallets.size() > 0){
-            int imgId = Utils.getWalletImg(GestureLoginActivity.this,0);
-            walletImg.setImageResource(imgId);
-            storableWallet = storableWallets.get(0);
-            storableWallet.setImgId(imgId);
-            walletName.setText(storableWallet.getWalletName());
-            String address = storableWallet.getPublicKey();
-            if(!address.startsWith("0x")){
-                address = "0x"+address;
-            }
-            walletAddress.setText(address);
-        }
+        walletAddress.setText(address);
     }
 
 
