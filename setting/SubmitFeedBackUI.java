@@ -7,11 +7,9 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
-import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.setting.contract.SubmitFeedBackContract;
+import com.lingtuan.firefly.setting.presenter.SubmitFeedBackPresenterImpl;
 import com.lingtuan.firefly.util.LoadingDialog;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
-
-import org.json.JSONObject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -21,7 +19,7 @@ import butterknife.OnClick;
  * SubmitFeedBackUI
  */
 
-public class SubmitFeedBackUI extends BaseActivity {
+public class SubmitFeedBackUI extends BaseActivity implements SubmitFeedBackContract.View{
 
     @BindView(R.id.reportLine)
     View reportLine;
@@ -35,6 +33,8 @@ public class SubmitFeedBackUI extends BaseActivity {
     EditText suggestEt;
     @BindView(R.id.emailEt)
     EditText emailEt;//email address
+
+    private SubmitFeedBackContract.Presenter mPresenter;
 
     private int type;//0 report problem suggestImprovement
 
@@ -56,6 +56,7 @@ public class SubmitFeedBackUI extends BaseActivity {
     @Override
     protected void initData() {
         setTitle(getString(R.string.submit_feedback));
+        new SubmitFeedBackPresenterImpl(this);
     }
 
     @OnClick({R.id.reportProblem,R.id.suggestImprovement,R.id.submit})
@@ -87,7 +88,7 @@ public class SubmitFeedBackUI extends BaseActivity {
                     }
                 }else{
                     String message = suggestEt.getText().toString();
-                    if (TextUtils.isEmpty(suggestEt.getText().toString())){
+                    if (TextUtils.isEmpty(message)){
                         showToast(getString(R.string.advice_info_empty));
                     }else{
                         feedBackMethod(message,1);
@@ -101,6 +102,7 @@ public class SubmitFeedBackUI extends BaseActivity {
     }
 
     /**
+     * feed back method
      * 意见反馈方法
      * */
     private void feedBackMethod(String message,int type){
@@ -109,41 +111,34 @@ public class SubmitFeedBackUI extends BaseActivity {
             showToast(getString(R.string.email_empty));
             return;
         }
-
-        if (!isEmail(email)){
+        if (!mPresenter.isEmail(email)){
             showToast(getString(R.string.email_is_error));
             return;
         }
-        NetRequestImpl.getInstance().feedBack(message, email, type, new RequestListener() {
-            @Override
-            public void start() {
-                LoadingDialog.show(SubmitFeedBackUI.this,"");
-            }
-
-            @Override
-            public void success(JSONObject response) {
-                LoadingDialog.close();
-                showToast(getString(R.string.submit_success));
-                finish();
-            }
-
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                LoadingDialog.close();
-                showToast(getString(R.string.submit_faile));
-                finish();
-            }
-        });
-
+        mPresenter.feedBack(message,email,type);
     }
 
-    //邮箱验证
-    public static boolean isEmail(String strEmail) {
-        String strPattern = "^[a-zA-Z0-9][\\w\\.-]*[a-zA-Z0-9]@[a-zA-Z0-9][\\w\\.-]*[a-zA-Z0-9]\\.[a-zA-Z][a-zA-Z\\.]*[a-zA-Z]$";
-        if (TextUtils.isEmpty(strPattern)) {
-            return false;
-        } else {
-            return strEmail.matches(strPattern);
-        }
+    @Override
+    public void setPresenter(SubmitFeedBackContract.Presenter presenter) {
+        this.mPresenter = presenter;
+    }
+
+    @Override
+    public void feedBackStart() {
+        LoadingDialog.show(SubmitFeedBackUI.this,"");
+    }
+
+    @Override
+    public void feedBackSuccess() {
+        LoadingDialog.close();
+        showToast(getString(R.string.submit_success));
+        finish();
+    }
+
+    @Override
+    public void feedBackError() {
+        LoadingDialog.close();
+        showToast(getString(R.string.submit_faile));
+        finish();
     }
 }

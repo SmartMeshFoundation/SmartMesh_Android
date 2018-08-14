@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,49 +18,56 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
-import com.lingtuan.firefly.chat.vo.GalleryVo;
 import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.imagescan.CropActivity;
 import com.lingtuan.firefly.imagescan.ScanLargePic;
-import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.service.LoadDataService;
+import com.lingtuan.firefly.setting.contract.MyProfileContract;
+import com.lingtuan.firefly.setting.presenter.MyProfilePresenterImpl;
 import com.lingtuan.firefly.util.BitmapUtils;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyDialogFragment;
-import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.SDCardCtrl;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
+
+import butterknife.BindView;
+import butterknife.OnClick;
 
 /**
  * Created on 2017/10/11.
  * The personal data
  */
 
-public class MyProfileUI extends BaseActivity {
+public class MyProfileUI extends BaseActivity implements MyProfileContract.View{
 
     private static final int SELECT_COUNTRY = 100;
 
-    private CharAvatarView userImg;//Head portrait
-    private EditText userName;//The user name
-    private TextView addGender;//gender
-    private TextView addRegion;//address
-    private EditText addSign;//signature
-    private TextView btnRight;//Save
+    @BindView(R.id.userImg)
+    CharAvatarView userImg;//Head portrait
+    @BindView(R.id.userName)
+    EditText userName;//The user name
+    @BindView(R.id.addGender)
+    TextView addGender;//gender
+    @BindView(R.id.addRegion)
+    TextView addRegion;//address
+    @BindView(R.id.addSign)
+    EditText addSign;//signature
+    @BindView(R.id.app_btn_right)
+    TextView btnRight;//Save
+
+    private MyProfileContract.Presenter mPresenter;
 
     /**
      * Edit image related
@@ -87,24 +93,17 @@ public class MyProfileUI extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        userImg = (CharAvatarView) findViewById(R.id.userImg);
-        userName = (EditText) findViewById(R.id.userName);
-        addGender = (TextView) findViewById(R.id.addGender);
-        addRegion = (TextView) findViewById(R.id.addRegion);
-        addSign = (EditText) findViewById(R.id.addSign);
-        btnRight = (TextView) findViewById(R.id.app_btn_right);
+
     }
 
     @Override
     protected void setListener() {
-        userImg.setOnClickListener(this);
-        btnRight.setOnClickListener(this);
-        addGender.setOnClickListener(this);
-        addRegion.setOnClickListener(this);
+
     }
 
     @Override
     protected void initData() {
+        new MyProfilePresenterImpl(this);
         setTitle(getString(R.string.info_my_profile));
         btnRight.setVisibility(View.VISIBLE);
         btnRight.setText(getString(R.string.save));
@@ -126,7 +125,7 @@ public class MyProfileUI extends BaseActivity {
 
     }
 
-    @Override
+    @OnClick({R.id.app_btn_right,R.id.userImg,R.id.addGender,R.id.addRegion})
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()){
@@ -188,35 +187,8 @@ public class MyProfileUI extends BaseActivity {
             bundle.putString("birthcity", birthcity);
             Utils.intentServiceAction(MyProfileUI.this, LoadDataService.ACTION_FILE_UPLOAD_IMAGE, bundle);
         }else{
-            try {
-                NetRequestImpl.getInstance().editUserInfo(null, username, sightml, gender, birthcity, new RequestListener() {
-                    @Override
-                    public void start() {
-
-                    }
-
-                    @Override
-                    public void success(JSONObject response) {
-                        LoadingDialog.close();
-                        NextApplication.myInfo.updateJsonUserInfo(username, sightml, gender, birthcity,MyProfileUI.this);
-                        NextApplication.myInfo.setUsername(username);
-                        NextApplication.myInfo.setSightml(sightml);
-                        NextApplication.myInfo.setGender(gender);
-                        NextApplication.myInfo.setAddress(birthcity);
-                        finish();
-                    }
-
-                    @Override
-                    public void error(int errorCode, String errorMsg) {
-                        LoadingDialog.close();
-                        showToast(errorMsg);
-                    }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            mPresenter.editUserInfo(null,username,sightml,gender,birthcity);
         }
-
     }
 
     @Override
@@ -291,25 +263,14 @@ public class MyProfileUI extends BaseActivity {
 
             case Constants.PHOTO_PICKED_WITH_DATA://Photo album
                 if (data != null) {
-                    //Cutting to jump to page
                     try {
                         Uri selectedImage = data.getData();
-                        String[] filePathColumns = {MediaStore.Images.Media.DATA};
-                        Cursor c = getContentResolver().query(selectedImage, filePathColumns, null, null, null);
-                        if (c != null) {
-                            if (c.moveToNext()) {
-                                c.moveToFirst();
-                                int columnIndex = c.getColumnIndex(filePathColumns[0]);
-                                String picturePath = c.getString(columnIndex);
-                                Intent intent = new Intent(MyProfileUI.this, CropActivity.class).putExtra("photoUri", picturePath);
-                                startActivityForResult(intent, Constants.REQUEST_CODE_PHOTO_URL);
-                            }
-                            c.close();
-                        } else {
-                            String picturePath = selectedImage.toString().replace("file://", "");
-                            Intent intent = new Intent(MyProfileUI.this, CropActivity.class).putExtra("photoUri", picturePath);
-                            startActivityForResult(intent, Constants.REQUEST_CODE_PHOTO_URL);
+                        String picturePath = mPresenter.getImagePath(selectedImage);
+                        if (TextUtils.isEmpty(picturePath)){
+                            showToast(getString(R.string.select_img_error));
                         }
+                        Intent intent = new Intent(MyProfileUI.this, CropActivity.class).putExtra("photoUri", picturePath);
+                        startActivityForResult(intent, Constants.REQUEST_CODE_PHOTO_URL);
                     } catch (Exception e) {
                         e.printStackTrace();
                         showToast(getString(R.string.select_img_error));
@@ -373,6 +334,23 @@ public class MyProfileUI extends BaseActivity {
             }
         }
     };
+
+    @Override
+    public void setPresenter(MyProfileContract.Presenter presenter) {
+        this.mPresenter = presenter;
+    }
+
+    @Override
+    public void editUserInfoSuccess() {
+        LoadingDialog.close();
+        finish();
+    }
+
+    @Override
+    public void editUserInfoError(int errorCode, String errorMsg) {
+        LoadingDialog.close();
+        showToast(errorMsg);
+    }
 
     class UserInfoSettingReceiver extends BroadcastReceiver {
 
