@@ -1,39 +1,46 @@
 package com.lingtuan.firefly.contact;
 
-import android.app.Dialog;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.contact.contract.DiscussGroupJoinContract;
+import com.lingtuan.firefly.contact.presenter.DiscussGroupJoinPresenterImpl;
 import com.lingtuan.firefly.contact.vo.DiscussionGroupsVo;
 import com.lingtuan.firefly.custom.DiscussGroupImageView;
-import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.vo.UserBaseVo;
 import com.lingtuan.firefly.vo.UserInfoVo;
 
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 
-public class DiscussGroupJoinUI extends BaseActivity {
+import butterknife.BindView;
+import butterknife.OnClick;
+
+public class DiscussGroupJoinUI extends BaseActivity implements DiscussGroupJoinContract.View{
+
+	@BindView(R.id.join_discuss_group)
+	TextView joinBtn;
+	@BindView(R.id.join_discuss_group_member)
+	TextView nameTextView;
+	@BindView(R.id.join_discuss_group_num)
+	TextView numTextView;
+	@BindView(R.id.join_discuss_group_avatar)
+	DiscussGroupImageView groupImageView;
+	@BindView(R.id.groupNotexist)
+	TextView groupNotexist;
+
+	private DiscussGroupJoinContract.Presenter mPresenter;
 
 	private String cid;
-	private TextView joinBtn;
-	private TextView nameTextView;
-	private TextView numTextView;
-	private DiscussGroupImageView groupImageView;
 	private ArrayList<UserBaseVo> data = new ArrayList<>();
-	private Dialog mProgressDialog;
 	private String groupName;
-	private TextView groupNotexist;
+
 	@Override
 	protected void setContentView() {
 		setContentView(R.layout.discuss_group_join_layout);
@@ -62,108 +69,73 @@ public class DiscussGroupJoinUI extends BaseActivity {
 	
 	@Override
 	protected void findViewById() {
-		joinBtn=(TextView) findViewById(R.id.join_discuss_group);
-		groupImageView=(DiscussGroupImageView) findViewById(R.id.join_discuss_group_avatar);
-		nameTextView=(TextView) findViewById(R.id.join_discuss_group_member);
-		numTextView=(TextView) findViewById(R.id.join_discuss_group_num);
-		groupNotexist=(TextView) findViewById(R.id.groupNotexist);
+
 	}
 
 	@Override
 	protected void setListener() {
-		joinBtn.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				joinDiscussGroup();
-			}
-		});
+
+	}
+
+	@OnClick(R.id.join_discuss_group)
+	public void onClick(View v) {
+		super.onClick(v);
+		switch (v.getId()){
+			case R.id.join_discuss_group:
+				mPresenter.joinDiscussGroup(cid,data);
+				break;
+		}
 	}
 
 	@Override
 	protected void initData() {
+		new DiscussGroupJoinPresenterImpl(this);
 		setTitle(getString(R.string.join_group));
 		if(TextUtils.isEmpty(cid)){
 			cid=getIntent().getStringExtra("groupid");
 		}
-		loadDicussGroupData();
-	}
-	
-	
-	private void loadDicussGroupData(){
-		if(TextUtils.isEmpty(cid)){
-			return;
-		}
-		NetRequestImpl.getInstance().getDiscussMumbers(cid, new RequestListener() {
-			@Override
-			public void start() {
-
-			}
-
-			@Override
-			public void success(JSONObject response) {
-				JSONObject jsonObject = response.optJSONObject("data");
-				DiscussionGroupsVo vo = new DiscussionGroupsVo().parse(jsonObject);
-				for(int i=0;i<vo.getMembers().size();i++){
-					UserBaseVo info=vo.getMembers().get(i);
-					data.add(info);
-				}
-				groupName=vo.getName();
-				groupImageView.setMember(data);
-				nameTextView.setText(groupName);
-				numTextView.setText(getString(R.string.total_num, vo.getMembers().size()));
-			}
-
-			@Override
-			public void error(int errorCode, String errorMsg) {
-				if (errorCode == 1240820){
-					groupNotexist.setVisibility(View.VISIBLE);
-					joinBtn.setEnabled(false);
-				}
-			}
-		});
+		mPresenter.getDiscussMembers(cid,data);
 	}
 
-	private void joinDiscussGroup(){
-		if(TextUtils.isEmpty(cid))
-		{
-			return;
-		}
-		if (data.size() <= 0) {
-			return;
-		}
-		
-		if(mProgressDialog != null){
-			mProgressDialog.dismiss();
-			mProgressDialog = null;
-		}
-		mProgressDialog = LoadingDialog.showDialog(this, null, null);
-		mProgressDialog.setCancelable(false);
-		NetRequestImpl.getInstance().joinDiscussGroup(cid, new RequestListener() {
-			@Override
-			public void start() {
+	@Override
+	public void setPresenter(DiscussGroupJoinContract.Presenter presenter) {
+		this.mPresenter = presenter;
+	}
 
-			}
+	@Override
+	public void getDiscussMembersSuccess(DiscussionGroupsVo vo, ArrayList<UserBaseVo> data) {
+		this.data = data;
+		groupName= vo.getName();
+		groupImageView.setMember(data);
+		nameTextView.setText(groupName);
+		numTextView.setText(getString(R.string.total_num, vo.getMembers().size()));
+	}
 
-			@Override
-			public void success(JSONObject response) {
-				if(mProgressDialog != null){
-					mProgressDialog.dismiss();
-					mProgressDialog = null;
-					Utils.gotoGroupChat(DiscussGroupJoinUI.this,false,groupName,cid,data);
-				}
-			}
+	@Override
+	public void getDiscussMembersError(int errorCode, String errorMsg) {
+		if (errorCode == 1240820){
+			groupNotexist.setVisibility(View.VISIBLE);
+			joinBtn.setEnabled(false);
+		}
+	}
 
-			@Override
-			public void error(int errorCode, String errorMsg) {
-				if(mProgressDialog != null){
-					mProgressDialog.dismiss();
-					mProgressDialog = null;
-				}
-				showToast(errorMsg);
-				if(errorCode==1240922){
-					Utils.gotoGroupChat(DiscussGroupJoinUI.this,true,groupName,cid,data);
-				}
-			}
-		});
+	@Override
+	public void joinDiscussGroupStart() {
+		LoadingDialog.show(this,"");
+	}
+
+	@Override
+	public void joinDiscussGroupSuccess() {
+		LoadingDialog.close();
+		Utils.gotoGroupChat(DiscussGroupJoinUI.this,false,groupName,cid,data);
+	}
+
+	@Override
+	public void joinDiscussGroupError(int errorCode, String errorMsg) {
+		LoadingDialog.close();
+		showToast(errorMsg);
+		if(errorCode==1240922){
+			Utils.gotoGroupChat(DiscussGroupJoinUI.this,true,groupName,cid,data);
+		}
 	}
 }
