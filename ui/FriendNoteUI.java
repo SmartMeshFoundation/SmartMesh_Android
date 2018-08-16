@@ -11,12 +11,15 @@ import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.network.NetRequestImpl;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MySharedPrefs;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
 import org.json.JSONObject;
+
+import butterknife.BindView;
+import butterknife.OnClick;
 
 /**
  * Modify the friends note
@@ -25,9 +28,10 @@ import org.json.JSONObject;
 
 public class FriendNoteUI extends BaseActivity{
 
-    private EditText friendNote;//Friends note
-
-    private TextView save;
+    @BindView(R.id.friendNote)
+    EditText friendNote;//Friends note
+    @BindView(R.id.app_btn_right)
+    TextView save;
 
     private String localId,note;
 
@@ -45,13 +49,12 @@ public class FriendNoteUI extends BaseActivity{
 
     @Override
     protected void findViewById() {
-        save = (TextView) findViewById(R.id.app_btn_right);
-        friendNote = (EditText) findViewById(R.id.friendNote);
+
     }
 
     @Override
     protected void setListener() {
-        save.setOnClickListener(this);
+
     }
 
     @Override
@@ -65,7 +68,7 @@ public class FriendNoteUI extends BaseActivity{
 
     }
 
-    @Override
+    @OnClick(R.id.app_btn_right)
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.app_btn_right:

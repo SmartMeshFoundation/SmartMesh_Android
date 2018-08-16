@@ -2,18 +2,18 @@ package com.lingtuan.firefly.ui;
 
 import android.content.Intent;
 import android.view.View;
-import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.network.NetRequestImpl;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
-import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
 import org.json.JSONObject;
+
+import butterknife.OnClick;
 
 /**
  * Report friend interface
@@ -21,16 +21,6 @@ import org.json.JSONObject;
  */
 
 public class FriendReportUI extends BaseActivity {
-
-    private TextView reportReason1;
-    private TextView reportReason2;
-    private TextView reportReason3;
-    private TextView reportReason4;
-    private TextView reportReason5;
-    private TextView reportReason6;
-    private TextView reportReason7;
-    private TextView reportReason8;
-    private TextView reportReason9;
 
     private String localid;//The user id
 
@@ -46,28 +36,12 @@ public class FriendReportUI extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        reportReason1 = (TextView) findViewById(R.id.reportReason1);
-        reportReason2 = (TextView) findViewById(R.id.reportReason2);
-        reportReason3 = (TextView) findViewById(R.id.reportReason3);
-        reportReason4 = (TextView) findViewById(R.id.reportReason4);
-        reportReason5 = (TextView) findViewById(R.id.reportReason5);
-        reportReason6 = (TextView) findViewById(R.id.reportReason6);
-        reportReason7 = (TextView) findViewById(R.id.reportReason7);
-        reportReason8 = (TextView) findViewById(R.id.reportReason8);
-        reportReason9 = (TextView) findViewById(R.id.reportReason9);
+
     }
 
     @Override
     protected void setListener() {
-        reportReason1.setOnClickListener(this);
-        reportReason2.setOnClickListener(this);
-        reportReason3.setOnClickListener(this);
-        reportReason4.setOnClickListener(this);
-        reportReason5.setOnClickListener(this);
-        reportReason6.setOnClickListener(this);
-        reportReason7.setOnClickListener(this);
-        reportReason8.setOnClickListener(this);
-        reportReason9.setOnClickListener(this);
+
     }
 
     @Override
@@ -75,7 +49,8 @@ public class FriendReportUI extends BaseActivity {
         setTitle(getString(R.string.report));
     }
 
-    @Override
+    @OnClick({R.id.reportReason1,R.id.reportReason2,R.id.reportReason3,R.id.reportReason4,R.id.reportReason5
+            ,R.id.reportReason6,R.id.reportReason7,R.id.reportReason8,R.id.reportReason9})
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()){

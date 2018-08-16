@@ -21,13 +21,13 @@ import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.mesh.MeshUtils;
+import com.lingtuan.firefly.network.NetRequestImpl;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.offline.vo.WifiPeopleVO;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.vo.UserBaseVo;
 import com.lingtuan.firefly.vo.UserInfoVo;
 
@@ -35,30 +35,39 @@ import org.json.JSONObject;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.OnClick;
+
 /**
  * Created on 2017/10/20.
  * Friends information UI
  */
 
 public class FriendInfoUI extends BaseActivity {
-    
-    private CharAvatarView friendImg;
-    private TextView addFriends, sendMsg, friendNote, friendMid, friendName;
-    private TextView friendSignature;//The signature
-    
-    private LinearLayout addFriendsBody, sendMsgBody;
-    
-    private ImageView app_right;//Friends information set
-    
+
+    @BindView(R.id.friendImg)
+    CharAvatarView friendImg;
+    @BindView(R.id.addFriends)
+    TextView addFriends;
+    @BindView(R.id.sendMsg)
+    TextView sendMsg;
+    @BindView(R.id.friendNote)
+    TextView friendNote;
+    @BindView(R.id.friendMid)
+    TextView friendMid;
+    @BindView(R.id.friendName)
+    TextView friendName;
+    @BindView(R.id.friendSignature)
+    TextView friendSignature;//The signature
+    @BindView(R.id.app_right)
+    ImageView app_right;//Friends information set
+    @BindView(R.id.friendBody)
+    LinearLayout friendBody;
+
     private AppNetService appNetService;
-    
     private boolean dataHasLoad;
-    
-    private LinearLayout friendBody;
-    
     //Radio chat page
     private NoteReceiverListener noteReceiverListener;
-    
     UserInfoVo info = null;
     
     @Override
@@ -70,12 +79,12 @@ public class FriendInfoUI extends BaseActivity {
     // The Activity and netService2 connection
     private ServiceConnection serviceConn = new ServiceConnection() {
         public void onServiceConnected(ComponentName name, IBinder service) {
-            // Binding service success
             AppNetService.NetServiceBinder binder = (AppNetService.NetServiceBinder) service;
             appNetService = binder.getService();
         }
         
         public void onServiceDisconnected(ComponentName name) {
+
         }
     };
     
@@ -95,29 +104,17 @@ public class FriendInfoUI extends BaseActivity {
     
     @Override
     protected void findViewById() {
-        friendImg = (CharAvatarView) findViewById(R.id.friendImg);
-        addFriendsBody = (LinearLayout) findViewById(R.id.addFriendsBody);
-        sendMsgBody = (LinearLayout) findViewById(R.id.sendMsgBody);
-        friendBody = (LinearLayout) findViewById(R.id.friendBody);
-        addFriends = (TextView) findViewById(R.id.addFriends);
-        sendMsg = (TextView) findViewById(R.id.sendMsg);
-        friendNote = (TextView) findViewById(R.id.friendNote);
-        friendName = (TextView) findViewById(R.id.friendName);
-        friendMid = (TextView) findViewById(R.id.friendMid);
-        friendSignature = (TextView) findViewById(R.id.friendSignature);
-        app_right = (ImageView) findViewById(R.id.app_right);
+
     }
     
     @Override
     protected void setListener() {
-        sendMsgBody.setOnClickListener(this);
-        addFriendsBody.setOnClickListener(this);
-        app_right.setOnClickListener(this);
+
     }
     
     @Override
     protected void initData() {
-        
+        Utils.setStatusBar(FriendInfoUI.this,1);
         int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
         if (openSmartMesh == 1) {
             bindService(new Intent(this, AppNetService.class), serviceConn, BIND_AUTO_CREATE);
@@ -301,7 +298,7 @@ public class FriendInfoUI extends BaseActivity {
         });
     }
     
-    @Override
+    @OnClick({R.id.app_right,R.id.addFriendsBody,R.id.sendMsgBody})
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
@@ -312,6 +309,9 @@ public class FriendInfoUI extends BaseActivity {
                 Utils.openNewActivityAnim(FriendInfoUI.this, false);
                 break;
             case R.id.addFriendsBody:
+                if (info!= null &&info.getFriendLog() == 1){
+                    return;
+                }
                 addFriendMethod();
                 break;
             case R.id.sendMsgBody:

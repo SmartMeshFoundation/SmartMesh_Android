@@ -12,12 +12,15 @@ import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.switchbutton.SwitchButton;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.network.NetRequestImpl;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.vo.UserInfoVo;
 
 import org.json.JSONObject;
+
+import butterknife.BindView;
+import butterknife.OnClick;
 
 /**
  * Friends' profile Settings
@@ -26,15 +29,18 @@ import org.json.JSONObject;
 
 public class FriendInfoDataSet extends BaseActivity implements CompoundButton.OnCheckedChangeListener {
 
-    private RelativeLayout addNoteBody,report;//Add notes, to join the blacklist, report it
-    private SwitchButton joinBlackSb;
-    private TextView userName;//The user name
+    @BindView(R.id.addNoteBody)
+    RelativeLayout addNoteBody;//Add notes
+    @BindView(R.id.report)
+    RelativeLayout report;//report it
+    @BindView(R.id.joinBlackSb)
+    SwitchButton joinBlackSb;
+    @BindView(R.id.userName)
+    TextView userName;//The user name
 
     private static final int FRIEND_NOTE = 100;
     private static final int FRIEND_ADD_BLACK = FRIEND_NOTE + 1;
-
     private UserInfoVo info;
-
     private boolean isInBlack;
 
     @Override
@@ -49,17 +55,12 @@ public class FriendInfoDataSet extends BaseActivity implements CompoundButton.On
 
     @Override
     protected void findViewById() {
-        addNoteBody = (RelativeLayout) findViewById(R.id.addNoteBody);
-        report = (RelativeLayout) findViewById(R.id.report);
-        joinBlackSb = (SwitchButton) findViewById(R.id.joinBlackSb);
-        userName = (TextView) findViewById(R.id.userName);
+
     }
 
     @Override
     protected void setListener() {
         joinBlackSb.setOnCheckedChangeListener(null);
-        addNoteBody.setOnClickListener(this);
-        report.setOnClickListener(this);
     }
 
     @Override
@@ -87,7 +88,7 @@ public class FriendInfoDataSet extends BaseActivity implements CompoundButton.On
         }
     }
 
-    @Override
+    @OnClick({R.id.addNoteBody,R.id.report})
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()){
