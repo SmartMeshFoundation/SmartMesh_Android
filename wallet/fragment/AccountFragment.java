@@ -282,28 +282,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         }
     }
 
-    /**
-     * Initialize the Pop layout
-     */
-    private void initEthereumPop() {
-        LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = inflater.inflate(R.layout.eth_more_popup_layout, null);
-        ethPop = new PopupWindow(view, Utils.dip2px(getActivity(), 320), LinearLayout.LayoutParams.WRAP_CONTENT);
-        ethPop.setBackgroundDrawable(new BitmapDrawable());
-        ethPop.setOutsideTouchable(true);
-        ethPop.setFocusable(true);
-        if (ethPop.isShowing()) {
-            ethPop.dismiss();
-        } else {
-            boolean isChinese = mPresenter.checkLanguage();
-            if (isChinese) {
-                ethPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), -25), Utils.dip2px(getActivity(), -265));
-            } else {
-                ethPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), -25), Utils.dip2px(getActivity(), -326));
-            }
-
-        }
-    }
 
     /**
      * Initialize the Pop layout
@@ -373,25 +351,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             case R.id.txt_home_pop_1://Open the sidebar
                 dismissHomePop();
                 mPresenter.cancelTimer();
-                break;
-            case R.id.ethWindow:
-                if (windowPop != null && windowPop.isShowing()) {
-                    windowPop.dismiss();
-                    windowPop = null;
-                }
-                boolean isFirstShowGif = MySharedPrefs.readBoolean(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF);
-                if (isFirstShowGif) {
-                    mPresenter.showCnyTimer();
-                    currencyBg.setVisibility(View.VISIBLE);
-                    MySharedPrefs.writeBoolean(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF, false);
-                    cnyUsdChangeGif.setImageResource(R.drawable.cny_usd_change);
-                    if (cnyUsdChangeGif.getDrawable() instanceof AnimationDrawable) {
-                        ((AnimationDrawable) cnyUsdChangeGif.getDrawable()).start();
-                        ((AnimationDrawable) cnyUsdChangeGif.getDrawable()).setOneShot(false);
-                    }
-                } else {
-                    currencyBg.setVisibility(View.GONE);
-                }
                 break;
         }
     }
@@ -501,9 +460,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 intent.putExtra("strablewallet", storableWallet);
                 startActivity(intent);
                 Utils.openNewActivityAnim(getActivity(), false);
-                break;
-            case R.id.ethWarningImg://Copy the address
-                initEthereumPop();
                 break;
         }
     }
