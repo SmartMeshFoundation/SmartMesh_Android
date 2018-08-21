@@ -6,16 +6,19 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
+import com.lingtuan.firefly.custom.SquareImageView;
 import com.lingtuan.firefly.vo.UserBaseVo;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class GroupMemberImageAdapter extends BaseAdapter {
 	
@@ -78,33 +81,31 @@ public class GroupMemberImageAdapter extends BaseAdapter {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		MemberHolder holder;
 		if (convertView == null) {
-			holder = new MemberHolder();
-			LayoutInflater inflater = (LayoutInflater)
-					mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			convertView = inflater.inflate(R.layout.discuss_group_manage_grid_item, null);
-			holder.imageview = (ImageView) convertView
-					.findViewById(R.id.grid_item_image);
-			holder.name = (TextView) convertView
-					.findViewById(R.id.grid_item_text);
-			holder.deleteImg = (LinearLayout) convertView.findViewById(R.id.deleteLayout);
+			holder = new MemberHolder(convertView);
 			convertView.setTag(holder);
 		}else{
 			holder = (MemberHolder)convertView.getTag();
 		}
+		holder.imageview.setImageResource(0);
 		if(isAdmin&&position==data.size()-1){//-
 			NextApplication.displayCircleImage(holder.imageview, null);
+			holder.imageview.setText("",holder.imageview,data.get(position).getThumb());
 			holder.imageview.setImageResource(R.drawable.discuss_del);
 			holder.name.setText("");
 		}else if(isAdmin&&position==data.size()-2){//+
 			NextApplication.displayCircleImage(holder.imageview, null);
+			holder.imageview.setText("",holder.imageview,data.get(position).getThumb());
 			holder.imageview.setImageResource(R.drawable.discuss_add);
 			holder.name.setText("");
 		}else if(position==data.size()-1){//+
 			NextApplication.displayCircleImage(holder.imageview, null);
+			holder.imageview.setText("",holder.imageview,data.get(position).getThumb());
 			holder.imageview.setImageResource(R.drawable.discuss_add);
 			holder.name.setText("");
 		}else{
-			NextApplication.displayCircleImage(holder.imageview, data.get(position).getThumb());
+			holder.imageview.setText(data.get(position).getUsername(),holder.imageview,data.get(position).getThumb());
 			holder.name.setText(data.get(position).getShowName());
 		}
 		holder.imageview.setVisibility(View.VISIBLE);
@@ -170,9 +171,16 @@ public class GroupMemberImageAdapter extends BaseAdapter {
 	 }
 	
 	 static class MemberHolder{
-		ImageView imageview = null ;
-		LinearLayout deleteImg = null;
-		TextView name = null;
+		@BindView(R.id.grid_item_image)
+		SquareImageView imageview;
+		@BindView(R.id.deleteLayout)
+		LinearLayout deleteImg;
+		@BindView(R.id.grid_item_text)
+		TextView name;
+
+		public MemberHolder(View view) {
+			ButterKnife.bind(this, view);
+		}
 	 }
 
 	 public interface GroupMemberImageListener{

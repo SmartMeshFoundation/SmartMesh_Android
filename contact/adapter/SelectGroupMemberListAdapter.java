@@ -4,15 +4,16 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
+import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.vo.UserBaseVo;
 
 import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Select group of members of the adapter
@@ -58,28 +59,28 @@ public class SelectGroupMemberListAdapter extends BaseAdapter {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		Holder h = null;
 		if(convertView == null){
-			h = new Holder();
 			convertView = View.inflate(mContext, R.layout.contact_child_item, null);
-			h.mAvatar = (ImageView) convertView.findViewById(R.id.invite_avatar);
-			h.mNickname = (TextView) convertView.findViewById(R.id.nearby_nickname);
-			h.mLinear = (LinearLayout) convertView.findViewById(R.id.linear);
+			h = new Holder(convertView);
 			convertView.setTag(h);
 		}else{
 			h = (Holder) convertView.getTag();
 		}
 		
 		UserBaseVo vo = mList.get(position);
-		NextApplication.displayCircleImage(h.mAvatar, vo.getThumb());
+		h.mAvatar.setText(vo.getUsername(),h.mAvatar, vo.getThumb());
 		h.mNickname.setText(vo.getShowName());
-		h.mLinear.setVisibility(View.GONE);
 		
 		return convertView;
 	}
 
 	static class Holder{
-		ImageView mAvatar;
+		@BindView(R.id.invite_avatar)
+		CharAvatarView mAvatar;
+		@BindView(R.id.nearby_nickname)
 		TextView mNickname;
-		LinearLayout mLinear;
+		public Holder(View view) {
+			ButterKnife.bind(this, view);
+		}
 	}
 	
 }

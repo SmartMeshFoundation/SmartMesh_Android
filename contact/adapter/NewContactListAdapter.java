@@ -8,15 +8,18 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.contact.vo.NewContactVO;
+import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.custom.contact.ContactItemComparator;
 import com.lingtuan.firefly.custom.contact.ContactItemInterface;
 import com.lingtuan.firefly.custom.contact.ContactsSectionIndexer;
 
 import java.util.Collections;
 import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class NewContactListAdapter extends ArrayAdapter<ContactItemInterface>{
 
@@ -64,12 +67,8 @@ public class NewContactListAdapter extends ArrayAdapter<ContactItemInterface>{
 	public View getView(int position, View convertView, ViewGroup parent){
 		ContactHolder holder ; 
 		if(convertView == null){
-			holder = new ContactHolder();
 			convertView = View.inflate(mContext, resource, null);
-			holder.mAvatar = (ImageView) convertView.findViewById(R.id.invite_avatar);
-			holder.nickName = (TextView) convertView.findViewById(R.id.nearby_nickname);
-			holder.offlineImg = (ImageView) convertView.findViewById(R.id.offlineImg);
-            holder.checkBox = (CheckBox) convertView.findViewById(R.id.checkbox);
+			holder = new ContactHolder(convertView);
 			convertView.setTag(holder);
 		}else{
 			holder = (ContactHolder)convertView.getTag();
@@ -79,31 +78,22 @@ public class NewContactListAdapter extends ArrayAdapter<ContactItemInterface>{
 		showSectionViewIfFirstItem(convertView, item , position);
 		int nickColor = R.color.black;
 		holder.nickName.setTextColor(mContext.getResources().getColor(nickColor));
-
 		holder.nickName.setText(item.getShowName());
-
 		if (item.isOffLine()){
 			holder.offlineImg.setVisibility(View.VISIBLE);
 		}else {
 			holder.offlineImg.setVisibility(View.GONE);
 		}
-
-		NextApplication.displayCircleImage(holder.mAvatar, item.getThumb());
-		
-		if(isMultipleChoice)//multiple
-		{
-			if(item.isCantChecked())
-			{
+		holder.mAvatar.setText(item.getUsername(),holder.mAvatar, item.getThumb());
+		if(isMultipleChoice){//multiple
+			if(item.isCantChecked()){
 				holder.checkBox.setVisibility(View.VISIBLE);
 				holder.checkBox.setButtonDrawable(R.drawable.checkbox_cant_selected);
-			}
-			else{
+			}else{
 				holder.checkBox.setVisibility(View.VISIBLE);
-				if(item.isChecked())
-				{
+				if(item.isChecked()){
 					holder.checkBox.setButtonDrawable(R.drawable.checkbox_selected);
-				}
-				else{
+				}else{
 					holder.checkBox.setButtonDrawable(R.drawable.checkbox_unselected);
 				}
 			}		
@@ -121,9 +111,17 @@ public class NewContactListAdapter extends ArrayAdapter<ContactItemInterface>{
 	}
 	
 	 static class ContactHolder{
+		@BindView(R.id.nearby_nickname)
 		TextView nickName;
+		@BindView(R.id.offlineImg)
 		ImageView offlineImg;
-		ImageView mAvatar;
+		@BindView(R.id.invite_avatar)
+		CharAvatarView mAvatar;
+		@BindView(R.id.checkbox)
 		CheckBox checkBox;
+
+		public ContactHolder(View view) {
+			ButterKnife.bind(this, view);
+		}
 	}
 }
