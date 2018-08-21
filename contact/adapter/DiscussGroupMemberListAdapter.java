@@ -4,14 +4,16 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
+import com.lingtuan.firefly.custom.CharAvatarView;
 import com.lingtuan.firefly.vo.UserBaseVo;
 
 import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Invited users list adapter
@@ -48,25 +50,27 @@ public class DiscussGroupMemberListAdapter extends BaseAdapter {
 	public View getView(final int position, View convertView, ViewGroup parent) {
 		Holder h;
 		if(convertView == null){
-			h = new Holder();
 			convertView = View.inflate(mContext, R.layout.discuss_group_member_list_item, null);
-			h.mAvatar = (ImageView) convertView.findViewById(R.id.invite_avatar);
-			h.mNickname = (TextView) convertView.findViewById(R.id.invite_nickname);
+			h = new Holder(convertView);
 			convertView.setTag(h);
 		}else{
 			h = (Holder) convertView.getTag();
 		}
 		UserBaseVo uInfo = mList.get(position);
 		h.mNickname.setText(uInfo.getShowName());
-		NextApplication.displayCircleImage(h.mAvatar, uInfo.getThumb());
-		
-
+		h.mAvatar.setText(uInfo.getUsername(),h.mAvatar,uInfo.getThumb());
 		return convertView;
 	}
 	
 	static class Holder{
-		ImageView mAvatar;
+
+		@BindView(R.id.invite_avatar)
+		CharAvatarView mAvatar;
+		@BindView(R.id.invite_nickname)
 		TextView mNickname;
 
+		public Holder(View view) {
+			ButterKnife.bind(this, view);
+		}
 	}
 }

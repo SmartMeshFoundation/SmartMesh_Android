@@ -13,6 +13,9 @@ import com.lingtuan.firefly.vo.UserBaseVo;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class DiscussGroupAdapter extends BaseAdapter {
 
 	private Context c = null ;
@@ -48,10 +51,8 @@ public class DiscussGroupAdapter extends BaseAdapter {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		NearHolder holder ; 
 		if(convertView == null){
-			holder = new NearHolder();
 			convertView = View.inflate(c, R.layout.discuss_group_item,null);
-			holder.nickName = (TextView)convertView.findViewById(R.id.group_nickname);
-			holder.avatar = (DiscussGroupImageView)convertView.findViewById(R.id.group_avatar);
+			holder = new NearHolder(convertView);
 			convertView.setTag(holder);
 		}else{
 			holder = (NearHolder)convertView.getTag();
@@ -59,27 +60,30 @@ public class DiscussGroupAdapter extends BaseAdapter {
 		DiscussionGroupsVo group = sourceList.get(position);
 		holder.nickName.setText(group.getName());
 		StringBuffer sb = new StringBuffer();
-		for(int i=0;i<group.getMembers().size();i++)
-		{
+		for(int i=0;i<group.getMembers().size();i++){
 			UserBaseVo member=group.getMembers().get(i);
-			if(i==group.getMembers().size()-1)
-			{
+			if(i==group.getMembers().size()-1){
 			    sb.append(member.getShowName());
-			}
-			else{
+			}else{
 				 sb.append(member.getShowName()+",");
 			}
 		}
 		holder.avatar.setMember(group.getMembers());
-		
 		return convertView;
 	}
 	
 	
 	
 	static class NearHolder{
-		DiscussGroupImageView avatar = null ; 
-		TextView nickName = null ;
+
+		@BindView(R.id.group_avatar)
+		DiscussGroupImageView avatar;
+		@BindView(R.id.group_nickname)
+		TextView nickName;
+
+		public NearHolder(View view) {
+			ButterKnife.bind(this, view);
+		}
 	}
 
 }
