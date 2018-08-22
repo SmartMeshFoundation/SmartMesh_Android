@@ -4,7 +4,6 @@ import android.accounts.NetworkErrorException;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
@@ -26,7 +25,6 @@ import com.lingtuan.firefly.xmpp.XmppUtils;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.nio.channels.NoConnectionPendingException;
 import java.util.concurrent.TimeoutException;
 
 import okhttp3.MultipartBody;
@@ -183,7 +181,6 @@ public class RequestUtils {
         try {
             MySharedPrefs.clearUserInfo(NextApplication.mContext);
             FinalUserDataBase.getInstance().close();
-            WalletStorage.getInstance(NextApplication.mContext).destroy();
             MyToast.showToast(NextApplication.mContext, NextApplication.mContext.getString(R.string.login_state_failure));
             //Empty the notification
             NotificationManager notificationManager = (NotificationManager) NextApplication.mContext.getSystemService(NextApplication.NOTIFICATION_SERVICE);
@@ -191,17 +188,18 @@ public class RequestUtils {
 
             //Exit the XMPP service
             XmppUtils.getInstance().destroy();
-            Intent xmppservice = new Intent(NextApplication.mContext, XmppService.class);
-            NextApplication.mContext.stopService(xmppservice);
+            Intent xmppService = new Intent(NextApplication.mContext, XmppService.class);
+            NextApplication.mContext.stopService(xmppService);
             NextApplication.mContext.stopService(new Intent(NextApplication.mContext, MeshService.class));
             //Exit without social network service
             int version =android.os.Build.VERSION.SDK_INT;
             if(version >= 16){
-                Intent offlineservice = new Intent(NextApplication.mContext, AppNetService.class);
-                NextApplication.mContext.stopService(offlineservice);
+                Intent offlineService = new Intent(NextApplication.mContext, AppNetService.class);
+                NextApplication.mContext.stopService(offlineService);
             }
             BaseActivity.exit();
             NextApplication.myInfo=null;
+            WalletStorage.getInstance(NextApplication.mContext).destroy();
             Intent intent = new Intent(NextApplication.mContext,LoginUI.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             NextApplication.mContext.startActivity(intent);
