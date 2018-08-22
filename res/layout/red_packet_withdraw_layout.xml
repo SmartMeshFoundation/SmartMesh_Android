@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include layout="@layout/app_title_layout"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:background="@color/textColor"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/TextViewSendStyle"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="0dp"
+            android:text="@string/red_balance_withdraw_amount"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/redWithdrawAmount"
+            style="@style/TextViewSendStyle"
+            android:layout_weight="1"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="0dp"
+            android:text="1821855"
+            android:textColor="@color/black"/>
+
+
+        <TextView
+            style="@style/TextViewSendStyle"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="0dp"
+            android:text="@string/smt"
+            android:textColor="@color/black"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:textSize="12sp"
+        android:textColor="@color/textColorHintPrimary"
+        android:text="@string/red_balance_withdraw_consumption_gas"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="@string/red_balance_withdraw_description"/>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:id="@+id/redWithdraw"
+        style="@style/WalletStyle"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="40dp"
+        android:text="@string/red_balance_withdraw"
+        android:textColor="@color/black"
+        android:background="@drawable/selector_round_yellow_30"
+        />
+
+</LinearLayout>

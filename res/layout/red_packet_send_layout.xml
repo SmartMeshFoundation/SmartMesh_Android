@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorRed">
+   <RelativeLayout
+       android:layout_width="match_parent"
+       android:layout_height="48dp">
+
+       <ImageView
+           android:id="@+id/app_back"
+           android:layout_width="wrap_content"
+           android:layout_height="48dp"
+           android:paddingRight="9dp"
+           android:paddingLeft="8dp"
+           android:layout_centerVertical="true"
+           android:scaleType="center"
+           android:src="@drawable/icon_white_back" />
+
+       <com.lingtuan.firefly.custom.AlwaysMarqueeTextView
+           android:id="@+id/app_title"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_centerInParent="true"
+           android:layout_marginLeft="70dp"
+           android:layout_marginRight="70dp"
+           android:ellipsize="marquee"
+           android:gravity="center|center_vertical"
+           android:singleLine="true"
+           android:textColor="@color/textColor"
+           android:textSize="19sp" />
+   </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="10dp"
+                android:layout_margin="15dp"
+                android:orientation="vertical"
+                android:background="@drawable/shape_white_border_round_5">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="@string/smt"/>
+
+                <TextView
+                    android:id="@+id/redPacketBalance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/textColorHintPrimary"
+                    android:textSize="12sp"
+                    android:maxLines="1"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/red_packet_send_balance"/>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:background="@drawable/shape_gray_border_round_5">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/textColorHintPrimary"
+                        android:textSize="12sp"
+                        android:maxLines="1"
+                        android:text="@string/red_packet_send_single_amount"/>
+
+                    <EditText
+                        android:id="@+id/redPacketValue"
+                        style="@style/EditTextSendStyle"
+                        android:layout_marginTop="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center_vertical|right"
+                        android:inputType="numberDecimal"
+                        android:hint="@string/input_vaule"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:maxLines="1"
+                        android:text="@string/smt"/>
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:id="@+id/redPacketGroupBody"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:layout_gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/redPacketName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/textColorHintPrimary"
+                            android:textSize="12sp"
+                            android:maxLines="1"
+                            android:text="@string/red_packet_send_currently_handy"/>
+
+                        <TextView
+                            android:id="@+id/redPacketChangeType"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/red_send_type_color"
+                            android:textSize="12sp"
+                            android:maxLines="1"
+                            android:text="@string/red_packet_send_uniform"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="10dp"
+                        android:paddingLeft="10dp"
+                        android:paddingRight="10dp"
+                        android:background="@drawable/shape_gray_border_round_5">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/textColorHintPrimary"
+                            android:textSize="12sp"
+                            android:maxLines="1"
+                            android:text="@string/red_packet_send_number"/>
+
+                        <EditText
+                            android:id="@+id/redPacketNumber"
+                            style="@style/EditTextSendStyle"
+                            android:layout_marginTop="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_marginRight="10dp"
+                            android:gravity="center_vertical|right"
+                            android:inputType="number"
+                            android:hint="@string/red_packet_send_number"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:maxLines="1"
+                            android:text="@string/red_packet_send_number_individual"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/redPacketGroupNumber"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/textColorHintPrimary"
+                        android:layout_marginTop="10dp"
+                        android:textSize="12sp"
+                        android:maxLines="1"
+                        android:text="@string/red_packet_send_group_number"/>
+
+                </LinearLayout>
+
+                <EditText
+                    android:id="@+id/redPacketLeaveMessage"
+                    style="@style/EditTextSendStyle"
+                    android:layout_marginTop="10dp"
+                    android:layout_height="45dp"
+                    android:layout_width="match_parent"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="15dp"
+                    android:layout_marginRight="0dp"
+                    android:layout_marginLeft="0dp"
+                    android:background="@drawable/shape_gray_border_round_5"
+                    android:hint="@string/red_packet_send_leave_message"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/redPacketTotalBalance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginTop="10dp"
+                android:layout_gravity="center"
+                android:textColor="@color/textColor"
+                android:text="@string/smt_er"/>
+
+            <TextView
+                android:id="@+id/redPacketSend"
+                style="@style/WalletStyle"
+                android:layout_marginLeft="45dp"
+                android:layout_marginBottom="45dp"
+                android:layout_marginRight="45dp"
+                android:layout_marginTop="60dp"
+                android:textColor="@color/black"
+                android:background="@drawable/selector_round_gold_yellow_30"
+                android:text="@string/red_packet_send_determine" />
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

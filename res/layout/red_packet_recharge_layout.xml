@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include layout="@layout/app_title_layout"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:background="@color/textColor"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/TextViewSendStyle"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="0dp"
+            android:text="@string/red_balance_recharge_amount"
+            android:textColor="@color/black"/>
+
+        <EditText
+            android:id="@+id/redRechargeAmount"
+            style="@style/EditTextSendStyle"
+            android:layout_marginTop="0dp"
+            android:layout_height="50dp"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:inputType="numberDecimal"
+            android:hint="@string/red_balance_recharge_amount_hint"/>
+
+        <TextView
+            style="@style/TextViewSendStyle"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="0dp"
+            android:text="@string/smt"
+            android:textColor="@color/black"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:id="@+id/redRecharge"
+        style="@style/WalletStyle"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="40dp"
+        android:text="@string/red_balance_recharge"
+        android:textColor="@color/black"
+        android:background="@drawable/selector_round_yellow_30"
+        />
+
+</LinearLayout>
