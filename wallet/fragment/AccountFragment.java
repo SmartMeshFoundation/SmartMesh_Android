@@ -31,7 +31,6 @@ import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseFragment;
 import com.lingtuan.firefly.custom.CustomListView;
-import com.lingtuan.firefly.custom.LanguageTextView;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.quickmark.CaptureActivity;
@@ -40,7 +39,9 @@ import com.lingtuan.firefly.setting.CreateGestureActivity;
 import com.lingtuan.firefly.setting.GestureLoginActivity;
 import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.util.Constants;
+import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MySharedPrefs;
+import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.AccountAdapter;
 import com.lingtuan.firefly.wallet.AccountTokenAdapter;
@@ -51,11 +52,17 @@ import com.lingtuan.firefly.wallet.WalletCreateActivity;
 import com.lingtuan.firefly.wallet.WalletSendDetailUI;
 import com.lingtuan.firefly.wallet.contract.AccountContract;
 import com.lingtuan.firefly.wallet.presenter.AccountPresenterImpl;
+import com.lingtuan.firefly.wallet.util.Sign2;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
 import com.lingtuan.firefly.walletold.OldAccountUI;
 import com.lingtuan.firefly.xmpp.XmppAction;
+
+import org.spongycastle.util.encoders.Hex;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.Hash;
+import org.web3j.utils.Numeric;
 
 import java.util.ArrayList;
 
@@ -77,7 +84,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     @BindView(R.id.walletName)
     TextView walletName;//Name of the wallet
     @BindView(R.id.walletBackup)
-    LanguageTextView walletBackup;//backup of the wallet
+    TextView walletBackup;//backup of the wallet
     @BindView(R.id.walletAddress)
     TextView walletAddress;//The wallet address
     @BindView(R.id.walletImg)
@@ -99,19 +106,19 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     @BindView(R.id.ethWarningImg)
     ImageView ethWarningImg;
     @BindView(R.id.oldWallet)
-    LanguageTextView oldWallet;
+    TextView oldWallet;
     @BindView(R.id.oldWalletImg)
     ImageView oldWalletImg;
     @BindView(R.id.walletList)
     ListView walletListView;
     @BindView(R.id.walletGesture)
-    LanguageTextView walletGesture;
+    TextView walletGesture;
     @BindView(R.id.walletManager)
-    LanguageTextView walletManager;
+    TextView walletManager;
     @BindView(R.id.createWallet)
-    LanguageTextView createWallet;
+    TextView createWallet;
     @BindView(R.id.showQuicMark)
-    LanguageTextView showQuicMark;
+    TextView showQuicMark;
     @BindView(R.id.account_drawerlayout)
     DrawerLayout mDrawerLayout;
 
@@ -142,6 +149,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
     private AccountContract.Presenter mPresenter;
 
+    public AccountFragment() {
+
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -199,7 +209,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         filter.addAction(Constants.WALLET_REFRESH_GESTURE);//Refresh the page
         filter.addAction(Constants.WALLET_REFRESH_SHOW_HINT);//trans
         filter.addAction(Constants.ACTION_GESTURE_LOGIN);//trans
-        filter.addAction(Constants.CHANGE_LANGUAGE);//Update language refresh the page
         filter.addAction(XmppAction.ACTION_TRANS);//trans
         filter.addAction(Constants.WALLET_BIND_TOKEN);
         filter.addAction(Constants.WALLET_UPDATE_NAME);
@@ -231,9 +240,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                     case Constants.ACTION_GESTURE_LOGIN:
                     case Constants.WALLET_UPDATE_NAME:
                         initWalletInfo();
-                        break;
-                    case Constants.CHANGE_LANGUAGE:
-                        Utils.updateViewLanguage(view.findViewById(R.id.account_drawerlayout));
                         break;
                     case XmppAction.ACTION_TRANS:
                         loadData(false);
@@ -280,6 +286,64 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             homePop.dismiss();
             homePop = null;
         }
+    }
+
+    /**
+     * Initialize the Pop layout
+     */
+    private void initEthereumPop() {
+        LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.eth_more_popup_layout, null);
+        ethPop = new PopupWindow(view, Utils.dip2px(getActivity(), 320), LinearLayout.LayoutParams.WRAP_CONTENT);
+        ethPop.setBackgroundDrawable(new BitmapDrawable());
+        ethPop.setOutsideTouchable(true);
+        ethPop.setFocusable(true);
+        if (ethPop.isShowing()) {
+            ethPop.dismiss();
+        } else {
+            boolean isChinese = mPresenter.checkLanguage();
+            if (isChinese) {
+                ethPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), -25), Utils.dip2px(getActivity(), -265));
+            } else {
+                ethPop.showAsDropDown(ethWarningImg, Utils.dip2px(getActivity(), -25), Utils.dip2px(getActivity(), -326));
+            }
+
+        }
+    }
+
+    /**
+     * wallet mapping dialog
+     * */
+    public void addressMappingDialog(){
+        MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_INPUT_PWD, new MyViewDialogFragment.EditCallback() {
+            @Override
+            public void getEditText(String editText) {
+                getCredentials(editText);
+            }
+        });
+        mdf.show(getFragmentManager(), "mdf");
+    }
+
+    /**
+     * get credentials
+     * */
+    private void getCredentials(final String password){
+        LoadingDialog.show(getActivity(),"");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Credentials keys = WalletStorage.getInstance(getActivity().getApplicationContext()).getFullWallet(getActivity(),password,walletAddress.getText().toString());
+                    Message message = Message.obtain();
+                    message.what = 0;
+                    message.obj = keys;
+                    mHandler.sendMessage(message);
+                }catch (Exception e) {
+                    e.printStackTrace();
+                    mHandler.sendEmptyMessage(1);
+                }
+            }
+        }).start();
     }
 
 
@@ -351,6 +415,25 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             case R.id.txt_home_pop_1://Open the sidebar
                 dismissHomePop();
                 mPresenter.cancelTimer();
+                break;
+            case R.id.ethWindow:
+                if (windowPop != null && windowPop.isShowing()) {
+                    windowPop.dismiss();
+                    windowPop = null;
+                }
+                boolean isFirstShowGif = MySharedPrefs.readBoolean(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF);
+                if (isFirstShowGif) {
+                    mPresenter.showCnyTimer();
+                    currencyBg.setVisibility(View.VISIBLE);
+                    MySharedPrefs.writeBoolean(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_FIRST_WALLET_SHOW_GIF, false);
+                    cnyUsdChangeGif.setImageResource(R.drawable.cny_usd_change);
+                    if (cnyUsdChangeGif.getDrawable() instanceof AnimationDrawable) {
+                        ((AnimationDrawable) cnyUsdChangeGif.getDrawable()).start();
+                        ((AnimationDrawable) cnyUsdChangeGif.getDrawable()).setOneShot(false);
+                    }
+                } else {
+                    currencyBg.setVisibility(View.GONE);
+                }
                 break;
         }
     }
@@ -461,12 +544,15 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                 startActivity(intent);
                 Utils.openNewActivityAnim(getActivity(), false);
                 break;
+            case R.id.ethWarningImg://Copy the address
+                initEthereumPop();
+                break;
         }
     }
 
     @OnItemClick(R.id.walletList)
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (!WalletStorage.getInstance(getActivity().getApplicationContext()).get().get(position).isSelect()) {
+        if (getActivity() != null && !WalletStorage.getInstance(getActivity().getApplicationContext()).get().get(position).isSelect()) {
             String address = "";
             for (int i = 0; i < WalletStorage.getInstance(getActivity().getApplicationContext()).get().size(); i++) {
                 if (i != position) {
@@ -633,6 +719,19 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             switch (msg.what) {
+                case 0:
+                    LoadingDialog.close();
+                    Credentials keys = (Credentials)msg.obj;
+                    String message = Constants.WALLET_MAPPING_SIGN;
+                    byte[] srtbyte = Hash.sha3(Numeric.hexStringToByteArray(message));
+                    Sign2.SignatureData data = Sign2.signMessage(srtbyte,keys.getEcKeyPair());
+                    String R = "0x" + Hex.toHexString(data.getR());
+                    String S = "0x" + Hex.toHexString(data.getS());
+                    byte V = data.getV();
+                    break;
+                case 1:
+                    LoadingDialog.close();
+                    break;
                 case 2:
                     dismissHomePop();
                     break;

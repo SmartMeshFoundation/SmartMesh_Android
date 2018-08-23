@@ -22,7 +22,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -286,5 +285,7 @@ public class AccountPresenterImpl implements AccountContract.Presenter {
         }
         return storableWallet;
     }
+
+
 
 }
