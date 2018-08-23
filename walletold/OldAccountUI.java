@@ -1,5 +1,6 @@
 package com.lingtuan.firefly.walletold;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -7,7 +8,6 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.CardView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -22,10 +22,12 @@ import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestUtils;
+import com.lingtuan.firefly.network.NetRequestUtils;
 import com.lingtuan.firefly.wallet.WalletCopyActivity;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
+import com.lingtuan.firefly.walletold.contract.OldAccountContract;
+import com.lingtuan.firefly.walletold.presenter.OldAccountPresenterImpl;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,6 +36,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.OnClick;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -43,22 +47,32 @@ import okhttp3.Response;
  * account
  */
 
-public class OldAccountUI extends BaseActivity implements View.OnClickListener,  SwipeRefreshLayout.OnRefreshListener{
+public class OldAccountUI extends BaseActivity implements SwipeRefreshLayout.OnRefreshListener,OldAccountContract.View{
 
-    private ImageView walletImg;//The wallet picture
-    private TextView walletName;//Name of the wallet
-    private TextView walletBackup;//backup of the wallet
-    private TextView walletAddress;//The wallet address
-    private LinearLayout walletNameBody;
-    private SwipeRefreshLayout swipe_refresh;
+    @BindView(R.id.walletImg)
+    ImageView walletImg;//The wallet picture
+    @BindView(R.id.walletName)
+    TextView walletName;//Name of the wallet
+    @BindView(R.id.walletBackup)
+    TextView walletBackup;//backup of the wallet
+    @BindView(R.id.walletAddress)
+    TextView walletAddress;//The wallet address
+    @BindView(R.id.swipe_refresh)
+    SwipeRefreshLayout swipe_refresh;
+    @BindView(R.id.ethTokenBalance)
+    TextView ethTokenBalance;
+    @BindView(R.id.smtTokenBalance)
+    TextView smtTokenBalance;
+    @BindView(R.id.meshTokenBalance)
+    TextView meshTokenBalance;
+    @BindView(R.id.smtTokenBody)
+    LinearLayout smtTokenBody;
+
+    private OldAccountContract.Presenter mPresenter;
+
     private StorableWallet storableWallet;
-    private int index = -1;//Which one is selected
 
-    private TextView etnTokenBalance,smtTokenBalance,meshTokenBalance;
-
-    private CardView ethTokenBody,smtTokenBody,meshTokenBody;
-
-
+    private boolean hasLoadData;
 
     @Override
     protected void setContentView() {
@@ -67,32 +81,17 @@ public class OldAccountUI extends BaseActivity implements View.OnClickListener, 
 
     @Override
     protected void findViewById() {
-        swipe_refresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
-        walletImg = (ImageView) findViewById(R.id.walletImg);
-        walletName = (TextView) findViewById(R.id.walletName);
-        walletNameBody = (LinearLayout) findViewById(R.id.walletNameBody);
-        walletBackup = (TextView) findViewById(R.id.walletBackup);
-        walletAddress = (TextView) findViewById(R.id.walletAddress);
-        etnTokenBalance = (TextView) findViewById(R.id.etnTokenBalance);
-        smtTokenBalance = (TextView) findViewById(R.id.smtTokenBalance);
-        meshTokenBalance = (TextView) findViewById(R.id.meshTokenBalance);
-        ethTokenBody = (CardView) findViewById(R.id.ethTokenBody);
-        smtTokenBody = (CardView) findViewById(R.id.smtTokenBody);
-        meshTokenBody = (CardView) findViewById(R.id.meshTokenBody);
+
     }
     @Override
     protected void setListener(){
-        walletAddress.setOnClickListener(this);
-        walletImg.setOnClickListener(this);
-        walletNameBody.setOnClickListener(this);
-        ethTokenBody.setOnClickListener(this);
-        smtTokenBody.setOnClickListener(this);
-        meshTokenBody.setOnClickListener(this);
         swipe_refresh.setOnRefreshListener(this);
     }
 
     @Override
     protected void initData() {
+        new OldAccountPresenterImpl(this);
+        Utils.setStatusBar(OldAccountUI.this,1);
         swipe_refresh.setColorSchemeResources(R.color.black);
         initWalletInfo();
         IntentFilter filter = new IntentFilter();
@@ -120,23 +119,23 @@ public class OldAccountUI extends BaseActivity implements View.OnClickListener, 
         unregisterReceiver(mBroadcastReceiver);
     }
 
-    @Override
+    @OnClick({R.id.walletNameBody,R.id.walletAddress,R.id.ethTokenBody,R.id.smtTokenBody,R.id.meshTokenBody})
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()){
             case R.id.walletNameBody://Backup the purse
-                if (storableWallet == null){
+                if (storableWallet == null || !hasLoadData){
                     return;
                 }
                 Intent copyIntent = new Intent(OldAccountUI.this,WalletCopyActivity.class);
                 copyIntent.putExtra(Constants.WALLET_INFO, storableWallet);
-                copyIntent.putExtra(Constants.WALLET_ICON, storableWallet.getImgId());
+                copyIntent.putExtra(Constants.WALLET_IMAGE, storableWallet.getWalletImageId());
                 copyIntent.putExtra(Constants.WALLET_TYPE, 1);
                 startActivity(copyIntent);
                 Utils.openNewActivityAnim(OldAccountUI.this,false);
                 break;
             case R.id.walletAddress://Qr code
-                if (storableWallet == null){
+                if (storableWallet == null || !hasLoadData){
                     return;
                 }
                 if (!storableWallet.isBackup()){
@@ -154,6 +153,9 @@ public class OldAccountUI extends BaseActivity implements View.OnClickListener, 
                 Utils.openNewActivityAnim(OldAccountUI.this,false);
                 break;
             case R.id.ethTokenBody://Copy the address
+                if (storableWallet == null || !hasLoadData){
+                    return;
+                }
                 Intent ethIntent = new Intent(OldAccountUI.this,OldWalletSendDetailUI.class);
                 ethIntent.putExtra("sendtype", 0);
                 ethIntent.putExtra("storableWallet", storableWallet);
@@ -161,6 +163,9 @@ public class OldAccountUI extends BaseActivity implements View.OnClickListener, 
                 Utils.openNewActivityAnim(OldAccountUI.this,false);
                 break;
             case R.id.smtTokenBody://Copy the address
+                if (storableWallet == null || !hasLoadData){
+                    return;
+                }
                 Intent smtIntent = new Intent(OldAccountUI.this,OldWalletSendDetailUI.class);
                 smtIntent.putExtra("sendtype", 1);
                 smtIntent.putExtra("storableWallet", storableWallet);
@@ -182,34 +187,9 @@ public class OldAccountUI extends BaseActivity implements View.OnClickListener, 
      * Load or refresh the wallet information
      * */
     private void initWalletInfo(){
-        ArrayList<StorableWallet> storableWallets = WalletStorage.getInstance(getApplicationContext()).get();
-        for (int i = 0 ; i < storableWallets.size(); i++){
-            if (storableWallets.get(i).isSelect() ){
-                WalletStorage.getInstance(NextApplication.mContext).updateWalletToList(NextApplication.mContext,storableWallets.get(i).getPublicKey(),false);
-                index = i;
-                int imgId = Utils.getWalletImg(OldAccountUI.this,i);
-                storableWallet = storableWallets.get(i);
-                if (storableWallet.getImgId() == 0){
-                    storableWallet.setImgId(imgId);
-                    walletImg.setImageResource(imgId);
-                }else{
-                    walletImg.setImageResource(storableWallet.getImgId());
-                }
-                break;
-            }
-        }
-        if (index == -1 && storableWallets.size() > 0){
-            int imgId = Utils.getWalletImg(OldAccountUI.this,0);
-            storableWallet = storableWallets.get(0);
-            if (storableWallet.getImgId() == 0){
-                storableWallet.setImgId(imgId);
-                walletImg.setImageResource(imgId);
-            }else{
-                walletImg.setImageResource(storableWallet.getImgId());
-            }
-        }
-
+        storableWallet = mPresenter.getStorableWallet();
         if (storableWallet != null){
+            walletImg.setImageResource(Utils.getWalletImageId(OldAccountUI.this,storableWallet.getWalletImageId()));
             walletName.setText(storableWallet.getWalletName());
 
             if (storableWallet.isBackup()){
@@ -227,106 +207,91 @@ public class OldAccountUI extends BaseActivity implements View.OnClickListener, 
         new Handler().postDelayed(new Runnable(){
             public void run() {
                 swipe_refresh.setRefreshing(true);
-                loadData(true);
+                mPresenter.getBalance(OldAccountUI.this,walletAddress.getText().toString(),true);
             }
         }, 10);
     }
 
     @Override
     public void onRefresh() {
-        loadData(true);
+        mPresenter.getBalance(this,walletAddress.getText().toString(),true);
     }
 
-    /**
-     * get token list
-     * */
-    private void loadData(final boolean isShowToast){
-        try {
-            NetRequestUtils.getInstance().getBalance(OldAccountUI.this,walletAddress.getText().toString(), new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    if (isShowToast){
-                        mHandler.sendEmptyMessage(0);
-                    }
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    Message message = Message.obtain();
-                    message.what = 1;
-                    message.obj = response.body().string();
-                    mHandler.sendMessage(message);
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
+    @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler(){
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0:
                     showToast(getString(R.string.error_get_balance));
-                    swipe_refresh.setRefreshing(false);
+                    if (swipe_refresh != null){
+                        swipe_refresh.setRefreshing(false);
+                    }
                     break;
                 case 1:
-                    swipe_refresh.setRefreshing(false);
-                    parseJson((String)msg.obj);
+                    if (swipe_refresh != null){
+                        swipe_refresh.setRefreshing(false);
+                    }
+                    mPresenter.parseJson((String) msg.obj);
                     break;
             }
         }
     };
 
-    /**
-     * parse json
-     * */
-    private void parseJson(String jsonString){
-        if (TextUtils.isEmpty(jsonString)){
-            return;
-        }
-        try {
-            JSONObject object = new JSONObject(jsonString);
-            int errcod = object.optInt("errcod");
-            if (errcod == 0){
-                double ethBalance1 = object.optJSONObject("data").optDouble("eth");
-                double fftBalance1 = object.optJSONObject("data").optDouble("smt");
-                double meshBalance1 = object.optJSONObject("data").optDouble("mesh");
-                if (ethBalance1 > 0){
-                    BigDecimal ethDecimal = new BigDecimal(ethBalance1).setScale(10,BigDecimal.ROUND_DOWN);
-                    etnTokenBalance.setText(ethDecimal.toPlainString());
-                }else{
-                    etnTokenBalance.setText(ethBalance1 +"");
-                }
-                if (fftBalance1 > 0){
-                    BigDecimal fftDecimal = new BigDecimal(fftBalance1).setScale(5,BigDecimal.ROUND_DOWN);
-                    smtTokenBalance.setText(fftDecimal.toPlainString());
-                }else{
-                    smtTokenBalance.setText(fftBalance1 + "");
-                }
+    @Override
+    public void setPresenter(OldAccountContract.Presenter presenter) {
+        this.mPresenter = presenter;
+    }
 
-                if (meshBalance1 > 0){
-                    BigDecimal meshDecimal = new BigDecimal(meshBalance1).setScale(5,BigDecimal.ROUND_DOWN);
-                    meshTokenBalance.setText(meshDecimal.toPlainString());
-                }else{
-                    meshTokenBalance.setText(meshBalance1 + "");
-                }
-
-                storableWallet.setEthBalance(ethBalance1);
-                storableWallet.setFftBalance(fftBalance1);
-                storableWallet.setMeshBalance(meshBalance1);
-            }else{
-                if(errcod == -2){
-                    long difftime = object.optJSONObject("data").optLong("difftime");
-                    long tempTime =  MySharedPrefs.readLong(OldAccountUI.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_REQTIME);
-                    MySharedPrefs.writeLong(OldAccountUI.this,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_REQTIME,difftime + tempTime);
-                }
-                MyToast.showToast(OldAccountUI.this,object.optString("msg"));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
+    @Override
+    public void onFailure(boolean isShowToast) {
+        if (isShowToast){
+            mHandler.sendEmptyMessage(0);
         }
     }
 
+    @Override
+    public void onResponse(String string) {
+        Message message = Message.obtain();
+        message.what = 1;
+        message.obj = string;
+        mHandler.sendMessage(message);
+    }
 
+    @Override
+    public void resetData(double ethBalance, double smtBalance, double meshBalance, String smtMapping) {
+        if (ethTokenBalance != null){
+            BigDecimal ethDecimal = new BigDecimal(ethBalance).setScale(10,BigDecimal.ROUND_DOWN);
+            ethTokenBalance.setText(ethDecimal.toPlainString());
+        }
+        if (smtTokenBalance != null){
+            BigDecimal fftDecimal = new BigDecimal(smtBalance).setScale(5,BigDecimal.ROUND_DOWN);
+            smtTokenBalance.setText(fftDecimal.toPlainString());
+        }
+        if (meshTokenBalance != null){
+            BigDecimal meshDecimal = new BigDecimal(meshBalance).setScale(5,BigDecimal.ROUND_DOWN);
+            meshTokenBalance.setText(meshDecimal.toPlainString());
+        }
+        storableWallet.setEthBalance(ethBalance);
+        storableWallet.setFftBalance(smtBalance);
+        storableWallet.setMeshBalance(meshBalance);
+
+        if (smtTokenBody != null){
+            if (TextUtils.equals(smtMapping,"2")){
+                smtTokenBody.setVisibility(View.GONE);
+            }else if (TextUtils.equals(smtMapping,"1")){
+                smtTokenBody.setVisibility(View.VISIBLE);
+                smtTokenBody.setEnabled(false);
+            }else{
+                smtTokenBody.setVisibility(View.VISIBLE);
+                smtTokenBody.setEnabled(true);
+            }
+        }
+
+        hasLoadData = true;
+    }
+
+    @Override
+    public void resetDataError(String message) {
+        showToast(message);
+    }
 }
