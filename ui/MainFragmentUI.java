@@ -1,6 +1,7 @@
 package com.lingtuan.firefly.ui;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -17,8 +18,6 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.FrameLayout;
@@ -38,6 +37,8 @@ import com.lingtuan.firefly.fragment.MainMessageFragmentUI;
 import com.lingtuan.firefly.fragment.MySelfFragment;
 import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.mesh.MeshService;
+import com.lingtuan.firefly.network.NetRequestImpl;
+import com.lingtuan.firefly.network.NetRequestUtils;
 import com.lingtuan.firefly.offline.AppNetService;
 import com.lingtuan.firefly.service.LoadDataService;
 import com.lingtuan.firefly.service.UpdateVersionService;
@@ -47,8 +48,6 @@ import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
-import com.lingtuan.firefly.util.netutil.NetRequestUtils;
 import com.lingtuan.firefly.vo.ChatMsg;
 import com.lingtuan.firefly.vo.UserInfoVo;
 import com.lingtuan.firefly.wallet.fragment.AccountFragment;
@@ -63,6 +62,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import butterknife.BindView;
+import butterknife.OnClick;
 import io.reactivex.functions.Consumer;
 
 /**
@@ -70,25 +71,25 @@ import io.reactivex.functions.Consumer;
  */
 
 public class MainFragmentUI extends BaseActivity implements View.OnClickListener {
-    
-    private TextView main_tab_chats;//The message
-    private TextView main_tab_contact; //The address book
-    private TextView main_tab_account;//The wallet
-    private TextView main_tab_found;//found
-    private TextView main_tab_setting;//my
-    private LinearLayout mainBottomTab;//main tab
-    
+
+    @BindView(R.id.main_tab_chats)
+    TextView main_tab_chats;//The message
+    @BindView(R.id.main_tab_contact)
+    TextView main_tab_contact; //The address book
+    @BindView(R.id.main_tab_account)
+    TextView main_tab_account;//The wallet
+    @BindView(R.id.main_tab_setting)
+    TextView main_tab_setting;//my
+    @BindView(R.id.mainBottomTab)
+    LinearLayout mainBottomTab;//main tab
+    @BindView(R.id.main_unread)
+    TextView mMsgUnread;
     
     private MsgReceiverListener msgReceiverListener;
-    
     private Stack<String> mStack = new Stack<>();
     private Map<String, BaseFragment> map = new HashMap<>();
-    
     private int totalUnreadCount = 0;
-    private TextView mMsgUnread;
-    
     private boolean showAnimation;
-
     private File installFile;
     
     @Override
@@ -98,12 +99,12 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         //清除通知
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
-        
+
     }
     
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        
+
     }
     
     @Override
@@ -114,8 +115,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
             return;
         }
         try {
-            Utils.settingLanguage(MainFragmentUI.this);
-            Utils.updateViewLanguage(findViewById(android.R.id.content));
+            Utils.settingLanguage();
             int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
             if (intent.getBooleanExtra("isOfflineMsg", false)) {
                 showOfflineAlert(intent.getStringExtra("offlineContent"));
@@ -196,22 +196,12 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
     
     @Override
     protected void findViewById() {
-        mainBottomTab = (LinearLayout) findViewById(R.id.mainBottomTab);
-        main_tab_chats = (TextView) findViewById(R.id.main_tab_chats);
-        main_tab_contact = (TextView) findViewById(R.id.main_tab_contact);
-        main_tab_account = (TextView) findViewById(R.id.main_tab_account);
-        main_tab_found = (TextView) findViewById(R.id.main_tab_found);
-        main_tab_setting = (TextView) findViewById(R.id.main_tab_setting);
-        mMsgUnread = (TextView) findViewById(R.id.main_unread);
+
     }
     
     @Override
     protected void setListener() {
-        main_tab_chats.setOnClickListener(this);
-        main_tab_contact.setOnClickListener(this);
-        main_tab_account.setOnClickListener(this);
-        main_tab_found.setOnClickListener(this);
-        main_tab_setting.setOnClickListener(this);
+
     }
     
     @Override
@@ -229,7 +219,6 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
             } else if (getIntent().getExtras().getBoolean("isNewMsg", false)) {//jump message
                 onClick(main_tab_chats);
             }
-            
             showAnimation = getIntent().getBooleanExtra("showAnimation", false);
         }
         int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
@@ -256,7 +245,6 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         filter.addAction(LoadDataService.ACTION_START_CONTACT_LISTENER);
         filter.addAction(XmppAction.ACTION_MAIN_UNREADMSG_UPDATE_LISTENER);
         filter.addAction(XmppAction.ACTION_MAIN_OFFLINE_LISTENER);
-        filter.addAction(Constants.CHANGE_LANGUAGE);//Refresh the page
         filter.addAction(Constants.ACTION_NETWORK_RECEIVER);//Network monitoring
         filter.addAction(Constants.WALLET_SUCCESS);//Refresh the page
         filter.addAction(Constants.WALLET_REFRESH_GESTURE);//Refresh the page
@@ -338,17 +326,18 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
     }
     
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @SuppressLint("CheckResult")
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent != null && (Constants.ACTION_GESTURE_LOGIN.equals(intent.getAction()))) {
                 if (WalletStorage.getInstance(getApplicationContext()).get().size() > 0) {
+                    Utils.setStatusBar(MainFragmentUI.this,1);
                     showFragment(AccountFragment.class, false);
                 } else {
+                    Utils.setStatusBar(MainFragmentUI.this,0);
                     showFragment(NewWalletFragment.class, false);
                 }
                 selectChanged(R.id.main_tab_account);
-            } else if (intent != null && (Constants.CHANGE_LANGUAGE.equals(intent.getAction()))) {
-                Utils.updateViewLanguage(findViewById(R.id.main_linear));
             } else if (intent != null && LoadDataService.ACTION_START_CONTACT_LISTENER.equals(intent.getAction())) {
                 getContentResolver().registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, mObserver);
             } else if (intent != null && XmppAction.ACTION_MAIN_UNREADMSG_UPDATE_LISTENER.equals(intent.getAction())) {
@@ -378,8 +367,10 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                 }
             } else if (intent != null && (Constants.WALLET_SUCCESS.equals(intent.getAction())) || Constants.WALLET_REFRESH_GESTURE.equals(intent.getAction())) {
                 if (WalletStorage.getInstance(getApplicationContext()).get().size() > 0) {
+                    Utils.setStatusBar(MainFragmentUI.this,1);
                     showFragment(AccountFragment.class, false);
                 } else {
+                    Utils.setStatusBar(MainFragmentUI.this,0);
                     showFragment(NewWalletFragment.class, false);
                 }
                 selectChanged(R.id.main_tab_account);
@@ -426,7 +417,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         }
     };
     
-    @Override
+    @OnClick({R.id.main_tab_chats,R.id.main_tab_contact,R.id.main_tab_account,R.id.main_tab_setting})
     public void onClick(View v) {
         int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
         switch (v.getId()) {
@@ -479,16 +470,6 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                 }
                 
                 break;
-            case R.id.main_tab_found:
-                Utils.setStatusBar(MainFragmentUI.this,2);
-                if (walletMode != 0 && NextApplication.myInfo == null) {
-                    startActivity(new Intent(MainFragmentUI.this, WalletModeLoginUI.class));
-                    Utils.openNewActivityAnim(this, false);
-                } else {
-                    showFragment(MainFoundFragmentUI.class, false);
-                    selectChanged(v.getId());
-                }
-                break;
             case R.id.main_tab_setting:
                 Utils.setStatusBar(MainFragmentUI.this,1);
                 if (walletMode != 0 && NextApplication.myInfo == null) {
@@ -507,12 +488,10 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         main_tab_chats.setSelected(false);
         main_tab_contact.setSelected(false);
         main_tab_account.setSelected(false);
-        main_tab_found.setSelected(false);
         main_tab_setting.setSelected(false);
         main_tab_chats.setEnabled(true);
         main_tab_contact.setEnabled(true);
         main_tab_account.setEnabled(true);
-        main_tab_found.setEnabled(true);
         main_tab_setting.setEnabled(true);
         
         switch (resId) {
@@ -523,10 +502,6 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
             case R.id.main_tab_contact:
                 main_tab_contact.setSelected(true);
                 main_tab_contact.setEnabled(false);
-                break;
-            case R.id.main_tab_found:
-                main_tab_found.setSelected(true);
-                main_tab_found.setEnabled(false);
                 break;
             case R.id.main_tab_setting:
                 main_tab_setting.setSelected(true);
@@ -600,8 +575,10 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == 100) {
             if (WalletStorage.getInstance(getApplicationContext()).get().size() > 0) {
+                Utils.setStatusBar(MainFragmentUI.this,1);
                 showFragment(AccountFragment.class, false);
             } else {
+                Utils.setStatusBar(MainFragmentUI.this,0);
                 showFragment(NewWalletFragment.class, false);
             }
         }else if (resultCode == RESULT_OK && requestCode == 200) {
