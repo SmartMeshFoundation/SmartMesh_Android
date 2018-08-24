@@ -34,6 +34,8 @@ public class AccountTokenAdapter extends BaseAdapter {
 
     private ArrayList<TokenVo> tokenVos;
 
+    private String isMapping;
+
     private TokenOnItemClick tokenOnItemClick;
 
     public AccountTokenAdapter(Context context,ArrayList<TokenVo> tokenVos,TokenOnItemClick tokenOnItemClick){
@@ -57,8 +59,9 @@ public class AccountTokenAdapter extends BaseAdapter {
         return tokenVos.get(position);
     }
 
-    public void resetSource(ArrayList<TokenVo> tokenVos){
+    public void resetSource(ArrayList<TokenVo> tokenVos,String is_mapping){
         this.tokenVos = tokenVos;
+        this.isMapping = is_mapping;
         notifyDataSetChanged();
     }
 
@@ -81,7 +84,18 @@ public class AccountTokenAdapter extends BaseAdapter {
         TokenVo tokenVo = tokenVos.get(position);
         NextApplication.displayCircleToken(holder.tokenImg,Utils.buildThumb(tokenVo.getTokenLogo()));
         holder.tokenSymbol.setText(tokenVo.getTokenSymbol());
-
+        if (TextUtils.equals("smt",tokenVo.getContactAddress())){
+            holder.tokenMapping.setVisibility(View.VISIBLE);
+            if (TextUtils.equals("-1",isMapping)){
+                holder.tokenMapping.setText(context.getString(R.string.mapping));
+            }else if (TextUtils.equals("0",isMapping)){
+                holder.tokenMapping.setText(context.getString(R.string.mapping_ing));
+            }else{
+                holder.tokenMapping.setVisibility(View.GONE);
+            }
+        }else{
+            holder.tokenMapping.setVisibility(View.GONE);
+        }
         int priceUnit = MySharedPrefs.readIntDefaultUsd(context,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
         if (priceUnit == 0){
             if (TextUtils.isEmpty(tokenVo.getTokenPrice())){
@@ -124,11 +138,22 @@ public class AccountTokenAdapter extends BaseAdapter {
             }
         });
 
+        holder.tokenMapping.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (tokenOnItemClick != null && TextUtils.equals("-1",isMapping)){
+                    tokenOnItemClick.tokenMapping();
+                }
+            }
+        });
+
         return convertView;
     }
 
     public interface TokenOnItemClick{
         void setTokenOnItemClick(int position);
+
+        void tokenMapping();
     }
 
     static class ViewHolder{
@@ -144,6 +169,8 @@ public class AccountTokenAdapter extends BaseAdapter {
         TextView tokenTotalPrice;//token total price
         @BindView(R.id.walletTokenBody)
         LinearLayout walletTokenBody;
+        @BindView(R.id.tokenMapping)
+        TextView tokenMapping;
 
         public ViewHolder(View view) {
             ButterKnife.bind(this, view);
