@@ -1,6 +1,7 @@
 package com.lingtuan.firefly.ui.contract;
 
 import android.content.Context;
+import android.content.DialogInterface;
 
 import com.lingtuan.firefly.base.BasePresenter;
 import com.lingtuan.firefly.base.BaseView;
@@ -68,6 +69,16 @@ public interface AlertContract {
          * @param storableWallet   wallet info
          * */
         void showBackupDialog(Context context,String title , String message, String negativeMsg, StorableWallet storableWallet);
+
+        void mappingDialog(Context context,String negativeMsg,String smtBalance, String title, String url);
+
+        void mappingSuccessDialog(Context context,String negativeMsg,String mappingId, String content);
+
+        /**
+         * start mapping
+         * @param address wallet address
+         * */
+        void startMappingMethod(String address ,String r ,String s ,byte v);
     }
 
     interface View extends BaseView<Presenter> {
@@ -104,6 +115,23 @@ public interface AlertContract {
          * @param storableWallet   wallet info
          * */
         void backUpDialogSubmit(StorableWallet storableWallet);
+
+        void walletMappingSubmit();
+
+        void walletMappingClose();
+
+        void walletMappingSuccessSubmit();
+
+        /**
+         * start mapping success
+         * */
+        void mappingSuccess(String mappingId,String content);
+
+        /**
+         * start mapping success
+         * */
+        void mappingError(int errorCode, String errorMsg);
+
 
     }
 }

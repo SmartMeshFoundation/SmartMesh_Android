@@ -1,12 +1,18 @@
 package com.lingtuan.firefly.ui;
 
+import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.NotificationManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
+import android.view.View;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
@@ -17,17 +23,32 @@ import com.lingtuan.firefly.service.UpdateVersionService;
 import com.lingtuan.firefly.ui.contract.AlertContract;
 import com.lingtuan.firefly.ui.presenter.AlertPresenterImpl;
 import com.lingtuan.firefly.util.Constants;
+import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MySharedPrefs;
+import com.lingtuan.firefly.util.MyToast;
+import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.WalletCopyActivity;
+import com.lingtuan.firefly.wallet.util.Sign2;
+import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
+import org.json.JSONException;
+import org.spongycastle.util.encoders.Hex;
+import org.web3j.crypto.CipherException;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.Hash;
+import org.web3j.utils.Numeric;
+
 import java.io.File;
+import java.io.IOException;
 
 
 public class AlertActivity extends BaseActivity implements AlertContract.View{
 
 	private AlertContract.Presenter mPresenter;
+
+	private String address;
 
 	@Override
 	protected void setContentView() {
@@ -64,22 +85,48 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 		}else if(type==5){
 			StorableWallet storableWallet = (StorableWallet) getIntent().getSerializableExtra("strablewallet");
 			showBackupDialog(storableWallet);
+		}else if(type==6){
+			String smtBalance = getIntent().getStringExtra("smtBalance");
+			String title = getIntent().getStringExtra("title");
+			String url = getIntent().getStringExtra("url");
+			address = getIntent().getStringExtra("address");
+			showMappingDialog(smtBalance,title,url);
+		}else if(type==7){
+			String mappingId = getIntent().getStringExtra("mappingId");
+			String content = getIntent().getStringExtra("content");
+			showMappingSuccessDialog(mappingId,content);
 		}
 	}
 
+	/**
+	 * update version dialog
+	 * 版本更新弹框
+	 * */
 	private void updateVersionDialog(String version, String describe, final String url){
 		mPresenter.updateVersionDialog(this,getString(R.string.new_version,version),describe,url,getString(R.string.updatelater),getString(R.string.updatenow));
 	}
 
+	/**
+	 * update version dialog now
+	 * 版本立即更新弹框
+	 * */
 	private void updateVersionNowDialog(String version, String describe, final String url){
 		mPresenter.updateVersionNowDialog(this,getString(R.string.new_version,version),describe,url,getString(R.string.updatenow));
 	}
 
+	/**
+	 * offline dialog
+	 * 强制下线弹框
+	 * */
 	private void showOfflineDialog(String msg){
 		msg = getString(R.string.show_offline_hint);
 		mPresenter.showOfflineDialog(this,getString(R.string.notif),msg,getString(R.string.submit));
 	}
 
+	/**
+	 * smart mesh dialog
+	 * 开启无网模式弹框
+	 * */
 	private void showSmartMeshDialog(){
 		String title = getString(R.string.smartmesh_communication_open);
 		String message = getString(R.string.smartmesh_communication_hint);
@@ -88,13 +135,32 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 		mPresenter.showSmartMeshDialog(this,title,message,positiveMsg,negativeMsg);
 	}
 
-
+	/**
+	 * wallet dialog
+	 * 钱包提示弹框
+	 * */
 	private void showWalletDialog(){
 		mPresenter.showWalletDialog(this,getString(R.string.wallet_copy_disclaimer),getString(R.string.wallet_copy_disclaimer_info),getString(R.string.ok));
 	}
 
+	/**
+	 * backup dialog
+	 * 钱包备份弹框
+	 * */
 	private void showBackupDialog(final StorableWallet storableWallet){
 		mPresenter.showBackupDialog(this,getString(R.string.wallet_backup_title),getString(R.string.wallet_copy_disclaimer_info),getString(R.string.wallet_backup_now),storableWallet);
+	}
+
+	/**
+	 * mapping dialog
+	 * 映射弹框
+	 * */
+	private void showMappingDialog(String smtBalance,String title,String url) {
+		mPresenter.mappingDialog(this,getString(R.string.mapping_start),smtBalance,title,url);
+	}
+
+	private void showMappingSuccessDialog(String mappingId, String content) {
+		mPresenter.mappingSuccessDialog(this,getString(R.string.ok),mappingId,content);
 	}
 
 	@Override
@@ -107,6 +173,10 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 		this.mPresenter = presenter;
 	}
 
+	/**
+	 * update version dialog submit
+	 * 版本更新确认回调
+	 * */
 	@Override
 	public void updateVersionDialogSubmit(String url) {
 		try {
@@ -135,6 +205,10 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 		}
 	}
 
+	/**
+	 * cancel update version
+	 * 取消版本更新
+	 * */
 	@Override
 	public void updateVersionDialogCancel() {
 		try {
@@ -147,6 +221,10 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 		}
 	}
 
+	/**
+	 * offline submit
+	 * 强制下线回调
+	 * */
 	@Override
 	public void offlineDialogSubmit() {
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -184,5 +262,94 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 		startActivity(copyIntent);
 		finish();
 	}
+
+	@Override
+	public void walletMappingSubmit() {
+		MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_INPUT_PWD, new MyViewDialogFragment.EditCallback() {
+            @Override
+            public void getEditText(String editText) {
+                getCredentials(editText);
+            }
+        });
+        mdf.show(getSupportFragmentManager(), "mdf");
+	}
+
+	@Override
+	public void walletMappingClose() {
+		finish();
+	}
+
+	@Override
+	public void walletMappingSuccessSubmit() {
+		finish();
+	}
+
+	@Override
+	public void mappingSuccess(String mappingId,String content) {
+		Intent intent = new Intent(Constants.WALLET_REFRESH_MAPPING);
+		intent.putExtra("mappingId",mappingId);
+		intent.putExtra("content",content);
+		Utils.sendBroadcastReceiver(this, intent, false);
+		finish();
+	}
+
+	@Override
+	public void mappingError(int errorCode, String errorMsg) {
+		if (errorCode == 1801220){
+			Utils.sendBroadcastReceiver(this, new Intent(Constants.WALLET_REFRESH_MAPPING), false);
+			finish();
+		}else{
+			showToast(errorMsg);
+			finish();
+		}
+	}
+	/**
+	 * get credentials
+	 * */
+	private void getCredentials(final String password){
+		LoadingDialog.show(this,"");
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Credentials keys = WalletStorage.getInstance(getApplicationContext()).getFullWallet(NextApplication.mContext,password,address);
+					Message message = Message.obtain();
+					message.what = 0;
+					message.obj = keys;
+					mHandler.sendMessage(message);
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				} catch (CipherException e) {
+					e.printStackTrace();
+					mHandler.sendEmptyMessage(1);
+				}
+			}
+		}).start();
+	}
+
+	@SuppressLint("HandlerLeak")
+	private Handler mHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+				case 0:
+					LoadingDialog.close();
+					Credentials keys = (Credentials)msg.obj;
+					String message = Constants.WALLET_MAPPING_SIGN;
+					byte[] strByte = Hash.sha3(Numeric.hexStringToByteArray(message));
+					Sign2.SignatureData data = Sign2.signMessage(strByte,keys.getEcKeyPair());
+					String signR = "0x" + Hex.toHexString(data.getR());
+					String S = "0x" + Hex.toHexString(data.getS());
+					byte V = data.getV();
+					mPresenter.startMappingMethod(address,signR,S,V);
+					break;
+				case 1:
+					LoadingDialog.close();
+					showToast(getString(R.string.wallet_copy_pwd_error));
+					break;
+			}
+		}
+	};
 
 }

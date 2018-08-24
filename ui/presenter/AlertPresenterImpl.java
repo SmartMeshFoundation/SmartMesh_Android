@@ -4,8 +4,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 
 import com.lingtuan.firefly.custom.SubmitDialog;
+import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.network.NetRequestImpl;
 import com.lingtuan.firefly.ui.contract.AlertContract;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
+
+import org.json.JSONObject;
 
 public class AlertPresenterImpl implements AlertContract.Presenter{
 
@@ -133,5 +137,70 @@ public class AlertPresenterImpl implements AlertContract.Presenter{
                         });
         builder.showWalletBackup();
         builder.setCancelable(false);
+    }
+
+    @Override
+    public void mappingDialog(Context context,String negativeMsg,String smtBalance, String title, String url) {
+        SubmitDialog.Builder builder = new SubmitDialog.Builder(context);
+        builder.setDialogType(6);
+        builder.setNegativeButton(negativeMsg,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                mView.walletMappingSubmit();
+                            }
+                        });
+        builder.setMappingClosed(new SubmitDialog.Builder.mappingClosedListener() {
+            @Override
+            public void mappingClosed(DialogInterface dialog) {
+                dialog.dismiss();
+                mView.walletMappingClose();
+            }
+        });
+        builder.showMapping(smtBalance,title,url);
+        builder.setCancelable(false);
+    }
+
+    @Override
+    public void mappingSuccessDialog(Context context,String negativeMsg,String mappingId, String content) {
+        SubmitDialog.Builder builder = new SubmitDialog.Builder(context);
+        builder.setDialogType(7);
+        builder.setNegativeButton(negativeMsg,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        mView.walletMappingSuccessSubmit();
+                    }
+                });
+        builder.setMappingClosed(new SubmitDialog.Builder.mappingClosedListener() {
+            @Override
+            public void mappingClosed(DialogInterface dialog) {
+                dialog.dismiss();
+                mView.walletMappingSuccessSubmit();
+            }
+        });
+        builder.showMappingSuccess(mappingId,content);
+        builder.setCancelable(false);
+    }
+
+    @Override
+    public void startMappingMethod(String address ,String r ,String s ,byte v) {
+        NetRequestImpl.getInstance().addressMapping(address, r, s, v, new RequestListener() {
+            @Override
+            public void start() {
+
+            }
+
+            @Override
+            public void success(JSONObject response) {
+                String mappingId = response.optString("mappingid");
+                String content = response.optString("content");
+                mView.mappingSuccess(mappingId,content);
+            }
+
+            @Override
+            public void error(int errorCode, String errorMsg) {
+                mView.mappingError(errorCode,errorMsg);
+            }
+        });
     }
 }
