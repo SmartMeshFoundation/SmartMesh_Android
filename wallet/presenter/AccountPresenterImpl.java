@@ -85,6 +85,9 @@ public class AccountPresenterImpl implements AccountContract.Presenter {
                 JSONArray array = response.optJSONArray("data");
                 int blockNumber = response.optInt("blockNumber");
                 if (array != null) {
+                    if (array.length() > 1000){
+                        return;
+                    }
                     FinalUserDataBase.getInstance().beginTransaction();
                     for (int i = 0; i < array.length(); i++) {
                         JSONObject obiect = array.optJSONObject(i);
@@ -161,6 +164,7 @@ public class AccountPresenterImpl implements AccountContract.Presenter {
                 tokens.clear();
                 String total = response.optString("total");
                 String usdTotal = response.optString("usd_total");
+                String isMapping = response.optString("is_mapping");
                 JSONArray array = response.optJSONArray("data");
                 if (array != null) {
                     for (int i = 0; i < array.length(); i++) {
@@ -175,7 +179,7 @@ public class AccountPresenterImpl implements AccountContract.Presenter {
                     FinalUserDataBase.getInstance().updateTokenList(tokens.get(i), address, false);
                 }
                 FinalUserDataBase.getInstance().endTransactionSuccessful();
-                mView.getBalanceSuccess(tokens,total,usdTotal);
+                mView.getBalanceSuccess(tokens,total,usdTotal,isMapping);
             }
 
             @Override
@@ -286,6 +290,27 @@ public class AccountPresenterImpl implements AccountContract.Presenter {
         return storableWallet;
     }
 
+    @Override
+    public void getMappingInfo(String address) {
+        NetRequestImpl.getInstance().mappingInfo(address, new RequestListener() {
+            @Override
+            public void start() {
+                mView.getMappingInfoStart();
+            }
+
+            @Override
+            public void success(JSONObject response) {
+                String balance = response.optString("balance");
+                String url = response.optString("url");
+                mView.getMappingInfoSuccess(balance,url);
+            }
+
+            @Override
+            public void error(int errorCode, String errorMsg) {
+                mView.getMappingInfoError(errorCode,errorMsg);
+            }
+        });
+    }
 
 
 }

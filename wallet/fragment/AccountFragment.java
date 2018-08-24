@@ -41,7 +41,6 @@ import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MySharedPrefs;
-import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.AccountAdapter;
 import com.lingtuan.firefly.wallet.AccountTokenAdapter;
@@ -52,17 +51,11 @@ import com.lingtuan.firefly.wallet.WalletCreateActivity;
 import com.lingtuan.firefly.wallet.WalletSendDetailUI;
 import com.lingtuan.firefly.wallet.contract.AccountContract;
 import com.lingtuan.firefly.wallet.presenter.AccountPresenterImpl;
-import com.lingtuan.firefly.wallet.util.Sign2;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 import com.lingtuan.firefly.wallet.vo.TokenVo;
 import com.lingtuan.firefly.walletold.OldAccountUI;
 import com.lingtuan.firefly.xmpp.XmppAction;
-
-import org.spongycastle.util.encoders.Hex;
-import org.web3j.crypto.Credentials;
-import org.web3j.crypto.Hash;
-import org.web3j.utils.Numeric;
 
 import java.util.ArrayList;
 
@@ -208,6 +201,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         filter.addAction(Constants.WALLET_REFRESH_BACKUP);//Refresh the page
         filter.addAction(Constants.WALLET_REFRESH_GESTURE);//Refresh the page
         filter.addAction(Constants.WALLET_REFRESH_SHOW_HINT);//trans
+        filter.addAction(Constants.WALLET_REFRESH_MAPPING);//trans
         filter.addAction(Constants.ACTION_GESTURE_LOGIN);//trans
         filter.addAction(XmppAction.ACTION_TRANS);//trans
         filter.addAction(Constants.WALLET_BIND_TOKEN);
@@ -253,7 +247,10 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                         break;
                     case Constants.WALLET_BIND_TOKEN:
                         tokenVos = FinalUserDataBase.getInstance().getOpenTokenList(walletAddress.getText().toString());
-                        mTokenAdapter.resetSource(tokenVos);
+                        mTokenAdapter.resetSource(tokenVos,"1");
+                        break;
+                    case Constants.WALLET_REFRESH_MAPPING:
+                        checkMappingType(intent);
                         break;
                 }
             }
@@ -310,42 +307,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
         }
     }
-
-    /**
-     * wallet mapping dialog
-     * */
-    public void addressMappingDialog(){
-        MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_INPUT_PWD, new MyViewDialogFragment.EditCallback() {
-            @Override
-            public void getEditText(String editText) {
-                getCredentials(editText);
-            }
-        });
-        mdf.show(getFragmentManager(), "mdf");
-    }
-
-    /**
-     * get credentials
-     * */
-    private void getCredentials(final String password){
-        LoadingDialog.show(getActivity(),"");
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Credentials keys = WalletStorage.getInstance(getActivity().getApplicationContext()).getFullWallet(getActivity(),password,walletAddress.getText().toString());
-                    Message message = Message.obtain();
-                    message.what = 0;
-                    message.obj = keys;
-                    mHandler.sendMessage(message);
-                }catch (Exception e) {
-                    e.printStackTrace();
-                    mHandler.sendEmptyMessage(1);
-                }
-            }
-        }).start();
-    }
-
 
     /**
      * Initialize the Pop layout
@@ -601,6 +562,11 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         Utils.openNewActivityAnim(getActivity(), false);
     }
 
+    @Override
+    public void tokenMapping() {
+        mPresenter.getMappingInfo(walletAddress.getText().toString());
+    }
+
     /**
      * Load or refresh the wallet information
      */
@@ -643,7 +609,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         boolean isFirstGet = MySharedPrefs.readBoolean(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_FIRST_GET_TOKEN_LIST + walletAddress.getText().toString());
         tokenVos = FinalUserDataBase.getInstance().getOpenTokenList(walletAddress.getText().toString());
         if (!isFirstGet && tokenVos != null && tokenVos.size() > 0) {
-            mTokenAdapter.resetSource(tokenVos);
+            mTokenAdapter.resetSource(tokenVos,"1");
             mPresenter.getBalance(tokenVos,walletAddress.getText().toString(),isShowToast);
         } else {
             if (tokenVos == null){
@@ -662,7 +628,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     @Override
     public void getTokenListSuccess(ArrayList<TokenVo> tokens,boolean isShowToast) {
         this.tokenVos = tokens;
-        mTokenAdapter.resetSource(tokenVos);
+        mTokenAdapter.resetSource(tokenVos,"1");
         mPresenter.getBalance(tokenVos,walletAddress.getText().toString(),isShowToast);
     }
 
@@ -672,11 +638,11 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     }
 
     @Override
-    public void getBalanceSuccess(ArrayList<TokenVo> tokens,String total,String usdTotal) {
+    public void getBalanceSuccess(ArrayList<TokenVo> tokens,String total,String usdTotal,String isMapping) {
         this.tokenVos = tokens;
         this.total = total;
         this.usdTotal = usdTotal;
-        mTokenAdapter.resetSource(tokenVos);
+        mTokenAdapter.resetSource(tokenVos,isMapping);
         swipe_refresh.setRefreshing(false);
         int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
         if (priceUnit == 0) {
@@ -701,7 +667,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         if (isShowToast) {
             showToast(errorMsg);
         }
-        mTokenAdapter.resetSource(tokenVos);
+        mTokenAdapter.resetSource(tokenVos,"1");
         swipe_refresh.setRefreshing(false);
     }
 
@@ -715,23 +681,43 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         mHandler.sendEmptyMessage(3);
     }
 
+
+    @Override
+    public void getMappingInfoStart() {
+        LoadingDialog.show(getActivity(),"");
+    }
+
+    @Override
+    public void getMappingInfoSuccess(String balance ,String url) {
+        LoadingDialog.close();
+        Intent intent = new Intent(getActivity(), AlertActivity.class);
+        intent.putExtra("type", 6);
+        intent.putExtra("smtBalance", balance);
+        intent.putExtra("title", getString(R.string.mapping_information));
+        intent.putExtra("url", url);
+        intent.putExtra("address", walletAddress.getText().toString());
+        startActivity(intent);
+        getActivity().overridePendingTransition(0, 0);
+    }
+
+    @Override
+    public void getMappingInfoError(int errorCode, String errorMsg) {
+        LoadingDialog.close();
+        showToast(errorMsg);
+        Intent intent = new Intent(getActivity(), AlertActivity.class);
+        intent.putExtra("type", 6);
+        intent.putExtra("smtBalance", "888888");
+        intent.putExtra("title", getString(R.string.mapping_information));
+        intent.putExtra("url", "https://www.baidu.com");
+        intent.putExtra("address", walletAddress.getText().toString());
+        startActivity(intent);
+        getActivity().overridePendingTransition(0, 0);
+    }
+
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case 0:
-                    LoadingDialog.close();
-                    Credentials keys = (Credentials)msg.obj;
-                    String message = Constants.WALLET_MAPPING_SIGN;
-                    byte[] srtbyte = Hash.sha3(Numeric.hexStringToByteArray(message));
-                    Sign2.SignatureData data = Sign2.signMessage(srtbyte,keys.getEcKeyPair());
-                    String R = "0x" + Hex.toHexString(data.getR());
-                    String S = "0x" + Hex.toHexString(data.getS());
-                    byte V = data.getV();
-                    break;
-                case 1:
-                    LoadingDialog.close();
-                    break;
                 case 2:
                     dismissHomePop();
                     break;
@@ -742,4 +728,19 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             }
         }
     };
+
+    private void checkMappingType(Intent intent){
+        String mappingId = intent.getStringExtra("mappingId");
+        String content = intent.getStringExtra("content");
+        if (!TextUtils.isEmpty(mappingId) && !TextUtils.isEmpty(content)){
+            Intent dialogIntent = new Intent(getActivity(), AlertActivity.class);
+            dialogIntent.putExtra("type", 7);
+            dialogIntent.putExtra("mappingId", mappingId);
+            dialogIntent.putExtra("content", content);
+            startActivity(dialogIntent);
+            getActivity().overridePendingTransition(0, 0);
+        }
+        mTokenAdapter.resetSource(tokenVos,"0");
+    }
+
 }

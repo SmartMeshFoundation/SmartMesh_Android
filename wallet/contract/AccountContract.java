@@ -69,6 +69,8 @@ public interface AccountContract {
          * @return wallet bean
          * */
         StorableWallet getStorableWallet();
+
+        void getMappingInfo(String address);
     }
 
     interface View extends BaseView<Presenter>{
@@ -87,7 +89,7 @@ public interface AccountContract {
          * get token list success
          * @param tokens wallet send detail list
          * */
-        void getBalanceSuccess(ArrayList<TokenVo> tokens,String total,String usdTotal);
+        void getBalanceSuccess(ArrayList<TokenVo> tokens,String total,String usdTotal,String isMapping);
 
         /**
          * get token list error
@@ -103,5 +105,20 @@ public interface AccountContract {
          * cancel cny view
          * */
         void cancelCnyView();
+
+        /**
+         * get mapping info start
+         * */
+        void getMappingInfoStart();
+
+        /**
+         * get mapping info success
+         * */
+        void getMappingInfoSuccess(String balance ,String url);
+
+        /**
+         * get mapping info error
+         * */
+        void getMappingInfoError(int errorCode, String errorMsg);
     }
 }
