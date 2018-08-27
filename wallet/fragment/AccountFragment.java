@@ -250,7 +250,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                         mTokenAdapter.resetSource(tokenVos,"1");
                         break;
                     case Constants.WALLET_REFRESH_MAPPING:
-                        checkMappingType(intent);
+                        mTokenAdapter.resetSource(tokenVos,"0");
                         break;
                 }
             }
@@ -704,14 +704,6 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     public void getMappingInfoError(int errorCode, String errorMsg) {
         LoadingDialog.close();
         showToast(errorMsg);
-        Intent intent = new Intent(getActivity(), AlertActivity.class);
-        intent.putExtra("type", 6);
-        intent.putExtra("smtBalance", "888888");
-        intent.putExtra("title", getString(R.string.mapping_information));
-        intent.putExtra("url", "https://www.baidu.com");
-        intent.putExtra("address", walletAddress.getText().toString());
-        startActivity(intent);
-        getActivity().overridePendingTransition(0, 0);
     }
 
     @SuppressLint("HandlerLeak")
@@ -728,19 +720,5 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
             }
         }
     };
-
-    private void checkMappingType(Intent intent){
-        String mappingId = intent.getStringExtra("mappingId");
-        String content = intent.getStringExtra("content");
-        if (!TextUtils.isEmpty(mappingId) && !TextUtils.isEmpty(content)){
-            Intent dialogIntent = new Intent(getActivity(), AlertActivity.class);
-            dialogIntent.putExtra("type", 7);
-            dialogIntent.putExtra("mappingId", mappingId);
-            dialogIntent.putExtra("content", content);
-            startActivity(dialogIntent);
-            getActivity().overridePendingTransition(0, 0);
-        }
-        mTokenAdapter.resetSource(tokenVos,"0");
-    }
 
 }
