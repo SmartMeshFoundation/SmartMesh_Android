@@ -50,6 +50,8 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 
 	private String address;
 
+	private DialogInterface dialog = null;
+
 	@Override
 	protected void setContentView() {
 		setContentView(R.layout.alert_null_layout);
@@ -264,11 +266,11 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 	}
 
 	@Override
-	public void walletMappingSubmit() {
+	public void walletMappingSubmit(final DialogInterface dialog) {
 		MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_INPUT_PWD, new MyViewDialogFragment.EditCallback() {
             @Override
             public void getEditText(String editText) {
-                getCredentials(editText);
+                getCredentials(editText,dialog);
             }
         });
         mdf.show(getSupportFragmentManager(), "mdf");
@@ -286,11 +288,11 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 
 	@Override
 	public void mappingSuccess(String mappingId,String content) {
-		Intent intent = new Intent(Constants.WALLET_REFRESH_MAPPING);
-		intent.putExtra("mappingId",mappingId);
-		intent.putExtra("content",content);
-		Utils.sendBroadcastReceiver(this, intent, false);
-		finish();
+        Utils.sendBroadcastReceiver(this, new Intent(Constants.WALLET_REFRESH_MAPPING), false);
+        showMappingSuccessDialog(mappingId,content);
+		if (dialog != null){
+			dialog.dismiss();
+		}
 	}
 
 	@Override
@@ -306,8 +308,9 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 	/**
 	 * get credentials
 	 * */
-	private void getCredentials(final String password){
+	private void getCredentials(final String password,DialogInterface dialog){
 		LoadingDialog.show(this,"");
+		this.dialog = dialog;
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
