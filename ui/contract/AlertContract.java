@@ -116,7 +116,7 @@ public interface AlertContract {
          * */
         void backUpDialogSubmit(StorableWallet storableWallet);
 
-        void walletMappingSubmit();
+        void walletMappingSubmit(DialogInterface dialog);
 
         void walletMappingClose();
 

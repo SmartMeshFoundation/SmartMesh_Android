@@ -146,7 +146,7 @@ public class AlertPresenterImpl implements AlertContract.Presenter{
         builder.setNegativeButton(negativeMsg,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                mView.walletMappingSubmit();
+                                mView.walletMappingSubmit(dialog);
                             }
                         });
         builder.setMappingClosed(new SubmitDialog.Builder.mappingClosedListener() {
@@ -183,7 +183,7 @@ public class AlertPresenterImpl implements AlertContract.Presenter{
     }
 
     @Override
-    public void startMappingMethod(String address ,String r ,String s ,byte v) {
+    public void startMappingMethod(String address , String r , String s , byte v) {
         NetRequestImpl.getInstance().addressMapping(address, r, s, v, new RequestListener() {
             @Override
             public void start() {
