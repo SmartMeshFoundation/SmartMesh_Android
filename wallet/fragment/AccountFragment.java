@@ -206,7 +206,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         filter.addAction(XmppAction.ACTION_TRANS);//trans
         filter.addAction(Constants.WALLET_BIND_TOKEN);
         filter.addAction(Constants.WALLET_UPDATE_NAME);
-        getActivity().registerReceiver(mBroadcastReceiver, filter);
+        if (getActivity() != null){
+            getActivity().registerReceiver(mBroadcastReceiver, filter);
+        }
 
         int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
         if (priceUnit == 0) {
@@ -262,6 +264,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
      * Initialize the Pop layo ut
      */
     private void initHomePop() {
+        if (getActivity() == null){
+            return;
+        }
         LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.account_more_popup_layout, null);
         homePop = new PopupWindow(view, Utils.dip2px(getActivity(), 160), LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -289,6 +294,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
      * Initialize the Pop layout
      */
     private void initEthereumPop() {
+        if (getActivity() == null){
+            return;
+        }
         LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.eth_more_popup_layout, null);
         ethPop = new PopupWindow(view, Utils.dip2px(getActivity(), 320), LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -312,6 +320,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
      * Initialize the Pop layout
      */
     private void initWindowPop() {
+        if (getActivity() == null){
+            return;
+        }
         LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.eth_window_popup_layout, null);
         windowPop = new PopupWindow(view, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
@@ -331,14 +342,15 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         } else {
             windowPop.showAsDropDown(windowBg, Utils.dip2px(getActivity(), 0), Utils.dip2px(getActivity(), 0));
         }
-
     }
 
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        getActivity().unregisterReceiver(mBroadcastReceiver);
+        if (getActivity() != null){
+            getActivity().unregisterReceiver(mBroadcastReceiver);
+        }
         LoginUtil.getInstance().destory();
         mPresenter.cancelTimer();
         mPresenter.cancelCnyTimer();
@@ -444,7 +456,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
                 int priceUnit = MySharedPrefs.readIntDefaultUsd(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_TOKEN_PRICE_UNIT);//0 default  1 usd
                 if (priceUnit == 0) {
-                    MySharedPrefs.writeInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_TOKEN_PRICE_UNIT, 1);
+                    if (getActivity() != null){
+                        MySharedPrefs.writeInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_TOKEN_PRICE_UNIT, 1);
+                    }
                     if (TextUtils.isEmpty(usdTotal)) {
                         walletBalanceNum.setText("━");
                     } else {
@@ -453,7 +467,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
 
                     changeTokenUnit.setImageResource(R.drawable.icon_unit_usd);
                 } else {
-                    MySharedPrefs.writeInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_TOKEN_PRICE_UNIT, 0);
+                    if (getActivity() != null){
+                        MySharedPrefs.writeInt(getActivity(), MySharedPrefs.FILE_USER, MySharedPrefs.KEY_TOKEN_PRICE_UNIT, 0);
+                    }
                     if (TextUtils.isEmpty(total)) {
                         walletBalanceNum.setText("━");
                     } else {
@@ -483,7 +499,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
                     intent.putExtra("type", 5);
                     intent.putExtra("strablewallet", storableWallet);
                     startActivity(intent);
-                    getActivity().overridePendingTransition(0, 0);
+                    if (getActivity() != null){
+                        getActivity().overridePendingTransition(0, 0);
+                    }
                     return;
                 }
                 Intent qrCodeIntent = new Intent(getActivity(), QuickMarkShowUI.class);
@@ -573,7 +591,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
     private void initWalletInfo() {
         storableWallet = mPresenter.getStorableWallet();
         if (storableWallet != null) {
-            walletImg.setImageResource(Utils.getWalletImageId(getActivity(), storableWallet.getWalletImageId()));
+            if (getActivity() != null){
+                walletImg.setImageResource(Utils.getWalletImageId(getActivity(), storableWallet.getWalletImageId()));
+            }
             walletName.setText(storableWallet.getWalletName());
             if (storableWallet.isBackup()) {
                 walletBackup.setVisibility(View.GONE);
@@ -697,7 +717,9 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         intent.putExtra("url", url);
         intent.putExtra("address", walletAddress.getText().toString());
         startActivity(intent);
-        getActivity().overridePendingTransition(0, 0);
+        if (getActivity() != null){
+            getActivity().overridePendingTransition(0, 0);
+        }
     }
 
     @Override
