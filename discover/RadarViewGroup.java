@@ -3,6 +3,7 @@ package com.lingtuan.firefly.discover;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
@@ -164,7 +165,6 @@ public class RadarViewGroup extends ViewGroup implements RadarView.IScanningList
                     startAnim(currentShowChild, j - 1);
                     if (iRadarClickListener != null) {
                         iRadarClickListener.onRadarItemClick(j - 1);
-
                     }
                 }
             });
