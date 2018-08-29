@@ -16,12 +16,14 @@ import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.lingtuan.firefly.NextApplication;
@@ -35,6 +37,7 @@ import com.lingtuan.firefly.fragment.MainContactFragmentUI;
 import com.lingtuan.firefly.fragment.MainFoundFragmentUI;
 import com.lingtuan.firefly.fragment.MainMessageFragmentUI;
 import com.lingtuan.firefly.fragment.MySelfFragment;
+import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.login.LoginUtil;
 import com.lingtuan.firefly.mesh.MeshService;
 import com.lingtuan.firefly.network.NetRequestImpl;
@@ -44,11 +47,13 @@ import com.lingtuan.firefly.service.LoadDataService;
 import com.lingtuan.firefly.service.UpdateVersionService;
 import com.lingtuan.firefly.service.XmppService;
 import com.lingtuan.firefly.setting.GestureLoginActivity;
+import com.lingtuan.firefly.setting.SettingUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.vo.ChatMsg;
+import com.lingtuan.firefly.vo.SystemNotice;
 import com.lingtuan.firefly.vo.UserInfoVo;
 import com.lingtuan.firefly.wallet.fragment.AccountFragment;
 import com.lingtuan.firefly.wallet.fragment.NewWalletFragment;
@@ -56,6 +61,8 @@ import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.xmpp.XmppAction;
 import com.lingtuan.firefly.xmpp.XmppUtils;
 import com.tbruyelle.rxpermissions2.RxPermissions;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.HashMap;
@@ -84,6 +91,11 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
     LinearLayout mainBottomTab;//main tab
     @BindView(R.id.main_unread)
     TextView mMsgUnread;
+
+    @BindView(R.id.noticeClockBody)
+    RelativeLayout noticeClockBody;
+    @BindView(R.id.noticeTitle)
+    TextView noticeTitle;
     
     private MsgReceiverListener msgReceiverListener;
     private Stack<String> mStack = new Stack<>();
@@ -91,6 +103,8 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
     private int totalUnreadCount = 0;
     private boolean showAnimation;
     private File installFile;
+
+    private SystemNotice systemNotice;
     
     @Override
     protected void setContentView() {
@@ -143,20 +157,22 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
-        try {
-            Uri parse = intent.getData();
-            String gid = parse.getQueryParameter("gid");
-            String scheme = parse.getScheme();
-            if (!TextUtils.isEmpty(scheme) && "joingroup".equals(scheme)) {//join group
-                Intent joinGroup = new Intent(this, DiscussGroupJoinUI.class);
-                joinGroup.putExtra("groupid", gid);
-                startActivity(joinGroup);
-                Utils.openNewActivityAnim(this, false);
+
+        if(NextApplication.myInfo != null){
+            try {
+                Uri parse = intent.getData();
+                String gid = parse.getQueryParameter("gid");
+                String scheme = parse.getScheme();
+                if (!TextUtils.isEmpty(scheme) && "joingroup".equals(scheme)) {//join group
+                    Intent joinGroup = new Intent(this, DiscussGroupJoinUI.class);
+                    joinGroup.putExtra("groupid", gid);
+                    startActivity(joinGroup);
+                    Utils.openNewActivityAnim(this, false);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
     
@@ -172,7 +188,6 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
             XmppUtils.getInstance().destroy();
             NetRequestUtils.getInstance().destory();
             NetRequestImpl.getInstance().destory();
-            WalletStorage.getInstance(NextApplication.mContext).destroy();
             Intent xmppservice = new Intent(NextApplication.mContext, XmppService.class);
             stopService(xmppservice);
             stopService(new Intent(this, MeshService.class));
@@ -182,7 +197,8 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                 Intent offlineservice = new Intent(NextApplication.mContext, AppNetService.class);
                 stopService(offlineservice);
             }
-            
+
+            WalletStorage.destroy();
             Intent intent = new Intent(this, AlertActivity.class);
             intent.putExtra("type", 2);
             intent.putExtra("msg", msg);
@@ -211,13 +227,17 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         stopService(versionService);
         startService(versionService);
 
+        getSystemNotice();
+
         //open new app
         if (getIntent() != null && getIntent().getExtras() != null) {
-            if (getIntent().getExtras().getBoolean("isOfflineMsg", false)) {//jump main
-                onClick(main_tab_chats);
-                showOfflineAlert(getIntent().getExtras().getString("offlineContent"));
-            } else if (getIntent().getExtras().getBoolean("isNewMsg", false)) {//jump message
-                onClick(main_tab_chats);
+            if(NextApplication.myInfo != null){
+                if (getIntent().getExtras().getBoolean("isOfflineMsg", false)) {//jump main
+                    onClick(main_tab_chats);
+                    showOfflineAlert(getIntent().getExtras().getString("offlineContent"));
+                } else if (getIntent().getExtras().getBoolean("isNewMsg", false)) {//jump message
+                    onClick(main_tab_chats);
+                }
             }
             showAnimation = getIntent().getBooleanExtra("showAnimation", false);
         }
@@ -225,22 +245,25 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         if (walletMode != 0) {
             onClick(main_tab_account);
         }
-        try {
-            Uri parse = getIntent().getData();
-            String gid = parse.getQueryParameter("gid");
-            String scheme = parse.getScheme();
-            
-            if (!TextUtils.isEmpty(scheme) && "joingroup".equals(scheme))//join group
-            {
-                Intent joinGroup = new Intent(this, DiscussGroupJoinUI.class);
-                joinGroup.putExtra("groupid", gid);
-                startActivity(joinGroup);
-                Utils.openNewActivityAnim(this, false);
+
+        if(NextApplication.myInfo != null){
+            try {
+                Uri parse = getIntent().getData();
+                String gid = parse.getQueryParameter("gid");
+                String scheme = parse.getScheme();
+
+                if (!TextUtils.isEmpty(scheme) && "joingroup".equals(scheme))//join group
+                {
+                    Intent joinGroup = new Intent(this, DiscussGroupJoinUI.class);
+                    joinGroup.putExtra("groupid", gid);
+                    startActivity(joinGroup);
+                    Utils.openNewActivityAnim(this, false);
+                }
+            } catch (Exception e) {
+
             }
-        } catch (Exception e) {
-            
         }
-        
+
         IntentFilter filter = new IntentFilter();
         filter.addAction(LoadDataService.ACTION_START_CONTACT_LISTENER);
         filter.addAction(XmppAction.ACTION_MAIN_UNREADMSG_UPDATE_LISTENER);
@@ -279,7 +302,44 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         }
         MySharedPrefs.writeBoolean(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.IS_SHOW_WALLET_DIALOG, false);
     }
-    
+
+    /**
+     * get system notice
+     * */
+    private void getSystemNotice() {
+        NetRequestImpl.getInstance().getSystemNotice(new RequestListener() {
+            @Override
+            public void start() {
+
+            }
+
+            @Override
+            public void success(JSONObject response) {
+                systemNotice = new SystemNotice().parse(response.optJSONObject("data"));
+                if (systemNotice == null || noticeClockBody == null){
+                    return;
+                }
+
+                if (TextUtils.isEmpty(systemNotice.getTitle())){
+                    noticeClockBody.setVisibility(View.GONE);
+                }else{
+                    noticeClockBody.setVisibility(View.VISIBLE);
+                    if (noticeTitle != null){
+                        noticeTitle.setText(systemNotice.getTitle());
+                    }
+                }
+
+            }
+
+            @Override
+            public void error(int errorCode, String errorMsg) {
+                if (noticeClockBody != null){
+                    noticeClockBody.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
     private void registerReceive() {
         IntentFilter filter = new IntentFilter(XmppAction.ACTION_MESSAGE_EVENT_LISTENER);
         filter.addAction(XmppAction.ACTION_OFFLINE_MESSAGE_LIST_EVENT_LISTENER);
@@ -417,7 +477,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         }
     };
     
-    @OnClick({R.id.main_tab_chats,R.id.main_tab_contact,R.id.main_tab_account,R.id.main_tab_setting})
+    @OnClick({R.id.main_tab_chats,R.id.main_tab_contact,R.id.main_tab_account,R.id.main_tab_setting,R.id.noticeClockBody,R.id.noticeClose})
     public void onClick(View v) {
         int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
         switch (v.getId()) {
@@ -479,6 +539,19 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                     showFragment(MySelfFragment.class, false);
                     selectChanged(v.getId());
                 }
+                break;
+            case R.id.noticeClockBody:
+                if (systemNotice == null || TextUtils.isEmpty(systemNotice.getUrl())){
+                    return;
+                }
+                Intent intent = new Intent(MainFragmentUI.this, WebViewUI.class);
+                intent.putExtra("loadUrl", systemNotice.getUrl());
+                intent.putExtra("title", systemNotice.getTitle());
+                startActivity(intent);
+                Utils.openBottomToTopActivityAnim(MainFragmentUI.this,false);
+                break;
+            case R.id.noticeClose:
+                noticeClockBody.setVisibility(View.GONE);
                 break;
         }
         XmppUtils.loginXmppForNextApp(this);
