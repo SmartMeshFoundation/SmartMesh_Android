@@ -713,7 +713,7 @@ public class AccountFragment extends BaseFragment implements View.OnClickListene
         Intent intent = new Intent(getActivity(), AlertActivity.class);
         intent.putExtra("type", 6);
         intent.putExtra("smtBalance", balance);
-        intent.putExtra("title", getString(R.string.mapping_information));
+        intent.putExtra("title", getString(R.string.mapping_instructions));
         intent.putExtra("url", url);
         intent.putExtra("address", walletAddress.getText().toString());
         startActivity(intent);
