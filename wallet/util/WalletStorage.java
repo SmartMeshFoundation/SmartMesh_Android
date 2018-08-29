@@ -2,6 +2,7 @@ package com.lingtuan.firefly.wallet.util;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.listener.RequestListener;
@@ -45,7 +46,7 @@ public class WalletStorage {
         return instance;
     }
 
-    public synchronized void destroy() {
+    public static void destroy() {
         instance = null;
     }
     
@@ -292,8 +293,11 @@ public class WalletStorage {
             }
         }
         if (position >= 0) {
-            if (type == 0) {
-                new File(context.getFilesDir(), SDCardCtrl.WALLERPATH + "/" + address.substring(2, address.length())).delete();
+            if (type == 0 && NextApplication.myInfo != null) {
+                boolean deleteResult = new File(context.getFilesDir(), SDCardCtrl.WALLERPATH + "/" + RaidenUrl.getInatance().initLocalKeyStore(address)).delete();
+                if (!deleteResult){
+                    new File(context.getFilesDir(), SDCardCtrl.WALLERPATH + "/" + address.substring(2, address.length())).delete();
+                }
             }
             delWalletList(context, address);
             mapdb.remove(position);
@@ -307,22 +311,30 @@ public class WalletStorage {
      * @param walletAddress wallet address
      */
     public void delWalletList(Context context, String walletAddress) {
-        String walletList;
         int walletMode = MySharedPrefs.readInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
-        if (walletMode == 0 && NextApplication.myInfo != null) {
-            walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId());
-        } else if (walletMode == 1) {
-            walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET);
-        } else {
-            walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET);
-        }
-        JSONObject json = deleteJsonArray(walletList,walletAddress);
-        if (walletMode == 0 && NextApplication.myInfo != null) {
+        if (walletMode == 0 && NextApplication.myInfo != null){
+            String walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId());
+            String walletListMode = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET);
+            String walletListAll = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET);
+            JSONObject json = deleteJsonArray(walletList,walletAddress);
+            JSONObject jsonMode = deleteJsonArray(walletListMode,walletAddress);
+            JSONObject jsonAll = deleteJsonArray(walletListAll,walletAddress);
             MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, NextApplication.myInfo.getLocalId(), json.toString());
-        } else if (walletMode == 1) {
-            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET, json.toString());
-        } else if (walletMode == 2) {
-            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET, json.toString());
+            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET, jsonMode.toString());
+            MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET, jsonAll.toString());
+        }else{
+            String walletList;
+            if (walletMode == 1) {
+                walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET);
+            } else{
+                walletList = MySharedPrefs.readString(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET);
+            }
+            JSONObject json = deleteJsonArray(walletList,walletAddress);
+            if (walletMode == 1) {
+                MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_ALL_WALLET, json.toString());
+            } else if (walletMode == 2) {
+                MySharedPrefs.write(context, MySharedPrefs.FILE_WALLET, MySharedPrefs.KEY_WALLET, json.toString());
+            }
         }
     }
     
