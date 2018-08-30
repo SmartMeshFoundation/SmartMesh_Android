@@ -175,6 +175,34 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 		this.mPresenter = presenter;
 	}
 
+	@Override
+	public void updateNowVersionDialogSubmit(String url, DialogInterface dialog) {
+		try {
+			if (TextUtils.isEmpty(url)){
+				finish();
+				return;
+			}
+			showToast(getString(R.string.chatting_start_download));
+			int index = url.lastIndexOf("/")+1;
+			String apkName = url.substring(index,url.length());
+			DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+			DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+			request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+			request.setMimeType("application/vnd.android.package-archive");
+			request.allowScanningByMediaScanner();
+			request.setVisibleInDownloadsUi(true);
+			Utils.deleteFiles(new File(Environment.getExternalStorageDirectory() + "/download/"+apkName));
+			request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, apkName);
+			long refernece = dm.enqueue(request);
+			SharedPreferences sPreferences = getSharedPreferences("downloadplato", 0);
+			sPreferences.edit().putLong("plato", refernece).commit();
+			finish();
+		}catch (Exception e){
+			e.printStackTrace();
+			finish();
+		}
+	}
+
 	/**
 	 * update version dialog submit
 	 * 版本更新确认回调
@@ -288,15 +316,17 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 
 	@Override
 	public void mappingSuccess(String mappingId,String content) {
-        Utils.sendBroadcastReceiver(this, new Intent(Constants.WALLET_REFRESH_MAPPING), false);
-        showMappingSuccessDialog(mappingId,content);
+		LoadingDialog.close();
+		showMappingSuccessDialog(mappingId,content);
 		if (dialog != null){
 			dialog.dismiss();
 		}
+		Utils.sendBroadcastReceiver(this, new Intent(Constants.WALLET_REFRESH_MAPPING), false);
 	}
 
 	@Override
 	public void mappingError(int errorCode, String errorMsg) {
+		LoadingDialog.close();
 		if (errorCode == 1801220){
 			Utils.sendBroadcastReceiver(this, new Intent(Constants.WALLET_REFRESH_MAPPING), false);
 			finish();
@@ -337,7 +367,6 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 				case 0:
-					LoadingDialog.close();
 					Credentials keys = (Credentials)msg.obj;
 					String message = Constants.WALLET_MAPPING_SIGN;
 					byte[] strByte = Hash.sha3(Numeric.hexStringToByteArray(message));

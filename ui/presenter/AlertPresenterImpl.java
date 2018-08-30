@@ -28,7 +28,6 @@ public class AlertPresenterImpl implements AlertContract.Presenter{
     @Override
     public void updateVersionDialog(Context context,String title, String describe, final String url,String positiveMsg,String negativeMsg) {
         final SubmitDialog.Builder builder = new SubmitDialog.Builder(context);
-        builder.setDialogType(0);
         builder.setTitle(title)
                .setMessage(describe.replace("\\n", "\n"))
                .setPositiveButton(positiveMsg, new DialogInterface.OnClickListener() {
@@ -43,14 +42,13 @@ public class AlertPresenterImpl implements AlertContract.Presenter{
                         mView.updateVersionDialogSubmit(url);
                     }
                });
-        builder.show();
+        builder.showUpdateDialog();
         builder.setCancelable(false);
     }
 
     @Override
     public void updateVersionNowDialog(Context context,String title, String describe, final String url, String negativeMsg) {
         SubmitDialog.Builder builder = new SubmitDialog.Builder(context);
-        builder.setDialogType(0);
         builder.setTitle(title)
                .setMessage(describe.replace("\\n", "\n"))
                .setNegativeButton(negativeMsg,new DialogInterface.OnClickListener() {
@@ -59,14 +57,13 @@ public class AlertPresenterImpl implements AlertContract.Presenter{
                         mView.updateVersionDialogSubmit(url);
                     }
                });
-        builder.show();
+        builder.showUpdateNowDialog();
         builder.setCancelable(false);
     }
 
     @Override
     public void showOfflineDialog(Context context,String title,String msg,String negativeMsg) {
         SubmitDialog.Builder builder = new SubmitDialog.Builder(context);
-        builder.setDialogType(1);
         builder.setTitle(title)
                 .setMessage(msg)
                 .setNegativeButton(negativeMsg,
@@ -76,14 +73,13 @@ public class AlertPresenterImpl implements AlertContract.Presenter{
                                 mView.offlineDialogSubmit();
                             }
                         });
-        builder.show();
+        builder.showOfflineDialog();
         builder.setCancelable(false);
     }
 
     @Override
     public void showSmartMeshDialog(Context context,String title, String message, String positiveMsg, String negativeMsg) {
         SubmitDialog.Builder builder = new SubmitDialog.Builder(context);
-        builder.setDialogType(2);
         builder.setTitle(title)
                 .setMessage(message)
                 .setNegativeButton(negativeMsg,
@@ -101,14 +97,13 @@ public class AlertPresenterImpl implements AlertContract.Presenter{
                                 mView.smartMeshDialogSubmit(false);
                             }
                         });
-        builder.show();
+        builder.showSmartMeshDialog();
         builder.setCancelable(false);
     }
 
     @Override
     public void showWalletDialog( Context context,String title, String message, String negativeMsg) {
         SubmitDialog.Builder builder = new SubmitDialog.Builder(context);
-        builder.setDialogType(4);
         builder.setTitle(title)
                 .setMessage(message)
                 .setNegativeButton(negativeMsg,
@@ -125,7 +120,6 @@ public class AlertPresenterImpl implements AlertContract.Presenter{
     @Override
     public void showBackupDialog(Context context, String title, String message, String negativeMsg, final StorableWallet storableWallet) {
         SubmitDialog.Builder builder = new SubmitDialog.Builder(context);
-        builder.setDialogType(5);
         builder.setTitle(title)
                 .setMessage(message)
                 .setNegativeButton(negativeMsg,
@@ -142,7 +136,6 @@ public class AlertPresenterImpl implements AlertContract.Presenter{
     @Override
     public void mappingDialog(Context context,String negativeMsg,String smtBalance, String title, String url) {
         SubmitDialog.Builder builder = new SubmitDialog.Builder(context);
-        builder.setDialogType(6);
         builder.setNegativeButton(negativeMsg,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
@@ -163,7 +156,6 @@ public class AlertPresenterImpl implements AlertContract.Presenter{
     @Override
     public void mappingSuccessDialog(Context context,String negativeMsg,String mappingId, String content) {
         SubmitDialog.Builder builder = new SubmitDialog.Builder(context);
-        builder.setDialogType(7);
         builder.setNegativeButton(negativeMsg,
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
