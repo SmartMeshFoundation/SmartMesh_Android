@@ -6,12 +6,10 @@ import android.view.View;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
-import com.lingtuan.firefly.listener.RequestListener;
-import com.lingtuan.firefly.network.NetRequestImpl;
+import com.lingtuan.firefly.ui.contract.FriendReportContract;
+import com.lingtuan.firefly.ui.presenter.FriendReportPresenterImpl;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
-
-import org.json.JSONObject;
 
 import butterknife.OnClick;
 
@@ -20,9 +18,12 @@ import butterknife.OnClick;
  * Created on 2017/10/26.
  */
 
-public class FriendReportUI extends BaseActivity {
+public class FriendReportUI extends BaseActivity implements FriendReportContract.View{
 
-    private String localid;//The user id
+    //The user id
+    private String localid;
+
+    private FriendReportContract.Presenter mPresenter;
 
     @Override
     protected void setContentView() {
@@ -46,6 +47,7 @@ public class FriendReportUI extends BaseActivity {
 
     @Override
     protected void initData() {
+        new FriendReportPresenterImpl(this);
         setTitle(getString(R.string.report));
     }
 
@@ -89,24 +91,7 @@ public class FriendReportUI extends BaseActivity {
      * @ param type report type
      * */
     private void reportMethod(int type){
-        NetRequestImpl.getInstance().reportFriend(type, localid, new RequestListener() {
-            @Override
-            public void start() {
-                LoadingDialog.show(FriendReportUI.this,"");
-            }
-
-            @Override
-            public void success(JSONObject response) {
-                LoadingDialog.close();
-                addBlackMethod();
-            }
-
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                LoadingDialog.close();
-                showToast(errorMsg);
-            }
-        });
+        mPresenter.reportFriendMethod(type,localid);
     }
 
     /**
@@ -125,37 +110,52 @@ public class FriendReportUI extends BaseActivity {
         mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
             @Override
             public void okBtn() {
-                toAddBlack();
+                mPresenter.updateBlackState(0,localid);
             }
         });
         mdf.show(getSupportFragmentManager(), "mdf");
     }
 
-    /**
-     * Add a blacklist
-     * */
-    private void toAddBlack() {
-        NetRequestImpl.getInstance().updateBlackState(0, localid, new RequestListener() {
-            @Override
-            public void start() {
-                LoadingDialog.show(FriendReportUI.this,"");
-            }
+    @Override
+    public void setPresenter(FriendReportContract.Presenter presenter) {
+        this.mPresenter = presenter;
+    }
 
-            @Override
-            public void success(JSONObject response) {
-                LoadingDialog.close();
-                FinalUserDataBase.getInstance().deleteFriendByUid(localid);
-                showToast(response.optString("msg"));
-                Intent intent = new Intent();
-                setResult(RESULT_OK,intent);
-                finish();
-            }
+    @Override
+    public void addBlackStart() {
+        LoadingDialog.show(FriendReportUI.this,"");
+    }
 
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                LoadingDialog.close();
-                showToast(errorMsg);
-            }
-        });
+    @Override
+    public void addBlackSuccess(String message) {
+        LoadingDialog.close();
+        FinalUserDataBase.getInstance().deleteFriendByUid(localid);
+        showToast(message);
+        Intent intent = new Intent();
+        setResult(RESULT_OK,intent);
+        finish();
+    }
+
+    @Override
+    public void addBlackError(int errorCode, String errorMsg) {
+        LoadingDialog.close();
+        showToast(errorMsg);
+    }
+
+    @Override
+    public void reportFriendStart() {
+        LoadingDialog.show(FriendReportUI.this,"");
+    }
+
+    @Override
+    public void reportFriendSuccess() {
+        LoadingDialog.close();
+        addBlackMethod();
+    }
+
+    @Override
+    public void reportFriendError(int errorCode, String errorMsg) {
+        LoadingDialog.close();
+        showToast(errorMsg);
     }
 }

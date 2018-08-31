@@ -20,17 +20,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.OnItemClick;
+
 /**
  * Choose the country code
  */
 public class CountryCodeUI extends BaseActivity {
 
-	private ListView mListView;
-	private CountryCodeSideBar mSideBar;
-	private TextView mCatalog;
-	private TextView mCountryCodeSelected;
+	@BindView(R.id.country_code_list)
+	ListView mListView;
+	@BindView(R.id.country_code_sidrbar)
+	CountryCodeSideBar mSideBar;
+	@BindView(R.id.country_code_catalog)
+	TextView mCatalog;
+	@BindView(R.id.country_code_selected)
+	TextView mCountryCodeSelected;
+
 	private CountryCodeAdapter mAdapter;
-	
 	private List<CountryCodeVo> mList;
 	private CountryCodeVo mCountryCode;
 	
@@ -41,10 +48,7 @@ public class CountryCodeUI extends BaseActivity {
 
 	@Override
 	protected void findViewById() {
-		mListView = (ListView) findViewById(R.id.country_code_list);
-		mSideBar = (CountryCodeSideBar) findViewById(R.id.country_code_sidrbar);
-		mCatalog = (TextView) findViewById(R.id.country_code_catalog);
-		mCountryCodeSelected = (TextView) findViewById(R.id.country_code_selected);
+
 	}
 
 	@Override
@@ -53,31 +57,26 @@ public class CountryCodeUI extends BaseActivity {
 			
 			@Override
 			public void onTouchingLetterChanged(String s) {
-				//The letter for the first time in position
 				int position = mAdapter.getPositionForSection(s.charAt(0));
 				if(position != -1){
 					mListView.setSelection(position);
 				}
 			}
 		});
-		mListView.setOnItemClickListener(new OnItemClickListener() {
+	}
 
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-									int position, long id) {
-				mCountryCode = mAdapter.getItem(position);
-//				MyToast.showToast(CountryCodeUI.this,mCountryCode.getName());
-				Intent intent = new Intent();
-				intent.putExtra("countrycode", mCountryCode);
-				setResult(RESULT_OK, intent);
-//				mCountryCodeSelected.setText(getString(R.string.reg_country_code, mCountryCode.getName(),mCountryCode.getCode()));
-				Utils.exitActivityAndBackAnim(CountryCodeUI.this,true);
-			}
-		});
+	@OnItemClick(R.id.country_code_list)
+	public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
+		mCountryCode = mAdapter.getItem(position);
+		Intent intent = new Intent();
+		intent.putExtra("countrycode", mCountryCode);
+		setResult(RESULT_OK, intent);
+		Utils.exitActivityAndBackAnim(CountryCodeUI.this,true);
 	}
 
 	@Override
 	protected void initData() {
+		setTitle(getString(R.string.reg_country_code_title));
 		mCountryCode = (CountryCodeVo) getIntent().getExtras().getSerializable("countrycode");
 		mSideBar.setTextView(mCatalog);
 		mList = filledData(getResources().getString(R.string.country_code).split(","));
@@ -85,9 +84,6 @@ public class CountryCodeUI extends BaseActivity {
 		mAdapter = new CountryCodeAdapter(this, mList);
 		mListView.setAdapter(mAdapter);
 		mCountryCodeSelected.setText(getString(R.string.reg_country_code, mCountryCode.getName(),mCountryCode.getCode()));
-		
-		setTitle(getString(R.string.reg_country_code_title));
-		
 	}
 	
 	/**
@@ -97,16 +93,14 @@ public class CountryCodeUI extends BaseActivity {
 	 */
 	@SuppressLint("DefaultLocale")
 	private List<CountryCodeVo> filledData(String[] date){
-		List<CountryCodeVo> mSortList = new ArrayList<CountryCodeVo>();
-		
-		for(int i=0; i<date.length; i++){
+		List<CountryCodeVo> mSortList = new ArrayList<>();
+		for (String aDate : date) {
 			CountryCodeVo mCityCode = new CountryCodeVo();
-			mCityCode.parseDate(date[i]);
+			mCityCode.parseDate(aDate);
 			String sortString = mCityCode.getSortLetters().substring(0, 1).toUpperCase();
-			// Regular expressions, to determine whether the initials in English letters
-			if(!sortString.matches("[A-Z]")){
+			if (!sortString.matches("[A-Z]")) {
 				mCityCode.setSortLetters("#");
-			} 
+			}
 			mSortList.add(mCityCode);
 		}
 		return mSortList;
