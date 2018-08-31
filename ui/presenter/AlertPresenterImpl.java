@@ -54,10 +54,10 @@ public class AlertPresenterImpl implements AlertContract.Presenter{
                .setNegativeButton(negativeMsg,new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-                        mView.updateVersionDialogSubmit(url);
+                        mView.updateNowVersionDialogSubmit();
                     }
                });
-        builder.showUpdateNowDialog();
+        builder.showUpdateNowDialog(url);
         builder.setCancelable(false);
     }
 

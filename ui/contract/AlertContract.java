@@ -70,8 +70,14 @@ public interface AlertContract {
          * */
         void showBackupDialog(Context context,String title , String message, String negativeMsg, StorableWallet storableWallet);
 
+        /**
+         * smt mapping dialog
+         * */
         void mappingDialog(Context context,String negativeMsg,String smtBalance, String title, String url);
 
+        /**
+         * smt mapping success dialog
+         * */
         void mappingSuccessDialog(Context context,String negativeMsg,String mappingId, String content);
 
         /**
@@ -88,6 +94,11 @@ public interface AlertContract {
          * @param url    apk url
          * */
         void updateVersionDialogSubmit(String url);
+
+        /**
+         * now update version submit
+         * */
+        void updateNowVersionDialogSubmit();
 
         /**
          * update version cancel

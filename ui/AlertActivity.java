@@ -7,12 +7,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
-import android.view.View;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
@@ -25,7 +23,6 @@ import com.lingtuan.firefly.ui.presenter.AlertPresenterImpl;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MySharedPrefs;
-import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
 import com.lingtuan.firefly.wallet.WalletCopyActivity;
@@ -175,34 +172,6 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 		this.mPresenter = presenter;
 	}
 
-	@Override
-	public void updateNowVersionDialogSubmit(String url, DialogInterface dialog) {
-		try {
-			if (TextUtils.isEmpty(url)){
-				finish();
-				return;
-			}
-			showToast(getString(R.string.chatting_start_download));
-			int index = url.lastIndexOf("/")+1;
-			String apkName = url.substring(index,url.length());
-			DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-			DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-			request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-			request.setMimeType("application/vnd.android.package-archive");
-			request.allowScanningByMediaScanner();
-			request.setVisibleInDownloadsUi(true);
-			Utils.deleteFiles(new File(Environment.getExternalStorageDirectory() + "/download/"+apkName));
-			request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, apkName);
-			long refernece = dm.enqueue(request);
-			SharedPreferences sPreferences = getSharedPreferences("downloadplato", 0);
-			sPreferences.edit().putLong("plato", refernece).commit();
-			finish();
-		}catch (Exception e){
-			e.printStackTrace();
-			finish();
-		}
-	}
-
 	/**
 	 * update version dialog submit
 	 * 版本更新确认回调
@@ -233,6 +202,11 @@ public class AlertActivity extends BaseActivity implements AlertContract.View{
 			e.printStackTrace();
 			finish();
 		}
+	}
+
+	@Override
+	public void updateNowVersionDialogSubmit() {
+		finish();
 	}
 
 	/**
