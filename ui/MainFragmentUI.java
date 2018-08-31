@@ -16,7 +16,6 @@ import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -34,7 +33,6 @@ import com.lingtuan.firefly.contact.DiscussGroupJoinUI;
 import com.lingtuan.firefly.custom.gesturelock.ACache;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.fragment.MainContactFragmentUI;
-import com.lingtuan.firefly.fragment.MainFoundFragmentUI;
 import com.lingtuan.firefly.fragment.MainMessageFragmentUI;
 import com.lingtuan.firefly.fragment.MySelfFragment;
 import com.lingtuan.firefly.listener.RequestListener;
@@ -47,7 +45,6 @@ import com.lingtuan.firefly.service.LoadDataService;
 import com.lingtuan.firefly.service.UpdateVersionService;
 import com.lingtuan.firefly.service.XmppService;
 import com.lingtuan.firefly.setting.GestureLoginActivity;
-import com.lingtuan.firefly.setting.SettingUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.MyToast;
@@ -120,62 +117,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
     protected void onSaveInstanceState(Bundle outState) {
 
     }
-    
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        
-        if (intent == null) {
-            return;
-        }
-        try {
-            Utils.settingLanguage();
-            int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
-            if (intent.getBooleanExtra("isOfflineMsg", false)) {
-                showOfflineAlert(intent.getStringExtra("offlineContent"));
-                return;
-            }
-            
-            showAnimation = intent.getBooleanExtra("showAnimation", false);
-            
-            if (intent.getBooleanExtra("isNewMsg", false)) {
-                onClick(main_tab_chats);
-            }
-            
-            if (walletMode != 0) {
-                onClick(main_tab_account);
-            } else {
-                int version = android.os.Build.VERSION.SDK_INT;
-                int smartMeshNetWork = MySharedPrefs.readInt1(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
-                if (smartMeshNetWork == -1 && NextApplication.myInfo != null && version >= 16) {
-                    MySharedPrefs.writeInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(), 1);
-                    //Exit without social network service
-                    startService(new Intent(MainFragmentUI.this, AppNetService.class));
-                }
-            }
-            setIntent(intent);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
-        if(NextApplication.myInfo != null){
-            try {
-                Uri parse = intent.getData();
-                String gid = parse.getQueryParameter("gid");
-                String scheme = parse.getScheme();
-                if (!TextUtils.isEmpty(scheme) && "joingroup".equals(scheme)) {//join group
-                    Intent joinGroup = new Intent(this, DiscussGroupJoinUI.class);
-                    joinGroup.putExtra("groupid", gid);
-                    startActivity(joinGroup);
-                    Utils.openNewActivityAnim(this, false);
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    
     /**
      * show offline alert
      */
@@ -219,6 +161,23 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
     protected void setListener() {
 
     }
+
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        if (intent == null) {
+            return;
+        }
+        try {
+            Utils.settingLanguage();
+            setService(intent);
+            setIntent(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     
     @Override
     protected void initData() {
@@ -228,41 +187,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         startService(versionService);
 
         getSystemNotice();
-
-        //open new app
-        if (getIntent() != null && getIntent().getExtras() != null) {
-            if(NextApplication.myInfo != null){
-                if (getIntent().getExtras().getBoolean("isOfflineMsg", false)) {//jump main
-                    onClick(main_tab_chats);
-                    showOfflineAlert(getIntent().getExtras().getString("offlineContent"));
-                } else if (getIntent().getExtras().getBoolean("isNewMsg", false)) {//jump message
-                    onClick(main_tab_chats);
-                }
-            }
-            showAnimation = getIntent().getBooleanExtra("showAnimation", false);
-        }
-        int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
-        if (walletMode != 0) {
-            onClick(main_tab_account);
-        }
-
-        if(NextApplication.myInfo != null){
-            try {
-                Uri parse = getIntent().getData();
-                String gid = parse.getQueryParameter("gid");
-                String scheme = parse.getScheme();
-
-                if (!TextUtils.isEmpty(scheme) && "joingroup".equals(scheme))//join group
-                {
-                    Intent joinGroup = new Intent(this, DiscussGroupJoinUI.class);
-                    joinGroup.putExtra("groupid", gid);
-                    startActivity(joinGroup);
-                    Utils.openNewActivityAnim(this, false);
-                }
-            } catch (Exception e) {
-
-            }
-        }
+        setService(getIntent());
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(LoadDataService.ACTION_START_CONTACT_LISTENER);
@@ -275,32 +200,69 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         filter.addAction(Constants.ACTION_GESTURE_LOGIN);//gesture success
         filter.addAction(Constants.REQUEST_INSTALL_PACKAGE);//gesture success
         registerReceiver(mBroadcastReceiver, filter);
-        
-        if (walletMode == 0) {
-            main_tab_chats.setSelected(true);
-            showFragment(MainMessageFragmentUI.class, false);
-        }
-        
         if (Utils.isConnectNet(MainFragmentUI.this) && NextApplication.myInfo != null && TextUtils.isEmpty(NextApplication.myInfo.getToken()) && TextUtils.isEmpty(NextApplication.myInfo.getMid()) && TextUtils.isEmpty(NextApplication.myInfo.getMobile()) && TextUtils.isEmpty(NextApplication.myInfo.getEmail())) {
             LoginUtil.getInstance().initContext(MainFragmentUI.this);
             LoginUtil.getInstance().register(NextApplication.myInfo.getUsername(), NextApplication.myInfo.getPassword(), null, NextApplication.myInfo.getLocalId(), null);
         }
-        
+    }
+
+
+    /**
+     * init data
+     * */
+    private void setService(Intent intent){
+        if (intent != null && intent.getExtras() != null) {
+            if(NextApplication.myInfo != null){
+                if (intent.getExtras().getBoolean("isOfflineMsg", false)) {//jump main
+                    onClick(main_tab_chats);
+                    showOfflineAlert(intent.getExtras().getString("offlineContent"));
+                    return;
+                }
+
+                if (intent.getExtras().getBoolean("isNewMsg", false)) {//jump message
+                    onClick(main_tab_chats);
+                }
+            }
+            showAnimation = intent.getBooleanExtra("showAnimation", false);
+        }
+
+        int walletMode = MySharedPrefs.readInt(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_IS_WALLET_PATTERN);
+        if (walletMode != 0) {
+            onClick(main_tab_account);
+        } else {
+            main_tab_chats.setSelected(true);
+            showFragment(MainMessageFragmentUI.class, false);
+        }
+
         if (NextApplication.myInfo != null) {
-            int openSmartMesh = MySharedPrefs.readInt1(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
-            int version = android.os.Build.VERSION.SDK_INT;
-            if (openSmartMesh == 1 && version >= 16) {
-                //Start without social network service
+            int smartMeshNetWork = MySharedPrefs.readInt1(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId());
+            if (smartMeshNetWork == 1) {
                 startService(new Intent(MainFragmentUI.this, AppNetService.class));
-            } else if (walletMode == 0 && openSmartMesh == -1 && version >= 16) {
+            } else if (walletMode == 0 && smartMeshNetWork == -1 ) {
                 MySharedPrefs.writeInt(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(), 1);
-                //Exit without social network servicChatt
                 startService(new Intent(MainFragmentUI.this, AppNetService.class));
             }
-            
             startService(new Intent(MainFragmentUI.this, MeshService.class));
         }
         MySharedPrefs.writeBoolean(MainFragmentUI.this, MySharedPrefs.FILE_USER, MySharedPrefs.IS_SHOW_WALLET_DIALOG, false);
+
+        if(NextApplication.myInfo != null){
+            try {
+                Uri parse = intent.getData();
+                if (parse != null){
+                    String gid = parse.getQueryParameter("gid");
+                    String scheme = parse.getScheme();
+                    if (!TextUtils.isEmpty(scheme) && "joingroup".equals(scheme)) {//join group
+                        Intent joinGroup = new Intent(this, DiscussGroupJoinUI.class);
+                        joinGroup.putExtra("groupid", gid);
+                        startActivity(joinGroup);
+                        Utils.openNewActivityAnim(this, false);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -386,86 +348,100 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
     }
     
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
-        @SuppressLint("CheckResult")
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent != null && (Constants.ACTION_GESTURE_LOGIN.equals(intent.getAction()))) {
-                if (WalletStorage.getInstance(getApplicationContext()).get().size() > 0) {
-                    Utils.setStatusBar(MainFragmentUI.this,1);
-                    showFragment(AccountFragment.class, false);
-                } else {
-                    Utils.setStatusBar(MainFragmentUI.this,0);
-                    showFragment(NewWalletFragment.class, false);
-                }
-                selectChanged(R.id.main_tab_account);
-            } else if (intent != null && LoadDataService.ACTION_START_CONTACT_LISTENER.equals(intent.getAction())) {
-                getContentResolver().registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, mObserver);
-            } else if (intent != null && XmppAction.ACTION_MAIN_UNREADMSG_UPDATE_LISTENER.equals(intent.getAction())) {
-                getUnreadCount();
-            } else if (intent != null && XmppAction.ACTION_MAIN_OFFLINE_LISTENER.equals(intent.getAction())) {
-                Bundle bundle = intent.getBundleExtra(XmppAction.ACTION_MAIN_OFFLINE_LISTENER);
-                showOfflineAlert(bundle.getString("offlineContent"));
-            } else if (intent != null && Constants.ACTION_NETWORK_RECEIVER.equals(intent.getAction())) {
-                if (Constants.isConnectNet && NextApplication.myInfo != null) {
-                    String mobile = NextApplication.myInfo.getMobile();
-                    String email = NextApplication.myInfo.getEmail();
-                    String mid = NextApplication.myInfo.getMid();
-                    String token = NextApplication.myInfo.getToken();
-                    if (TextUtils.isEmpty(token)) {
-                        LoginUtil.getInstance().initContext(MainFragmentUI.this);
-                        if (!TextUtils.isEmpty(mid)) {
-                            LoginUtil.getInstance().login(mid, NextApplication.myInfo.getPassword(), false);
-                        } else if (!TextUtils.isEmpty(mobile)) {
-                            LoginUtil.getInstance().login(mobile, NextApplication.myInfo.getPassword(), false);
-                        } else if (!TextUtils.isEmpty(email)) {
-                            LoginUtil.getInstance().login(email, NextApplication.myInfo.getPassword(), false);
-                        } else {
-                            LoginUtil.getInstance().register(NextApplication.myInfo.getUsername(), NextApplication.myInfo.getPassword(), null, NextApplication.myInfo.getLocalId(), null);
-                        }
-                    }
-                    
-                }
-            } else if (intent != null && (Constants.WALLET_SUCCESS.equals(intent.getAction())) || Constants.WALLET_REFRESH_GESTURE.equals(intent.getAction())) {
-                if (WalletStorage.getInstance(getApplicationContext()).get().size() > 0) {
-                    Utils.setStatusBar(MainFragmentUI.this,1);
-                    showFragment(AccountFragment.class, false);
-                } else {
-                    Utils.setStatusBar(MainFragmentUI.this,0);
-                    showFragment(NewWalletFragment.class, false);
-                }
-                selectChanged(R.id.main_tab_account);
-            } else if (intent != null && (Constants.WALLET_REFRESH_DEL.equals(intent.getAction()))) {
-                if (WalletStorage.getInstance(getApplicationContext()).get().size() > 0) {
-                    Utils.setStatusBar(MainFragmentUI.this,1);
-                    showFragment(AccountFragment.class, false);
-                } else {
-                    Utils.setStatusBar(MainFragmentUI.this,0);
-                    showFragment(NewWalletFragment.class, false);
-                }
-                selectChanged(R.id.main_tab_account);
-            } else if (intent != null && (Constants.REQUEST_INSTALL_PACKAGE.equals(intent.getAction()))) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-                    String apkName = intent.getStringExtra("apkName");
-                    installFile = new File(Environment.getExternalStorageDirectory() + "/download/" + apkName);
-                    RxPermissions rxPermissions = new RxPermissions(MainFragmentUI.this);
-                    rxPermissions.request(Manifest.permission.REQUEST_INSTALL_PACKAGES).subscribe(new Consumer<Boolean>() {
-                        @Override
-                        public void accept(Boolean aBoolean) throws Exception {
-                            if (aBoolean){
-                                Utils.installApk8(MainFragmentUI.this,installFile);
-                            }else{
-                                MyToast.showToast(NextApplication.mContext,getString(R.string.open_permission_install_package));
-                                Uri packageURI = Uri.parse("package:"+getPackageName());
-                                Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,packageURI);
-                                startActivityForResult(intent, 200);
-                            }
-                        }
-                    });
+            if (intent != null && intent.getAction() != null){
+                switch (intent.getAction()){
+                    case Constants.ACTION_GESTURE_LOGIN:
+                    case Constants.WALLET_SUCCESS:
+                    case Constants.WALLET_REFRESH_GESTURE:
+                    case Constants.WALLET_REFRESH_DEL:
+                        setStatusBarMethod();
+                        break;
+                    case LoadDataService.ACTION_START_CONTACT_LISTENER:
+                        getContentResolver().registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, mObserver);
+                        break;
+                    case XmppAction.ACTION_MAIN_UNREADMSG_UPDATE_LISTENER:
+                        getUnreadCount();
+                        break;
+                    case XmppAction.ACTION_MAIN_OFFLINE_LISTENER:
+                        Bundle bundle = intent.getBundleExtra(XmppAction.ACTION_MAIN_OFFLINE_LISTENER);
+                        showOfflineAlert(bundle.getString("offlineContent"));
+                        break;
+                    case Constants.ACTION_NETWORK_RECEIVER:
+                        loginMethod();
+                        break;
+                    case Constants.REQUEST_INSTALL_PACKAGE:
+                        installPackage(intent);
+                        break;
                 }
             }
         }
     };
 
+    /**
+     * set status bar method
+     * */
+    private void setStatusBarMethod(){
+        if (WalletStorage.getInstance(getApplicationContext()).get().size() > 0) {
+            Utils.setStatusBar(MainFragmentUI.this,1);
+            showFragment(AccountFragment.class, false);
+        } else {
+            Utils.setStatusBar(MainFragmentUI.this,0);
+            showFragment(NewWalletFragment.class, false);
+        }
+        selectChanged(R.id.main_tab_account);
+    }
+
+    /**
+     * install app method
+     * */
+    @SuppressLint("CheckResult")
+    private void installPackage(Intent intent){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            String apkName = intent.getStringExtra("apkName");
+            installFile = new File(Environment.getExternalStorageDirectory() + "/download/" + apkName);
+            RxPermissions rxPermissions = new RxPermissions(MainFragmentUI.this);
+            rxPermissions.request(Manifest.permission.REQUEST_INSTALL_PACKAGES).subscribe(new Consumer<Boolean>() {
+                @Override
+                public void accept(Boolean aBoolean) throws Exception {
+                    if (aBoolean){
+                        Utils.installApk8(MainFragmentUI.this,installFile);
+                    }else{
+                        MyToast.showToast(NextApplication.mContext,getString(R.string.open_permission_install_package));
+                        Uri packageURI = Uri.parse("package:"+getPackageName());
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,packageURI);
+                        startActivityForResult(intent, 200);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * login app method
+     * */
+    private void loginMethod(){
+        if (Constants.isConnectNet && NextApplication.myInfo != null) {
+            String mobile = NextApplication.myInfo.getMobile();
+            String email = NextApplication.myInfo.getEmail();
+            String mid = NextApplication.myInfo.getMid();
+            String token = NextApplication.myInfo.getToken();
+            if (TextUtils.isEmpty(token)) {
+                LoginUtil.getInstance().initContext(MainFragmentUI.this);
+                if (!TextUtils.isEmpty(mid)) {
+                    LoginUtil.getInstance().login(mid, NextApplication.myInfo.getPassword(), false);
+                } else if (!TextUtils.isEmpty(mobile)) {
+                    LoginUtil.getInstance().login(mobile, NextApplication.myInfo.getPassword(), false);
+                } else if (!TextUtils.isEmpty(email)) {
+                    LoginUtil.getInstance().login(email, NextApplication.myInfo.getPassword(), false);
+                } else {
+                    LoginUtil.getInstance().register(NextApplication.myInfo.getUsername(), NextApplication.myInfo.getPassword(), null, NextApplication.myInfo.getLocalId(), null);
+                }
+            }
+
+        }
+    }
 
     //The monitoring objects to monitor contact data
     private ContentObserver mObserver = new ContentObserver(new Handler()) {
@@ -502,33 +478,7 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                 }
                 break;
             case R.id.main_tab_account:
-                if (walletMode == 1) {
-                    Utils.setStatusBar(MainFragmentUI.this,0);
-                    showFragment(NewWalletFragment.class, showAnimation);
-                    selectChanged(v.getId());
-                } else {
-                    if (WalletStorage.getInstance(getApplicationContext()).get().size() > 0) {
-                        Utils.setStatusBar(MainFragmentUI.this,1);
-                        byte[] gestureByte;
-                        if (walletMode != 0 && NextApplication.myInfo == null) {
-                            gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD);
-                        } else {
-                            gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
-                        }
-                        if (gestureByte != null && gestureByte.length > 0) {
-                            startActivity(new Intent(MainFragmentUI.this, GestureLoginActivity.class));
-                            Utils.openNewActivityAnim(MainFragmentUI.this, false);
-                        } else {
-                            showFragment(AccountFragment.class, showAnimation);
-                            selectChanged(v.getId());
-                        }
-                    } else {
-                        Utils.setStatusBar(MainFragmentUI.this,0);
-                        showFragment(NewWalletFragment.class, showAnimation);
-                        selectChanged(v.getId());
-                    }
-                }
-                
+                clickAccount(walletMode,v.getId());
                 break;
             case R.id.main_tab_setting:
                 Utils.setStatusBar(MainFragmentUI.this,1);
@@ -555,6 +505,40 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
                 break;
         }
         XmppUtils.loginXmppForNextApp(this);
+    }
+
+    /**
+     * click account
+     * @param walletMode  1 wallet mode   other default
+     * @param resId        res id
+     * */
+    private void clickAccount(int walletMode,int resId){
+        if (walletMode == 1) {
+            Utils.setStatusBar(MainFragmentUI.this,0);
+            showFragment(NewWalletFragment.class, showAnimation);
+            selectChanged(resId);
+        } else {
+            if (WalletStorage.getInstance(getApplicationContext()).get().size() > 0) {
+                Utils.setStatusBar(MainFragmentUI.this,1);
+                byte[] gestureByte;
+                if (walletMode != 0 && NextApplication.myInfo == null) {
+                    gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD);
+                } else {
+                    gestureByte = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
+                }
+                if (gestureByte != null && gestureByte.length > 0) {
+                    startActivity(new Intent(MainFragmentUI.this, GestureLoginActivity.class));
+                    Utils.openNewActivityAnim(MainFragmentUI.this, false);
+                } else {
+                    showFragment(AccountFragment.class, showAnimation);
+                    selectChanged(resId);
+                }
+            } else {
+                Utils.setStatusBar(MainFragmentUI.this,0);
+                showFragment(NewWalletFragment.class, showAnimation);
+                selectChanged(resId);
+            }
+        }
     }
     
     private void selectChanged(final int resId) {
@@ -697,6 +681,4 @@ public class MainFragmentUI extends BaseActivity implements View.OnClickListener
         }
         return super.onKeyDown(keyCode, event);
     }
-    
-    
 }
