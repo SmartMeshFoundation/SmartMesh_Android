@@ -44,7 +44,7 @@ public class RedPacketMessageUI extends BaseActivity implements RedPacketMessage
 
     @Override
     protected void findViewById() {
-        new RedPacketMessagePresenterImpl(this);
+
     }
 
     @Override
@@ -56,6 +56,7 @@ public class RedPacketMessageUI extends BaseActivity implements RedPacketMessage
     @Override
     protected void initData() {
         setTitle(getString(R.string.red_packet_pay_message));
+        new RedPacketMessagePresenterImpl(this);
         redPacketMessages = new ArrayList<>();
         redPacketMessageAdapter = new RedPacketMessageAdapter(RedPacketMessageUI.this,redPacketMessages,this);
         messageListView.setAdapter(redPacketMessageAdapter);
@@ -70,9 +71,13 @@ public class RedPacketMessageUI extends BaseActivity implements RedPacketMessage
     }
 
     @Override
-    public void success(ArrayList<RedPacketMessageBean> redPacketMessages, int currentPage, boolean resetFooterState) {
+    public void success(ArrayList<RedPacketMessageBean> tempRedPacketMessages, int tempCurrentPage, boolean resetFooterState) {
         refreshLayout.setRefreshing(false);
-        this.currentPage = currentPage;
+        this.currentPage = tempCurrentPage;
+        if (currentPage == 0 || currentPage == 1){
+            redPacketMessages.clear();
+        }
+        redPacketMessages.addAll(redPacketMessages);
         redPacketMessageAdapter.resetSource(redPacketMessages);
         messageListView.resetFooterState(resetFooterState);
     }

@@ -1,18 +1,7 @@
 package com.lingtuan.firefly.redpacket.presenter;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-
-import com.lingtuan.firefly.custom.CustomListView;
-import com.lingtuan.firefly.listener.RequestListener;
-import com.lingtuan.firefly.redpacket.RedPacketDetailAdapter;
-import com.lingtuan.firefly.redpacket.RedPacketTransactionRecordUI;
 import com.lingtuan.firefly.redpacket.bean.RedPacketBean;
-import com.lingtuan.firefly.redpacket.bean.RedPacketRecordBean;
 import com.lingtuan.firefly.redpacket.contract.RedPacketDetailContract;
-import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,6 +16,7 @@ public class RedPacketDetailPresenterImpl implements RedPacketDetailContract.Pre
 
     public RedPacketDetailPresenterImpl(RedPacketDetailContract.View view){
         this.mView = view;
+        redPacketBeans = new ArrayList<>();
         mView.setPresenter(this);
     }
 
@@ -57,6 +47,7 @@ public class RedPacketDetailPresenterImpl implements RedPacketDetailContract.Pre
     private void parseData(JSONObject response){
         JSONArray jsonArray = response.optJSONArray("data");
         if (jsonArray != null) {
+            redPacketBeans.clear();
             int count = jsonArray.length();
             for (int i = 0; i < count; i++) {
                 RedPacketBean redPacketBean = new RedPacketBean().parse(jsonArray.optJSONObject(i));

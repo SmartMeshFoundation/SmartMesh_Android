@@ -1,10 +1,8 @@
 package com.lingtuan.firefly.redpacket.presenter;
 
-import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.redpacket.RedPacketBalanceRecordUI;
 import com.lingtuan.firefly.redpacket.bean.RedPacketRecordBean;
 import com.lingtuan.firefly.redpacket.contract.RedPacketBalanceRecordContract;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,12 +17,13 @@ public class RedPacketBalanceRecordPresenterImpl implements RedPacketBalanceReco
     private boolean isLoadingData = false;
     private int currentPage = 1 ;
     private int oldPage=1;
-    private ArrayList<RedPacketRecordBean> redPacketRecords;
+    private ArrayList<RedPacketRecordBean> redPacketRecords ;
 
     private RedPacketBalanceRecordContract.View mView;
 
     public RedPacketBalanceRecordPresenterImpl(RedPacketBalanceRecordContract.View view){
         this.mView = view;
+        redPacketRecords = new ArrayList<>();
         mView.setPresenter(this);
     }
 
@@ -77,12 +76,15 @@ public class RedPacketBalanceRecordPresenterImpl implements RedPacketBalanceReco
     private void parseData(JSONObject response){
         JSONArray jsonArray = response.optJSONArray("data");
         if (jsonArray != null) {
+            if (currentPage == 1 || currentPage == 0){
+                redPacketRecords.clear();
+            }
             int count = jsonArray.length();
             for (int i = 0; i < count; i++) {
                 RedPacketRecordBean recordBean = new RedPacketRecordBean().parse(jsonArray.optJSONObject(i));
                 redPacketRecords.add(recordBean);
             }
-            if (jsonArray != null && jsonArray.length() >= 10) {
+            if (jsonArray.length() >= 10) {
                 mView.success(redPacketRecords,currentPage,true);
             } else {
                 mView.success(redPacketRecords,currentPage,false);

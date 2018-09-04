@@ -1,9 +1,7 @@
 package com.lingtuan.firefly.redpacket.presenter;
 
-import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.redpacket.bean.RedPacketMessageBean;
 import com.lingtuan.firefly.redpacket.contract.RedPacketMessageContract;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,11 +15,12 @@ public class RedPacketMessagePresenterImpl implements RedPacketMessageContract.P
     private int currentPage = 1 ;
     private int oldPage=1;
 
-    private ArrayList<RedPacketMessageBean> redPacketMessages;
+    private ArrayList<RedPacketMessageBean> redPacketMessages ;
     private RedPacketMessageContract.View mView;
 
     public RedPacketMessagePresenterImpl(RedPacketMessageContract.View view){
         this.mView = view;
+        redPacketMessages = new ArrayList<>();
         mView.setPresenter(this);
     }
 
@@ -44,7 +43,7 @@ public class RedPacketMessagePresenterImpl implements RedPacketMessageContract.P
 //
 //            @Override
 //            public void success(JSONObject response) {
-//                parseData(response);
+//                parseData(response,page);
 //            }
 //
 //            @Override
@@ -65,10 +64,9 @@ public class RedPacketMessagePresenterImpl implements RedPacketMessageContract.P
      * */
     private void parseData(JSONObject response){
         currentPage=oldPage;
-        if (currentPage == 1) {
+        if (currentPage == 1 || currentPage == 0) {
             redPacketMessages.clear();
         }
-
         JSONArray jsonArray = response.optJSONArray("data");
         if (jsonArray != null) {
             int count = jsonArray.length();
@@ -77,7 +75,7 @@ public class RedPacketMessagePresenterImpl implements RedPacketMessageContract.P
                 redPacketMessages.add(messageBean);
             }
             isLoadingData=false;
-            if (jsonArray != null && jsonArray.length() >= 10) {
+            if (jsonArray.length() >= 10) {
                 mView.success(redPacketMessages,currentPage,true);
             } else {
                 mView.success(redPacketMessages,currentPage,false);

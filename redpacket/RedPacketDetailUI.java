@@ -52,8 +52,7 @@ public class RedPacketDetailUI extends BaseActivity implements RedPacketDetailCo
 
     @Override
     protected void findViewById() {
-        Utils.setStatusBar(this,3);
-        new RedPacketDetailPresenterImpl(this);
+
     }
 
     @Override
@@ -64,6 +63,8 @@ public class RedPacketDetailUI extends BaseActivity implements RedPacketDetailCo
     @Override
     protected void initData() {
         setTitle(getString(R.string.red_packet));
+        Utils.setStatusBar(this,3);
+        new RedPacketDetailPresenterImpl(this);
         appBtnRight.setVisibility(View.VISIBLE);
         appBtnRight.setText(getString(R.string.red_balance_record));
         redPacketBeans = new ArrayList<>();
@@ -89,7 +90,9 @@ public class RedPacketDetailUI extends BaseActivity implements RedPacketDetailCo
     @Override
     public void success(ArrayList<RedPacketBean> redPacketRecords) {
         LoadingDialog.close();
-        redPacketDetailAdapter.resetSource(redPacketRecords);
+        redPacketBeans.clear();
+        redPacketBeans.addAll(redPacketRecords);
+        redPacketDetailAdapter.resetSource(redPacketBeans);
     }
 
     @Override

@@ -45,7 +45,7 @@ public class RedPacketBalanceRecordUI extends BaseActivity implements RedPacketB
 
     @Override
     protected void findViewById() {
-        new RedPacketBalanceRecordPresenterImpl(this);
+
     }
 
     @Override
@@ -57,6 +57,7 @@ public class RedPacketBalanceRecordUI extends BaseActivity implements RedPacketB
     @Override
     protected void initData() {
         setTitle(getString(R.string.red_balance_record));
+        new RedPacketBalanceRecordPresenterImpl(this);
         redPacketRecords = new ArrayList<>();
         redPacketBalanceRecordAdapter = new RedPacketBalanceRecordAdapter(this,redPacketRecords);
         recordListView.setAdapter(redPacketBalanceRecordAdapter);
@@ -99,8 +100,12 @@ public class RedPacketBalanceRecordUI extends BaseActivity implements RedPacketB
     }
 
     @Override
-    public void success(ArrayList<RedPacketRecordBean> redPacketRecords,int currentPage,boolean resetFooterState) {
-        this.currentPage = currentPage;
+    public void success(ArrayList<RedPacketRecordBean> tempRedPacketRecords,int tempCurrentPage,boolean resetFooterState) {
+        this.currentPage = tempCurrentPage;
+        if (currentPage == 0 || currentPage == 1){
+            redPacketRecords.clear();
+        }
+        redPacketRecords.addAll(tempRedPacketRecords);
         refreshLayout.setRefreshing(false);
         redPacketBalanceRecordAdapter.resetSource(redPacketRecords);
         recordListView.resetFooterState(resetFooterState);
