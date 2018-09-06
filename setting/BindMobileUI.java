@@ -9,38 +9,46 @@ import android.widget.TextView;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.network.NetRequestImpl;
+import com.lingtuan.firefly.setting.contract.BindMobileContract;
+import com.lingtuan.firefly.setting.presenter.BindMobilePresenterImpl;
 import com.lingtuan.firefly.ui.CountryCodeUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.vo.CountryCodeVo;
 
 import org.json.JSONObject;
+
+import butterknife.BindView;
+import butterknife.OnClick;
 
 /**
  * Created on 2017/10/11.
  * Binding mobile phone number
  */
 
-public class BindMobileUI extends BaseActivity {
+public class BindMobileUI extends BaseActivity implements BindMobileContract.View {
 
     private static final int BINDMOBLECODE = 100;
 
-    private TextView btnRight;
-
-    private TextView countyName,countyCode;
-
-    private EditText phoneEt;
+    @BindView(R.id.app_btn_right)
+    TextView btnRight;
+    @BindView(R.id.countyName)
+    TextView countyName;
+    @BindView(R.id.countyCode)
+    TextView countyCode;
+    @BindView(R.id.phoneEt)
+    EditText phoneEt;
+    @BindView(R.id.bindMobileHint)
+    TextView bindMobileHint;
 
     private CountryCodeVo mCountryCode;
+    //0 binding mobile, 1 binding email, 2 phone number retrieve password, 3 email retrieve password
+    private int type;
 
-    private String aeskey = null ;
-
-    private TextView bindMobileHint;
-
-    private int type;//0 binding mobile phone number, 1 binding email, 2 phone number retrieve password, 3 email retrieve password
+    private BindMobileContract.Presenter mPresenter;
 
     @Override
     protected void setContentView() {
@@ -54,21 +62,17 @@ public class BindMobileUI extends BaseActivity {
 
     @Override
     protected void findViewById() {
-        btnRight = (TextView) findViewById(R.id.app_btn_right);
-        countyName = (TextView) findViewById(R.id.countyName);
-        countyCode = (TextView) findViewById(R.id.countyCode);
-        bindMobileHint = (TextView) findViewById(R.id.bindMobileHint);
-        phoneEt = (EditText) findViewById(R.id.phoneEt);
+
     }
 
     @Override
     protected void setListener() {
-        btnRight.setOnClickListener(this);
-        countyName.setOnClickListener(this);
+
     }
 
     @Override
     protected void initData() {
+        new BindMobilePresenterImpl(this);
         if (type == 2){
             setTitle(getString(R.string.forgot_password_hint));
             bindMobileHint.setVisibility(View.GONE);
@@ -84,7 +88,7 @@ public class BindMobileUI extends BaseActivity {
 
     }
 
-    @Override
+    @OnClick({R.id.app_btn_right,R.id.countyName})
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()){
@@ -124,31 +128,8 @@ public class BindMobileUI extends BaseActivity {
      * Verify the signature for text messages
      * */
     private void sendSmsc() {
-        this.aeskey = Utils.makeRandomKey(16);
         final String phoneNumber = "+" + mCountryCode.getCode() + " " + phoneEt.getText().toString().trim();
-        NetRequestImpl.getInstance().sendSmsc(aeskey, type == 0 ? 0 : 1,phoneNumber,new RequestListener() {
-            @Override
-            public void start() {
-                LoadingDialog.show(BindMobileUI.this,"");
-            }
-
-            @Override
-            public void success(JSONObject response) {
-                LoadingDialog.close();
-                showToast(response.optString("msg"));
-                Intent intent = new Intent(BindMobileUI.this,BindMobileCodeUI.class);
-                intent.putExtra("phonemubmer",phoneNumber);
-                intent.putExtra("type",type);
-                startActivityForResult(intent,BINDMOBLECODE);
-                Utils.openNewActivityAnim(BindMobileUI.this,false);
-            }
-
-            @Override
-            public void error(int errorCode, String errorMsg) {
-                LoadingDialog.close();
-                showToast(errorMsg);
-            }
-        });
+        mPresenter.sendSms(type,phoneNumber);
     }
 
     @Override
@@ -171,4 +152,30 @@ public class BindMobileUI extends BaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    @Override
+    public void setPresenter(BindMobileContract.Presenter presenter) {
+        this.mPresenter = presenter;
+    }
+
+    @Override
+    public void sendSmsStart() {
+        LoadingDialog.show(BindMobileUI.this,"");
+    }
+
+    @Override
+    public void sendSmsSuccess(String message, int type, String phoneNumber) {
+        LoadingDialog.close();
+        showToast(message);
+        Intent intent = new Intent(BindMobileUI.this,BindMobileCodeUI.class);
+        intent.putExtra("phonemubmer",phoneNumber);
+        intent.putExtra("type",type);
+        startActivityForResult(intent,BINDMOBLECODE);
+        Utils.openNewActivityAnim(BindMobileUI.this,false);
+    }
+
+    @Override
+    public void sendSmsError(int errorCode, String errorMsg) {
+        LoadingDialog.close();
+        showToast(errorMsg);
+    }
 }
