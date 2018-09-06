@@ -184,7 +184,6 @@ public final class CaptureActivity extends BaseActivity implements
 	public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
 		inactivityTimer.onActivity();
 		beepManager.playBeepSoundAndVibrate();
-
 		String msg = rawResult.getText();
 		if(!TextUtils.isEmpty(msg) && msg.startsWith("0x")){
 
@@ -193,61 +192,33 @@ public final class CaptureActivity extends BaseActivity implements
 			}
 
 			if(msg.length() == 42){
-				if(type == 1)
-				{
+				if(type == 1 || type == 2){
 					Intent i = new Intent();
 					i.putExtra("address",msg);
-					i.putExtra("sendtype", -1);//Transfer method does not change
-					setResult(RESULT_OK,i);
-					finish();
-				}else if (type == 2){
-					Intent i = new Intent();
-					i.putExtra("address",msg);
-					setResult(RESULT_OK,i);
-					finish();
-				}
-				else{
-					Intent intent = new Intent(this,WalletSendActivity.class);
-					intent.putExtra("address", msg);
-					intent.putExtra("sendtype", 0);
-					startActivity(intent);
-					finish();
-				}
-			}
-			else if(msg.length() > 42)
-			{
-				if (type == 2){
-					finish();
-					return;
-				}
-				String address = msg.substring(0,msg.indexOf("?"));
-				Uri parse = Uri.parse(msg);
-				int sendtype = 0;
-				float amount = 0f;
-				if(!TextUtils.isEmpty(parse.getQueryParameter("token")))
-				{
-					if(parse.getQueryParameter("token").equals("SMT"))
-					{
-						sendtype = 1;
-					}
-				}
-				if(!TextUtils.isEmpty(parse.getQueryParameter("amount")))
-				{
-					amount = Float.valueOf(parse.getQueryParameter("amount"));
-				}
-
-				if(type == 1)
-				{
-					Intent i = new Intent();
-					i.putExtra("address",address);
-					i.putExtra("sendtype", sendtype);
-					i.putExtra("amount", amount);
 					setResult(RESULT_OK,i);
 					finish();
 				}else{
 					Intent intent = new Intent(this,WalletSendActivity.class);
+					intent.putExtra("address", msg);
+					startActivity(intent);
+					finish();
+				}
+			}else if(msg.length() > 42){
+				String address = msg.substring(0,msg.indexOf("?"));
+				Uri parse = Uri.parse(msg);
+				float amount = 0f;
+				if(!TextUtils.isEmpty(parse.getQueryParameter("amount"))){
+					amount = Float.valueOf(parse.getQueryParameter("amount"));
+				}
+				if(type == 1 || type == 2){
+					Intent i = new Intent();
+					i.putExtra("address",address);
+					i.putExtra("amount", amount);
+					setResult(RESULT_OK,i);
+					finish();
+				}else {
+					Intent intent = new Intent(this,WalletSendActivity.class);
 					intent.putExtra("address", address);
-					intent.putExtra("sendtype", sendtype);
 					intent.putExtra("amount", amount);
 					startActivity(intent);
 					finish();
