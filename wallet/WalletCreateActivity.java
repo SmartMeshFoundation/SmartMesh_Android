@@ -18,6 +18,8 @@ import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 
@@ -118,6 +120,19 @@ public class WalletCreateActivity extends BaseActivity {
                 super.onClick(v);
         }
     }
+
+    /**
+     * covert mnemonic string to List<String>
+     */
+    private static String convertMnemonicList(List<String> mnemonics) {
+        StringBuilder sb = new StringBuilder();
+        for (String mnemonic : mnemonics) {
+            sb.append(mnemonic);
+            sb.append(" ");
+        }
+        return sb.toString();
+    }
+
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
 

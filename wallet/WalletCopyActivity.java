@@ -1,41 +1,18 @@
 package com.lingtuan.firefly.wallet;
 
-import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
-import com.lingtuan.firefly.listener.RequestListener;
-import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.util.Constants;
-import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MySharedPrefs;
-import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
-import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.web3j.crypto.CipherException;
-import org.web3j.crypto.Credentials;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.ArrayList;
-
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -117,11 +94,14 @@ public class WalletCopyActivity extends BaseActivity {
      * export KeyStore
      * to delete the wallet
      */
-    @OnClick({R.id.walletCopyKey,R.id.walletCopyKeyStore,R.id.walletDelete,R.id.app_btn_right})
+    @OnClick({R.id.walletCopyKey,R.id.walletMnemonic,R.id.walletCopyKeyStore,R.id.walletDelete,R.id.app_btn_right})
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.walletCopyKey:
                 walletCopyPresenter.showPwdDialog(0);
+                break;
+            case R.id.walletMnemonic:
+                walletCopyPresenter.showPwdDialog(3);
                 break;
             case R.id.walletCopyKeyStore:
                 walletCopyPresenter.showPwdDialog(1);
