@@ -1,5 +1,6 @@
 package com.lingtuan.firefly.wallet;
 
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -7,9 +8,11 @@ import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
+import com.lingtuan.firefly.wallet.vo.MnemonicVo;
 import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
 import butterknife.BindView;
@@ -38,6 +41,8 @@ public class WalletCopyActivity extends BaseActivity {
     TextView walletCopyKey;
     @BindView(R.id.walletCopyKeyStore)
     TextView walletCopyKeyStore;
+    @BindView(R.id.walletMnemonic)
+    TextView walletMnemonic;
     @BindView(R.id.icon)
     ImageView icon;
 
@@ -46,7 +51,6 @@ public class WalletCopyActivity extends BaseActivity {
     private StorableWallet storableWallet;
     private String iconId;
     private int type;//0 the newly created, 1 backup wallet
-
 
     @Override
     protected void setContentView() {
@@ -80,6 +84,12 @@ public class WalletCopyActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         walletCopyPresenter.onResume();
+        MnemonicVo mnemonicVo = FinalUserDataBase.getInstance().getMnemonic(address.getText().toString().trim());
+        if (mnemonicVo != null && !TextUtils.isEmpty(mnemonicVo.getMnemonic())){
+            walletMnemonic.setVisibility(View.VISIBLE);
+        }else{
+            walletMnemonic.setVisibility(View.GONE);
+        }
     }
 
     @Override
