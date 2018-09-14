@@ -8,7 +8,7 @@ import android.widget.TextView;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
 import com.lingtuan.firefly.custom.flowtag.FlowTagLayout;
-import com.lingtuan.firefly.custom.flowtag.OnTagSelectListener;
+import com.lingtuan.firefly.ui.AlertActivity;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
@@ -32,11 +32,14 @@ public class WalletCopyMnemonicNextUI extends BaseActivity{
     @BindView(R.id.mnemonicAddFlowTag)
     FlowTagLayout mnemonicAddFlowTag;
 
+    private static final int MNEMONIC_RESULT = 0x01;
+
     private MnemonicCopyNextAdapter  mMnemonicAdapter;
 
     private ArrayList<MnemonicSelectVo> mnemonicList;
 
     private String mnemonic;
+    private String walletAddress;
 
     @Override
     protected void setContentView() {
@@ -56,6 +59,7 @@ public class WalletCopyMnemonicNextUI extends BaseActivity{
 
     private void getPassData() {
         mnemonic = getIntent().getStringExtra(Constants.MNEMONIC);
+        walletAddress = getIntent().getStringExtra(Constants.WALLET_ADDRESS);
     }
 
     @Override
@@ -67,30 +71,22 @@ public class WalletCopyMnemonicNextUI extends BaseActivity{
             MnemonicSelectVo mnemonicSelectVo;
             for (int i = 0 ; i < mnemonics.length ; i++){
                 mnemonicSelectVo = new MnemonicSelectVo();
-                mnemonicSelectVo.setHasSelected(false);
+                mnemonicSelectVo.setHasSelected(true);
                 mnemonicSelectVo.setMnemonic(mnemonics[i]);
                 mnemonicList.add(mnemonicSelectVo);
             }
         }
-
         mMnemonicAdapter = new MnemonicCopyNextAdapter(this);
         mnemonicAddFlowTag.setAdapter(mMnemonicAdapter,false);
-
-
         mMnemonicAdapter.loadData(mnemonicList);
+        showMnemonicDialog();
+    }
 
-        mnemonicAddFlowTag.setOnTagSelectListener(new OnTagSelectListener() {
-            @Override
-            public void onItemSelect(FlowTagLayout parent, MnemonicSelectVo tempMnemonic) {
-                for (int j = 0 ; j < mnemonicList.size() ; j++){
-                    if (mnemonicList.get(j).getMnemonic().equals(tempMnemonic.getMnemonic())){
-                        mnemonicList.get(j).setHasSelected(true);
-                    }
-                }
-                mMnemonicAdapter.reloadAll(mnemonicList);
-            }
-        });
-
+    private void showMnemonicDialog(){
+        Intent intent = new Intent(WalletCopyMnemonicNextUI.this, AlertActivity.class);
+        intent.putExtra("type", 8);
+        startActivity(intent);
+        overridePendingTransition(0, 0);
     }
 
     @OnClick(R.id.walletCopyPrivateKey)
@@ -99,29 +95,40 @@ public class WalletCopyMnemonicNextUI extends BaseActivity{
             case R.id.walletCopyPrivateKey:
                 Intent intent = new Intent(this,WalletMnemonicFinishUI.class);
                 intent.putExtra(Constants.MNEMONIC,mnemonic);
-                startActivity(intent);
-                Utils.openNewActivityAnim(this,true);
+                intent.putExtra(Constants.WALLET_ADDRESS,walletAddress);
+                startActivityForResult(intent,MNEMONIC_RESULT);
+                Utils.openNewActivityAnim(this,false);
+                break;
+            case R.id.app_back:
+                clearMnemonic();
                 break;
             default:
                 super.onClick(v);
         }
     }
 
-    private void deleteMnemonic(){
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == MNEMONIC_RESULT && resultCode == RESULT_OK){
+            finish();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        clearMnemonic();
+    }
+
+    private void clearMnemonic(){
         MyViewDialogFragment mdf = new MyViewDialogFragment();
-        mdf.setTitleAndContentText(getString(R.string.wallet_export_prompt),getString(R.string.wallet_export_mnemonic_remove));
+        mdf.setTitleAndContentText(getString(R.string.wallet_export_prompt),getString(R.string.wallet_mnemonic_5));
         mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
             @Override
             public void okBtn() {
-                copyMnemonic();
+                finish();
             }
         });
         mdf.show(getSupportFragmentManager(), "mdf");
-    }
-
-    private void copyMnemonic(){
-        Utils.copyText(WalletCopyMnemonicNextUI.this,mnemonic);
-        walletCopyPrivateKey.setText(getString(R.string.wallet_show_mnemonic_3));
-        Utils.sendBroadcastReceiver(WalletCopyMnemonicNextUI.this, new Intent(Constants.WALLET_REFRESH_MNEMONIC), false);
     }
 }

@@ -12,7 +12,9 @@ import com.lingtuan.firefly.custom.flowtag.OnTagSelectListener;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
+import com.lingtuan.firefly.wallet.util.WalletStorage;
 import com.lingtuan.firefly.wallet.vo.MnemonicSelectVo;
+import com.lingtuan.firefly.wallet.vo.StorableWallet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,7 @@ public class WalletMnemonicFinishUI extends BaseActivity{
     private ArrayList<MnemonicSelectVo> tempMnemonicList;
 
     private String mnemonic;
+    private String walletAddress;
 
     @Override
     protected void setContentView() {
@@ -62,6 +65,7 @@ public class WalletMnemonicFinishUI extends BaseActivity{
 
     private void getPassData() {
         mnemonic = getIntent().getStringExtra(Constants.MNEMONIC);
+        walletAddress = getIntent().getStringExtra(Constants.WALLET_ADDRESS);
     }
 
     @Override
@@ -128,6 +132,7 @@ public class WalletMnemonicFinishUI extends BaseActivity{
         StringBuilder sb = new StringBuilder();
         for (MnemonicSelectVo mnemonic : mnemonics) {
             sb.append(mnemonic.getMnemonic());
+            sb.append(" ");
         }
         return sb.toString();
     }
@@ -137,10 +142,10 @@ public class WalletMnemonicFinishUI extends BaseActivity{
         switch (v.getId()){
             case R.id.walletCopyPrivateKey:
                 String tempMnemonic =convertMnemonicList(tempMnemonicList);
-                if (TextUtils.equals(tempMnemonic.replace(" ",""),mnemonic.replace(" ",""))){
+                if (TextUtils.equals(tempMnemonic.trim(),mnemonic.trim())){
                     deleteMnemonic();
                 }else{
-                    showToast("助记词顺序不正确");
+                    backupError();
                 }
                 break;
             default:
@@ -150,7 +155,7 @@ public class WalletMnemonicFinishUI extends BaseActivity{
 
     private void deleteMnemonic(){
         MyViewDialogFragment mdf = new MyViewDialogFragment();
-        mdf.setTitleAndContentText(getString(R.string.wallet_export_prompt),getString(R.string.wallet_export_mnemonic_remove));
+        mdf.setTitleAndContentText(getString(R.string.wallet_export_prompt),getString(R.string.wallet_mnemonic_6));
         mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
             @Override
             public void okBtn() {
@@ -160,9 +165,28 @@ public class WalletMnemonicFinishUI extends BaseActivity{
         mdf.show(getSupportFragmentManager(), "mdf");
     }
 
+
+    private void backupError(){
+        MyViewDialogFragment mdf = new MyViewDialogFragment(MyViewDialogFragment.DIALOG_SINGLE_CENTER_BUTTON);
+        mdf.setTitleAndContentText(getString(R.string.wallet_mnemonic_4),getString(R.string.wallet_mnemonic_11));
+        mdf.show(getSupportFragmentManager(), "mdf");
+    }
+
     private void copyMnemonic(){
-        Utils.copyText(WalletMnemonicFinishUI.this,mnemonic);
-        walletCopyPrivateKey.setText(getString(R.string.wallet_show_mnemonic_3));
-        Utils.sendBroadcastReceiver(WalletMnemonicFinishUI.this, new Intent(Constants.WALLET_REFRESH_MNEMONIC), false);
+        updateCopyState();
+        setResult(RESULT_OK);
+        Utils.exitActivityAndBackAnim(WalletMnemonicFinishUI.this,true);
+    }
+
+    public void updateCopyState(){
+        ArrayList<StorableWallet> walletList = WalletStorage.getInstance(getApplicationContext()).get();
+        for (int i = 0; i < walletList.size(); i++) {
+            if (walletList.get(i).getPublicKey().equals(walletAddress)) {
+                walletList.get(i).setBackup(true);
+                break;
+            }
+        }
+        WalletStorage.getInstance(getApplicationContext()).updateWalletToList(getApplicationContext(), walletAddress, true);
+        Utils.sendBroadcastReceiver(getApplicationContext(), new Intent(Constants.WALLET_REFRESH_BACKUP), false);
     }
 }
