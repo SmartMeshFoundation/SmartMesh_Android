@@ -1,7 +1,5 @@
 package com.lingtuan.firefly.setting.contract;
 
-import android.os.Bundle;
-
 import com.lingtuan.firefly.base.BasePresenter;
 import com.lingtuan.firefly.base.BaseView;
 
@@ -41,9 +39,8 @@ public interface SettingContract {
 
         /**
          * send broadcast
-         * @param bundle bundle   data
          * */
-        void sendBroadcast(Bundle bundle);
+        void updateVersion(String version,String url);
 
         /**
          * error

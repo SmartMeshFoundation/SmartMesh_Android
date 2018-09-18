@@ -1,9 +1,11 @@
 
 package com.lingtuan.firefly.setting;
 
+import android.app.DownloadManager;
 import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -17,14 +19,18 @@ import com.lingtuan.firefly.custom.gesturelock.ACache;
 import com.lingtuan.firefly.custom.switchbutton.SwitchButton;
 import com.lingtuan.firefly.fragment.MySelfFragment;
 import com.lingtuan.firefly.offline.AppNetService;
+import com.lingtuan.firefly.service.UpdateVersionService;
 import com.lingtuan.firefly.setting.contract.SettingContract;
 import com.lingtuan.firefly.setting.presenter.SettingPresenterImpl;
 import com.lingtuan.firefly.ui.WebViewUI;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MySharedPrefs;
+import com.lingtuan.firefly.util.MyToast;
 import com.lingtuan.firefly.util.MyViewDialogFragment;
 import com.lingtuan.firefly.util.Utils;
+
+import java.io.File;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -81,30 +87,8 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
     protected void initData() {
         new SettingPresenterImpl(this);
         setTitle(getString(R.string.setting));
-        versionCheck.setText(Utils.getVersionName(SettingUI.this));
-
-        String tempVersion = MySharedPrefs.readString(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_UPDATE_VERSION);
-        tempVersion = tempVersion.replace(".","").trim();
-        if (!TextUtils.isEmpty(tempVersion)){
-            String currentVersion = Utils.getVersionName(SettingUI.this).replace(".","").trim();
-            try {
-                if (Integer.parseInt(tempVersion) > Integer.parseInt(currentVersion)){
-                    versionCircle.setVisibility(View.VISIBLE);
-                }else{
-                    versionCircle.setVisibility(View.GONE);
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-                versionCircle.setVisibility(View.GONE);
-            }
-        }
-
-        int version = Build.VERSION.SDK_INT;
-        if(version < 16){
-            startSmartMeshWorkBody.setVisibility(View.GONE);
-        }else{
-            startSmartMeshWorkBody.setVisibility(View.VISIBLE);
-        }
+        versionCheck.setText(getString(R.string.current_version,Utils.getVersionName(SettingUI.this)));
+        checkShowCircle();
     }
 
     @Override
@@ -145,9 +129,8 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
                 checkLogOut();
                 break;
             case R.id.versionBody:
-                if (versionCircle.getVisibility() != View.VISIBLE){
-                    return;
-                }
+                MySharedPrefs.write(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_SHOW_VERSION,Utils.getVersionName(SettingUI.this) + "-false");
+                versionCircle.setVisibility(View.GONE);
                 mPresenter.checkVersion();
                 break;
             default:
@@ -189,7 +172,6 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
                     }else{
                         mPresenter.logOutMethod();
                     }
-
                 }
             });
             mdf.show(getSupportFragmentManager(), "mdf");
@@ -211,7 +193,6 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
                 }else{
                     mPresenter.logOutMethod();
                 }
-
             }
         });
         mdf.setCancelCallback(new MyViewDialogFragment.CancelCallback() {
@@ -232,40 +213,56 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         switch (buttonView.getId()){
             case R.id.startSmartMeshWorkButton:
-                MySharedPrefs.writeInt(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(),isChecked ? 1 : 0);
-                if (isChecked){
-                    startSmartMeshWorkButton.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
-                    //Start without social network service
-                    startService(new Intent(this, AppNetService.class));
-                    Utils.sendBroadcastReceiver(SettingUI.this,new Intent(Constants.OPEN_SMARTMESH_NETWORE), false);
-                }else{
-                    startSmartMeshWorkButton.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
-                    int version =android.os.Build.VERSION.SDK_INT;
-                    if(version >= 16){
-                        Utils.sendBroadcastReceiver(SettingUI.this,new Intent(Constants.CLOSE_SMARTMESH_NETWORE), false);
-                        Intent offlineservice = new Intent(NextApplication.mContext, AppNetService.class);
-                        stopService(offlineservice);
-                    }
-                }
+                switchSmartMesh(isChecked);
                 break;
             case R.id.gestureButton:
-                if (isChecked){
-                    gestureButton.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
-                }else{
-                    gestureButton.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
-                }
-                byte[] gestureByte  = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
-                if (gestureByte != null && gestureByte.length > 0){
-                    Intent intent = new Intent(SettingUI.this,GestureLoginActivity.class);
-                    intent.putExtra("type",isChecked ? 1 : 2);
-                    startActivity(intent);
-                }else{
-                    Intent intent = new Intent(SettingUI.this,CreateGestureActivity.class);
-                    startActivity(intent);
-                }
+                switchGesture(isChecked);
                 break;
         }
 
+    }
+
+    /**
+     * switch smart mesh net work
+     * @param isChecked    true open   false close
+     * */
+    private void switchSmartMesh(boolean isChecked){
+        MySharedPrefs.writeInt(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_NO_NETWORK_COMMUNICATION + NextApplication.myInfo.getLocalId(),isChecked ? 1 : 0);
+        if (isChecked){
+            startSmartMeshWorkButton.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+            //Start without social network service
+            startService(new Intent(this, AppNetService.class));
+            Utils.sendBroadcastReceiver(SettingUI.this,new Intent(Constants.OPEN_SMARTMESH_NETWORE), false);
+        }else{
+            startSmartMeshWorkButton.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
+            int version =android.os.Build.VERSION.SDK_INT;
+            if(version >= 16){
+                Utils.sendBroadcastReceiver(SettingUI.this,new Intent(Constants.CLOSE_SMARTMESH_NETWORE), false);
+                Intent offlineservice = new Intent(NextApplication.mContext, AppNetService.class);
+                stopService(offlineservice);
+            }
+        }
+    }
+
+    /**
+     * switch gesture
+     * @param isChecked   true  open   false close
+     * */
+    private void switchGesture(boolean isChecked){
+        if (isChecked){
+            gestureButton.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+        }else{
+            gestureButton.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
+        }
+        byte[] gestureByte  = ACache.get(NextApplication.mContext).getAsBinary(Constants.GESTURE_PASSWORD + NextApplication.myInfo.getLocalId());
+        if (gestureByte != null && gestureByte.length > 0){
+            Intent intent = new Intent(SettingUI.this,GestureLoginActivity.class);
+            intent.putExtra("type",isChecked ? 1 : 2);
+            startActivity(intent);
+        }else{
+            Intent intent = new Intent(SettingUI.this,CreateGestureActivity.class);
+            startActivity(intent);
+        }
     }
 
     @Override
@@ -285,11 +282,51 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
     }
 
     @Override
-    public void sendBroadcast(Bundle bundle) {
-        Intent intent = new Intent();
-        intent.setAction(Constants.ACTION_UPDATE_VERSION);
-        intent.putExtras(bundle);
-        sendBroadcast(intent);
+    public void updateVersion(String version, final String url) {
+        MyViewDialogFragment mdf = new MyViewDialogFragment();
+        mdf.setTitleAndContentText(getString(R.string.version_update), getString(R.string.version_update_1,version));
+        mdf.setSubmitNamContentText(getString(R.string.update));
+        mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
+            @Override
+            public void okBtn() {
+               downloadApp(url);
+            }
+        });
+        mdf.setCancelCallback(new MyViewDialogFragment.CancelCallback() {
+            @Override
+            public void cancelBtn() {
+                stopUpdateService();
+            }
+        });
+        mdf.show(getSupportFragmentManager(), "mdf");
+    }
+
+    private void downloadApp(String url){
+        MySharedPrefs.write(this,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_SHOW_UPDATE_VERSION,url);
+        Intent versionService = new Intent(SettingUI.this, UpdateVersionService.class);
+        startService(versionService);
+
+        try {
+            if (TextUtils.isEmpty(url)){
+                return;
+            }
+            showToast(getString(R.string.chatting_start_download));
+            int index = url.lastIndexOf("/")+1;
+            String apkName = url.substring(index,url.length());
+            DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setMimeType("application/vnd.android.package-archive");
+            request.allowScanningByMediaScanner();
+            request.setVisibleInDownloadsUi(true);
+            Utils.deleteFiles(new File(Environment.getExternalStorageDirectory() + "/download/"+apkName));
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, apkName);
+            long refernece = dm.enqueue(request);
+            SharedPreferences sPreferences = getSharedPreferences("downloadplato", 0);
+            sPreferences.edit().putLong("plato", refernece).commit();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -298,7 +335,39 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
         if (exitApp){
             exitApp();
         }else{
-            showToast(errorMsg);
+            MyToast.showCenterToast(this,errorMsg);
+        }
+    }
+
+    private void stopUpdateService(){
+        try {
+            Intent versionService = new Intent(NextApplication.mContext, UpdateVersionService.class);
+            stopService(versionService);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void checkShowCircle(){
+        String tempVersion = MySharedPrefs.readString(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_UPDATE_VERSION);
+        tempVersion = tempVersion.replace(".","").trim();
+        if (!TextUtils.isEmpty(tempVersion)){
+            String currentVersion = Utils.getVersionName(SettingUI.this).replace(".","").trim();
+            try {
+                if (Integer.parseInt(tempVersion) > Integer.parseInt(currentVersion)){
+                    String tempShowCircle = MySharedPrefs.readString(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_SHOW_VERSION);
+                    if (TextUtils.equals(tempShowCircle,Utils.getVersionName(SettingUI.this) + "-false")){
+                        versionCircle.setVisibility(View.GONE);
+                    }else{
+                        versionCircle.setVisibility(View.VISIBLE);
+                    }
+                }else{
+                    versionCircle.setVisibility(View.GONE);
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+                versionCircle.setVisibility(View.GONE);
+            }
         }
     }
 }

@@ -1,19 +1,16 @@
 package com.lingtuan.firefly.setting.presenter;
 
-import android.os.Bundle;
-import android.text.TextUtils;
-
 import com.lingtuan.firefly.NextApplication;
+import com.lingtuan.firefly.language.LanguageType;
+import com.lingtuan.firefly.language.MultiLanguageUtil;
 import com.lingtuan.firefly.listener.RequestListener;
+import com.lingtuan.firefly.network.NetRequestImpl;
 import com.lingtuan.firefly.setting.contract.SettingContract;
 import com.lingtuan.firefly.util.Constants;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MySharedPrefs;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 
 import org.json.JSONObject;
-
-import java.util.Locale;
 
 public class SettingPresenterImpl implements SettingContract.Presenter{
 
@@ -32,20 +29,11 @@ public class SettingPresenterImpl implements SettingContract.Presenter{
     @Override
     public String getUserAgreement() {
         String result = "";
-        String language = MySharedPrefs.readString(NextApplication.mContext,MySharedPrefs.FILE_APPLICATION,MySharedPrefs.KEY_LANGUAFE);
-        if (TextUtils.isEmpty(language)){
-            Locale locale = new Locale(Locale.getDefault().getLanguage());
-            if (TextUtils.equals(locale.getLanguage(),"zh")){
-                result = Constants.USE_AGREE_ZH;
-            }else{
-                result = Constants.USE_AGREE_EN;
-            }
+        int language = MultiLanguageUtil.getInstance().getLanguageType();
+        if (LanguageType.LANGUAGE_CHINESE_SIMPLIFIED == language){
+            result = Constants.USE_AGREE_ZH;
         }else{
-            if (TextUtils.equals(language,"zh")){
-                result = Constants.USE_AGREE_ZH;
-            }else{
-                result = Constants.USE_AGREE_EN;
-            }
+            result = Constants.USE_AGREE_EN;
         }
         return result;
     }
@@ -82,20 +70,9 @@ public class SettingPresenterImpl implements SettingContract.Presenter{
             public void success(JSONObject response) {
                 LoadingDialog.close();
                 String version = response.optString("version");
-                String describe = response.optString("describe");
                 String url = response.optString("url");
-                int coerce = response.optInt("coerce",0);
                 MySharedPrefs.write(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_UPDATE_VERSION,version);
-                Bundle data = new Bundle();
-                if (coerce == 0){// Don't force
-                    data.putInt("type", 0);}
-                else{
-                    data.putInt("type", 1);
-                }
-                data.putString("version", version);
-                data.putString("describe", describe);
-                data.putString("url", url);
-                mView.sendBroadcast(data);
+                mView.updateVersion(version,url);
             }
 
             @Override
