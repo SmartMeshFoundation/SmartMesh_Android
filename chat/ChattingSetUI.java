@@ -6,29 +6,22 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.lingtuan.firefly.NextApplication;
 import com.lingtuan.firefly.R;
 import com.lingtuan.firefly.base.BaseActivity;
-import com.lingtuan.firefly.custom.SwitchButton;
+import com.lingtuan.firefly.chat.contract.ChattingSetContract;
+import com.lingtuan.firefly.chat.presenter.ChattingSetPresenterImpl;
+import com.lingtuan.firefly.custom.switchbutton.SwitchButton;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
-import com.lingtuan.firefly.listener.RequestListener;
 import com.lingtuan.firefly.util.MySharedPrefs;
 import com.lingtuan.firefly.util.Utils;
-import com.lingtuan.firefly.util.netutil.NetRequestImpl;
 import com.lingtuan.firefly.vo.UserBaseVo;
-
-import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Chat page top right corner (stranger Settings page)
  */
-public class ChattingSetUI extends BaseActivity implements OnCheckedChangeListener {
+public class ChattingSetUI extends BaseActivity implements OnCheckedChangeListener ,ChattingSetContract.View{
 
 	private SwitchButton notNotifySb  = null ;
 
@@ -42,6 +35,8 @@ public class ChattingSetUI extends BaseActivity implements OnCheckedChangeListen
 	private String userName;
 	private String avatarUrl;
 	private String gender;
+
+	private ChattingSetContract.Presenter mPresenter;
 
 	@Override
 	protected void setContentView() {
@@ -60,8 +55,8 @@ public class ChattingSetUI extends BaseActivity implements OnCheckedChangeListen
 
 	@Override
 	protected void findViewById() {
-		notNotifySb = (SwitchButton)findViewById(R.id.notNotifySb);
-		notifyClock = (ImageView)findViewById(R.id.notifyClock);
+		notNotifySb = findViewById(R.id.notNotifySb);
+		notifyClock = findViewById(R.id.notifyClock);
 	}
 
 	@Override
@@ -110,87 +105,83 @@ public class ChattingSetUI extends BaseActivity implements OnCheckedChangeListen
 	@Override
 	protected void initData() {
 		setTitle(getResources().getString(R.string.chatting_set));
-		getChatNotifyStatus();
+		new ChattingSetPresenterImpl(this);
+		mPresenter.getMaskUser(uid);
 	}
 
-	/**
-	 * To get the user's screen
-	 */
-	private void getChatNotifyStatus() {
-		NetRequestImpl.getInstance().getMaskUser(uid, new RequestListener() {
-			@Override
-			public void start() {
-
-			}
-			@Override
-			public void success(JSONObject response) {
-				JSONObject result = response.optJSONObject("data");
-				if (result != null) {
-					String statusString = result.optString("status");
-					if (!TextUtils.isEmpty(statusString) && TextUtils.equals("1", statusString)) {
-						notifyClock.setVisibility(View.VISIBLE);
-						notNotifySb.setChecked(true);
-					} else {
-						notNotifySb.setChecked(false);
-					}
-					try {
-						MySharedPrefs.writeBoolean(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.IS_MASK_MSG + NextApplication.myInfo.getLocalId() + "_" + uid, TextUtils.equals("1", statusString));
-						FinalUserDataBase.getInstance().updateChatEventMask(uid, TextUtils.equals("1", statusString));
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				notNotifySb.setOnCheckedChangeListener(ChattingSetUI.this); // The listener must be written request to the state, otherwise you will be prompted extra information
-			}
-
-			@Override
-			public void error(int errorCode, String errorMsg) {
-				showToast(errorMsg);
-			}
-		});
-	}
 
 	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 		switch (buttonView.getId()) {
 		case R.id.notNotifySb:
-			setNotify(isChecked);
+			if (isChecked){
+				notNotifySb.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+			}else{
+				notNotifySb.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
+			}
+			mPresenter.maskUser(uid,isChecked);
 			break;
 		default:
 			break;
 		}
 	}
-	/*The message block*/
-	private void setNotify(final boolean isChecked){
-		NetRequestImpl.getInstance().maskUser(uid, isChecked, new RequestListener() {
-			@Override
-			public void start() {
 
-			}
-
-			@Override
-			public void success(JSONObject response) {
-				if(isChecked){
-					notifyClock.setVisibility(View.VISIBLE);
-				}else{
-					notifyClock.setVisibility(View.GONE);
-				}
-				try {
-					MySharedPrefs.writeBoolean(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.IS_MASK_MSG + NextApplication.myInfo.getLocalId() + "_" + uid, isChecked);
-					FinalUserDataBase.getInstance().updateChatEventMask(uid, isChecked);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-
-			@Override
-			public void error(int errorCode, String errorMsg) {
-				notNotifySb.setOnCheckedChangeListener(null);
-				notNotifySb.setChecked(!isChecked);
-				notNotifySb.setOnCheckedChangeListener(ChattingSetUI.this);
-				showToast(errorMsg);
-			}
-		});
+	@Override
+	public void setPresenter(ChattingSetContract.Presenter presenter) {
+		this.mPresenter = presenter;
 	}
 
+	@Override
+	public void getMaskUserSuccess(String statusString) {
+		if (!TextUtils.isEmpty(statusString) && TextUtils.equals("1", statusString)) {
+			notifyClock.setVisibility(View.VISIBLE);
+			notNotifySb.setChecked(true);
+			notNotifySb.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+		} else {
+			notNotifySb.setChecked(false);
+			notNotifySb.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
+		}
+		try {
+			MySharedPrefs.writeBoolean(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.IS_MASK_MSG + NextApplication.myInfo.getLocalId() + "_" + uid, TextUtils.equals("1", statusString));
+			FinalUserDataBase.getInstance().updateChatEventMask(uid, TextUtils.equals("1", statusString));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		notNotifySb.setOnCheckedChangeListener(ChattingSetUI.this); // The listener must be written request to the state, otherwise you will be prompted extra information
+	}
+
+	@Override
+	public void getMaskUserError(int errorCode, String errorMsg) {
+		showToast(errorMsg);
+	}
+
+	@Override
+	public void maskUserSuccess(boolean isChecked) {
+		if(isChecked){
+			notNotifySb.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+			notifyClock.setVisibility(View.VISIBLE);
+		}else{
+			notNotifySb.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
+			notifyClock.setVisibility(View.GONE);
+		}
+		try {
+			MySharedPrefs.writeBoolean(NextApplication.mContext, MySharedPrefs.FILE_USER, MySharedPrefs.IS_MASK_MSG + NextApplication.myInfo.getLocalId() + "_" + uid, isChecked);
+			FinalUserDataBase.getInstance().updateChatEventMask(uid, isChecked);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void maskUserError(int errorCode, String errorMsg,boolean isChecked) {
+		notNotifySb.setOnCheckedChangeListener(null);
+		notNotifySb.setChecked(!isChecked);
+		if (!isChecked){
+			notNotifySb.setBackColor(getResources().getColorStateList(R.color.switch_button_green));
+		}else{
+			notNotifySb.setBackColor(getResources().getColorStateList(R.color.switch_button_gray));
+		}
+		notNotifySb.setOnCheckedChangeListener(ChattingSetUI.this);
+		showToast(errorMsg);
+	}
 }
