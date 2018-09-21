@@ -129,7 +129,6 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
                 checkLogOut();
                 break;
             case R.id.versionBody:
-                MySharedPrefs.write(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_SHOW_VERSION,Utils.getVersionName(SettingUI.this) + "-false");
                 versionCircle.setVisibility(View.GONE);
                 mPresenter.checkVersion();
                 break;
@@ -283,6 +282,7 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
 
     @Override
     public void updateVersion(String version, final String url) {
+        MySharedPrefs.write(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_SHOW_VERSION,version + "-false");
         MyViewDialogFragment mdf = new MyViewDialogFragment();
         mdf.setTitleAndContentText(getString(R.string.version_update), getString(R.string.version_update_1,version));
         mdf.setSubmitNamContentText(getString(R.string.update));
@@ -350,13 +350,13 @@ public class SettingUI extends BaseActivity implements CompoundButton.OnCheckedC
 
     private void checkShowCircle(){
         String tempVersion = MySharedPrefs.readString(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_UPDATE_VERSION);
-        tempVersion = tempVersion.replace(".","").trim();
-        if (!TextUtils.isEmpty(tempVersion)){
+        String tempVersion2 = tempVersion.replace(".","").trim();
+        if (!TextUtils.isEmpty(tempVersion2)){
             String currentVersion = Utils.getVersionName(SettingUI.this).replace(".","").trim();
             try {
-                if (Integer.parseInt(tempVersion) > Integer.parseInt(currentVersion)){
+                if (Integer.parseInt(tempVersion2) > Integer.parseInt(currentVersion)){
                     String tempShowCircle = MySharedPrefs.readString(NextApplication.mContext,MySharedPrefs.FILE_USER,MySharedPrefs.KEY_SHOW_VERSION);
-                    if (TextUtils.equals(tempShowCircle,Utils.getVersionName(SettingUI.this) + "-false")){
+                    if (TextUtils.equals(tempShowCircle,tempVersion + "-false")){
                         versionCircle.setVisibility(View.GONE);
                     }else{
                         versionCircle.setVisibility(View.VISIBLE);
