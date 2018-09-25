@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include layout="@layout/app_title_layout"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <ImageView
+                android:id="@+id/walletImg"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:layout_marginTop="30dp"
+                android:src="@drawable/wallet_create_success"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="30dp"
+                android:textSize="18sp"
+                android:text="@string/wallet_mnemonic_9"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="15dp"
+                android:layout_marginRight="40dp"
+                android:layout_marginLeft="40dp"
+                android:textColor="@color/textColorHint"
+                android:textSize="12sp"
+                android:text="@string/wallet_mnemonic_10"/>
+
+            <TextView
+                android:id="@+id/walletCopy"
+                style="@style/WalletStyle"
+                android:text="@string/wallet_copy"
+                android:textColor="@color/black"
+                android:background="@drawable/selector_gradient_yellow_30"
+                />
+
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="40dp"
+                android:layout_marginTop="20dp"
+                android:textColor="@color/tab_sep_normal"
+                android:text="@string/notification_wallet_creat"
+                />
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

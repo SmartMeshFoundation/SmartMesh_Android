@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include layout="@layout/app_title_layout"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/wallet_mnemonic_white"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/wallet_mnemonic_1"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="15dp"
+        android:textColor="@color/color_ff323232"
+        />
+
+    <com.lingtuan.firefly.custom.flowtag.FlowTagLayout
+        android:id="@+id/mnemonicAddFlowTag"
+        android:layout_margin="15dp"
+        android:background="@drawable/shape_round_hintcolor_solid_5"
+        android:layout_width="match_parent"
+        android:layout_height="130dp">
+
+    </com.lingtuan.firefly.custom.flowtag.FlowTagLayout>
+
+    <TextView
+        android:id="@+id/walletCopyPrivateKey"
+        style="@style/WalletStyle"
+        android:text="@string/next"
+        android:textColor="@color/black"
+        android:background="@drawable/selector_gradient_yellow_30"
+        />
+
+</LinearLayout>
