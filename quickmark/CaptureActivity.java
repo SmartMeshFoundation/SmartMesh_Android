@@ -154,8 +154,7 @@ public final class CaptureActivity extends BaseActivity implements
 				savedResultToShow = result;
 			}
 			if (savedResultToShow != null) {
-				Message message = Message.obtain(handler,
-						R.id.decode_succeeded, savedResultToShow);
+				Message message = Message.obtain(handler, R.id.decode_succeeded, savedResultToShow);
 				handler.sendMessage(message);
 			}
 			savedResultToShow = null;
@@ -176,8 +175,7 @@ public final class CaptureActivity extends BaseActivity implements
 	}
 
 	@Override
-	public void surfaceChanged(SurfaceHolder holder, int format, int width,
-							   int height) {
+	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
 	}
 
@@ -186,43 +184,13 @@ public final class CaptureActivity extends BaseActivity implements
 		beepManager.playBeepSoundAndVibrate();
 		String msg = rawResult.getText();
 		if(!TextUtils.isEmpty(msg) && msg.startsWith("0x")){
-
 			if (WalletStorage.getInstance(NextApplication.mContext).get().size() <= 0){
 				finish();
 			}
-
 			if(msg.length() == 42){
-				if(type == 1 || type == 2){
-					Intent i = new Intent();
-					i.putExtra("address",msg);
-					setResult(RESULT_OK,i);
-					finish();
-				}else{
-					Intent intent = new Intent(this,WalletSendActivity.class);
-					intent.putExtra("address", msg);
-					startActivity(intent);
-					finish();
-				}
+				handleDecode42(msg);
 			}else if(msg.length() > 42){
-				String address = msg.substring(0,msg.indexOf("?"));
-				Uri parse = Uri.parse(msg);
-				float amount = 0f;
-				if(!TextUtils.isEmpty(parse.getQueryParameter("amount"))){
-					amount = Float.valueOf(parse.getQueryParameter("amount"));
-				}
-				if(type == 1 || type == 2){
-					Intent i = new Intent();
-					i.putExtra("address",address);
-					i.putExtra("amount", amount);
-					setResult(RESULT_OK,i);
-					finish();
-				}else {
-					Intent intent = new Intent(this,WalletSendActivity.class);
-					intent.putExtra("address", address);
-					intent.putExtra("amount", amount);
-					startActivity(intent);
-					finish();
-				}
+				handleDecodeMoreThan42(msg);
 			}else{
 				finish();
 			}
@@ -242,6 +210,42 @@ public final class CaptureActivity extends BaseActivity implements
 					finish();
 				}
 			}
+		}
+	}
+
+	private void handleDecode42(String msg){
+		if(type == 1 || type == 2){
+			Intent i = new Intent();
+			i.putExtra("address",msg);
+			setResult(RESULT_OK,i);
+			finish();
+		}else{
+			Intent intent = new Intent(this,WalletSendActivity.class);
+			intent.putExtra("address", msg);
+			startActivity(intent);
+			finish();
+		}
+	}
+
+	private void handleDecodeMoreThan42(String msg){
+		String address = msg.substring(0,msg.indexOf("?"));
+		Uri parse = Uri.parse(msg);
+		float amount = 0f;
+		if(!TextUtils.isEmpty(parse.getQueryParameter("amount"))){
+			amount = Float.valueOf(parse.getQueryParameter("amount"));
+		}
+		if(type == 1 || type == 2){
+			Intent i = new Intent();
+			i.putExtra("address",address);
+			i.putExtra("amount", amount);
+			setResult(RESULT_OK,i);
+			finish();
+		}else {
+			Intent intent = new Intent(this,WalletSendActivity.class);
+			intent.putExtra("address", address);
+			intent.putExtra("amount", amount);
+			startActivity(intent);
+			finish();
 		}
 	}
 
@@ -334,7 +338,6 @@ public final class CaptureActivity extends BaseActivity implements
 
 	}
 
-
 	protected void initData() {
 		setTitle(getString(R.string.qm_qm));
 		hasSurface = false;
@@ -342,7 +345,6 @@ public final class CaptureActivity extends BaseActivity implements
 		beepManager = new BeepManager(this);
 		ambientLightManager = new AmbientLightManager(this);
 		type = getIntent().getIntExtra("type",0);
-		
 	}
 
 	
