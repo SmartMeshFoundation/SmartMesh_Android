@@ -10,7 +10,6 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -19,10 +18,8 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.ViewStub;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.animation.Animation;
@@ -43,7 +40,6 @@ import com.lingtuan.firefly.chat.adapter.ChatAdapter;
 import com.lingtuan.firefly.contact.ContactSelectedUI;
 import com.lingtuan.firefly.contact.DiscussGroupSettingUI;
 import com.lingtuan.firefly.contact.SelectGroupMemberListUI;
-import com.lingtuan.firefly.custom.LoadMoreListView;
 import com.lingtuan.firefly.db.user.FinalUserDataBase;
 import com.lingtuan.firefly.listener.ChattingItemCallBack;
 import com.lingtuan.firefly.mesh.MeshDiscover;
@@ -72,80 +68,87 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import butterknife.BindView;
+import butterknife.OnClick;
+import butterknife.OnTextChanged;
+import butterknife.OnTouch;
+
 import static com.lingtuan.firefly.NextApplication.mContext;
 import static com.lingtuan.firefly.mesh.MeshMessageConfig.MESSAGE_TEXT;
 
 /**
  * The chat page
  */
-public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter.SceneListener, OnRefreshListener, OnGlobalLayoutListener, ChattingItemCallBack {
+public class ChattingUI extends BaseActivity implements ChatAdapter.SceneListener, OnRefreshListener, OnGlobalLayoutListener, ChattingItemCallBack {
     
-    
-    private EditText mInputContent;//A chat
-    private ImageView mAudioBtn;//Voice button
-    private ImageView mFaceBtn;//Expression button
-    private TextView mSendBtn;//Send button
-    private ImageView mPhoto;//Select the album button
-    private ImageView mMeshPhoto;//Select the album button
-    private ImageView mCamera;//Taking pictures
-    private ImageView mCard;//Business card button
-    private ImageView mFile;//File button
-    private ImageView mRedPacket;//File button
+    @BindView(R.id.chatting_bottom_input)
+    EditText mInputContent;//A chat
+    @BindView(R.id.chatting_bottom_audio)
+    ImageView mAudioBtn;//Voice button
+    @BindView(R.id.chatting_bottom_face)
+    ImageView mFaceBtn;//Expression button
+    @BindView(R.id.chatting_bottom_send)
+    TextView mSendBtn;//Send button
+    @BindView(R.id.chatting_bottom_photo)
+    ImageView mPhoto;//Select the album button
+    @BindView(R.id.chatting_bottom_mesh_photo)
+    ImageView mMeshPhoto;//Select the album button
+    @BindView(R.id.chatting_bottom_camera)
+    ImageView mCamera;//Taking pictures
+    @BindView(R.id.chatting_bottom_card)
+    ImageView mCard;//Business card button
+    @BindView(R.id.chatting_bottom_file)
+    ImageView mFile;//File button
+    @BindView(R.id.chatting_bottom_red_packet)
+    ImageView mRedPacket;//File button
+    @BindView(R.id.include_chatting_face_stub)
+    ViewStub mFaceStub;
+    View mAudioView;//Voice button
+    @BindView(R.id.include_chatting_audio_stub)
+    ViewStub mAudioStub;
+    @BindView(R.id.stubBottomBg)
+    View stubBottomBg;//At the bottom of the view control expression and voice switch not flashing
+    @BindView(R.id.app_right)
+    ImageView chattingSet;  //Stranger Settings button
+    @BindView(R.id.detail_set)
+    ImageView deleteTV;//Forward the delete button
+    @BindView(R.id.app_title_left)
+    TextView mLeftSelected;
+    //Chat unread messages
+    @BindView(R.id.unreadNum)
+    TextView unreadNum;
+    //The chat box at the bottom of the layout
+    @BindView(R.id.include_chatting_bottomlinear)
+    LinearLayout chattingBottomRela;
+    @BindView(R.id.chatting_bottom_rela)
+    RelativeLayout chattingBottomLayout;
+    @BindView(R.id.swipe_container)
+    SwipeRefreshLayout swipeLayout;//Refresh the controls
+    @BindView(R.id.refreshListView)
+    ListView listView;  //Chat list related
+
     private View mFaceView;   //Expression button
-    private ViewStub mFaceStub;
-    private View mAudioView;//Voice button
-    private ViewStub mAudioStub;
-    private View stubBottomBg;//At the bottom of the view control expression and voice switch not flashing
-    
-    private ImageView chattingSet = null;  //Stranger Settings button
-    private ImageView deleteTV;//Forward the delete button
-    private TextView mLeftSelected;
-    
     /**
      * Delete or forwarding     true is delete
      */
     private boolean isSceneDelete;
-    
-    //Chat list related
-    private ListView listView;
     private ChatAdapter mAdapter;
     private int listViewHeight = 0;
-    
-    /**
-     * Refresh the controls
-     */
-    private SwipeRefreshLayout swipeLayout;
-    
+
     //Radio chat page
     private MsgReceiverListener msgReceiverListener;
-    
-    //The user name
-    private String userName;
-    //Head portrait
-    private String avatarUrl;
-    //gender
-    private String gender;
-    //uid
-    private String uid;
-    
-    //The chat box at the bottom of the layout
-    private LinearLayout chattingBottomRela;
-    private RelativeLayout chattingBottomLayout;
-    
-    //Chat management class
-    private ChattingManager chattingManager;
-    
+    private String userName; //The user name
+    private String avatarUrl;//Head portrait
+    private String gender;//gender
+    private String uid;//uid
+    private ChattingManager chattingManager; //Chat management class
     private boolean isGroup = false;//Whether the group chat
     private boolean isDismissGroup = false;//Whether has disbanded group chat
     private boolean isKickGroup = false;//Whether be T in addition to the group chat
-    
-    //Chat unread messages
-    private TextView unreadNum;
     private int unread;
     private int unreadStartIndex;
     private int unreadOffset;
     private boolean hasHideunreadNum;
-    
     private AppNetService appNetService;
     
     @Override
@@ -163,166 +166,26 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             Utils.exitActivityAndBackAnim(this, true);
             return;
         }
-        listView = (LoadMoreListView) findViewById(R.id.refreshListView);
     }
     
     @Override
     protected void findViewById() {
-        
-        unreadNum = (TextView) findViewById(R.id.unreadNum);
-        mInputContent = (EditText) findViewById(R.id.chatting_bottom_input);
-        mAudioBtn = (ImageView) findViewById(R.id.chatting_bottom_audio);
-        mPhoto = (ImageView) findViewById(R.id.chatting_bottom_photo);
-        mMeshPhoto = (ImageView) findViewById(R.id.chatting_bottom_mesh_photo);
-        mCamera = (ImageView) findViewById(R.id.chatting_bottom_camera);
-        mCard = (ImageView) findViewById(R.id.chatting_bottom_card);
-        mFile = (ImageView) findViewById(R.id.chatting_bottom_file);
-        mRedPacket = (ImageView) findViewById(R.id.chatting_bottom_red_packet);
 
-        mFaceBtn = (ImageView) findViewById(R.id.chatting_bottom_face);
-        mSendBtn = (TextView) findViewById(R.id.chatting_bottom_send);
-        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
-        
-        mFaceStub = (ViewStub) findViewById(R.id.include_chatting_face_stub);
-        mAudioStub = (ViewStub) findViewById(R.id.include_chatting_audio_stub);
-        stubBottomBg = findViewById(R.id.stubBottomBg);
-        
-        
-        chattingSet = (ImageView) findViewById(R.id.app_right);
-        deleteTV = (ImageView) findViewById(R.id.detail_set);
-        mLeftSelected = (TextView) findViewById(R.id.app_title_left);
-        chattingBottomRela = (LinearLayout) findViewById(R.id.include_chatting_bottomlinear);
-        chattingBottomLayout = (RelativeLayout) findViewById(R.id.chatting_bottom_rela);
-        chattingBottomLayout.setVisibility(View.VISIBLE);
     }
     
     @Override
     protected void setListener() {
-        chattingSet.setOnClickListener(this);
-        deleteTV.setOnClickListener(this);
-        mAudioBtn.setOnClickListener(this);
-        mPhoto.setOnClickListener(this);
-        mMeshPhoto.setOnClickListener(this);
-        mCamera.setOnClickListener(this);
-        mCard.setOnClickListener(this);
-        mFile.setOnClickListener(this);
-        mRedPacket.setOnClickListener(this);
-        mFaceBtn.setOnClickListener(this);
-        mSendBtn.setOnClickListener(this);
-        unreadNum.setOnClickListener(this);
         swipeLayout.setOnRefreshListener(this);
         try {
             listView.getViewTreeObserver().addOnGlobalLayoutListener(this);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        mInputContent.addTextChangedListener(this);
-        
-        mInputContent.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (MotionEvent.ACTION_DOWN == event.getAction()) {
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            setViewGone();
-                        }
-                    }, 100);
-                }
-                return false;
-            }
-        });
-        listView.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getX() > Utils.dip2px(ChattingUI.this, 50)) {
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            setViewGone();
-                            Utils.hiddenKeyBoard(ChattingUI.this);
-                        }
-                    }, 100);
-                }
-                return false;
-            }
-        });
-        
-        
     }
-    
-    
-    // The Activity and netService2 connection
-    private ServiceConnection serviceConn = new ServiceConnection() {
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            // Binding service success
-            AppNetService.NetServiceBinder binder = (AppNetService.NetServiceBinder) service;
-            appNetService = binder.getService();
-            chattingManager.setAppNetService(appNetService);
-        }
-        
-        public void onServiceDisconnected(ComponentName name) {
-        }
-    };
-    
+
     @Override
     protected void initData() {
-        
-        if (uid.equals(Constants.APP_EVERYONE)) {
-            setTitle(getString(R.string.everyone));
-            chattingSet.setVisibility(View.GONE);
-            mMeshPhoto.setVisibility(View.GONE);
-        } else if (uid.equals(Constants.APP_MESH)) {
-            setTitle(getString(R.string.wifimesh));
-            chattingSet.setImageResource(R.drawable.icon_friend_info);
-            chattingSet.setVisibility(View.VISIBLE);
-            mMeshPhoto.setVisibility(View.GONE);
-            chattingBottomRela.setVisibility(View.VISIBLE);
-            mAudioBtn.setVisibility(View.GONE);
-            mCard.setVisibility(View.GONE);
-            mFile.setVisibility(View.GONE);
-            mRedPacket.setVisibility(View.GONE);
-        } else if (MeshUtils.getInatance().isConnectWifiSsid()) {
-            setTitle(userName);
-            chattingSet.setImageResource(R.drawable.icon_friend_info);
-            chattingSet.setVisibility(View.VISIBLE);
-            mMeshPhoto.setVisibility(View.GONE);
-            chattingBottomRela.setVisibility(View.VISIBLE);
-            mAudioBtn.setVisibility(View.GONE);
-            mCard.setVisibility(View.GONE);
-            mFile.setVisibility(View.GONE);
-            mRedPacket.setVisibility(View.GONE);
-        } else {
-            setTitle(userName);
-            chattingSet.setImageResource(R.drawable.icon_friend_info);
-            chattingSet.setVisibility(View.VISIBLE);
-            mMeshPhoto.setVisibility(View.GONE);
-        }
-        
-        if (uid.equals(Constants.APP_EVERYONE)) {
-            mFile.setVisibility(View.GONE);
-            mRedPacket.setVisibility(View.GONE);
-        } else if (isGroup){
-            mFile.setVisibility(View.GONE);
-            mRedPacket.setVisibility(View.VISIBLE);
-        }else if (uid.equals(Constants.APP_MESH)) {
-            chattingBottomRela.setVisibility(View.VISIBLE);
-            mAudioBtn.setVisibility(View.GONE);
-            mCard.setVisibility(View.GONE);
-            mFile.setVisibility(View.GONE);
-            mRedPacket.setVisibility(View.GONE);
-        } else if (MeshUtils.getInatance().isConnectWifiSsid()) {
-            chattingBottomRela.setVisibility(View.VISIBLE);
-            mAudioBtn.setVisibility(View.GONE);
-            mCard.setVisibility(View.GONE);
-            mFile.setVisibility(View.GONE);
-            mRedPacket.setVisibility(View.GONE);
-        } else {
-            mFile.setVisibility(View.VISIBLE);
-            mRedPacket.setVisibility(View.VISIBLE);
-        }
-        
-        swipeLayout.setColorSchemeResources(R.color.black);
+        checkVisible();
         //Remove notification bar
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
@@ -341,27 +204,27 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         filter.addAction(XmppAction.ACTION_MESSAGE_IMAGE_PERCENT);//message sending pictures percentage
         filter.addAction(Constants.ACTION_CHATTING_FRIEND_NOTE);//More pictures to send
         filter.addAction(XmppAction.ACTION_ENTER_EVERYONE_LISTENER);//More pictures to send
-        
+
         //chat
         filter.addAction(Constants.MSG_REPORT_SEND_MSG_RESULT);
         filter.addAction(Constants.MSG_REPORT_SEND_MSG_PROGRESS);
         filter.addAction(Constants.MSG_REPORT_START_RECV_FILE);
         filter.addAction(Constants.MSG_REPORT_CANCEL_SEND_FILE);
         filter.addAction(Constants.MSG_REPORT_CANCEL_RECV_FILE);
-        
+
         //mesh
         filter.addAction(MeshMessageConfig.ACTION_MESH_UPDATE_ME);
         filter.addAction(MeshMessageConfig.ACTION_MESH_UPDATE_RECEEIVE);
-        
+
         msgReceiverListener = new MsgReceiverListener();
         registerReceiver(msgReceiverListener, filter);
-        
+
         //Choose picture sends the message
         IntentFilter filterVideo = new IntentFilter(Constants.ACTION_CHATTING_PHOTO_LIST);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filterVideo);
         XmppMessageUtil.getInstance().setGroupDismiss(isDismissGroup);
         XmppMessageUtil.getInstance().setGroupKick(isKickGroup);
-        
+
         chattingManager.setGroup(isGroup);
         chattingManager.setSend(!(isDismissGroup || isKickGroup));
         chattingManager.setmInputContent(mInputContent);
@@ -380,15 +243,12 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         if (unread > 0) {
             showunreadNum();
         }
-        
+
         for (ChatMsg msg : mList) {
-            if (msg.getSend() == 2)//Is sending images, voice, video because of the need to upload, is if it is sent every time into the state, send again
-            {
-                if (msg.getType() == 1)//The picture
-                {
+            if (msg.getSend() == 2){//Is sending images, voice, video because of the need to upload, is if it is sent every time into the state, send again
+                if (msg.getType() == 1){//The picture
                     XmppMessageUtil.getInstance().reSend(3, msg);
-                } else if (msg.getType() == 2)//voice
-                {
+                } else if (msg.getType() == 2) {//voice
                     XmppMessageUtil.getInstance().reSend(11, msg);
                 }
             }
@@ -407,14 +267,14 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         chattingManager.setUserInfo(userName, avatarUrl, uid, mAdapter, listView);
         listView.setAdapter(mAdapter);
         listView.setSelection(mList.size());
-        
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 finishTempActivity();
             }
         }, 100);
-        
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -423,8 +283,128 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                 }
             }
         }, 500);
-        
+
     }
+
+    private void checkVisible(){
+        chattingBottomLayout.setVisibility(View.VISIBLE);
+        mMeshPhoto.setVisibility(View.GONE);
+        if (uid.equals(Constants.APP_EVERYONE)) {
+            setTitle(getString(R.string.everyone));
+            chattingSet.setVisibility(View.GONE);
+            mFile.setVisibility(View.GONE);
+            mRedPacket.setVisibility(View.GONE);
+        } else if (uid.equals(Constants.APP_MESH)) {
+            setTitle(getString(R.string.wifimesh));
+            chattingSet.setImageResource(R.drawable.icon_friend_info);
+            chattingSet.setVisibility(View.VISIBLE);
+            chattingBottomRela.setVisibility(View.VISIBLE);
+            mAudioBtn.setVisibility(View.GONE);
+            mCard.setVisibility(View.GONE);
+            mFile.setVisibility(View.GONE);
+            mRedPacket.setVisibility(View.GONE);
+            chattingBottomRela.setVisibility(View.VISIBLE);
+        } else if (MeshUtils.getInatance().isConnectWifiSsid()) {
+            setTitle(userName);
+            chattingSet.setImageResource(R.drawable.icon_friend_info);
+            chattingSet.setVisibility(View.VISIBLE);
+            chattingBottomRela.setVisibility(View.VISIBLE);
+            mAudioBtn.setVisibility(View.GONE);
+            mCard.setVisibility(View.GONE);
+            mFile.setVisibility(View.GONE);
+            mRedPacket.setVisibility(View.GONE);
+        } else {
+            if (isGroup){
+                mFile.setVisibility(View.GONE);
+            }else{
+                mFile.setVisibility(View.VISIBLE);
+            }
+            mRedPacket.setVisibility(View.GONE);
+            setTitle(userName);
+            chattingSet.setImageResource(R.drawable.icon_friend_info);
+            chattingSet.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @OnTextChanged(value = {R.id.chatting_bottom_input},callback = OnTextChanged.Callback.AFTER_TEXT_CHANGED)
+    void afterTextChanged(Editable s) {
+        if (TextUtils.isEmpty(s) || TextUtils.isEmpty(s.toString().trim())) {
+            mSendBtn.setEnabled(false);
+        } else {
+            mSendBtn.setEnabled(true);
+        }
+    }
+
+    @OnTextChanged(value = {R.id.chatting_bottom_input},callback = OnTextChanged.Callback.TEXT_CHANGED)
+    void onTextChanged(CharSequence s, int start, int before, int count) {
+        if (isGroup && count == 1 && s != null) {//Is chatting to enter
+            try {
+                if (s.toString().substring(start, start + 1).equals("@")) {//输入@
+                    if (AtGroupParser.getInstance() != null) {
+                        String ids = AtGroupParser.getInstance().parser(s);
+                        chattingManager.updateAtGroupIds(ids);
+                    }
+                    chattingManager.setGroupAtSelectIndex(start + 1);
+                    Intent intent = new Intent(this, SelectGroupMemberListUI.class);
+                    intent.putExtra("cid", Integer.parseInt(uid.replace("group-", "")));
+                    startActivityForResult(intent, Constants.REQUEST_SELECT_GROUP_MEMBER);
+                    Utils.openNewActivityAnim(this, false);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if (before != 0 && AtGroupParser.getInstance() != null) {
+            //Delete the word Data have been generated and @ function
+            Editable mEditable = mInputContent.getText();
+            if (before == 1) {//Delete one character at a time
+                int selectIndex = mInputContent.getSelectionStart();
+                if (selectIndex == 0) {
+                    return;
+                }
+                String strSub = mEditable.toString().substring(0, selectIndex);
+                for (int i = 0; i < AtGroupParser.getInstance().nicknames.length; i++) {
+                    if (strSub.endsWith(AtGroupParser.getInstance().nicknames[i].trim())) {
+                        mEditable.delete(selectIndex - AtGroupParser.getInstance().nicknames[i].trim().length() - 1, selectIndex);
+                        break;
+                    }
+                }
+            }
+            String ids = AtGroupParser.getInstance().parser(mEditable.toString());
+            chattingManager.updateAtGroupIds(ids);
+        }
+    }
+
+    @OnTouch(R.id.chatting_bottom_input)
+    boolean onTouchInput(View v, MotionEvent event) {
+        if (MotionEvent.ACTION_DOWN == event.getAction()) {
+            setViewGone();
+        }
+        return false;
+    }
+
+    @OnTouch(R.id.refreshListView)
+    boolean onTouchListView(View v, MotionEvent event) {
+        if (event.getX() > Utils.dip2px(ChattingUI.this, 50)) {
+            setViewGone();
+            Utils.hiddenKeyBoard(ChattingUI.this);
+        }
+        return false;
+    }
+
+
+    // The Activity and netService2 connection
+    private ServiceConnection serviceConn = new ServiceConnection() {
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            // Binding service success
+            AppNetService.NetServiceBinder binder = (AppNetService.NetServiceBinder) service;
+            appNetService = binder.getService();
+            chattingManager.setAppNetService(appNetService);
+        }
+        
+        public void onServiceDisconnected(ComponentName name) {
+        }
+    };
+
     
     @Override
     protected void onResume() {
@@ -497,12 +477,11 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
             unregisterReceiver(msgReceiverListener);
             LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
             mAdapter.destory();
-            
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                listView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-            } else {
+
+            if (listView != null){
                 listView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -631,7 +610,9 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         unreadNum.startAnimation(transanimOut);
     }
     
-    @Override
+    @OnClick({R.id.unreadNum,R.id.app_right,R.id.detail_set,R.id.chatting_bottom_send,R.id.chatting_bottom_audio,R.id.chatting_bottom_photo,
+            R.id.chatting_bottom_mesh_photo,R.id.chatting_bottom_camera,R.id.chatting_bottom_card,R.id.chatting_bottom_file,R.id.chatting_bottom_face,
+            R.id.chatting_bottom_red_packet})
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
@@ -759,7 +740,7 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         int titleIds = isSceneDelete ? R.string.chatting_selected_delete : R.string.chatting_selected_relay;
         if (isSceneDelete) {//delete
             MyViewDialogFragment mdf = new MyViewDialogFragment();
-            mdf.setTitleAndContentText(getString(titleIds), null);
+            mdf.setTitleAndContentText(getString(R.string.notif), getString(titleIds));
             mdf.setOkCallback(new MyViewDialogFragment.OkCallback() {
                 
                 @Override
@@ -780,10 +761,9 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                         if (msg == null) {
                             return;
                         }
-                        if (msg != null) {
-                            msg.setUsername(userName);
-                            msg.setUserImage(avatarUrl);
-                        }
+                        msg.setRealname(userName);
+                        msg.setUsername(userName);
+                        msg.setUserImage(avatarUrl);
                         FinalUserDataBase.getInstance().updateChatEventContent(uid, msg);
                         MyToast.showToast(ChattingUI.this, getString(R.string.delete_success));
                     } else {//Forwarding
@@ -881,147 +861,71 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                     bundle.putString(MeshMessageConfig.MESH_MESSAGE_BUNDLE_MSG, content);
                     Utils.intentService(mContext, MeshService.class, MeshMessageConfig.ACTION_MESH_SEND_CHECK, MeshMessageConfig.MESH_MESSAGE_BUNDLE, bundle);
                 } else {
-                    boolean foundPeople = false;
-                    if (appNetService != null && appNetService.getwifiPeopleList() != null) {
-                        for (WifiPeopleVO vo : appNetService.getwifiPeopleList())//All users need to traverse, find out the corresponding touid users
-                        {
-                            if (uid.equals(vo.getLocalId())) {
-                                foundPeople = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (foundPeople)//With no net with no net send messages
-                    {
-                        ChatMsg msg = new ChatMsg();
-                        msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
-                        msg.setChatId(uid);
-                        msg.setType(0);
-                        msg.setSend(1);
-                        msg.setMsgTime(System.currentTimeMillis() / 1000);
-                        msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
-                        msg.setContent(content);
-                        msg.setOffLineMsg(true);
-                        msg.setMessageId(UUID.randomUUID().toString());
-                        if (appNetService != null) {
-                            successed = appNetService.handleSendString(content, false, uid, msg.getMessageId());
-                        }
-                        if (!successed) {
-                            msg.setSend(0);
-                        }
-                        File recvFile = new File(SDCardCtrl.getOfflinePath() + File.separator + uid + ".jpg");
-                        String imageAvatar = "file://" + recvFile.getAbsolutePath();
-                        FinalUserDataBase.getInstance().saveChatMsg(msg, uid, isGroup ? "offline" : userName, imageAvatar);
-                        msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
-                        mAdapter.addChatMsg(msg, true);
-                    } else {
-                        ChatMsg msg = XmppMessageUtil.getInstance().sendText(uid, content, isAtAll, atIds, userName, avatarUrl, isGroup, !(isDismissGroup || isKickGroup));
-                        mAdapter.addChatMsg(msg, true);
-                    }
+                    sendOfflineText(content,isAtAll,atIds);
                 }
             } else {
-                boolean foundPeople = false;
-                if (appNetService != null && appNetService.getwifiPeopleList() != null) {
-                    for (WifiPeopleVO vo : appNetService.getwifiPeopleList())//All users need to traverse, find out the corresponding touid users
-                    {
-                        if (uid.equals(vo.getLocalId())) {
-                            foundPeople = true;
-                            break;
-                        }
-                    }
-                }
-                if (foundPeople)//With no net with no net send messages
-                {
-                    ChatMsg msg = new ChatMsg();
-                    msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
-                    msg.setChatId(uid);
-                    msg.setType(0);
-                    msg.setSend(1);
-                    msg.setMsgTime(System.currentTimeMillis() / 1000);
-                    msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
-                    msg.setContent(content);
-                    msg.setOffLineMsg(true);
-                    msg.setMessageId(UUID.randomUUID().toString());
-                    if (appNetService != null) {
-                        successed = appNetService.handleSendString(content, false, uid, msg.getMessageId());
-                    }
-                    if (!successed) {
-                        msg.setSend(0);
-                    }
-                    File recvFile = new File(SDCardCtrl.getOfflinePath() + File.separator + uid + ".jpg");
-                    String imageAvatar = "file://" + recvFile.getAbsolutePath();
-                    FinalUserDataBase.getInstance().saveChatMsg(msg, uid, isGroup ? "offline" : userName, imageAvatar);
-                    msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
-                    mAdapter.addChatMsg(msg, true);
-                } else {
-                    ChatMsg msg = XmppMessageUtil.getInstance().sendText(uid, content, isAtAll, atIds, userName, avatarUrl, isGroup, !(isDismissGroup || isKickGroup));
-                    mAdapter.addChatMsg(msg, true);
-                }
+                sendOfflineText(content,isAtAll,atIds);
             }
         }
         listView.setSelection(mAdapter.getCount() - 1);
     }
-    
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-    }
-    
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
-        if (isGroup && count == 1 && s != null) {//Is chatting to enter
-            try {
-                if (s.toString().substring(start, start + 1).equals("@")) {//输入@
-                    if (AtGroupParser.getInstance() != null) {
-                        String ids = AtGroupParser.getInstance().parser(s);
-                        chattingManager.updateAtGroupIds(ids);
-                    }
-                    chattingManager.setGroupAtSelectIndex(start + 1);
-                    Intent intent = new Intent(this, SelectGroupMemberListUI.class);
-                    intent.putExtra("cid", Integer.parseInt(uid.replace("group-", "")));
-                    startActivityForResult(intent, Constants.REQUEST_SELECT_GROUP_MEMBER);
-                    Utils.openNewActivityAnim(this, false);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else if (before != 0 && AtGroupParser.getInstance() != null) {
-            //Delete the word Data have been generated and @ function
-            Editable mEditable = mInputContent.getText();
-            if (before == 1) {//Delete one character at a time
-                int selectIndex = mInputContent.getSelectionStart();
-                if (selectIndex == 0) {
-                    return;
-                }
-                String strSub = mEditable.toString().substring(0, selectIndex);
-                for (int i = 0; i < AtGroupParser.getInstance().nicknames.length; i++) {
-                    if (strSub.endsWith(AtGroupParser.getInstance().nicknames[i].trim())) {
-                        mEditable.delete(selectIndex - AtGroupParser.getInstance().nicknames[i].trim().length() - 1, selectIndex);
-                        break;
-                    }
+
+    /**
+     * send offlien text method
+     * @param content send content
+     * @param atIds ad id
+     * @param isAtAll is @ all
+     * */
+    private void sendOfflineText(String content,boolean isAtAll,String atIds){
+        boolean foundPeople = false;
+        boolean successed = true;
+        if (appNetService != null && appNetService.getwifiPeopleList() != null) {
+            for (WifiPeopleVO vo : appNetService.getwifiPeopleList())//All users need to traverse, find out the corresponding touid users
+            {
+                if (uid.equals(vo.getLocalId())) {
+                    foundPeople = true;
+                    break;
                 }
             }
-            String ids = AtGroupParser.getInstance().parser(mEditable.toString());
-            chattingManager.updateAtGroupIds(ids);
         }
-    }
-    
-    @Override
-    public void afterTextChanged(Editable s) {
-        if (TextUtils.isEmpty(s) || TextUtils.isEmpty(s.toString().trim())) {
-            mSendBtn.setEnabled(false);
+
+        if (foundPeople)//With no net with no net send messages
+        {
+            ChatMsg msg = new ChatMsg();
+            msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+            msg.setChatId(uid);
+            msg.setType(0);
+            msg.setSend(1);
+            msg.setMsgTime(System.currentTimeMillis() / 1000);
+            msg.setShowTime(FinalUserDataBase.getInstance().isOffLineShowTime(uid, msg.getMsgTime()));
+            msg.setContent(content);
+            msg.setOffLineMsg(true);
+            msg.setMessageId(UUID.randomUUID().toString());
+            if (appNetService != null) {
+                successed = appNetService.handleSendString(content, false, uid, msg.getMessageId());
+            }
+            if (!successed) {
+                msg.setSend(0);
+            }
+            File recvFile = new File(SDCardCtrl.getOfflinePath() + File.separator + uid + ".jpg");
+            String imageAvatar = "file://" + recvFile.getAbsolutePath();
+            FinalUserDataBase.getInstance().saveChatMsg(msg, uid, isGroup ? "offline" : userName, imageAvatar);
+            msg.parseUserBaseVo(NextApplication.myInfo.getUserBaseVo());
+            mAdapter.addChatMsg(msg, true);
         } else {
-            mSendBtn.setEnabled(true);
+            ChatMsg msg = XmppMessageUtil.getInstance().sendText(uid, content, isAtAll, atIds, userName, avatarUrl, isGroup, !(isDismissGroup || isKickGroup));
+            mAdapter.addChatMsg(msg, true);
         }
     }
-    
-    
+
     @Override
     public void onRefresh() {
-        
         new Handler().postDelayed(new Runnable() {
-            
             @Override
             public void run() {
+                if (mAdapter == null){
+                    return;
+                }
                 List<ChatMsg> mTempList = FinalUserDataBase.getInstance().getChatMsgListByChatId(uid, mAdapter.getCount(), 20);
                 for (int i = 0; i < mTempList.size(); i++) {
                     ChatMsg vo = mTempList.get(i);
@@ -1043,10 +947,16 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                     }
                 }
                 final int position = mTempList.size();
-                mTempList.addAll(mAdapter.getList());
-                mAdapter.updateList(mTempList);
-                swipeLayout.setRefreshing(false);
-                listView.setSelection(position);
+                if (mAdapter != null){
+                    mTempList.addAll(mAdapter.getList());
+                    mAdapter.updateList(mTempList);
+                }
+                if (swipeLayout != null){
+                    swipeLayout.setRefreshing(false);
+                }
+                if (listView != null){
+                    listView.setSelection(position);
+                }
             }
         }, 1000);
     }
@@ -1068,28 +978,92 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent != null && XmppAction.ACTION_MESSAGE_LISTENER.equals(intent.getAction())) {
-                Bundle bundle = intent.getBundleExtra(XmppAction.ACTION_MESSAGE_LISTENER);
-                
-                ChatMsg chatMsg = (ChatMsg) bundle.getSerializable(XmppAction.ACTION_MESSAGE_LISTENER);
-                
-                if (chatMsg != null && uid.equals(chatMsg.getChatId())) {//I chat with the friends
-                    
-                    if (mAdapter != null) {
-                        int count = mAdapter.getList().size();
-                        if (count > 0 && TextUtils.equals(mAdapter.getList().get(count - 1).getMessageId(), chatMsg.getMessageId())) {
-                            return;
-                        }
-                    }
-                    
+                showNewMessage(intent);
+            } else if (intent != null && XmppAction.ACTION_OFFLINE_MESSAGE_LIST_LISTENER.equals(intent.getAction())) {
+                offlineMessageList(intent);
+            } else if (intent != null && XmppAction.ACTION_MESSAGE_UPDATE_LISTENER.equals(intent.getAction())) {
+                updateMessage(intent);
+            } else if (intent != null && XmppAction.ACTION_MESSAGE_GROUP_KICK_LISTENER.equals(intent.getAction())) {
+                groupKickMethod(intent);
+            } else if (intent != null && XmppAction.ACTION_MESSAGE_IMAGE_PERCENT.equals(intent.getAction())) {
+                showImagePercent(intent);
+            } else if (intent != null && Constants.ACTION_CHATTING_PHOTO_LIST.equals(intent.getAction())) {//Choose image correction
+                chattingManager.onActivityResult(ChattingManager.ACTION_PHOTO_MORE_RESULT, Activity.RESULT_OK, intent);
+            } else if (intent != null && Constants.ACTION_CHATTING_FRIEND_NOTE.equals(intent.getAction())) {    //Choose image correction
+                updateFriendNote(intent);
+            } else if (intent != null && XmppAction.ACTION_ENTER_EVERYONE_LISTENER.equals(intent.getAction())){//enter everyone
+                enterEveryoneListener();
+            } else if (intent != null && Constants.MSG_REPORT_SEND_MSG_RESULT.equals(intent.getAction())) { /*The following five without a net*/
+                sendMsgResult(intent);
+            } else if (intent != null && Constants.MSG_REPORT_SEND_MSG_PROGRESS.equals(intent.getAction())) {
+                sendMsgProgress(intent);
+            } else if (intent != null && Constants.MSG_REPORT_START_RECV_FILE.equals(intent.getAction())) {//Begin to receive files
+                msgReportFileMethod(intent,5);
+            } else if (intent != null && Constants.MSG_REPORT_CANCEL_SEND_FILE.equals(intent.getAction())) {//Cancel sending files
+                msgReportFileMethod(intent,3);
+            } else if (intent != null && Constants.MSG_REPORT_CANCEL_RECV_FILE.equals(intent.getAction())) {//Cancel the receiving
+                msgReportFileMethod(intent,8);
+            } else if (intent != null && MeshMessageConfig.ACTION_MESH_UPDATE_ME.equals(intent.getAction())) {//update
+                meshUpdateMeReceiver(intent);
+            } else if (intent != null && MeshMessageConfig.ACTION_MESH_UPDATE_RECEEIVE.equals(intent.getAction())) {
+                meshUpdateReceiver(intent);
+            }
+        }
+    }
+
+    /**
+     * show new message
+     * */
+    private void showNewMessage(Intent intent){
+        Bundle bundle = intent.getBundleExtra(XmppAction.ACTION_MESSAGE_LISTENER);
+        ChatMsg chatMsg = (ChatMsg) bundle.getSerializable(XmppAction.ACTION_MESSAGE_LISTENER);
+        if (chatMsg != null && uid.equals(chatMsg.getChatId())) {//I chat with the friends
+            if (mAdapter != null) {
+                int count = mAdapter.getList().size();
+                if (count > 0 && TextUtils.equals(mAdapter.getList().get(count - 1).getMessageId(), chatMsg.getMessageId())) {
+                    return;
+                }
+            }
+
+            if (chatMsg.getType() == 1010 && chatMsg.getUnread() == 1) {
+                chatMsg.setUnread(0);
+                FinalUserDataBase.getInstance().updateChatMsgUrneadBymessageId(chatMsg.getMessageId());
+            }
+
+            if (chatMsg.getChatId().startsWith("group-") && chatMsg.getType() == 17) {
+                setTitle(chatMsg.getGroupName());
+            }
+
+            //With a nickname
+            if (!TextUtils.isEmpty(chatMsg.getUserId())) {
+                chatMsg.setRealname(chatMsg.getUsername());
+                String note = MySharedPrefs.readString(ChattingUI.this, MySharedPrefs.KEY_FRIEND_NOTE + NextApplication.myInfo.getLocalId(), chatMsg.getUserId());
+                if (!TextUtils.isEmpty(note)) {
+                    chatMsg.setUsername(note);
+                }
+            }
+            if (mAdapter != null) {
+                mAdapter.addChatMsg(chatMsg, true);
+                if (listView.getLastVisiblePosition() >= mAdapter.getCount() - 2){//Only in the bottom, to the new message to scroll to the bottom
+                    listView.setSelection(mAdapter.getCount());
+                }
+            }
+        }
+    }
+
+    /**
+     * offline message list
+     * */
+    private void offlineMessageList(Intent intent){
+        List<ChatMsg> list = (List<ChatMsg>) intent.getSerializableExtra("array");
+        if (list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                ChatMsg chatMsg = list.get(i);
+                if (chatMsg != null && uid.equals(chatMsg.getChatId())) {   //I chat with the friends
                     if (chatMsg.getType() == 1010 && chatMsg.getUnread() == 1) {
                         chatMsg.setUnread(0);
                         FinalUserDataBase.getInstance().updateChatMsgUrneadBymessageId(chatMsg.getMessageId());
                     }
-                    
-                    if (chatMsg.getChatId().startsWith("group-") && chatMsg.getType() == 17) {
-                        setTitle(chatMsg.getGroupName());
-                    }
-                    
                     //With a nickname
                     if (!TextUtils.isEmpty(chatMsg.getUserId())) {
                         chatMsg.setRealname(chatMsg.getUsername());
@@ -1099,244 +1073,245 @@ public class ChattingUI extends BaseActivity implements TextWatcher, ChatAdapter
                         }
                     }
                     if (mAdapter != null) {
-                        mAdapter.addChatMsg(chatMsg, true);
-                        if (listView.getLastVisiblePosition() >= mAdapter.getCount() - 2)//Only in the bottom, to the new message to scroll to the bottom
-                        {
-                            listView.setSelection(mAdapter.getCount());
-                        }
-                    }
-                }
-            } else if (intent != null && XmppAction.ACTION_OFFLINE_MESSAGE_LIST_LISTENER.equals(intent.getAction())) {
-                List<ChatMsg> list = (List<ChatMsg>) intent.getSerializableExtra("array");
-                if (list != null) {
-                    for (int i = 0; i < list.size(); i++) {
-                        ChatMsg chatMsg = list.get(i);
-                        
-                        if (chatMsg != null && uid.equals(chatMsg.getChatId())) {   //I chat with the friends
-                            if (chatMsg.getType() == 1010 && chatMsg.getUnread() == 1) {
-                                chatMsg.setUnread(0);
-                                FinalUserDataBase.getInstance().updateChatMsgUrneadBymessageId(chatMsg.getMessageId());
-                            }
-                            //With a nickname
-                            if (!TextUtils.isEmpty(chatMsg.getUserId())) {
-                                chatMsg.setRealname(chatMsg.getUsername());
-                                String note = MySharedPrefs.readString(ChattingUI.this, MySharedPrefs.KEY_FRIEND_NOTE + NextApplication.myInfo.getLocalId(), chatMsg.getUserId());
-                                if (!TextUtils.isEmpty(note)) {
-                                    chatMsg.setUsername(note);
-                                }
-                            }
-                            if (mAdapter != null) {
-                                mAdapter.addChatMsg(chatMsg, i == list.size() - 1);
-                                if (i == list.size() - 1) {
-                                    if (listView.getLastVisiblePosition() >= mAdapter.getCount() - 1 - list.size())//Only in the bottom, to the new message to scroll to the bottom
-                                    {
-                                        listView.setSelection(mAdapter.getCount());
-                                    }
-                                }
-                            }
-                        }
-                        
-                    }
-                }
-            } else if (intent != null && XmppAction.ACTION_MESSAGE_UPDATE_LISTENER.equals(intent.getAction())) {
-                Bundle bundle = intent.getBundleExtra(XmppAction.ACTION_MESSAGE_UPDATE_LISTENER);
-                ChatMsg chatMsg = (ChatMsg) bundle.getSerializable(XmppAction.ACTION_MESSAGE_UPDATE_LISTENER);
-                if (chatMsg != null && uid.equals(chatMsg.getChatId())) {//I chat with the friends
-                    mAdapter.updateChatMsg(chatMsg);
-                }
-            } else if (intent != null && XmppAction.ACTION_MESSAGE_GROUP_KICK_LISTENER.equals(intent.getAction())) {
-                //T or dissolution of update group chat Someone quit the group chat
-                Bundle bundle = intent.getBundleExtra(XmppAction.ACTION_MESSAGE_GROUP_KICK_LISTENER);
-                if (uid.equals(bundle.getString("uid"))) {//Whether the current chat object
-                    isDismissGroup = bundle.getBoolean("dismissgroup");
-                    isKickGroup = bundle.getBoolean("kickgroup");
-                    mAdapter.setKickDismiss(isKickGroup, isDismissGroup);
-                    chattingManager.setSend(!(isDismissGroup || isKickGroup));
-                    XmppMessageUtil.getInstance().setGroupDismiss(isDismissGroup);
-                    XmppMessageUtil.getInstance().setGroupKick(isKickGroup);
-                    if (isDismissGroup || isKickGroup) {
-                        showToast(isDismissGroup ? getString(R.string.discuss_group_dismiss) : getString(R.string.discuss_group_kick));
-                        return;
-                    }
-                }
-            } else if (intent != null && XmppAction.ACTION_MESSAGE_IMAGE_PERCENT.equals(intent.getAction())) {
-                // Image upload percentage
-                String messageId = intent.getExtras().getString("time");
-                int percent = intent.getExtras().getInt("percent");
-                if (percent > 100) {
-                    percent = 100;
-                }
-                View linear = listView.findViewWithTag(messageId);
-                if (linear == null) {
-                    return;
-                }
-                TextView percentTv = (TextView) linear.findViewById(R.id.item_chatting_image_upload_percent);
-                percentTv.setText(percent +"%");
-                if (percent == 100) {
-                } else {
-                    linear.setVisibility(View.VISIBLE);
-                }
-            } else if (intent != null && Constants.ACTION_CHATTING_PHOTO_LIST.equals(intent.getAction())) {//Choose image correction
-                
-                chattingManager.onActivityResult(ChattingManager.ACTION_PHOTO_MORE_RESULT, Activity.RESULT_OK, intent);
-                
-            } else if (intent != null && Constants.ACTION_CHATTING_FRIEND_NOTE.equals(intent.getAction())) {    //Choose image correction
-                String showname = intent.getExtras().getString("showname");
-                String showuid = intent.getExtras().getString("showuid");
-                if (!isGroup && !TextUtils.equals(Constants.APP_EVERYONE, uid)) {
-                    //With a nickname
-                    if (showuid.equals(uid)) {
-                        setTitle(showname);
-                    }
-                } else {
-                    for (int i = 0; i < mAdapter.getList().size(); i++) {
-                        if (TextUtils.equals(showuid, mAdapter.getList().get(i).getUserId())) {
-                            mAdapter.getList().get(i).setUsername(showname);
-                        }
-                    }
-                    mAdapter.modifyNickName(showuid, showname);
-                    mAdapter.notifyDataSetChanged();
-                }
-            } else if (intent != null && XmppAction.ACTION_ENTER_EVERYONE_LISTENER.equals(intent.getAction()))//进入evertone
-            {
-                ChatMsg chatMsg = new ChatMsg();
-                if (uid.equals(Constants.APP_EVERYONE)) {
-                    chatMsg.setType(12);
-                    chatMsg.setContent(getString(R.string.chat_welcome_to_everyone));
-                    mAdapter.addChatMsg(chatMsg, true);
-                    if (listView.getLastVisiblePosition() >= mAdapter.getCount() - 2)//Only in the bottom, to the new message to scroll to the bottom
-                    {
-                        listView.setSelection(mAdapter.getCount());
-                    }
-                }
-            }
-
-            /*The following five without a net*/
-            else if (intent != null && intent.getAction().equals(Constants.MSG_REPORT_SEND_MSG_RESULT)) {
-                boolean result = intent.getExtras().getBoolean("result");
-                int state = intent.getExtras().getInt("state");
-                String msgId = intent.getExtras().getString("msgid");
-                mAdapter.updateOfflineSendStatus(result, state, msgId);
-            } else if (intent != null && intent.getAction().equals(Constants.MSG_REPORT_SEND_MSG_PROGRESS)) {
-                long currentLength = intent.getExtras().getLong("currentLength");
-                String msgId = intent.getExtras().getString("msgid");
-                for (int m = mAdapter.getCount() - 1; m > -1; m--) {
-                    if (mAdapter.getList().get(m).getMessageId().equals(msgId)) {
-                        mAdapter.getList().get(m).setNewprogress(currentLength);
-                        break;
-                    }
-                }
-                int first = listView.getFirstVisiblePosition();
-                int last = listView.getLastVisiblePosition();
-                
-                for (int m = first; m <= last; m++) {
-                    View convertView = listView.getChildAt(m - first);
-                    if (convertView == null || m >= mAdapter.getCount()) {
-                        continue;
-                    }
-                    if (mAdapter.getItem(m).getType() == 1009 && mAdapter.getItem(m).getMessageId().equals(msgId)) {
-                        ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.file_send_progress);
-                        int percent = (int) ((mAdapter.getItem(m).getNewprogress() * 100) / (Long.parseLong(mAdapter.getItem(m).getNumber())) * 1.0f);
-                        progressBar.setProgress(percent);
-                        break;
-                    }
-                }
-            } else if (intent != null && intent.getAction().equals(Constants.MSG_REPORT_START_RECV_FILE))//Begin to receive files
-            {
-                int commend = intent.getExtras().getInt("commend");
-                String msgId = intent.getExtras().getString("msgid");
-                if (appNetService != null) {
-                    appNetService.handleSendFileCommend(uid, msgId, commend);
-                }
-                mAdapter.updateOfflineSendStatus(true, 5, msgId);
-                FinalUserDataBase.getInstance().updateOfflineChatMsgState(msgId, 5, 1);
-            } else if (intent.getAction().equals(Constants.MSG_REPORT_CANCEL_SEND_FILE))//Cancel sending files
-            {
-                int commend = intent.getExtras().getInt("commend");
-                String msgId = intent.getExtras().getString("msgid");
-                if (appNetService != null) {
-                    appNetService.handleSendFileCommend(uid, msgId, commend);
-                }
-                mAdapter.updateOfflineSendStatus(true, 3, msgId);
-                FinalUserDataBase.getInstance().updateOfflineChatMsgState(msgId, 3, 1);
-                
-            } else if (intent != null && intent.getAction().equals(Constants.MSG_REPORT_CANCEL_RECV_FILE))//Cancel the receiving
-            {
-                int commend = intent.getExtras().getInt("commend");
-                String msgId = intent.getExtras().getString("msgid");
-                if (appNetService != null) {
-                    appNetService.handleSendFileCommend(uid, msgId, commend);
-                }
-                mAdapter.updateOfflineSendStatus(true, 8, msgId);
-                FinalUserDataBase.getInstance().updateOfflineChatMsgState(msgId, 8, 1);
-            } else if (intent != null && MeshMessageConfig.ACTION_MESH_UPDATE_ME.equals(intent.getAction())) {//update
-                try {
-                    Bundle bundle = intent.getBundleExtra(MeshMessageConfig.ACTION_MESH_UPDATE_ME);
-                    final ChatMsg chatMsg = (ChatMsg) bundle.getSerializable(MeshMessageConfig.ACTION_MESH_UPDATE_ME);
-                    chatMsg.setChatId(uid);
-                    if (null != chatMsg) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mAdapter.addChatMsg(chatMsg, true);
+                        mAdapter.addChatMsg(chatMsg, i == list.size() - 1);
+                        if (i == list.size() - 1) {
+                            if (listView.getLastVisiblePosition() >= mAdapter.getCount() - 1 - list.size()) {//Only in the bottom, to the new message to scroll to the bottom
                                 listView.setSelection(mAdapter.getCount());
                             }
-                        });
-                    }
-                } catch (Exception e) {
-                }
-            } else if (intent != null && MeshMessageConfig.ACTION_MESH_UPDATE_RECEEIVE.equals(intent.getAction())) {
-                try {
-                    Bundle bundle = intent.getBundleExtra(MeshMessageConfig.ACTION_MESH_UPDATE_RECEEIVE);
-                    final MessageVo msg = (MessageVo) bundle.getSerializable(MeshMessageConfig.ACTION_MESH_UPDATE_RECEEIVE);
-                    if (null != msg) {
-                        try {
-                            
-                            if ((uid.equals(Constants.APP_MESH) && MeshMessageConfig.MESH_CHAT_GROUP == msg.getChatType()) || (!uid.equals(Constants.APP_MESH) && MeshMessageConfig.MESH_CHAT_SINGLE == msg.getChatType() && uid.equals(msg.getLocalId()))) {
-                                final ChatMsg chatMsg = new ChatMsg();
-                                if (MESSAGE_TEXT == msg.getMessageType()) {
-                                    chatMsg.setType(0);
-                                } else if (MeshMessageConfig.MESSAGE_IMAGE == msg.getMessageType()) {
-                                    chatMsg.setType(1);
-                                    chatMsg.setCover(BitmapUtils.bitmapToString(msg.getData()));
-                                    chatMsg.setLocalUrl(msg.getImageLocalUrl());
-                                }
-                                chatMsg.setContent(msg.getData());
-                                chatMsg.setIsAtGroupAll(false);
-                                chatMsg.setUserId(msg.getLocalId());
-                                chatMsg.setRealname(msg.getFrom());
-                                chatMsg.setUsername(msg.getFrom());
-                                chatMsg.setMsgTime(System.currentTimeMillis() / 1000);
-                                chatMsg.setShowTime(FinalUserDataBase.getInstance().isShowTime(uid, chatMsg.getMsgTime()));
-                                if(!TextUtils.isEmpty(msg.getAvatarData())){
-                                    if(!msg.getAvatarData().startsWith("file://")){
-                                        chatMsg.setUserImage("file://" + msg.getAvatarData());
-                                    }else{
-                                        chatMsg.setUserImage(msg.getAvatarData());
-                                    }
-                                }
-                                
-                                
-                                if (MeshMessageConfig.MESH_CHAT_SINGLE == msg.getChatType()) {
-                                    chatMsg.setChatId(msg.getLocalId());
-                                } else if (MeshMessageConfig.MESH_CHAT_GROUP == msg.getChatType()) {
-                                    chatMsg.setChatId(Constants.APP_MESH);
-                                }
-                                
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mAdapter.addChatMsg(chatMsg, true);
-                                        listView.setSelection(mAdapter.getCount());
-                                    }
-                                });
-                            }
-                        } catch (Exception e) {
                         }
                     }
-                } catch (Exception e) {
                 }
             }
+        }
+    }
+
+    /**
+     * update message
+     * */
+    private void updateMessage(Intent intent){
+        Bundle bundle = intent.getBundleExtra(XmppAction.ACTION_MESSAGE_UPDATE_LISTENER);
+        ChatMsg chatMsg = (ChatMsg) bundle.getSerializable(XmppAction.ACTION_MESSAGE_UPDATE_LISTENER);
+        if (chatMsg != null && uid.equals(chatMsg.getChatId())) {//I chat with the friends
+            mAdapter.updateChatMsg(chatMsg);
+        }
+    }
+
+    /**
+     * group kick method
+     * T or dissolution of update group chat Someone quit the group chat
+     * */
+    private void groupKickMethod(Intent intent){
+        Bundle bundle = intent.getBundleExtra(XmppAction.ACTION_MESSAGE_GROUP_KICK_LISTENER);
+        if (uid.equals(bundle.getString("uid"))) {//Whether the current chat object
+            isDismissGroup = bundle.getBoolean("dismissgroup");
+            isKickGroup = bundle.getBoolean("kickgroup");
+            mAdapter.setKickDismiss(isKickGroup, isDismissGroup);
+            chattingManager.setSend(!(isDismissGroup || isKickGroup));
+            XmppMessageUtil.getInstance().setGroupDismiss(isDismissGroup);
+            XmppMessageUtil.getInstance().setGroupKick(isKickGroup);
+            if (isDismissGroup || isKickGroup) {
+                showToast(isDismissGroup ? getString(R.string.discuss_group_dismiss) : getString(R.string.discuss_group_kick));
+            }
+        }
+    }
+
+    /**
+     *Image upload percentage
+     * */
+    private void showImagePercent(Intent intent){
+        if (intent.getExtras() != null){
+            String messageId = intent.getExtras().getString("time");
+            int percent = intent.getExtras().getInt("percent");
+            if (percent > 100) {
+                percent = 100;
+            }
+            View linear = listView.findViewWithTag(messageId);
+            if (linear == null) {
+                return;
+            }
+            TextView percentTv = linear.findViewById(R.id.item_chatting_image_upload_percent);
+            percentTv.setText(percent +"%");
+            if (percent != 100) {
+                linear.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    /**
+     * update friend note
+     * */
+    private void updateFriendNote(Intent intent){
+        if (intent.getExtras() != null){
+            String showname = intent.getExtras().getString("showname");
+            String showuid = intent.getExtras().getString("showuid");
+            if (!isGroup && !TextUtils.equals(Constants.APP_EVERYONE, uid)) {
+                //With a nickname
+                if (TextUtils.equals(showuid,uid)) {
+                    setTitle(showname);
+                }
+            } else {
+                for (int i = 0; i < mAdapter.getList().size(); i++) {
+                    if (TextUtils.equals(showuid, mAdapter.getList().get(i).getUserId())) {
+                        mAdapter.getList().get(i).setUsername(showname);
+                    }
+                }
+                mAdapter.modifyNickName(showuid, showname);
+                mAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    /**
+     * enter everyone
+     * */
+    private void enterEveryoneListener(){
+        ChatMsg chatMsg = new ChatMsg();
+        if (uid.equals(Constants.APP_EVERYONE)) {
+            chatMsg.setType(12);
+            chatMsg.setContent(getString(R.string.chat_welcome_to_everyone));
+            mAdapter.addChatMsg(chatMsg, true);
+            if (listView.getLastVisiblePosition() >= mAdapter.getCount() - 2){//Only in the bottom, to the new message to scroll to the bottom
+                listView.setSelection(mAdapter.getCount());
+            }
+        }
+    }
+
+    /**
+     * send message result
+     * */
+    private void sendMsgResult(Intent intent){
+        if (intent.getExtras() != null){
+            boolean result = intent.getExtras().getBoolean("result");
+            int state = intent.getExtras().getInt("state");
+            String msgId = intent.getExtras().getString("msgid");
+            mAdapter.updateOfflineSendStatus(result, state, msgId);
+        }
+    }
+
+    /**
+     * show send message progress
+     * */
+    private void sendMsgProgress(Intent intent){
+        if (intent.getExtras() != null){
+            long currentLength = intent.getExtras().getLong("currentLength");
+            String msgId = intent.getExtras().getString("msgid");
+            for (int m = mAdapter.getCount() - 1; m > -1; m--) {
+                if (mAdapter.getList().get(m).getMessageId().equals(msgId)) {
+                    mAdapter.getList().get(m).setNewprogress(currentLength);
+                    break;
+                }
+            }
+            int first = listView.getFirstVisiblePosition();
+            int last = listView.getLastVisiblePosition();
+
+            for (int m = first; m <= last; m++) {
+                View convertView = listView.getChildAt(m - first);
+                if (convertView == null || m >= mAdapter.getCount()) {
+                    continue;
+                }
+                if (mAdapter.getItem(m).getType() == 1009 && mAdapter.getItem(m).getMessageId().equals(msgId)) {
+                    ProgressBar progressBar = convertView.findViewById(R.id.file_send_progress);
+                    int percent = (int) ((mAdapter.getItem(m).getNewprogress() * 100) / (Long.parseLong(mAdapter.getItem(m).getNumber())) * 1.0f);
+                    progressBar.setProgress(percent);
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * cancel receiver file method
+     * @param intent  intent
+     * @param type  3 :  start receiver file
+     *               5 :  cancel send file
+     *               8 :  cancel receiver file
+     * */
+    private void msgReportFileMethod(Intent intent,int type){
+        if (intent.getExtras() != null){
+            int commend = intent.getExtras().getInt("commend");
+            String msgId = intent.getExtras().getString("msgid");
+            if (appNetService != null) {
+                appNetService.handleSendFileCommend(uid, msgId, commend);
+            }
+            mAdapter.updateOfflineSendStatus(true, type, msgId);
+            FinalUserDataBase.getInstance().updateOfflineChatMsgState(msgId, type, 1);
+        }
+    }
+
+    /**
+     * mesh update me receiver
+     * @param intent intent
+     * */
+    private void meshUpdateMeReceiver(Intent intent){
+        try {
+            Bundle bundle = intent.getBundleExtra(MeshMessageConfig.ACTION_MESH_UPDATE_ME);
+            final ChatMsg chatMsg = (ChatMsg) bundle.getSerializable(MeshMessageConfig.ACTION_MESH_UPDATE_ME);
+            if (null == chatMsg) {
+               return;
+            }
+            chatMsg.setChatId(uid);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mAdapter.addChatMsg(chatMsg, true);
+                    listView.setSelection(mAdapter.getCount());
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * mesh update receiver
+     * @param intent intent
+     * */
+    private void meshUpdateReceiver(Intent intent){
+        try {
+            Bundle bundle = intent.getBundleExtra(MeshMessageConfig.ACTION_MESH_UPDATE_RECEEIVE);
+            final MessageVo msg = (MessageVo) bundle.getSerializable(MeshMessageConfig.ACTION_MESH_UPDATE_RECEEIVE);
+            if (null != msg) {
+                if ((uid.equals(Constants.APP_MESH) && MeshMessageConfig.MESH_CHAT_GROUP == msg.getChatType()) || (!uid.equals(Constants.APP_MESH) && MeshMessageConfig.MESH_CHAT_SINGLE == msg.getChatType() && uid.equals(msg.getLocalId()))) {
+                    final ChatMsg chatMsg = new ChatMsg();
+                    if (MESSAGE_TEXT == msg.getMessageType()) {
+                        chatMsg.setType(0);
+                    } else if (MeshMessageConfig.MESSAGE_IMAGE == msg.getMessageType()) {
+                        chatMsg.setType(1);
+                        chatMsg.setCover(BitmapUtils.bitmapToString(msg.getData()));
+                        chatMsg.setLocalUrl(msg.getImageLocalUrl());
+                    }
+                    chatMsg.setContent(msg.getData());
+                    chatMsg.setIsAtGroupAll(false);
+                    chatMsg.setUserId(msg.getLocalId());
+                    chatMsg.setRealname(msg.getFrom());
+                    chatMsg.setUsername(msg.getFrom());
+                    chatMsg.setMsgTime(System.currentTimeMillis() / 1000);
+                    chatMsg.setShowTime(FinalUserDataBase.getInstance().isShowTime(uid, chatMsg.getMsgTime()));
+                    if(!TextUtils.isEmpty(msg.getAvatarData())){
+                        if(!msg.getAvatarData().startsWith("file://")){
+                            chatMsg.setUserImage("file://" + msg.getAvatarData());
+                        }else{
+                            chatMsg.setUserImage(msg.getAvatarData());
+                        }
+                    }
+
+                    if (MeshMessageConfig.MESH_CHAT_SINGLE == msg.getChatType()) {
+                        chatMsg.setChatId(msg.getLocalId());
+                    } else if (MeshMessageConfig.MESH_CHAT_GROUP == msg.getChatType()) {
+                        chatMsg.setChatId(Constants.APP_MESH);
+                    }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mAdapter.addChatMsg(chatMsg, true);
+                            listView.setSelection(mAdapter.getCount());
+                        }
+                    });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
     
