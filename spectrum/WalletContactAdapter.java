@@ -1,6 +1,7 @@
 package com.lingtuan.firefly.spectrum;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -60,15 +61,22 @@ public class WalletContactAdapter extends BaseAdapter {
         AddressContactVo addressContactVo = source.get(position);
         holder.walletContactName.setText(addressContactVo.getUserName());
         holder.walletContactAddress.setText(addressContactVo.getWalletAddress());
+        if (TextUtils.isEmpty(addressContactVo.getRemarks())){
+            holder.walletContactNote.setVisibility(View.GONE);
+        }else{
+            holder.walletContactNote.setVisibility(View.VISIBLE);
+            holder.walletContactNote.setText(addressContactVo.getRemarks());
+        }
         return convertView;
     }
-
 
     static class ViewHolder {
         @BindView(R.id.walletContactName)
         TextView walletContactName;
         @BindView(R.id.walletContactAddress)
         TextView walletContactAddress;
+        @BindView(R.id.walletContactNote)
+        TextView walletContactNote;
         ViewHolder(View view) {
             ButterKnife.bind(this, view);
         }
