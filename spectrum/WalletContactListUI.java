@@ -114,6 +114,7 @@ public class WalletContactListUI extends BaseActivity {
                     source.remove(position);
                     mAdapter.resetSource(source);
                     LoadingDialog.close();
+                    checkListEmpty();
                }
             }
         });
