@@ -64,7 +64,6 @@ public class WalletSendAddressAdapter extends BaseAdapter {
             viewHolder.walletAddress = convertView.findViewById(R.id.walletAddress);
             viewHolder.walletDelete = convertView.findViewById(R.id.walletDelete);
             viewHolder.bottomLine = convertView.findViewById(R.id.bottomLine);
-            viewHolder.bottomShadow = convertView.findViewById(R.id.bottomShadow);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = ((ViewHolder) convertView.getTag());
@@ -73,22 +72,17 @@ public class WalletSendAddressAdapter extends BaseAdapter {
 
         if (list.size() >= 3){
             if (position >= 2){
-                viewHolder.bottomShadow.setVisibility(View.VISIBLE);
                 viewHolder.bottomLine.setVisibility(View.GONE);
             }else{
-                viewHolder.bottomShadow.setVisibility(View.GONE);
                 viewHolder.bottomLine.setVisibility(View.VISIBLE);
             }
         }else if (list.size() == 2){
             if (position >= 1){
-                viewHolder.bottomShadow.setVisibility(View.VISIBLE);
                 viewHolder.bottomLine.setVisibility(View.GONE);
             }else{
-                viewHolder.bottomShadow.setVisibility(View.GONE);
                 viewHolder.bottomLine.setVisibility(View.VISIBLE);
             }
         }else{
-            viewHolder.bottomShadow.setVisibility(View.VISIBLE);
             viewHolder.bottomLine.setVisibility(View.GONE);
         }
 
@@ -107,6 +101,5 @@ public class WalletSendAddressAdapter extends BaseAdapter {
         public TextView walletAddress;
         public ImageView walletDelete;
         public View bottomLine;
-        public View bottomShadow;
     }
 }
