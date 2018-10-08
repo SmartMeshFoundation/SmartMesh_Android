@@ -29,6 +29,9 @@ public class DropEditText extends FrameLayout implements  View.OnFocusChangeList
 	private WrapListView mPopView; // popupwindow的布局
 	private String mHit;
 
+	private LinearLayout popBody;
+	private View bottomShadow;
+
 	private ImageView walletAddressDelete;
 
 	private ScrollView scrollView;
@@ -41,16 +44,18 @@ public class DropEditText extends FrameLayout implements  View.OnFocusChangeList
 
 	public DropEditText(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
-		init(context);
 		LayoutInflater.from(context).inflate(R.layout.edit_layout, this);
-		mPopView = (WrapListView) LayoutInflater.from(context).inflate(R.layout.pop_view, null);
+		popBody = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.pop_view, null);
+		init(context);
+		mPopView = popBody.findViewById(R.id.wrapListView);
+        bottomShadow = popBody.findViewById(R.id.bottomShadow);
 		TypedArray ta = context.obtainStyledAttributes(attrs,R.styleable.DropEditText, defStyle, 0);
 		mHit = ta.getString(R.styleable.DropEditText_hint);
 		ta.recycle();
 	}
 
 	private void init(Context context) {
-		mPopup = new PopupWindow(mPopView, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		mPopup = new PopupWindow(popBody, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 		mPopup.setOutsideTouchable(false);
 		mPopup.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
 		mPopup.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
@@ -99,7 +104,11 @@ public class DropEditText extends FrameLayout implements  View.OnFocusChangeList
 				return;
 			}
 			showPow();
-		}
+		}else{
+            if (mPopup.isShowing()) {
+                mPopup.dismiss();
+            }
+        }
 	}
 
 	/**
