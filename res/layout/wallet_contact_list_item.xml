@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical">
+
+        <com.lingtuan.firefly.custom.CharAvatarView
+            android:id="@+id/walletContactImg"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="10dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/wallet_contact_icon"/>
+
+        <TextView
+            android:id="@+id/walletContactName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:layout_toRightOf="@+id/walletContactImg"
+            android:maxLines="1"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/walletContactAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_below="@+id/walletContactName"
+            android:singleLine="true"
+            android:ellipsize="middle"
+            android:layout_toRightOf="@+id/walletContactImg"
+            android:textColor="@color/textColorCard"/>
+
+        <TextView
+            android:id="@+id/walletContactNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/walletContactAddress"
+            android:layout_toRightOf="@+id/walletContactImg"
+            android:maxLines="1"
+            android:textSize="12sp"
+            android:layout_marginTop="5dp"
+            android:textColor="@color/textColorCard"/>
+
+    </RelativeLayout>
+
+     <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginLeft="15dp"
+        android:background="@color/tab_sep_line_1" />
+</LinearLayout>

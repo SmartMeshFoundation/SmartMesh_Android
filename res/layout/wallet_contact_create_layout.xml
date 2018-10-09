@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/textColor">
+
+    <include layout="@layout/app_title_layout"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="15dp"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <com.lingtuan.firefly.custom.CharAvatarView
+                    android:id="@+id/userImg"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:src="@drawable/wallet_contact_icon"
+                    android:layout_gravity="center"/>
+
+                <EditText
+                    android:id="@+id/userName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/userImg"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:gravity="center_vertical"
+                    android:background="@null"
+                    android:maxLines="1"
+                    android:maxLength="20"
+                    android:textSize="14sp"
+                    android:inputType="text"
+                    android:hint="@string/user_name" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:layout_toRightOf="@+id/userImg"
+                    android:layout_below="@+id/userName"
+                    android:layout_margin="10dp"
+                    android:background="@color/tab_sep_line"/>
+
+            </RelativeLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/walletAddress"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="45dp"
+                    android:gravity="center_vertical"
+                    android:textSize="12sp"
+                    android:background="@null"
+                    android:singleLine="true"
+                    android:ellipsize="middle"
+                    android:layout_marginRight="5dp"
+                    android:digits="@string/wallet_address_digits"
+                    android:hint="@string/wallet_contact_wallet_address" />
+
+                <ImageView
+                    android:id="@+id/walletAddressScan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:src="@drawable/wallet_contact_qrcode"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line"/>
+
+
+            <EditText
+                android:id="@+id/contactNote"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:gravity="center_vertical"
+                android:textSize="14sp"
+                android:maxLines="1"
+                android:maxLength="20"
+                android:background="@null"
+                android:hint="@string/wallet_contact_wallet_remark" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
