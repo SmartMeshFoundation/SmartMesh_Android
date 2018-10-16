@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/textColor">
+
+    <include
+        android:id="@+id/app_title_layout"
+        layout="@layout/app_title_layout" />
+
+    <TextView
+        android:id="@+id/country_code_selected"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/app_title_layout"
+        android:paddingBottom="10dip"
+        android:paddingLeft="10dp"
+        android:paddingTop="10dip"
+        android:textColor="@color/textColorHintPrimary"
+        android:textSize="16.5sp" 
+        android:background="@color/gray_sep_bg"/>
+    <View 
+        android:id="@+id/line"
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/tab_sep_line"
+        android:layout_below="@id/country_code_selected"/>
+    <ListView
+        android:id="@+id/country_code_list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@id/line"
+        android:layout_gravity="center"
+        android:divider="@null"
+        android:scrollbars="none" />
+
+    <TextView
+        android:id="@+id/country_code_catalog"
+        android:layout_width="80.0dip"
+        android:layout_height="80.0dip"
+        android:layout_centerInParent="true"
+        android:layout_gravity="center"
+        android:background="@drawable/selector_round_black_5"
+        android:alpha="0.5"
+        android:gravity="center"
+        android:textColor="@color/textColor"
+        android:textSize="50.0dip"
+        android:visibility="gone" />
+
+    <com.lingtuan.firefly.custom.CountryCodeSideBar
+        android:id="@+id/country_code_sidrbar"
+        android:layout_width="30.0dip"
+        android:layout_height="fill_parent"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@id/country_code_list"
+        android:layout_gravity="right|center" 
+        android:layout_marginTop="25dp"
+        android:layout_marginBottom="25dp"
+        />
+
+</RelativeLayout>

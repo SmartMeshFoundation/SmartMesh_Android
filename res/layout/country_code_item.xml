@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:background="@color/textColor"
+     >
+
+    <TextView
+        android:id="@+id/reg_country_code_catalog"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1.0"
+        android:background="#fff7f7f7"
+        android:maxLength="1"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:text="A"
+        android:textColor="@color/textColorHintPrimary"
+        android:textSize="16sp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"/>
+
+    <View
+        android:id="@+id/reg_country_code_line"
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/tab_sep_line" />
+
+    <TextView
+        android:id="@+id/reg_country_code_name"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="1.0"
+        android:gravity="center_vertical"
+        android:paddingBottom="10dip"
+        android:paddingTop="10dip"
+        android:text="hhhh"
+        android:textColor="@color/black"
+        android:textSize="16sp" 
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"/>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/tab_sep_line" />
+
+</LinearLayout>

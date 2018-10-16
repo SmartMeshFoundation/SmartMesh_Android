@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/textColor"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <include layout="@layout/app_title_layout" />
+
+
+    <ListView
+        android:id="@+id/chatting_list"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:cacheColorHint="@null"
+        android:divider="@color/tab_sep_line"
+        android:listSelector="@drawable/scrollview_item_bg"
+        android:scrollbars="none" >
+    </ListView>
+
+</LinearLayout>
