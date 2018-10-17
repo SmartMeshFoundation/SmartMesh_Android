@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/app_title_layout"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/textColor"
+        android:scrollbars="none">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/reportReason1"
+                style="@style/FriendReportStyle"
+                android:text="@string/report_reason_1" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line"/>
+            <TextView
+                android:id="@+id/reportReason2"
+                style="@style/FriendReportStyle"
+                android:text="@string/report_reason_2" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line"/>
+
+            <TextView
+                android:id="@+id/reportReason3"
+                style="@style/FriendReportStyle"
+                android:text="@string/report_reason_3"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line"/>
+
+            <TextView
+                android:id="@+id/reportReason4"
+                style="@style/FriendReportStyle"
+                android:text="@string/report_reason_4" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line"/>
+            <TextView
+                android:id="@+id/reportReason5"
+                style="@style/FriendReportStyle"
+                android:text="@string/report_reason_5" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line"/>
+            <TextView
+                android:id="@+id/reportReason6"
+                style="@style/FriendReportStyle"
+                android:text="@string/report_reason_6"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line"/>
+            <TextView
+                android:id="@+id/reportReason7"
+                style="@style/FriendReportStyle"
+                android:text="@string/report_reason_7"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line"/>
+            <TextView
+                android:id="@+id/reportReason8"
+                style="@style/FriendReportStyle"
+                android:text="@string/report_reason_8"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line"/>
+
+            <TextView
+                android:id="@+id/reportReason9"
+                style="@style/FriendReportStyle"
+                android:text="@string/report_reason_9" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
