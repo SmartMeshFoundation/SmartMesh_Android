@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout"
+    android:layout_width="320dp"
+    android:layout_height="wrap_content"
+    android:background="#fff6f6f6"
+    android:layout_gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/titleTv"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:gravity="center"
+        android:text="@string/account_input_pwd_warning"
+        android:textColor="@color/black"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/dialogPwd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:layout_margin="10dp"
+        android:textSize="14sp"
+        android:hint="@string/account_pwd"
+        android:gravity="center"
+        android:inputType="textPassword"
+        android:background="@drawable/shape_round_hintcolor_light_2"/>
+
+    <TextView
+        android:id="@+id/dialogPwdInfo"
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/hint_pwd_warning"
+        android:textColor="@color/textColorHint"
+        android:textSize="12sp" />
+
+    <include layout="@layout/dialog_include_layout"/>
+
+</LinearLayout>

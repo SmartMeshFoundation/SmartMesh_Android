@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialog_cancel_linear"
+    android:layout_width="330dp"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="30dp"
+    android:layout_marginRight="30dp"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/shape_round_write_2"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/dialog_format_title"
+            android:layout_width="fill_parent"
+            android:layout_height="55dp"
+            android:clickable="false"
+            android:enabled="false"
+            android:gravity="center_vertical|left"
+            android:paddingLeft="9.3dp"
+            android:paddingRight="9.3dp"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/tab_sep_line" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" >
+
+            <com.lingtuan.firefly.custom.DiscussGroupImageView
+                android:id="@+id/avatar"
+                android:layout_width="50dip"
+                android:layout_height="50dip"
+                android:layout_marginBottom="13.3dp"
+                android:layout_marginLeft="9.3dp"
+                android:layout_marginTop="13.3dp"
+                android:visibility="gone" />
+
+            <com.lingtuan.firefly.custom.CharAvatarView
+                android:id="@+id/avatar_single"
+                android:layout_width="50dip"
+                android:layout_height="50dip"
+                android:layout_marginBottom="13.3dp"
+                android:layout_marginLeft="9.3dp"
+                android:layout_marginTop="13.3dp"
+                android:background="@drawable/shape_round_avatar_2"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/dialog_format_body"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:enabled="false"
+                android:ellipsize="end"
+                android:paddingBottom="13.3dp"
+                android:paddingLeft="9.3dp"
+                android:paddingRight="9.3dp"
+                android:paddingTop="13.3dp"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <View
+            android:id="@+id/line1"
+            android:layout_width="fill_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/tab_sep_line" />
+        <LinearLayout
+            android:id="@+id/leaveMsgBody"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/leaveMsgLink"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:enabled="false"
+                android:ellipsize="end"
+                android:paddingLeft="9.3dp"
+                android:paddingRight="9.3dp"
+                android:paddingTop="10dp"
+                android:textColor="@color/textColorHint"
+                android:textSize="18sp" />
+
+            <EditText
+                android:id="@+id/leaveMsgEt"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:background="@drawable/chatting_input_box"
+                android:gravity="center_vertical"
+                android:maxLines="3"
+                android:hint="@string/leave_message_to_friend"
+                android:maxLength="3000"
+                android:textSize="14sp" />
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/tab_sep_line" />
+        </LinearLayout>
+
+        <include layout="@layout/dialog_include_layout"/>
+    </LinearLayout>
+
+</RelativeLayout>

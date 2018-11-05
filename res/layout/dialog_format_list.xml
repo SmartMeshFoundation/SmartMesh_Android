@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialog_cancel_linear"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:paddingLeft="44.67dp"
+    android:background="@color/popup_window_shadow"
+    android:paddingRight="44.67dp" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/shape_round_write_2"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/dialog_format_title"
+            android:layout_width="fill_parent"
+            android:layout_height="55dp"
+            android:paddingBottom="13.3dp"
+            android:paddingLeft="9.3dp"
+            android:enabled="false"
+            android:clickable="false"
+            android:paddingRight="9.3dp"
+            android:paddingTop="13.3dp"
+            android:singleLine="true"
+            android:gravity="center"
+            android:textColor="@color/textColorHintPrimary"
+            android:textSize="14sp" />
+        
+        <View 
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/tab_sep_line"
+            />
+
+        <ListView
+            android:id="@+id/dialog_format_list"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:cacheColorHint="@null"
+            android:divider="@color/tab_sep_line"
+            android:listSelector="@drawable/scrollview_item_bg"
+            android:scrollbars="none"
+            android:dividerHeight="0.5dp"
+            android:layout_marginBottom="10dp"
+            android:scrollingCache="false" >
+        </ListView>
+    </LinearLayout>
+
+</RelativeLayout>

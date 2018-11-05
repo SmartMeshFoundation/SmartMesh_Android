@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:id="@+id/dialog_cancel_linear"
+    >
+   
+     <ListView
+            android:id="@+id/dialog_format_list"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:cacheColorHint="@null"
+            android:divider="@null"
+            android:listSelector="@drawable/item_dialog_format_selector"
+            android:scrollbars="none"
+            android:scrollingCache="false" 
+            android:background="@color/textColor">
+        </ListView>
+</RelativeLayout>
