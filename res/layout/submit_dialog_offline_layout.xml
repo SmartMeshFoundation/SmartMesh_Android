@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="35dp"
+    android:paddingRight="35dp">
+
+    <RelativeLayout
+        android:id="@+id/offlineBody"
+        android:layout_width="wrap_content"
+        android:layout_height="80dp">
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/textColor"/>
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:scaleType="centerCrop"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/icon_offline_app"/>
+    </RelativeLayout>
+
+    <include layout="@layout/submit_dialog_include_bottom"/>
+</LinearLayout>
