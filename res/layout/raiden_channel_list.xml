@@ -1,32 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <include layout="@layout/app_title_layout"/>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <android.support.v4.widget.SwipeRefreshLayout
-            android:id="@+id/swipe_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
-            <ListView
-                android:id="@+id/listView"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:background="@color/gray_sep_bg"
-                android:listSelector="@color/gray_sep_bg"
-                android:divider="@null"
-                android:scrollbars="none" >
-            </ListView>
-        </android.support.v4.widget.SwipeRefreshLayout>
-
-        <include layout="@layout/include_empty_view" />
-    </RelativeLayout>
-
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+	
+	<include layout="@layout/app_title_layout"/>
+	
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_marginTop="5dp"
+		android:layout_marginBottom="5dp"
+		android:background="@color/colorPrimary"
+		android:layout_height="50dp">
+		
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_centerVertical="true"
+			android:layout_marginLeft="10dp"
+			android:text="@string/raiden_pay_hint"/>
+		
+		<com.lingtuan.firefly.custom.switchbutton.SwitchButton
+			android:id="@+id/switchbutton"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentRight="true"
+			android:layout_marginRight="10dp"
+			android:layout_centerVertical="true"
+			android:gravity="right"
+			app:kswBackColor="@color/switch_button_gray"
+			app:kswThumbColor="@color/textColor"/>
+	</RelativeLayout>
+	
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_weight="1">
+		
+		<android.support.v4.widget.SwipeRefreshLayout
+			android:id="@+id/swipe_container"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent">
+			
+			<ListView
+				android:id="@+id/listView"
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent"
+				android:background="@color/gray_sep_bg"
+				android:divider="@null"
+				android:listSelector="@color/gray_sep_bg"
+				android:scrollbars="none">
+			</ListView>
+		</android.support.v4.widget.SwipeRefreshLayout>
+		
+		<include layout="@layout/include_empty_view"/>
+	</RelativeLayout>
+	
+	<TextView
+		android:id="@+id/pay"
+		style="@style/WalletStyle"
+		android:layout_marginBottom="30dp"
+		android:layout_marginLeft="45dp"
+		android:layout_marginRight="45dp"
+		android:layout_marginTop="30dp"
+		android:background="@drawable/selector_round_yellow_30"
+		android:text="@string/raiden_pay_1"
+		android:textColor="@color/black"/>
 </LinearLayout>

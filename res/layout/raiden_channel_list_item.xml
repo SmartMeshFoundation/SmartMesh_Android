@@ -1,213 +1,260 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="5dp"
-    android:paddingLeft="10dp"
-    android:paddingRight="10dp"
-    android:paddingTop="5dp">
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="5dp"
-        android:background="@drawable/shape_white_border_round_bg"
-        android:orientation="vertical" >
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:layout_marginRight="10dp"
-                android:text="@string/raiden_partner"
-                />
-
-            <TextView
-                android:id="@+id/partner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:singleLine="true"
-                android:ellipsize="middle"
-                android:textColor="@color/textColorHint"
-                />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:layout_marginRight="10dp"
-                android:text="@string/raiden_balance"
-                />
-
-            <TextView
-                android:id="@+id/balance"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:singleLine="true"
-                android:textColor="@color/textColorHint"
-                />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:visibility="gone"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:layout_marginRight="10dp"
-                android:text="@string/raiden_pay_1"
-                />
-
-            <TextView
-                android:id="@+id/pay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:singleLine="true"
-                android:textColor="@color/textColorHint"
-                />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:layout_marginRight="10dp"
-                android:text="@string/raiden_token"
-                />
-
-            <TextView
-                android:id="@+id/token"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:singleLine="true"
-                android:textColor="@color/textColorHint"
-                />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:layout_marginRight="10dp"
-                android:text="@string/raiden_state"
-                />
-
-            <TextView
-                android:id="@+id/state"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:singleLine="true"
-                android:textColor="@color/textColorHint"
-                />
-        </LinearLayout>
-
-        <View
-            android:id="@+id/channelLine"
-            android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginTop="10dp"
-            android:background="@color/tab_sep_line"/>
-
-        <LinearLayout
-            android:id="@+id/channelBody"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:orientation="horizontal">
-            <TextView
-                android:id="@+id/raidenPay"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="@string/raiden_pay_1"
-                android:textSize="14sp"
-                android:textColor="@color/raiden_blue"/>
-
-            <View
-                android:layout_width="0.5dp"
-                android:layout_height="match_parent"
-                android:background="@color/tab_sep_line"/>
-
-            <TextView
-                android:id="@+id/raidenAdd"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="@string/raiden_deposit"
-                android:textSize="14sp"
-                android:textColor="@color/raiden_blue"/>
-
-            <View
-                android:layout_width="0.5dp"
-                android:layout_height="match_parent"
-                android:background="@color/tab_sep_line"/>
-
-            <TextView
-                android:id="@+id/raidenClose"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="@string/drawer_close"
-                android:textSize="14sp"
-                android:textColor="@color/raiden_blue"/>
-        </LinearLayout>
-
-    </LinearLayout>
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:paddingBottom="5dp"
+              android:paddingLeft="10dp"
+              android:paddingRight="10dp"
+              android:paddingTop="5dp">
+	
+	<LinearLayout
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:background="@drawable/shape_white_border_round_bg"
+		android:orientation="vertical"
+		android:paddingTop="5dp">
+		
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_margin="10dp"
+			android:orientation="horizontal">
+			
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:layout_marginRight="10dp"
+				android:gravity="center_vertical"
+				android:text="@string/raiden_partner"/>
+			
+			<TextView
+				android:id="@+id/partner"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:ellipsize="middle"
+				android:gravity="center_vertical"
+				android:singleLine="true"
+				android:textColor="@color/textColorHint"/>
+		
+		</LinearLayout>
+		
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_margin="10dp"
+			android:visibility="gone"
+			android:orientation="horizontal">
+			
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:layout_marginRight="10dp"
+				android:gravity="center_vertical"
+				android:text="@string/raiden_channel_list_deposit"/>
+			
+			<TextView
+				android:id="@+id/deposit"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:gravity="center_vertical"
+				android:singleLine="true"
+				android:textColor="@color/textColorHint"/>
+		
+		</LinearLayout>
+		
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_margin="10dp"
+			android:orientation="horizontal">
+			
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:layout_marginRight="10dp"
+				android:gravity="center_vertical"
+				android:text="@string/raiden_balance"/>
+			
+			<TextView
+				android:id="@+id/balance"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:gravity="center_vertical"
+				android:singleLine="true"
+				android:textColor="@color/textColorHint"/>
+		
+		</LinearLayout>
+		
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_margin="10dp"
+			android:orientation="horizontal"
+			android:visibility="gone">
+			
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:layout_marginRight="10dp"
+				android:gravity="center_vertical"
+				android:text="@string/raiden_pay_1"/>
+			
+			<TextView
+				android:id="@+id/pay"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:gravity="center_vertical"
+				android:singleLine="true"
+				android:textColor="@color/textColorHint"/>
+		
+		</LinearLayout>
+		
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_margin="10dp"
+			android:orientation="horizontal"
+			android:visibility="gone">
+			
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:layout_marginRight="10dp"
+				android:gravity="center_vertical"
+				android:text="@string/raiden_token"/>
+			
+			<TextView
+				android:id="@+id/token"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:gravity="center_vertical"
+				android:singleLine="true"
+				android:textColor="@color/textColorHint"/>
+		
+		</LinearLayout>
+		
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_margin="10dp"
+			android:visibility="gone"
+			android:orientation="horizontal">
+			
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:layout_marginRight="10dp"
+				android:gravity="center_vertical"
+				android:text="@string/raiden_state"/>
+			
+			<TextView
+				android:id="@+id/state"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:gravity="center_vertical"
+				android:singleLine="true"
+				android:textColor="@color/textColorHint"/>
+		</LinearLayout>
+		
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_margin="10dp"
+			android:visibility="gone"
+			android:orientation="horizontal">
+			
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:layout_marginRight="10dp"
+				android:gravity="center_vertical"
+				android:text="@string/raiden_date"/>
+			
+			<TextView
+				android:id="@+id/date"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:gravity="center_vertical"
+				android:singleLine="true"
+				android:textColor="@color/textColorHint"/>
+		</LinearLayout>
+		
+		<View
+			android:id="@+id/channelLine"
+			android:layout_width="match_parent"
+			android:layout_height="0.5dp"
+			android:layout_marginLeft="10dp"
+			android:visibility="gone"
+			android:layout_marginRight="10dp"
+			android:layout_marginTop="10dp"
+			android:background="@color/tab_sep_line"/>
+		
+		<LinearLayout
+			android:id="@+id/channelBody"
+			android:layout_width="match_parent"
+			android:layout_height="40dp"
+			android:layout_marginLeft="10dp"
+			android:layout_marginRight="10dp"
+			android:orientation="horizontal">
+			
+			<TextView
+				android:id="@+id/raidenPay"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:gravity="center"
+				android:text="@string/raiden_pay_1"
+				android:visibility="gone"
+				android:textColor="@color/raiden_blue"
+				android:textSize="14sp"/>
+			
+			<View
+				android:layout_width="0.5dp"
+				android:visibility="gone"
+				android:layout_height="match_parent"
+				android:background="@color/tab_sep_line"/>
+			
+			<TextView
+				android:id="@+id/raidenAdd"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:gravity="center"
+				android:text="@string/raiden_deposit_add"
+				android:textColor="@color/yellow_wallet"
+				android:textSize="14sp"/>
+			
+			<View
+				android:layout_width="0.5dp"
+				android:layout_height="match_parent"
+				android:background="@color/tab_sep_line"/>
+			
+			<TextView
+				android:id="@+id/raidenClose"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:gravity="center"
+				android:text="@string/drawer_close"
+				android:textColor="@color/yellow_wallet"
+				android:textSize="14sp"/>
+		</LinearLayout>
+	
+	</LinearLayout>
 
 </LinearLayout>
