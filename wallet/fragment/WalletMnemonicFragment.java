@@ -1,10 +1,5 @@
-package com.lingtuan.firefly.wallet.fragment;
+package com.lingtuan.firefly.spectrum.fragment;
 
-import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -16,13 +11,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.lingtuan.firefly.R;
-import com.lingtuan.firefly.ui.MainFragmentUI;
-import com.lingtuan.firefly.util.Constants;
+import com.lingtuan.firefly.spectrum.WalletHandler;
+import com.lingtuan.firefly.spectrum.WalletThread;
 import com.lingtuan.firefly.util.LoadingDialog;
 import com.lingtuan.firefly.util.MyToast;
-import com.lingtuan.firefly.wallet.WalletHandler;
+
+import org.web3j.crypto.MnemonicUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -40,9 +37,7 @@ public class WalletMnemonicFragment extends Fragment implements View.OnClickList
      * root view
      */
     private View view = null;
-
     private Unbinder unbinder;
-
     @BindView(R.id.walletPwd)
     EditText walletPwd;//The wallet password
     @BindView(R.id.walletAgainPwd)
@@ -73,12 +68,6 @@ public class WalletMnemonicFragment extends Fragment implements View.OnClickList
 
     private void initData() {
         mHandler = new WalletHandler(getActivity());
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.WALLET_SUCCESS);
-        filter.addAction(Constants.WALLET_ERROR);
-        filter.addAction(Constants.NO_MEMORY);
-        filter.addAction(Constants.WALLET_REPEAT_ERROR);
-        getActivity().registerReceiver(mBroadcastReceiver, filter);
     }
 
     //Import the purse, how to import the wallet
@@ -104,7 +93,7 @@ public class WalletMnemonicFragment extends Fragment implements View.OnClickList
                 String pwdInfo = walletPwdInfo.getText().toString().trim();
                 String source = keyStoreInfo.getText().toString().trim();
                 if (TextUtils.isEmpty(source)){
-                    MyToast.showToast(getActivity(),getString(R.string.wallet_private_key_empty));
+                    MyToast.showToast(getActivity(),getString(R.string.wallet_mnemonic_empty));
                     return;
                 }
                 if (TextUtils.equals(password,walletAgainPwd.getText().toString().trim())){
@@ -117,54 +106,21 @@ public class WalletMnemonicFragment extends Fragment implements View.OnClickList
         }
     }
 
-    public void getPrivateKey(final String seedCode,final String password,final String pwdInfo){
-//        new Thread(new Runnable() {
-//           @Override
-//           public void run() {
-//                try {
-//                    long creationTimeSeconds = System.currentTimeMillis() / 1000;
-//                    DeterministicSeed seed = new DeterministicSeed(Arrays.asList(seedCode.split(" ")), null, "", creationTimeSeconds);
-//                    DeterministicKeyChain chain = DeterministicKeyChain.builder().seed(seed).build();
-//                    List<ChildNumber> keyPath = HDUtils.parsePath("M/44H/60H/0H/0/0");
-//                    DeterministicKey key = chain.getKeyByPath(keyPath, true);
-//                    BigInteger tempPrivateKey = key.getPrivKey();
-//                    String privateKey = tempPrivateKey.toString(16);
-//                    new WalletThread(mHandler,getActivity().getApplicationContext(),null,password,pwdInfo,privateKey,1,false).start();
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//           }
-//       }).start();
-    }
-
-    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent != null && (Constants.WALLET_SUCCESS.equals(intent.getAction()))) {
+    public void getPrivateKey(final String mnemonic,final String password,final String pwdInfo){
+        try {
+            if (TextUtils.isEmpty(mnemonic) || !MnemonicUtils.validateMnemonic(mnemonic)){
+                MyToast.showToast(getActivity(),getString(R.string.wallet_mnemonic_13));
                 LoadingDialog.close();
-                MyToast.showToast(getActivity(),getString(R.string.notification_wallimp_finished));
-                startActivity(new Intent(getActivity(),MainFragmentUI.class));
-                getActivity().setResult(Activity.RESULT_OK);
-                getActivity().finish();
-            }else if (intent != null && (Constants.WALLET_ERROR.equals(intent.getAction()))) {
-                LoadingDialog.close();
-                MyToast.showToast(getActivity(),getString(R.string.notification_wallimp_failure));
-            }else if (intent != null && (Constants.WALLET_REPEAT_ERROR.equals(intent.getAction()))) {
-                LoadingDialog.close();
-                MyToast.showToast(getActivity(),getString(R.string.notification_wallimp_repeat));
+                return;
             }
-            else if (intent != null && (Constants.NO_MEMORY.equals(intent.getAction()))) {
-                LoadingDialog.close();
-                MyToast.showToast(getActivity(),getString(R.string.notification_wallgen_no_memory));
+            if (getActivity() != null){
+                WalletThread walletThread =  new WalletThread(mHandler,getActivity().getApplicationContext(),null,password,pwdInfo,null,3,false);
+                walletThread.setMnemonic(mnemonic);
+                walletThread.start();
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
-    };
-
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        getActivity().unregisterReceiver(mBroadcastReceiver);
     }
 
     @Override
