@@ -1,4 +1,4 @@
-package com.lingtuan.meshbox.ui.income;
+package com.lingtuan.firefly.spectrum;
 
 import android.content.Intent;
 import android.text.TextUtils;
@@ -7,14 +7,14 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
-import com.lingtuan.meshbox.R;
-import com.lingtuan.meshbox.base.BaseActivity;
-import com.lingtuan.meshbox.custom.Entry;
-import com.lingtuan.meshbox.custom.LineChartView;
-import com.lingtuan.meshbox.entity.IncomeByDayBean;
-import com.lingtuan.meshbox.utils.DateUtil;
-import com.lingtuan.meshbox.utils.DeviceUtil;
-import com.lingtuan.meshbox.utils.LoadingDialog;
+import com.lingtuan.firefly.R;
+import com.lingtuan.firefly.base.BaseActivity;
+import com.lingtuan.firefly.custom.Entry;
+import com.lingtuan.firefly.custom.LineChartView;
+import com.lingtuan.firefly.entity.IncomeByDayBean;
+import com.lingtuan.firefly.utils.DateUtil;
+import com.lingtuan.firefly.utils.DeviceUtil;
+import com.lingtuan.firefly.utils.LoadingDialog;
 
 import org.json.JSONObject;
 
