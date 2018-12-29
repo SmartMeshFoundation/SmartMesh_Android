@@ -91,6 +91,14 @@ public class PhotonTransferUI extends BaseActivity implements PhotonTransferCont
         getPassData();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mShowText != null && !TextUtils.isEmpty(mShowText.getText().toString())){
+            tokenAddressRequest(mShowText.getText().toString().trim());
+        }
+    }
+
     private void getPassData() {
         storableWallet = (StorableWallet) getIntent().getSerializableExtra("storableWallet");
         mTokenVo = (TokenVo) getIntent().getSerializableExtra("tokenVo");
@@ -149,8 +157,13 @@ public class PhotonTransferUI extends BaseActivity implements PhotonTransferCont
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject object = array.optJSONObject(i);
                     RaidenChannelVo channelVo = new RaidenChannelVo().parse(object);
-                    channelList.add(channelVo);
+                    if (channelVo.getState() == 1){
+                        channelList.add(channelVo);
+                    }
                 }
+            }
+            if (channelList.size() <= 0){
+                showToast(getString(R.string.raiden_channel_no_use));
             }
             mAdapter.resetSource(channelList);
             mSpinner.performClick();
@@ -245,20 +258,24 @@ public class PhotonTransferUI extends BaseActivity implements PhotonTransferCont
                 startActivityForResult(photonScan, 100);
                 break;
             case R.id.photonCreate:
-                Intent intent = new Intent(this, RaidenCreateChannel.class);
+                Intent intent = new Intent(this, PhotonCreateChannel.class);
                 intent.putExtra("storableWallet", storableWallet);
                 intent.putExtra("tokenVo", mTokenVo);
                 startActivityForResult(intent, RAIDEN_CHANNEL_CREATE);
                 Utils.openNewActivityAnim(this, false);
                 break;
             case R.id.photonList:
-                Intent photonIntent = new Intent(PhotonTransferUI.this, RaidenChannelList.class);
-                photonIntent.putExtra("storableWallet", storableWallet);
-                photonIntent.putExtra("tokenVo", mTokenVo);
-                startActivity(photonIntent);
-                Utils.openNewActivityAnim(PhotonTransferUI.this, false);
+                intoPhotonChannelList();
                 break;
         }
+    }
+
+    private void intoPhotonChannelList(){
+        Intent photonIntent = new Intent(PhotonTransferUI.this, PhotonChannelList.class);
+        photonIntent.putExtra("storableWallet", storableWallet);
+        photonIntent.putExtra("tokenVo", mTokenVo);
+        startActivity(photonIntent);
+        Utils.openNewActivityAnim(PhotonTransferUI.this, false);
     }
     
     @Override
@@ -293,7 +310,7 @@ public class PhotonTransferUI extends BaseActivity implements PhotonTransferCont
                 }else{
                     LoadingDialog.close();
                     MyToast.showToast(PhotonTransferUI.this,getResources().getString(R.string.raiden_transfer_success));
-                    finish();
+                    intoPhotonChannelList();
                 }
             }
         } catch (Exception e) {
@@ -335,9 +352,13 @@ public class PhotonTransferUI extends BaseActivity implements PhotonTransferCont
     }
 
     @Override
-    public void loadChannelError() {
+    public void loadChannelError(boolean showToast) {
         if(mHandler != null){
-            mHandler.sendEmptyMessage(3);
+            if (showToast){
+                mHandler.sendEmptyMessage(3);
+            }else{
+                mHandler.sendEmptyMessage(7);
+            }
         }
     }
 
@@ -418,6 +439,9 @@ public class PhotonTransferUI extends BaseActivity implements PhotonTransferCont
                 case 6://Enter the wrong password
                     LoadingDialog.close();
                     showToast(getString(R.string.wallet_copy_pwd_error));
+                    break;
+                case 7:
+                    LoadingDialog.close();
                     break;
             }
         }
